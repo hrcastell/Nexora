@@ -3,11 +3,23 @@ import { defineStore } from 'pinia';
 
 export type ThemeMode = 'dark' | 'light';
 
+// Nexora Brand Colors
+export const NEXORA_COLORS = {
+  nightBlue: '#08101f',      // Fondo principal
+  darkBlue: '#0b1326',       // Cards oscuro
+  navyBlue: '#243b7a',       // Azul primario
+  royalPurple: '#7c3aed',    // Morado acento
+  gold: '#d4af37',           // Dorado acento
+  silver: '#c0c7d1',         // Plateado texto
+  lightSilver: '#d8dde5',    // Plateado claro
+};
+
 export type Wallpaper = {
   id: string;
   name: string;
   colors: [string, string, string?];
   labelTone: 'dark' | 'light';
+  isDefault?: boolean;
 };
 
 export type FontOption = {
@@ -17,7 +29,42 @@ export type FontOption = {
   family: string;
 };
 
+// Default Nexora Configuration
+export const DEFAULT_CONFIG = {
+  mode: 'dark' as ThemeMode,
+  wallpaper: 'nexora-dark',
+  scale: 100,
+  fontId: 'inter',
+  fontSize: 16,
+  primaryColor: '#243b7a',   // Navy blue
+  accentColor: '#d4af37',    // Gold
+  customColor: '#7c3aed',    // Purple
+  transparency: 85,          // High transparency for glass effect
+  corner: 32,                // Large rounded corners (like login)
+};
+
 export const WALLPAPERS: Wallpaper[] = [
+  // Nexora Brand Wallpapers
+  { 
+    id: 'nexora-dark', 
+    name: 'Nexora Dark', 
+    colors: ['#08101f', '#0c162d', '#1a1035'], 
+    labelTone: 'dark',
+    isDefault: true 
+  },
+  { 
+    id: 'nexora-purple', 
+    name: 'Nexora Purple', 
+    colors: ['#0f0a1e', '#1e1136', '#3d1f61'], 
+    labelTone: 'dark' 
+  },
+  { 
+    id: 'nexora-gold', 
+    name: 'Nexora Gold', 
+    colors: ['#0a0810', '#1a1610', '#2d2415'], 
+    labelTone: 'dark' 
+  },
+  // Legacy wallpapers
   { id: 'aurora', name: 'Aurora', colors: ['#1b2049', '#10254f', '#14386b'], labelTone: 'dark' },
   { id: 'sunset', name: 'Sunset', colors: ['#df7adf', '#fd5d7a', '#f7a16e'], labelTone: 'dark' },
   { id: 'forest', name: 'Forest', colors: ['#062734', '#163946', '#2e5968'], labelTone: 'dark' },
@@ -34,7 +81,16 @@ export const FONTS: FontOption[] = [
   { id: 'mono', name: 'Jet Mono', preview: 'Nexora Display', family: 'ui-monospace, SFMono-Regular, Menlo, monospace' },
 ];
 
-export const PRESET_COLORS = ['#243B7A', '#6D28D9', '#D4AF37', '#C0C7D1', '#10B981', '#F97316', '#EC4899', '#06B6D4'];
+export const PRESET_COLORS = [
+  '#243b7a', // Nexora Navy Blue
+  '#7c3aed', // Nexora Purple
+  '#d4af37', // Nexora Gold
+  '#c0c7d1', // Nexora Silver
+  '#10B981', // Emerald
+  '#F97316', // Orange
+  '#EC4899', // Pink
+  '#06B6D4', // Cyan
+];
 
 // Helper: hex to rgba
 export function hexToRgba(hex: string, alpha: number): string {
@@ -60,17 +116,17 @@ export function wallpaperBackground(wallpaper: Wallpaper): string {
 }
 
 export const useVisualConfigStore = defineStore('visualConfig', () => {
-  // State
-  const mode = ref<ThemeMode>('dark');
-  const selectedWallpaper = ref('aurora');
-  const scale = ref(100);
-  const fontId = ref('inter');
-  const fontSize = ref(16);
-  const primaryColor = ref('#243B7A');
-  const accentColor = ref('#D4AF37');
-  const customColor = ref('#7C3AED');
-  const transparency = ref(72);
-  const corner = ref(24);
+  // State - Nexora Defaults
+  const mode = ref<ThemeMode>(DEFAULT_CONFIG.mode);
+  const selectedWallpaper = ref(DEFAULT_CONFIG.wallpaper);
+  const scale = ref(DEFAULT_CONFIG.scale);
+  const fontId = ref(DEFAULT_CONFIG.fontId);
+  const fontSize = ref(DEFAULT_CONFIG.fontSize);
+  const primaryColor = ref(DEFAULT_CONFIG.primaryColor);
+  const accentColor = ref(DEFAULT_CONFIG.accentColor);
+  const customColor = ref(DEFAULT_CONFIG.customColor);
+  const transparency = ref(DEFAULT_CONFIG.transparency);
+  const corner = ref(DEFAULT_CONFIG.corner);
 
   // Computed
   const currentWallpaper = computed(() => 
@@ -88,9 +144,25 @@ export const useVisualConfigStore = defineStore('visualConfig', () => {
   
   const surface = computed(() => {
     if (mode.value === 'dark') {
-      return `linear-gradient(180deg, ${hexToRgba(primaryColor.value, transparency.value / 220)}, rgba(8,16,31,0.96))`;
+      // Dark mode: transparent glass effect with purple/gold hint
+      return `linear-gradient(180deg, ${hexToRgba('#0b1326', transparency.value / 100)}, ${hexToRgba('#08101f', 0.96)})`;
     }
-    return `linear-gradient(180deg, ${hexToRgba(primaryColor.value, 0.12)}, rgba(255,255,255,0.95))`;
+    // Light mode: opaque surface preventing wallpaper visibility
+    return `linear-gradient(180deg, #ffffff, #f8fafc)`;
+  });
+
+  const cardBg = computed(() => {
+    if (mode.value === 'dark') {
+      return `rgba(9, 18, 36, ${transparency.value / 100})`; // #091224 with transparency
+    }
+    return 'rgba(255, 255, 255, 0.95)';
+  });
+
+  const cardBorder = computed(() => {
+    if (mode.value === 'dark') {
+      return 'rgba(255, 255, 255, 0.10)';
+    }
+    return 'rgba(0, 0, 0, 0.08)';
   });
 
   const previewScale = computed(() => scale.value / 100);
@@ -99,26 +171,49 @@ export const useVisualConfigStore = defineStore('visualConfig', () => {
   const cssVariables = computed(() => {
     const isDark = mode.value === 'dark';
     return {
-      '--nexora-shell-bg': shellBg.value,
-      '--nexora-text-color': textColor.value,
-      '--nexora-muted-text': mutedText.value,
-      '--nexora-soft-text': softText.value,
+      // Core colors
+      '--nexora-shell-bg': isDark ? '#08101f' : '#f8fafc',
+      '--nexora-text-color': isDark ? '#ffffff' : '#0f172a',
+      '--nexora-muted-text': isDark ? '#94a3b8' : '#64748b',
+      '--nexora-soft-text': isDark ? '#c0c7d1' : '#94a3b8',
+      
+      // Brand colors
       '--nexora-primary-color': primaryColor.value,
       '--nexora-primary-rgb': hexToRgbStr(primaryColor.value),
       '--nexora-accent-color': accentColor.value,
       '--nexora-accent-rgb': hexToRgbStr(accentColor.value),
       '--nexora-custom-color': customColor.value,
       '--nexora-custom-rgb': hexToRgbStr(customColor.value),
+      '--nexora-purple': '#7c3aed',
+      '--nexora-gold': '#d4af37',
+      '--nexora-silver': '#c0c7d1',
+      '--nexora-night-blue': '#08101f',
+      '--nexora-dark-blue': '#0b1326',
+      
+      // Surfaces
       '--nexora-surface': surface.value,
-      '--nexora-border-color': isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.12)',
-      '--nexora-glass-bg': isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
-      '--nexora-glass-bg-strong': isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)',
-      '--nexora-sidebar-bg': isDark ? 'rgba(7,17,32,0.92)' : 'rgba(238,244,251,0.92)',
+      '--nexora-card-bg': cardBg.value,
+      '--nexora-card-border': cardBorder.value,
+      '--nexora-border-color': isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)',
+      '--nexora-border-subtle': isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
+      
+      // Glass effects - dark: transparent, light: opaque
+      '--nexora-glass-bg': isDark ? 'rgba(9, 18, 36, 0.80)' : 'rgba(255, 255, 255, 0.95)',
+      '--nexora-glass-bg-subtle': isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)',
+      '--nexora-glass-blur': isDark ? '16px' : '0px',
+      
+      // Layout
+      '--nexora-sidebar-bg': isDark ? 'rgba(8, 16, 31, 0.95)' : 'rgba(248, 250, 252, 0.95)',
       '--nexora-font-family': currentFont.value.family,
       '--nexora-font-size': `${fontSize.value}px`,
       '--nexora-corner': `${corner.value}px`,
+      '--nexora-corner-lg': `${corner.value + 8}px`,
       '--nexora-transparency': `${transparency.value}%`,
       '--nexora-scale': `${previewScale.value}`,
+      
+      // Button gradient - uses primary color and accent color dynamically
+      '--nexora-btn-gradient': `linear-gradient(135deg, ${primaryColor.value} 0%, ${accentColor.value} 100%)`,
+      '--nexora-btn-gradient-hover': `linear-gradient(135deg, ${primaryColor.value} 0%, ${customColor.value} 100%)`,
     };
   });
 
@@ -164,16 +259,16 @@ export const useVisualConfigStore = defineStore('visualConfig', () => {
   }
 
   function resetToDefaults() {
-    mode.value = 'dark';
-    selectedWallpaper.value = 'aurora';
-    scale.value = 100;
-    fontId.value = 'inter';
-    fontSize.value = 16;
-    primaryColor.value = '#243B7A';
-    accentColor.value = '#D4AF37';
-    customColor.value = '#7C3AED';
-    transparency.value = 72;
-    corner.value = 24;
+    mode.value = DEFAULT_CONFIG.mode;
+    selectedWallpaper.value = DEFAULT_CONFIG.wallpaper;
+    scale.value = DEFAULT_CONFIG.scale;
+    fontId.value = DEFAULT_CONFIG.fontId;
+    fontSize.value = DEFAULT_CONFIG.fontSize;
+    primaryColor.value = DEFAULT_CONFIG.primaryColor;
+    accentColor.value = DEFAULT_CONFIG.accentColor;
+    customColor.value = DEFAULT_CONFIG.customColor;
+    transparency.value = DEFAULT_CONFIG.transparency;
+    corner.value = DEFAULT_CONFIG.corner;
   }
 
   // Load from localStorage on init
@@ -182,16 +277,16 @@ export const useVisualConfigStore = defineStore('visualConfig', () => {
       const stored = localStorage.getItem('nexora_visual_config');
       if (stored) {
         const config = JSON.parse(stored);
-        mode.value = config.mode ?? 'dark';
-        selectedWallpaper.value = config.selectedWallpaper ?? 'aurora';
-        scale.value = config.scale ?? 100;
-        fontId.value = config.fontId ?? 'inter';
-        fontSize.value = config.fontSize ?? 16;
-        primaryColor.value = config.primaryColor ?? '#243B7A';
-        accentColor.value = config.accentColor ?? '#D4AF37';
-        customColor.value = config.customColor ?? '#7C3AED';
-        transparency.value = config.transparency ?? 72;
-        corner.value = config.corner ?? 24;
+        mode.value = config.mode ?? DEFAULT_CONFIG.mode;
+        selectedWallpaper.value = config.selectedWallpaper ?? DEFAULT_CONFIG.wallpaper;
+        scale.value = config.scale ?? DEFAULT_CONFIG.scale;
+        fontId.value = config.fontId ?? DEFAULT_CONFIG.fontId;
+        fontSize.value = config.fontSize ?? DEFAULT_CONFIG.fontSize;
+        primaryColor.value = config.primaryColor ?? DEFAULT_CONFIG.primaryColor;
+        accentColor.value = config.accentColor ?? DEFAULT_CONFIG.accentColor;
+        customColor.value = config.customColor ?? DEFAULT_CONFIG.customColor;
+        transparency.value = config.transparency ?? DEFAULT_CONFIG.transparency;
+        corner.value = config.corner ?? DEFAULT_CONFIG.corner;
       }
     } catch {
       // Ignore storage errors
@@ -241,6 +336,8 @@ export const useVisualConfigStore = defineStore('visualConfig', () => {
     mutedText,
     softText,
     surface,
+    cardBg,
+    cardBorder,
     previewScale,
     cssVariables,
     // Actions

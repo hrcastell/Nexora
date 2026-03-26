@@ -3,36 +3,36 @@ import { ref, computed } from 'vue';
 import { useAuthStore } from '../stores/auth';
 import { useVisualConfigStore, wallpaperBackground } from '../stores/visualConfig';
 import { useRoute, useRouter } from 'vue-router';
+import { 
+  Building2, 
+  LayoutDashboard, 
+  LogOut, 
+  Menu, 
+  Settings, 
+  Palette,
+  ChevronDown,
+  Mail
+} from 'lucide-vue-next';
 
 const authStore = useAuthStore();
 const configStore = useVisualConfigStore();
 const route = useRoute();
 const router = useRouter();
 const isMobileMenuOpen = ref(false);
-const isConfigExpanded = ref(true); // Config menu expanded by default
-
-// Custom Icons as components
-const BuildingIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5"><path d="M4 21V7l8-4 8 4v14"/><path d="M9 21v-4h6v4"/><path d="M8 10h.01"/><path d="M12 10h.01"/><path d="M16 10h.01"/><path d="M8 13h.01"/><path d="M12 13h.01"/><path d="M16 13h.01"/></svg>` };
-const UsersIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>` };
-const LayoutDashboardIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg>` };
-const LogOutIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>` };
-const MenuIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-6 w-6"><path d="M4 6h16"/><path d="M4 12h16"/><path d="M4 18h16"/></svg>` };
-const SettingsIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5"><path d="M12.22 2h-.44a2 2 0 00-2 2v.18a2 2 0 01-1 1.73l-.43.25a2 2 0 01-2 0l-.15-.08a2 2 0 00-2.73.73l-.22.38a2 2 0 00.73 2.73l.15.1a2 2 0 011 1.72v.51a2 2 0 01-1 1.74l-.15.09a2 2 0 00-.73 2.73l.22.38a2 2 0 002.73.73l.15-.08a2 2 0 012 0l.43.25a2 2 0 011 1.73V20a2 2 0 002 2h.44a2 2 0 002-2v-.18a2 2 0 011-1.73l.43-.25a2 2 0 012 0l.15.08a2 2 0 002.73-.73l.22-.39a2 2 0 00-.73-2.73l-.15-.1a2 2 0 01-1-1.72v-.51a2 2 0 011-1.74l.15-.09a2 2 0 00.73-2.73l-.22-.38a2 2 0 00-2.73-.73l-.15.08a2 2 0 01-2 0l-.43-.25a2 2 0 01-1-1.73V4a2 2 0 00-2-2z"/><circle cx="12" cy="12" r="3"/></svg>` };
-const PaletteIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5"><path d="M12 22a10 10 0 100-20 10 10 0 000 20z"/><path d="M7.5 11.5a1 1 0 100-2 1 1 0 000 2z"/><path d="M12 8.5a1 1 0 100-2 1 1 0 000 2z"/><path d="M16.5 11.5a1 1 0 100-2 1 1 0 000 2z"/><path d="M14.5 16a1 1 0 11-2 0c0-1.3 1-2 2.2-2H16a2 2 0 100-4"/></svg>` };
-const ChevronDownIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-4 w-4"><path d="M6 9l6 6 6-6"/></svg>` };
+const isConfigExpanded = ref(true);
 
 // Main navigation items
 const mainNav = computed(() => [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboardIcon },
+  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
 ]);
 
 // Config submenu items (only for super_admin)
 const configNav = computed(() => {
   if (!authStore.user?.is_super_admin) return [];
   return [
-    { name: 'Empresas', href: '/admin/companies', icon: BuildingIcon },
-    { name: 'Solicitudes', href: '/admin/requests', icon: UsersIcon },
-    { name: 'Personalización visual', href: '/admin/config', icon: PaletteIcon },
+    { name: 'Empresas', href: '/admin/companies', icon: Building2 },
+    { name: 'Solicitudes', href: '/admin/requests', icon: Mail },
+    { name: 'Personalización visual', href: '/admin/config', icon: Palette },
   ];
 });
 
@@ -145,10 +145,10 @@ const logout = () => {
               ]"
             >
               <div :class="['flex h-10 w-10 items-center justify-center rounded-2xl', isConfigActive ? 'nxr-nav-icon-active' : 'bg-white/5 text-slate-400']">
-                <SettingsIcon />
+                <Settings class="h-5 w-5" />
               </div>
               <span class="text-sm font-medium flex-1">Configuración</span>
-              <ChevronDownIcon :class="['transition-transform', isConfigExpanded ? 'rotate-180' : '']" />
+              <ChevronDown :class="['h-4 w-4 transition-transform', isConfigExpanded ? 'rotate-180' : '']" />
             </button>
 
             <!-- Config submenu -->
@@ -176,36 +176,16 @@ const logout = () => {
       </nav>
 
       <!-- User Context -->
-      <div class="mt-auto pt-6">
-        <div class="rounded-[28px] border nxr-glass p-5">
-          <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Contexto activo</p>
-          <div class="mt-4 space-y-4">
-            <div>
-              <p class="text-xs text-slate-400">Usuario</p>
-              <p class="mt-1 text-sm font-medium text-white truncate">{{ authStore.user?.email || 'No autenticado' }}</p>
-            </div>
-            <div>
-              <p class="text-xs text-slate-400">Perfil</p>
-              <p class="mt-1 text-sm font-medium text-white">{{ authStore.user?.is_super_admin ? 'super_admin' : 'user' }}</p>
-            </div>
-            <div v-if="authStore.currentCompany">
-              <p class="text-xs text-slate-400">Empresa</p>
-              <p class="mt-1 text-sm font-medium text-white truncate">{{ authStore.currentCompany.name }}</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Logout -->
-        <div class="mt-4">
+      <!-- Logout -->
+        <div class="mt-auto pt-6">
           <button 
             @click="logout"
             class="flex w-full items-center justify-center gap-2 rounded-2xl border nxr-glass px-4 py-3 text-sm font-medium text-slate-200 transition hover:text-white"
           >
-            <LogOutIcon />
+            <LogOut class="h-5 w-5" />
             Cerrar sesión
           </button>
         </div>
-      </div>
     </aside>
 
     <!-- Main Content -->
@@ -217,7 +197,7 @@ const logout = () => {
             @click="toggleMobileMenu"
             class="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-slate-300"
           >
-            <MenuIcon />
+            <Menu class="h-6 w-6" />
           </button>
           <div class="flex items-center gap-2">
             <img src="../assets/logo_icon3.png" alt="Nexora" class="h-8 w-8 rounded-xl object-contain" />

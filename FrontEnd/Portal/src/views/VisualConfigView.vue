@@ -42,6 +42,22 @@ onMounted(() => {
 
 const textColor = computed(() => draft.value.mode === 'dark' ? '#ffffff' : '#0f172a');
 
+// Helper to determine if a color is light (for contrast)
+const isColorLight = (hexColor: string): boolean => {
+  const hex = hexColor.replace('#', '');
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
+  const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+  return brightness > 128;
+};
+
+// Helper to convert hex to rgb string for style bindings
+const hexToRgbString = (hex: string): string => {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '255, 255, 255';
+};
+
 // Helper to show toast
 const triggerToast = (title: string, message: string, type: ToastType) => {
   activeToast.value = {
@@ -71,14 +87,15 @@ const saveConfiguration = () => {
 };
 
 const resetConfiguration = () => {
+  configStore.resetToDefaults();
   initDraft();
-  triggerToast('Cambios Revertidos', 'Se ha restablecido la configuración a los valores actuales.', 'info');
+  triggerToast('Valores Restablecidos', 'Se han aplicado los valores por defecto de Nexora.', 'info');
 };
 
 // Helper to check if item is active (for styling)
 const isActive = (condition: boolean) => condition;
 
-// Icons
+// Icons - Dynamic colors based on mode
 const MonitorIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8"/><path d="M12 16v4"/></svg>` };
 const TypeIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>` };
 const PaletteIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5"><path d="M12 22a10 10 0 100-20 10 10 0 000 20z"/><path d="M7.5 11.5a1 1 0 100-2 1 1 0 000 2z"/><path d="M12 8.5a1 1 0 100-2 1 1 0 000 2z"/><path d="M16.5 11.5a1 1 0 100-2 1 1 0 000 2z"/><path d="M14.5 16a1 1 0 11-2 0c0-1.3 1-2 2.2-2H16a2 2 0 100-4"/></svg>` };
@@ -118,7 +135,11 @@ const MoonIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="curre
       <div class="mb-4 rounded-2xl border nxr-surface p-4 md:p-5">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div class="flex items-center gap-3">
-            <div class="flex h-10 w-10 items-center justify-center rounded-2xl nxr-nav-icon-active">
+            <div class="flex h-10 w-10 items-center justify-center rounded-2xl"
+              :style="{ 
+                color: draft.mode === 'light' ? '#000000' : draft.primaryColor,
+                backgroundColor: draft.mode === 'light' ? '#e2e8f0' : 'rgba(255,255,255,0.05)'
+              }">
               <SparklesIcon />
             </div>
             <div>
@@ -128,7 +149,7 @@ const MoonIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="curre
           </div>
           
           <!-- Action Buttons - Same style as sidebar -->
-          <div class="flex gap-2">
+          <div class="hidden lg:flex gap-2">
             <button 
               @click="saveConfiguration"
               class="flex items-center gap-2 rounded-2xl border border-transparent nxr-btn-primary px-4 py-2.5 text-sm font-medium text-white transition"
@@ -153,7 +174,11 @@ const MoonIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="curre
         <!-- Tema y Fondo -->
         <div class="rounded-2xl border nxr-surface p-4 md:p-5">
           <div class="mb-4 flex items-center gap-3">
-            <div class="flex h-10 w-10 items-center justify-center rounded-2xl nxr-nav-icon-active">
+            <div class="flex h-10 w-10 items-center justify-center rounded-2xl"
+              :style="{ 
+                color: draft.mode === 'light' ? '#000000' : draft.primaryColor,
+                backgroundColor: draft.mode === 'light' ? '#e2e8f0' : 'rgba(255,255,255,0.05)'
+              }">
               <MonitorIcon />
             </div>
             <div>
@@ -167,11 +192,36 @@ const MoonIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="curre
             <button
               @click="draft.mode = 'dark'"
               class="flex items-center gap-3 rounded-2xl border px-4 py-3 text-left transition"
-              :class="isActive(draft.mode === 'dark') ? 'nxr-nav-active' : 'border-transparent bg-white/5 text-slate-300 hover:border-white/10 hover:bg-white/10'"
+              :class="!isActive(draft.mode === 'dark') ? 'border-transparent bg-white/5 text-slate-300 hover:border-white/10 hover:bg-white/10' : ''"
+              :style="isActive(draft.mode === 'dark') ? {
+                borderColor: `rgba(${hexToRgbString(draft.primaryColor)}, 0.25)`,
+                backgroundColor: `rgba(${hexToRgbString(draft.primaryColor)}, 0.1)`,
+                color: 'white'
+              } : {}"
             >
-              <div class="flex h-10 w-10 items-center justify-center rounded-2xl" :class="isActive(draft.mode === 'dark') ? 'nxr-nav-icon-active' : 'bg-white/5 text-slate-400'">
+              <!-- <div class="flex h-10 w-10 items-center justify-center rounded-2xl"
+                :style="{ 
+                  color: draft.mode === 'light' ? '#000000' : (isActive(draft.mode === 'dark') ? draft.primaryColor : '#94a3b8'),
+                  backgroundColor: draft.mode === 'light' ? '#e2e8f0' : 'rgba(255,255,255,0.05)'
+                }">
                 <MoonIcon />
-              </div>
+              </div> -->
+
+              <div
+                class="flex h-10 w-10 items-center justify-center rounded-2xl"
+                :style="{ 
+                  backgroundColor: draft.mode === 'light' ? '#e2e8f0' : 'rgba(255,255,255,0.05)'
+                }"
+              >
+                <MoonIcon
+                  class="h-5 w-5"
+                  :style="{ 
+                    color: draft.mode === 'light'
+                      ? '#000000'
+                      : (isActive(draft.mode === 'dark') ? draft.primaryColor : '#94a3b8')
+                  }"
+                />
+              </div>              
               <div>
                 <div class="text-sm font-medium">Oscuro</div>
                 <div class="text-xs text-slate-400">Alto contraste</div>
@@ -180,11 +230,31 @@ const MoonIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="curre
             <button
               @click="draft.mode = 'light'"
               class="flex items-center gap-3 rounded-2xl border px-4 py-3 text-left transition"
-              :class="isActive(draft.mode === 'light') ? 'nxr-nav-active' : 'border-transparent bg-white/5 text-slate-300 hover:border-white/10 hover:bg-white/10'"
+              :class="!isActive(draft.mode === 'light') ? 'border-transparent bg-white/5 text-slate-300 hover:border-white/10 hover:bg-white/10' : ''"
+              :style="isActive(draft.mode === 'light') ? {
+                borderColor: `rgba(${hexToRgbString(draft.primaryColor)}, 0.25)`,
+                backgroundColor: `rgba(${hexToRgbString(draft.primaryColor)}, 0.1)`,
+                color: '#0f172a'
+              } : {}"
             >
-              <div class="flex h-10 w-10 items-center justify-center rounded-2xl" :class="isActive(draft.mode === 'light') ? 'nxr-nav-icon-active' : 'bg-white/5 text-slate-400'">
+              <!-- <div class="flex h-10 w-10 items-center justify-center rounded-2xl"
+                :style="{ 
+                  color: draft.mode === 'light' ? '#000000' : '#94a3b8',
+                  backgroundColor: draft.mode === 'light' ? '#e2e8f0' : 'rgba(255,255,255,0.05)'
+                }">
                 <SunIcon />
-              </div>
+              </div> -->
+                <div
+                  class="flex h-10 w-10 items-center justify-center rounded-2xl"
+                  :style="{ 
+                    backgroundColor: draft.mode === 'light' ? '#e2e8f0' : 'rgba(255,255,255,0.05)'
+                  }"
+                >
+                  <SunIcon
+                    class="h-5 w-5"
+                    :style="{ color: draft.mode === 'light' ? '#000000' : '#94a3b8' }"
+                  />
+                </div>              
               <div>
                 <div class="text-sm font-medium">Claro</div>
                 <div class="text-xs text-slate-400">Entorno suave</div>
@@ -205,7 +275,7 @@ const MoonIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="curre
               <div v-if="draft.selectedWallpaper === wallpaper.id" class="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-white text-[#0f172a]">
                 <CheckIcon />
               </div>
-              <div class="absolute bottom-1 left-1 rounded-lg px-2 py-0.5 text-xs font-medium text-white" :style="{ background: wallpaper.labelTone === 'dark' ? 'rgba(0,0,0,0.5)' : 'rgba(71,85,105,0.7)' }">
+              <div class="absolute bottom-1 left-1 rounded-lg px-2 py-0.5 text-xs font-medium text-white bg-black/60" style="color: white !important;">
                 {{ wallpaper.name }}
               </div>
             </button>
@@ -215,7 +285,11 @@ const MoonIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="curre
         <!-- Escala -->
         <div class="rounded-2xl border nxr-surface p-4 md:p-5">
           <div class="mb-4 flex items-center gap-3">
-            <div class="flex h-10 w-10 items-center justify-center rounded-2xl nxr-nav-icon-active">
+            <div class="flex h-10 w-10 items-center justify-center rounded-2xl"
+              :style="{ 
+                color: draft.mode === 'light' ? '#000000' : draft.primaryColor,
+                backgroundColor: draft.mode === 'light' ? '#e2e8f0' : 'rgba(255,255,255,0.05)'
+              }">
               <LayersIcon />
             </div>
             <div>
@@ -237,7 +311,8 @@ const MoonIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="curre
                 max="120"
                 step="5"
                 v-model.number="draft.scale"
-                class="w-full accent-[#d4af37]"
+                class="w-full"
+                :style="{ accentColor: draft.primaryColor }"
               />
               <div class="mt-2 flex justify-between text-xs text-slate-500">
                 <span>Compacto</span>
@@ -258,7 +333,8 @@ const MoonIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="curre
                 max="32"
                 step="2"
                 v-model.number="draft.corner"
-                class="w-full accent-[#d4af37]"
+                class="w-full"
+                :style="{ accentColor: draft.primaryColor }"
               />
             </div>
           </div>
@@ -267,7 +343,11 @@ const MoonIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="curre
         <!-- Tipografía -->
         <div class="rounded-2xl border nxr-surface p-4 md:p-5">
           <div class="mb-4 flex items-center gap-3">
-            <div class="flex h-10 w-10 items-center justify-center rounded-2xl nxr-nav-icon-active">
+            <div class="flex h-10 w-10 items-center justify-center rounded-2xl"
+              :style="{ 
+                color: draft.mode === 'light' ? '#000000' : draft.primaryColor,
+                backgroundColor: draft.mode === 'light' ? '#e2e8f0' : 'rgba(255,255,255,0.05)'
+              }">
               <TypeIcon />
             </div>
             <div>
@@ -283,9 +363,18 @@ const MoonIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="curre
               :key="font.id"
               @click="draft.fontId = font.id"
               class="flex w-full items-center gap-3 rounded-2xl border px-4 py-3 text-left transition"
-              :class="isActive(draft.fontId === font.id) ? 'nxr-nav-active' : 'border-transparent bg-white/5 text-slate-300 hover:border-white/10 hover:bg-white/10'"
+              :class="!isActive(draft.fontId === font.id) ? 'border-transparent bg-white/5 text-slate-300 hover:border-white/10 hover:bg-white/10' : ''"
+              :style="isActive(draft.fontId === font.id) ? {
+                borderColor: `rgba(${hexToRgbString(draft.primaryColor)}, 0.25)`,
+                backgroundColor: `rgba(${hexToRgbString(draft.primaryColor)}, 0.1)`,
+                color: 'white'
+              } : {}"
             >
-              <div class="flex h-10 w-10 items-center justify-center rounded-2xl" :class="isActive(draft.fontId === font.id) ? 'nxr-nav-icon-active' : 'bg-white/5 text-slate-400'">
+              <div class="flex h-10 w-10 items-center justify-center rounded-2xl"
+                :style="{ 
+                  color: draft.mode === 'light' ? '#000000' : (isActive(draft.fontId === font.id) ? draft.primaryColor : '#94a3b8'),
+                  backgroundColor: draft.mode === 'light' ? '#e2e8f0' : 'rgba(255,255,255,0.05)'
+                }">
                 <span class="text-lg" :style="{ fontFamily: font.family }">Aa</span>
               </div>
               <div>
@@ -306,7 +395,8 @@ const MoonIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="curre
                 max="20"
                 step="1"
                 v-model.number="draft.fontSize"
-                class="w-full accent-[#d4af37]"
+                class="w-full"
+                :style="{ accentColor: draft.primaryColor }"
               />
             </div>
           </div>
@@ -315,7 +405,11 @@ const MoonIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="curre
         <!-- Colores -->
         <div class="rounded-2xl border nxr-surface p-4 md:p-5">
           <div class="mb-4 flex items-center gap-3">
-            <div class="flex h-10 w-10 items-center justify-center rounded-2xl nxr-nav-icon-active">
+            <div class="flex h-10 w-10 items-center justify-center rounded-2xl"
+              :style="{ 
+                color: draft.mode === 'light' ? '#000000' : draft.primaryColor,
+                backgroundColor: draft.mode === 'light' ? '#e2e8f0' : 'rgba(255,255,255,0.05)'
+              }">
               <PaletteIcon />
             </div>
             <div>
@@ -333,10 +427,15 @@ const MoonIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="curre
                   v-for="color in PRESET_COLORS"
                   :key="color"
                   @click="draft.primaryColor = color"
-                  class="h-10 rounded-xl border-2 transition"
-                  :class="draft.primaryColor === color ? 'border-white shadow-lg' : 'border-transparent hover:scale-105'"
+                  class="h-10 rounded-xl border-2 transition relative flex items-center justify-center"
+                  :class="draft.primaryColor === color ? 'border-white shadow-lg scale-105' : 'border-transparent hover:scale-105'"
                   :style="{ background: color }"
-                />
+                >
+                  <svg v-if="draft.primaryColor === color" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" class="h-5 w-5 drop-shadow-md"
+                    :class="isColorLight(color) ? 'text-black' : 'text-white'">
+                    <path d="M20 6L9 17l-5-5"/>
+                  </svg>
+                </button>
               </div>
             </div>
 
@@ -394,7 +493,11 @@ const MoonIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="curre
         <!-- Transparencia - Full width on mobile, spans 2 cols on large -->
         <div class="rounded-2xl border nxr-surface p-4 md:p-5 lg:col-span-2">
           <div class="mb-4 flex items-center gap-3">
-            <div class="flex h-10 w-10 items-center justify-center rounded-2xl nxr-nav-icon-active">
+            <div class="flex h-10 w-10 items-center justify-center rounded-2xl"
+              :style="{ 
+                color: draft.mode === 'light' ? '#000000' : draft.primaryColor,
+                backgroundColor: draft.mode === 'light' ? '#e2e8f0' : 'rgba(255,255,255,0.05)'
+              }">
               <LayersIcon />
             </div>
             <div>
@@ -415,7 +518,8 @@ const MoonIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="curre
                 max="95"
                 step="1"
                 v-model.number="draft.transparency"
-                class="w-full accent-[#d4af37]"
+                class="w-full"
+                :style="{ accentColor: draft.primaryColor }"
               />
               <div class="mt-3 text-xs text-slate-400">
                 Ajusta la opacidad de los paneles y cards. Valores más bajos = mayor transparencia.
@@ -442,6 +546,24 @@ const MoonIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="curre
           </div>
         </div>
       </div>
+      <!-- Mobile Actions (Bottom) -->
+      <div class="mt-6 flex flex-col gap-3 lg:hidden">
+        <button 
+          @click="saveConfiguration"
+          class="flex w-full items-center justify-center gap-2 rounded-2xl border border-transparent nxr-btn-primary px-6 py-4 text-base font-medium text-white transition shadow-lg"
+        >
+          <SaveIcon class="h-6 w-6" />
+          <span>Guardar preferencias</span>
+        </button>
+        <button 
+          @click="resetConfiguration"
+          class="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-6 py-4 text-base font-medium text-slate-300 transition hover:border-white/20 hover:bg-white/10"
+        >
+          <RotateCcwIcon class="h-6 w-6" />
+          <span>Restablecer valores</span>
+        </button>
+      </div>
+
     </div>
   </div>
 </template>
