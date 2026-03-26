@@ -1,3 +1,134 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ============================================================
+   NEXORA GLOBAL THEME SYSTEM
+   Uses CSS custom properties injected by App.vue via visualConfig store
+   ============================================================ */
+
+/* --- Semantic surface/panel classes --- */
+.nxr-surface {
+  background: var(--nexora-surface) !important;
+  border-color: var(--nexora-border-color) !important;
+}
+
+.nxr-glass {
+  background: var(--nexora-glass-bg) !important;
+  border-color: var(--nexora-border-color) !important;
+}
+
+.nxr-glass-strong {
+  background: var(--nexora-glass-bg-strong) !important;
+  border-color: var(--nexora-border-color) !important;
+}
+
+/* --- Navigation active state (uses accent color dynamically) --- */
+.nxr-nav-active {
+  border-color: rgba(var(--nexora-accent-rgb), 0.25) !important;
+  background: rgba(var(--nexora-accent-rgb), 0.1) !important;
+  color: white !important;
+}
+
+.nxr-nav-icon-active {
+  background: rgba(var(--nexora-accent-rgb), 0.15) !important;
+  color: rgba(var(--nexora-accent-rgb), 1) !important;
+}
+
+/* --- Accent badge/pill (header eyebrow) --- */
+.nxr-badge-accent {
+  border-color: rgba(var(--nexora-accent-rgb), 0.30) !important;
+  background: rgba(var(--nexora-accent-rgb), 0.12) !important;
+  color: var(--nexora-accent-color) !important;
+}
+
+/* --- Button primary --- */
+.nxr-btn-primary {
+  background: var(--nexora-primary-color) !important;
+}
+.nxr-btn-primary:hover {
+  filter: brightness(0.88);
+}
+
+/* --- Text using config colors --- */
+.nxr-text { color: var(--nexora-text-color) !important; }
+.nxr-text-muted { color: var(--nexora-muted-text) !important; }
+.nxr-text-soft { color: var(--nexora-soft-text) !important; }
+.nxr-text-accent { color: var(--nexora-accent-color) !important; }
+
+/* ============================================================
+   LIGHT MODE OVERRIDES
+   Triggered when body has data-nexora-mode="light"
+   ============================================================ */
+
+[data-nexora-mode="light"] {
+  color-scheme: light;
+}
+
+/* Text color fixes for light mode */
+[data-nexora-mode="light"] .text-white {
+  color: #0f172a !important;
+}
+[data-nexora-mode="light"] .text-slate-100,
+[data-nexora-mode="light"] .text-slate-200,
+[data-nexora-mode="light"] .text-slate-300 {
+  color: #334155 !important;
+}
+[data-nexora-mode="light"] .text-slate-400 {
+  color: #64748b !important;
+}
+[data-nexora-mode="light"] .text-slate-500 {
+  color: #94a3b8 !important;
+}
+
+/* Border color fixes for light mode */
+[data-nexora-mode="light"] .border-white\/10 {
+  border-color: rgba(0, 0, 0, 0.12) !important;
+}
+[data-nexora-mode="light"] .border-white\/20 {
+  border-color: rgba(0, 0, 0, 0.18) !important;
+}
+
+/* Background fixes for light mode */
+[data-nexora-mode="light"] .bg-white\/5 {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+[data-nexora-mode="light"] .bg-white\/6 {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+[data-nexora-mode="light"] .bg-white\/10 {
+  background-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Orb glows — reduce opacity in light mode */
+[data-nexora-mode="light"] .orb-one,
+[data-nexora-mode="light"] .orb-two {
+  opacity: 0.3;
+}
+
+/* Table dividers in light mode */
+[data-nexora-mode="light"] .divide-white\/10 > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgba(0, 0, 0, 0.10);
+}
+
+/* Backdrop panels in light mode */
+[data-nexora-mode="light"] .backdrop-blur-xl,
+[data-nexora-mode="light"] .backdrop-blur-sm {
+  backdrop-filter: blur(12px);
+}
+
+/* Sidebar: solid on mobile, transparent on desktop (shows wallpaper through) */
+.nxr-sidebar {
+  background-color: var(--nexora-sidebar-bg);
+}
+@media (min-width: 768px) {
+  .nxr-sidebar {
+    background-color: transparent !important;
+  }
+}
+
+/* Hover state for nav items using accent color */
+.nxr-nav-hover:hover {
+  border-color: rgba(var(--nexora-accent-rgb), 0.12) !important;
+  background: rgba(var(--nexora-accent-rgb), 0.05) !important;
+}

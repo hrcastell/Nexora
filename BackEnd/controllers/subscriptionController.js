@@ -118,10 +118,10 @@ exports.registerPayment = async (req, res) => {
              SET last_payment_date = $1,
                  next_payment_date = $2,
                  status = 'active',
-                 notes = $3 || ' | Payment registered: ' || $1
+                 notes = COALESCE($3, '') || ' | Payment registered: ' || $1::text
              WHERE id = $4
              RETURNING *`,
-            [payment_date || new Date(), next_due_date, notes || '', id]
+            [payment_date || new Date(), next_due_date, notes, id]
         );
 
          if (result.rows.length === 0) {

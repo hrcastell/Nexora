@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import api from '../../utils/axios';
-import { ArrowLeft, CreditCard, Loader2 } from 'lucide-vue-next';
+import { ArrowLeft, CreditCard, Loader2, FileText, DollarSign } from 'lucide-vue-next';
 
 const route = useRoute();
 const router = useRouter();
@@ -64,7 +64,6 @@ const fetchData = async () => {
     company.value = companyRes.data;
     subscriptions.value = subsRes.data;
 
-    // Set default amount from last subscription or plan default if possible
     if (subscriptions.value.length > 0) {
       paymentForm.value.amount = Number(subscriptions.value[0].amount);
     }
@@ -87,7 +86,7 @@ const handleRegisterPayment = async () => {
     return;
   }
   
-  const subId = subscriptions.value[0].id; // Assuming single active subscription logic for now or picking the first one
+  const subId = subscriptions.value[0].id;
   
   isSubmittingPayment.value = true;
   try {
@@ -99,7 +98,7 @@ const handleRegisterPayment = async () => {
     });
     
     showPaymentModal.value = false;
-    await fetchData(); // Refresh data
+    await fetchData();
     alert('Pago registrado correctamente');
   } catch (error) {
     console.error('Error registering payment:', error);
@@ -111,211 +110,212 @@ const handleRegisterPayment = async () => {
 
 const getStatusColor = (status: string) => {
   switch (status) {
-    case 'active': return 'bg-green-100 text-green-800';
-    case 'past_due': return 'bg-red-100 text-red-800';
-    case 'canceled': return 'bg-gray-100 text-gray-800';
-    default: return 'bg-yellow-100 text-yellow-800';
+    case 'active': return 'bg-emerald-500/10 text-emerald-200 border-emerald-500/20';
+    case 'past_due': return 'bg-rose-500/10 text-rose-200 border-rose-500/20';
+    case 'canceled': return 'bg-slate-500/10 text-slate-300 border-slate-500/20';
+    default: return 'bg-[#D4AF37]/10 text-[#f5df9f] border-[#D4AF37]/20';
   }
 };
+
+// Icons
+const BuildingIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5"><path d="M4 21V7l8-4 8 4v14"/><path d="M9 21v-4h6v4"/><path d="M8 10h.01"/><path d="M12 10h.01"/><path d="M16 10h.01"/><path d="M8 13h.01"/><path d="M12 13h.01"/><path d="M16 13h.01"/></svg>` };
+const ReceiptIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5"><path d="M9 14l2 2 4-4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5z"/></svg>` };
 </script>
 
 <template>
   <div v-if="isLoading" class="flex justify-center py-12">
-    <Loader2 class="h-8 w-8 animate-spin text-blue-600" />
+    <Loader2 class="h-8 w-8 animate-spin text-[#D4AF37]" />
   </div>
 
-  <div v-else-if="company">
-    <!-- Header -->
-    <div class="md:flex md:items-center md:justify-between">
-      <div class="flex-1 min-w-0">
-        <div class="flex items-center">
-          <button @click="router.back()" class="mr-4 p-2 rounded-full hover:bg-gray-100">
-            <ArrowLeft class="h-5 w-5 text-gray-500" />
+  <div v-else-if="company" class="space-y-4">
+    <!-- Header Card - Sidebar menu style -->
+    <div class="rounded-2xl border nxr-surface p-4 md:p-5">
+      <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div class="flex items-center gap-3">
+          <button @click="router.back()" class="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/5 text-slate-400 hover:text-white hover:bg-white/10 transition-colors">
+            <ArrowLeft class="h-5 w-5" />
           </button>
-          <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
-            {{ company.name }}
-          </h2>
+          <div class="flex h-10 w-10 items-center justify-center rounded-2xl nxr-nav-icon-active">
+            <BuildingIcon />
+          </div>
+          <div>
+            <h1 class="text-lg font-semibold text-white">{{ company.name }}</h1>
+            <p class="text-sm text-slate-400">{{ company.schema_name }}</p>
+          </div>
           <span 
-            class="ml-4 px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
-            :class="company.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+            class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium border"
+            :class="company.is_active ? 'bg-emerald-500/10 text-emerald-200 border-emerald-500/20' : 'bg-rose-500/10 text-rose-200 border-rose-500/20'"
           >
             {{ company.is_active ? 'Activa' : 'Inactiva' }}
           </span>
         </div>
-      </div>
-      <div class="mt-4 flex md:mt-0 md:ml-4">
+        
         <button
           type="button"
-          class="ml-3 inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
+          class="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-slate-300 transition hover:border-white/20 hover:bg-white/10"
         >
           Editar Datos
         </button>
       </div>
     </div>
 
-    <!-- Tabs -->
-    <div class="mt-6 border-b border-gray-200">
-      <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+    <!-- Tabs - Menu style -->
+    <div class="rounded-2xl border border-white/10 bg-white/5 p-2">
+      <div class="flex gap-2">
         <button
           @click="activeTab = 'details'"
-          :class="[activeTab === 'details' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300', 'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm']"
+          class="flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium transition"
+          :class="activeTab === 'details' ? 'nxr-nav-active' : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/5'"
         >
+          <FileText class="h-4 w-4" />
           Detalles
         </button>
         <button
           @click="activeTab = 'payments'"
-          :class="[activeTab === 'payments' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300', 'whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm']"
+          class="flex items-center gap-2 rounded-xl border px-4 py-2.5 text-sm font-medium transition"
+          :class="activeTab === 'payments' ? 'nxr-nav-active' : 'border-transparent text-slate-400 hover:text-slate-200 hover:bg-white/5'"
         >
+          <DollarSign class="h-4 w-4" />
           Pagos y Suscripción
         </button>
-      </nav>
+      </div>
     </div>
 
     <!-- Details Tab -->
-    <div v-if="activeTab === 'details'" class="mt-6">
-      <div class="bg-white shadow overflow-hidden sm:rounded-lg">
-        <div class="px-4 py-5 sm:px-6">
-          <h3 class="text-lg leading-6 font-medium text-gray-900">Información de la Empresa</h3>
-          <p class="mt-1 max-w-2xl text-sm text-gray-500">Datos generales y configuración de tenant.</p>
+    <div v-if="activeTab === 'details'" class="rounded-2xl border border-white/10 bg-white/5 overflow-hidden">
+      <div class="border-b border-white/10 bg-white/[0.03] p-4">
+        <h3 class="text-sm font-medium text-white">Información de la Empresa</h3>
+        <p class="text-xs text-slate-400 mt-1">Datos generales y configuración de tenant</p>
+      </div>
+      <div class="divide-y divide-white/10">
+        <div class="flex items-center justify-between p-4">
+          <span class="text-sm text-slate-400">Schema Name (DB)</span>
+          <span class="text-sm font-medium text-white">{{ company.schema_name }}</span>
         </div>
-        <div class="border-t border-gray-200 px-4 py-5 sm:p-0">
-          <dl class="sm:divide-y sm:divide-gray-200">
-            <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt class="text-sm font-medium text-gray-500">Schema Name (DB)</dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ company.schema_name }}</dd>
-            </div>
-            <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt class="text-sm font-medium text-gray-500">País</dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ company.country }}</dd>
-            </div>
-            <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt class="text-sm font-medium text-gray-500">RUT</dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ company.rut }}</dd>
-            </div>
-            <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt class="text-sm font-medium text-gray-500">Email de Contacto</dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ company.contact_email }}</dd>
-            </div>
-            <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt class="text-sm font-medium text-gray-500">Teléfono</dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ company.contact_phone || '-' }}</dd>
-            </div>
-            <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt class="text-sm font-medium text-gray-500">Plan Actual</dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 uppercase">{{ company.plan_type }}</dd>
-            </div>
-            <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-              <dt class="text-sm font-medium text-gray-500">Dirección</dt>
-              <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ company.address || '-' }}</dd>
-            </div>
-          </dl>
+        <div class="flex items-center justify-between p-4">
+          <span class="text-sm text-slate-400">País</span>
+          <span class="text-sm font-medium text-white">{{ company.country }}</span>
+        </div>
+        <div class="flex items-center justify-between p-4">
+          <span class="text-sm text-slate-400">RUT</span>
+          <span class="text-sm font-medium text-white">{{ company.rut }}</span>
+        </div>
+        <div class="flex items-center justify-between p-4">
+          <span class="text-sm text-slate-400">Email de Contacto</span>
+          <span class="text-sm font-medium text-white">{{ company.contact_email }}</span>
+        </div>
+        <div class="flex items-center justify-between p-4">
+          <span class="text-sm text-slate-400">Teléfono</span>
+          <span class="text-sm font-medium text-white">{{ company.contact_phone || '-' }}</span>
+        </div>
+        <div class="flex items-center justify-between p-4">
+          <span class="text-sm text-slate-400">Plan Actual</span>
+          <span class="text-sm font-medium text-white uppercase tracking-wider">{{ company.plan_type }}</span>
+        </div>
+        <div class="flex items-center justify-between p-4">
+          <span class="text-sm text-slate-400">Dirección</span>
+          <span class="text-sm font-medium text-white">{{ company.address || '-' }}</span>
         </div>
       </div>
     </div>
 
     <!-- Payments Tab -->
-    <div v-if="activeTab === 'payments'" class="mt-6">
-      <div class="mb-4 flex justify-end">
+    <div v-if="activeTab === 'payments'" class="space-y-4">
+      <!-- Action Button -->
+      <div class="flex justify-end">
         <button
           @click="showPaymentModal = true"
-          class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none"
+          class="flex items-center gap-2 rounded-2xl border border-transparent nxr-btn-primary px-4 py-2.5 text-sm font-medium text-white transition"
         >
-          <CreditCard class="mr-2 h-4 w-4" />
+          <CreditCard class="h-4 w-4" />
           Registrar Pago
         </button>
       </div>
 
-      <div class="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
-        <div class="px-4 py-5 sm:px-6">
-          <h3 class="text-lg leading-6 font-medium text-gray-900">Estado de Suscripción</h3>
+      <!-- Subscription Table -->
+      <div class="rounded-2xl border border-white/10 bg-white/5 overflow-hidden">
+        <div class="border-b border-white/10 bg-white/[0.03] p-4">
+          <h3 class="text-sm font-medium text-white">Estado de Suscripción</h3>
         </div>
-        <div v-if="subscriptions.length === 0" class="p-6 text-center text-gray-500">
+        <div v-if="subscriptions.length === 0" class="p-6 text-center text-slate-400 text-sm">
           No hay información de suscripción configurada.
         </div>
-        <div v-else class="border-t border-gray-200">
-           <table class="min-w-full divide-y divide-gray-200">
-             <thead class="bg-gray-50">
-               <tr>
-                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
-                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Monto</th>
-                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Frecuencia</th>
-                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Próximo Pago</th>
-                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Notas</th>
-               </tr>
-             </thead>
-             <tbody class="bg-white divide-y divide-gray-200">
-               <tr v-for="sub in subscriptions" :key="sub.id">
-                 <td class="px-6 py-4 whitespace-nowrap">
-                   <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full" :class="getStatusColor(sub.status)">
-                     {{ sub.status }}
-                   </span>
-                 </td>
-                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                   ${{ sub.amount }}
-                 </td>
-                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                   {{ sub.payment_frequency }}
-                 </td>
-                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                   {{ formatDate(sub.next_payment_date) }}
-                 </td>
-                 <td class="px-6 py-4 text-sm text-gray-500 truncate max-w-xs">
-                   {{ sub.notes }}
-                 </td>
-               </tr>
-             </tbody>
-           </table>
-        </div>
+        <table v-else class="min-w-full">
+          <thead class="border-b border-white/10 bg-white/[0.03]">
+            <tr>
+              <th class="py-3 pl-4 pr-3 text-left text-xs font-medium text-slate-400 uppercase">Estado</th>
+              <th class="px-3 py-3 text-left text-xs font-medium text-slate-400 uppercase">Monto</th>
+              <th class="px-3 py-3 text-left text-xs font-medium text-slate-400 uppercase">Frecuencia</th>
+              <th class="px-3 py-3 text-left text-xs font-medium text-slate-400 uppercase">Próximo Pago</th>
+              <th class="py-3 pl-3 pr-4 text-left text-xs font-medium text-slate-400 uppercase">Notas</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-white/10">
+            <tr v-for="sub in subscriptions" :key="sub.id" class="hover:bg-white/[0.03] transition-colors">
+              <td class="py-3 pl-4 pr-3">
+                <span class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium border" :class="getStatusColor(sub.status)">
+                  {{ sub.status }}
+                </span>
+              </td>
+              <td class="px-3 py-3 text-sm text-white">${{ sub.amount }}</td>
+              <td class="px-3 py-3 text-sm text-slate-400">{{ sub.payment_frequency }}</td>
+              <td class="px-3 py-3 text-sm text-slate-400">{{ formatDate(sub.next_payment_date) }}</td>
+              <td class="py-3 pl-3 pr-4 text-sm text-slate-400 truncate max-w-xs">{{ sub.notes }}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
 
-  <div v-else class="text-center py-12">
-    <p class="text-gray-500">Empresa no encontrada.</p>
+  <div v-else class="rounded-2xl border border-white/10 bg-white/5 p-8 text-center">
+    <p class="text-slate-400">Empresa no encontrada.</p>
   </div>
 
   <!-- Payment Modal -->
-  <div v-if="showPaymentModal" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+  <div v-if="showPaymentModal" class="fixed inset-0 z-50 overflow-y-auto">
     <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" @click="showPaymentModal = false"></div>
-      <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+      <div class="fixed inset-0 bg-black/70 backdrop-blur-sm transition-opacity" @click="showPaymentModal = false"></div>
+      <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
       
-      <div class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
-        <div>
-          <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">Registrar Pago Manual</h3>
-          <div class="mt-2">
-            <form @submit.prevent="handleRegisterPayment" class="space-y-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700">Monto Pagado</label>
-                <input type="number" v-model="paymentForm.amount" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm border p-2" />
-              </div>
-              
-              <div>
-                <label class="block text-sm font-medium text-gray-700">Fecha de Pago</label>
-                <input type="date" v-model="paymentForm.payment_date" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm border p-2" />
-              </div>
-              
-              <div>
-                <label class="block text-sm font-medium text-gray-700">Próximo Vencimiento</label>
-                <input type="date" v-model="paymentForm.next_due_date" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm border p-2" />
-              </div>
-              
-              <div>
-                <label class="block text-sm font-medium text-gray-700">Notas / Comprobante</label>
-                <textarea v-model="paymentForm.notes" rows="2" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm border p-2"></textarea>
-              </div>
-
-              <div class="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
-                <button type="submit" :disabled="isSubmittingPayment" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none sm:col-start-2 sm:text-sm">
-                  {{ isSubmittingPayment ? 'Guardando...' : 'Confirmar Pago' }}
-                </button>
-                <button type="button" @click="showPaymentModal = false" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:mt-0 sm:col-start-1 sm:text-sm">
-                  Cancelar
-                </button>
-              </div>
-            </form>
+      <div class="inline-block align-bottom bg-[#0b1326] border border-white/10 rounded-2xl px-4 pt-5 pb-4 text-left overflow-hidden shadow-2xl shadow-black/50 transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="flex h-10 w-10 items-center justify-center rounded-2xl nxr-nav-icon-active">
+            <ReceiptIcon />
           </div>
+          <h3 class="text-lg font-medium text-white">Registrar Pago Manual</h3>
         </div>
+        
+        <form @submit.prevent="handleRegisterPayment" class="space-y-4">
+          <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <label class="block text-xs font-medium text-slate-400 uppercase mb-2">Monto Pagado</label>
+            <input type="number" v-model="paymentForm.amount" required class="block w-full rounded-xl border-0 bg-white/5 text-white placeholder-slate-500 focus:ring-1 focus:ring-[#D4AF37]/50 py-2.5 text-sm" />
+          </div>
+          
+          <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <label class="block text-xs font-medium text-slate-400 uppercase mb-2">Fecha de Pago</label>
+            <input type="date" v-model="paymentForm.payment_date" required class="block w-full rounded-xl border-0 bg-white/5 text-white placeholder-slate-500 focus:ring-1 focus:ring-[#D4AF37]/50 py-2.5 text-sm" />
+          </div>
+          
+          <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <label class="block text-xs font-medium text-slate-400 uppercase mb-2">Próximo Vencimiento</label>
+            <input type="date" v-model="paymentForm.next_due_date" required class="block w-full rounded-xl border-0 bg-white/5 text-white placeholder-slate-500 focus:ring-1 focus:ring-[#D4AF37]/50 py-2.5 text-sm" />
+          </div>
+          
+          <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <label class="block text-xs font-medium text-slate-400 uppercase mb-2">Notas / Comprobante</label>
+            <textarea v-model="paymentForm.notes" rows="2" class="block w-full rounded-xl border-0 bg-white/5 text-white placeholder-slate-500 focus:ring-1 focus:ring-[#D4AF37]/50 py-2.5 text-sm"></textarea>
+          </div>
+
+          <div class="flex gap-3 pt-2">
+            <button type="button" @click="showPaymentModal = false" class="flex-1 rounded-2xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-slate-300 transition hover:border-white/20 hover:bg-white/10">
+              Cancelar
+            </button>
+            <button type="submit" :disabled="isSubmittingPayment" class="flex-1 rounded-2xl border border-transparent nxr-btn-primary px-4 py-2.5 text-sm font-medium text-white transition">
+              {{ isSubmittingPayment ? 'Guardando...' : 'Confirmar Pago' }}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>

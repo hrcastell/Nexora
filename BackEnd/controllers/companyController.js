@@ -67,7 +67,7 @@ exports.createCompany = async (req, res) => {
         await client.query(`CREATE SCHEMA IF NOT EXISTS "${schema_name}"`);
 
         // 3. Run Tenant Template SQL
-        const templatePath = path.join(__dirname, '../../Database/02_company_template/02_tenant_tables.sql');
+        const templatePath = path.join(__dirname, '../templates/tenant_schema.sql');
         await runSqlFile(templatePath, schema_name, client);
 
         // 3.5 Initialize Tenant Config (Populate config_company)

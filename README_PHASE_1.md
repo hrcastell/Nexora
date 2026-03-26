@@ -49,6 +49,7 @@ When setting up the Node.js App in cPanel:
     *   `PORT`: `3000` (or the port assigned by cPanel)
     *   `NODE_ENV`: `production`
     *   `DATABASE_URL`: `postgres://db_user:db_password@127.0.0.1:5432/db_name`
+    *   `DB_SSL`: `false` (Required if your cPanel DB does not support SSL)
     *   `JWT_SECRET`: `[Generar un string largo y seguro]`
 
 ### 4. Frontend

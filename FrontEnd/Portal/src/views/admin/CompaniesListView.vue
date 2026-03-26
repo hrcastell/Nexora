@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import api from '../../utils/axios';
-import { Plus, Search } from 'lucide-vue-next';
+import { Plus, Search, Building2 } from 'lucide-vue-next';
 import CreateCompanyModal from '../../components/admin/CreateCompanyModal.vue';
 
 interface Company {
@@ -46,127 +46,161 @@ const filteredList = computed(() => {
     c.rut.toLowerCase().includes(lowerQuery)
   );
 });
+
+// Icons
+const BuildingIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5"><path d="M4 21V7l8-4 8 4v14"/><path d="M9 21v-4h6v4"/><path d="M8 10h.01"/><path d="M12 10h.01"/><path d="M16 10h.01"/><path d="M8 13h.01"/><path d="M12 13h.01"/><path d="M16 13h.01"/></svg>` };
 </script>
 
 <template>
-  <div>
-    <div class="sm:flex sm:items-center">
-      <div class="sm:flex-auto">
-        <h1 class="text-xl font-semibold text-gray-900">Gestión de Empresas</h1>
-        <p class="mt-2 text-sm text-gray-700">
-          Listado de todas las empresas registradas en el sistema (Tenants).
-        </p>
-      </div>
-      <div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
+  <div class="space-y-4">
+    <!-- Header Card - Sidebar menu style -->
+    <div class="rounded-2xl border nxr-surface p-4 md:p-5">
+      <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div class="flex items-center gap-3">
+          <div class="flex h-10 w-10 items-center justify-center rounded-2xl nxr-nav-icon-active">
+            <BuildingIcon />
+          </div>
+          <div>
+            <h1 class="text-lg font-semibold text-white">Gestión de Empresas</h1>
+            <p class="text-sm text-slate-400">Listado de tenants registrados</p>
+          </div>
+        </div>
+        
         <button
           type="button"
           @click="showCreateModal = true"
-          class="inline-flex items-center justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:w-auto"
+          class="flex items-center gap-2 rounded-2xl border border-transparent nxr-btn-primary px-4 py-2.5 text-sm font-medium text-white transition"
         >
-          <Plus class="mr-2 h-4 w-4" />
-          Nueva Empresa
+          <Plus class="h-4 w-4" />
+          <span>Nueva Empresa</span>
         </button>
       </div>
     </div>
 
-    <!-- Search Bar -->
-    <div class="mt-6 max-w-lg">
-      <div class="relative rounded-md shadow-sm">
+    <!-- Search Bar - Menu style -->
+    <div class="rounded-2xl border border-white/10 bg-white/5 p-3">
+      <div class="relative">
         <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-          <Search class="h-5 w-5 text-gray-400" aria-hidden="true" />
+          <Search class="h-5 w-5 text-slate-400" />
         </div>
         <input
           type="text"
           v-model="searchQuery"
-          class="block w-full rounded-md border-gray-300 pl-10 focus:border-blue-500 focus:ring-blue-500 sm:text-sm py-2 border"
-          placeholder="Buscar por nombre, schema o RUT"
+          class="block w-full rounded-xl border-0 bg-white/5 pl-10 text-white placeholder-slate-500 focus:ring-1 focus:ring-[#D4AF37]/50 py-2.5 text-sm transition-colors"
+          placeholder="Buscar por nombre, schema o RUT..."
         />
       </div>
     </div>
 
-    <!-- Mobile View (Cards) -->
-    <div class="mt-6 flex flex-col md:hidden space-y-4">
-      <div v-if="isLoading" class="text-center py-4">Cargando...</div>
-      
-      <div v-else-if="filteredList.length === 0" class="text-center py-8 bg-white rounded-lg shadow">
-        <p class="text-gray-500">No se encontraron empresas.</p>
+    <!-- Mobile View (Cards) - Menu item style -->
+    <div class="flex flex-col gap-3 md:hidden">
+      <div v-if="isLoading" class="rounded-2xl border border-white/10 bg-white/5 p-8 text-center text-slate-400">
+        Cargando empresas...
       </div>
       
-      <div v-else v-for="company in filteredList" :key="company.id" class="bg-white shadow rounded-lg p-4">
-        <div class="flex justify-between items-start">
-          <div>
-            <h3 class="text-lg font-medium text-gray-900">{{ company.name }}</h3>
-            <p class="text-sm text-gray-500">{{ company.schema_name }}</p>
+      <div v-else-if="filteredList.length === 0" class="rounded-2xl border border-white/10 bg-white/5 p-8 text-center">
+        <p class="text-slate-400">No se encontraron empresas.</p>
+      </div>
+      
+      <div 
+        v-else 
+        v-for="company in filteredList" 
+        :key="company.id" 
+        class="rounded-2xl border border-white/10 bg-white/5 p-4 transition hover:border-white/20 hover:bg-white/[0.07]"
+      >
+        <div class="flex items-start justify-between">
+          <div class="flex items-center gap-3">
+            <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/5 text-slate-400">
+              <Building2 class="h-5 w-5" />
+            </div>
+            <div>
+              <h3 class="text-sm font-medium text-white">{{ company.name }}</h3>
+              <p class="text-xs text-slate-400">{{ company.schema_name }}</p>
+            </div>
           </div>
           <span 
-            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-            :class="company.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
+            class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium border"
+            :class="company.is_active ? 'bg-emerald-400/10 text-emerald-200 border-emerald-400/20' : 'bg-rose-400/10 text-rose-200 border-rose-400/20'"
           >
             {{ company.is_active ? 'Activa' : 'Inactiva' }}
           </span>
         </div>
-        <div class="mt-4 space-y-2 text-sm text-gray-600">
-          <p><strong>RUT:</strong> {{ company.rut }}</p>
-          <p><strong>Plan:</strong> {{ company.plan_type }}</p>
-          <p><strong>Email:</strong> {{ company.contact_email }}</p>
+        
+        <div class="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-400">
+          <div>
+            <span class="text-slate-500">RUT:</span> {{ company.rut }}
+          </div>
+          <div>
+            <span class="text-slate-500">Plan:</span> {{ company.plan_type }}
+          </div>
         </div>
-        <div class="mt-4 flex justify-end">
-             <router-link :to="`/admin/companies/${company.id}`" class="text-blue-600 hover:text-blue-900 text-sm font-medium">
-               Gestionar
-             </router-link>
+        
+        <div class="mt-3 pt-3 border-t border-white/10 flex justify-end">
+          <router-link 
+            :to="`/admin/companies/${company.id}`" 
+            class="text-sm font-medium text-[#D4AF37] hover:text-[#f5df9f] transition-colors"
+          >
+            Gestionar →
+          </router-link>
         </div>
       </div>
     </div>
 
-    <!-- Desktop View (Table) -->
-    <div class="mt-8 hidden md:flex flex-col">
-      <div class="-my-2 -mx-4 overflow-x-auto sm:-mx-6 lg:-mx-8">
-        <div class="inline-block min-w-full py-2 align-middle md:px-6 lg:px-8">
-          <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-            <table class="min-w-full divide-y divide-gray-300">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6">Empresa</th>
-                  <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Schema</th>
-                  <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">RUT</th>
-                  <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Estado</th>
-                  <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">Plan</th>
-                  <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                    <span class="sr-only">Acciones</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-gray-200 bg-white">
-                <tr v-if="isLoading">
-                   <td colspan="6" class="text-center py-4 text-sm text-gray-500">Cargando empresas...</td>
-                </tr>
-                <tr v-else-if="filteredList.length === 0">
-                   <td colspan="6" class="text-center py-8 text-sm text-gray-500">No se encontraron empresas.</td>
-                </tr>
-                <tr v-for="company in filteredList" :key="company.id" v-else class="hover:bg-gray-50">
-                  <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">{{ company.name }}</td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ company.schema_name }}</td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ company.rut }}</td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                    <span 
-                      class="inline-flex rounded-full px-2 text-xs font-semibold leading-5"
-                      :class="company.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
-                    >
-                      {{ company.is_active ? 'Activa' : 'Inactiva' }}
-                    </span>
-                  </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ company.plan_type }}</td>
-                  <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                    <router-link :to="`/admin/companies/${company.id}`" class="text-blue-600 hover:text-blue-900">
-                      Gestionar
-                    </router-link>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+    <!-- Desktop View (Table) - Sidebar style -->
+    <div class="hidden md:block rounded-2xl border border-white/10 bg-white/5 overflow-hidden">
+      <table class="min-w-full">
+        <thead class="border-b border-white/10 bg-white/[0.03]">
+          <tr>
+            <th class="py-3 pl-4 pr-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Empresa</th>
+            <th class="px-3 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Schema</th>
+            <th class="px-3 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">RUT</th>
+            <th class="px-3 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Estado</th>
+            <th class="px-3 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Plan</th>
+            <th class="py-3 pl-3 pr-4 text-right text-xs font-medium text-slate-400 uppercase tracking-wider">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-white/10">
+          <tr v-if="isLoading">
+            <td colspan="6" class="py-8 text-center text-sm text-slate-400">Cargando empresas...</td>
+          </tr>
+          <tr v-else-if="filteredList.length === 0">
+            <td colspan="6" class="py-12 text-center text-sm text-slate-400">No se encontraron empresas.</td>
+          </tr>
+          <tr 
+            v-for="company in filteredList" 
+            :key="company.id" 
+            class="transition-colors hover:bg-white/[0.03]"
+          >
+            <td class="py-3 pl-4 pr-3">
+              <div class="flex items-center gap-3">
+                <div class="flex h-8 w-8 items-center justify-center rounded-xl bg-white/5 text-slate-400">
+                  <Building2 class="h-4 w-4" />
+                </div>
+                <span class="text-sm font-medium text-white">{{ company.name }}</span>
+              </div>
+            </td>
+            <td class="px-3 py-3 text-sm text-slate-400">{{ company.schema_name }}</td>
+            <td class="px-3 py-3 text-sm text-slate-400">{{ company.rut }}</td>
+            <td class="px-3 py-3">
+              <span 
+                class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium border"
+                :class="company.is_active ? 'bg-emerald-400/10 text-emerald-200 border-emerald-400/20' : 'bg-rose-400/10 text-rose-200 border-rose-400/20'"
+              >
+                {{ company.is_active ? 'Activa' : 'Inactiva' }}
+              </span>
+            </td>
+            <td class="px-3 py-3 text-sm text-slate-400">{{ company.plan_type }}</td>
+            <td class="py-3 pl-3 pr-4 text-right">
+              <router-link 
+                :to="`/admin/companies/${company.id}`" 
+                class="text-sm font-medium text-[#D4AF37] hover:text-[#f5df9f] transition-colors"
+              >
+                Gestionar
+              </router-link>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
     <!-- Create Company Modal -->

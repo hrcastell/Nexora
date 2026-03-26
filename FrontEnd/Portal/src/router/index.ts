@@ -7,6 +7,7 @@ import AdminLayout from '../layouts/AdminLayout.vue'
 import CompaniesListView from '../views/admin/CompaniesListView.vue'
 import CompanyDetailsView from '../views/admin/CompanyDetailsView.vue'
 import SolicitudesListView from '../views/admin/SolicitudesListView.vue'
+import VisualConfigView from '../views/VisualConfigView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -32,6 +33,11 @@ const router = createRouter({
           path: 'dashboard',
           name: 'dashboard',
           component: DashboardView
+        },
+        {
+          path: 'admin/config',
+          name: 'admin-config',
+          component: VisualConfigView
         },
         {
           path: 'admin/companies',

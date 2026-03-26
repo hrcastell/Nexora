@@ -5,6 +5,10 @@ const { generateToken } = require('../utils/jwt');
 exports.login = async (req, res) => {
   const { email, password } = req.body;
 
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Email and password are required' });
+  }
+
   try {
     // 1. Find user in public.users
     const result = await db.query(
@@ -60,8 +64,8 @@ exports.login = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({ error: 'Server error during login' });
+    console.error('Login error:', error.message, error.stack);
+    res.status(500).json({ error: 'Server error during login', detail: process.env.NODE_ENV !== 'production' ? error.message : undefined });
   }
 };
 
@@ -97,13 +101,16 @@ exports.selectCompany = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Select company error:', error);
+    console.error('Select company error:', error.message, error.stack);
     res.status(500).json({ error: 'Server error selecting company' });
   }
 };
 
 exports.getMe = async (req, res) => {
     try {
+        if (!req.user || !req.user.id) {
+            return res.status(401).json({ error: 'Invalid token context' });
+        }
         const userId = req.user.id;
         const userResult = await db.query('SELECT id, email, full_name, is_super_admin FROM public.users WHERE id = $1', [userId]);
         
