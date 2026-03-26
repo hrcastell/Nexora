@@ -1,0 +1,12 @@
+{
+  "dependencies": {
+    "lucide-vue-next": "^1.0.0",
+    "pinia": "^3.0.4",
+    "vue-router": "^4.6.4"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.27",
+    "postcss": "^8.5.8",
+    "tailwindcss": "^4.2.2"
+  }
+}

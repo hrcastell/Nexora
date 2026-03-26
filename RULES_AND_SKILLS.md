@@ -120,7 +120,25 @@ Mantener una carpeta de SQL organizada así:
 ## 5. Reglas de despliegue
 
 ### Regla general
-El despliegue debe ser manualmente viable.
+El despliegue debe ser manualmente viable a través de cPanel.
+
+### Arquitectura de Despliegue (cPanel)
+El proyecto se dividirá en subdominios y directorios específicos dentro del hosting:
+
+1. **Website Principal (Futuro):**
+   - **URL:** `nexoragarage.hrcastell.com`
+   - **Directorio:** `public_html/nexoragarage.hrcastell.com`
+
+2. **Panel Administrativo (Frontend Vue):**
+   - **URL:** `admin.nexoragarage.hrcastell.com`
+   - **Directorio:** `public_html/admin.nexoragarage.hrcastell.com`
+   - *Nota:* Aquí se subirán los archivos generados por `npm run build`.
+
+3. **Backend API (Node.js):**
+   - **URL Pública:** `api.nexoragarage.hrcastell.com`
+   - **Directorio Raíz del Subdominio:** `public_html/api.nexoragarage.hrcastell.com`
+   - **Directorio Real de la App Node.js:** `/home/hernanci/apps/nexoragarage-api`
+   - *Nota:* Las variables de entorno para el backend deben configurarse directamente en la interfaz de "Setup Node.js App" en cPanel.
 
 ### Reglas
 - no depender de pipelines complejos para poner la app en producción
