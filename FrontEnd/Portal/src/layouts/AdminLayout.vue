@@ -11,7 +11,9 @@ import {
   Settings, 
   Palette,
   ChevronDown,
-  Mail
+  Mail,
+  Users,
+  BarChart2
 } from 'lucide-vue-next';
 
 const authStore = useAuthStore();
@@ -32,7 +34,9 @@ const configNav = computed(() => {
   return [
     { name: 'Empresas', href: '/admin/companies', icon: Building2 },
     { name: 'Solicitudes', href: '/admin/requests', icon: Mail },
-    { name: 'Personalización visual', href: '/admin/config', icon: Palette },
+    { name: 'Usuarios', href: '/admin/users', icon: Users },
+    { name: 'Reportes', href: '/admin/reports', icon: BarChart2 },
+    { name: 'Visual', href: '/admin/config', icon: Palette },
   ];
 });
 

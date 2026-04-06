@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useVisualConfigStore, WALLPAPERS, FONTS, PRESET_COLORS, wallpaperBackground, type ThemeMode } from '../stores/visualConfig';
 import AppToast, { type ToastItem, type ToastType } from '../components/AppToast.vue';
+import { Monitor, Type, Palette, Layers, Sparkles, Check, Save, RotateCcw, Sun, Moon } from 'lucide-vue-next';
 
 const configStore = useVisualConfigStore();
 const activeToast = ref<ToastItem | null>(null);
@@ -95,17 +96,6 @@ const resetConfiguration = () => {
 // Helper to check if item is active (for styling)
 const isActive = (condition: boolean) => condition;
 
-// Icons - Dynamic colors based on mode
-const MonitorIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8"/><path d="M12 16v4"/></svg>` };
-const TypeIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg>` };
-const PaletteIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5"><path d="M12 22a10 10 0 100-20 10 10 0 000 20z"/><path d="M7.5 11.5a1 1 0 100-2 1 1 0 000 2z"/><path d="M12 8.5a1 1 0 100-2 1 1 0 000 2z"/><path d="M16.5 11.5a1 1 0 100-2 1 1 0 000 2z"/><path d="M14.5 16a1 1 0 11-2 0c0-1.3 1-2 2.2-2H16a2 2 0 100-4"/></svg>` };
-const LayersIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 12l9 5 9-5"/><path d="M3 16l9 5 9-5"/></svg>` };
-const SparklesIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5"><path d="M12 3l1.6 4.4L18 9l-4.4 1.6L12 15l-1.6-4.4L6 9l4.4-1.6L12 3z"/><path d="M19 14l.8 2.2L22 17l-2.2.8L19 20l-.8-2.2L16 17l2.2-.8L19 14z"/><path d="M5 15l.8 2.2L8 18l-2.2.8L5 21l-.8-2.2L2 18l2.2-.8L5 15z"/></svg>` };
-const CheckIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="h-5 w-5"><path d="M20 6L9 17l-5-5"/></svg>` };
-const SaveIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></svg>` };
-const RotateCcwIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5"><path d="M1 4v6h6"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>` };
-const SunIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5"><circle cx="12" cy="12" r="5"/><path d="M12 1v2"/><path d="M12 21v2"/><path d="M4.22 4.22l1.42 1.42"/><path d="M18.36 18.36l1.42 1.42"/><path d="M1 12h2"/><path d="M21 12h2"/><path d="M4.22 19.78l1.42-1.42"/><path d="M18.36 5.64l1.42-1.42"/></svg>` };
-const MoonIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>` };
 </script>
 
 <template>
@@ -140,7 +130,7 @@ const MoonIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="curre
                 color: draft.mode === 'light' ? '#000000' : draft.primaryColor,
                 backgroundColor: draft.mode === 'light' ? '#e2e8f0' : 'rgba(255,255,255,0.05)'
               }">
-              <SparklesIcon />
+              <Sparkles class="h-5 w-5" />
             </div>
             <div>
               <h1 class="text-lg font-semibold text-white">Preferencias visuales</h1>
@@ -154,14 +144,14 @@ const MoonIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="curre
               @click="saveConfiguration"
               class="flex items-center gap-2 rounded-2xl border border-transparent nxr-btn-primary px-4 py-2.5 text-sm font-medium text-white transition"
             >
-              <SaveIcon />
+              <Save class="h-5 w-5" />
               <span class="hidden sm:inline">Guardar</span>
             </button>
             <button 
               @click="resetConfiguration"
               class="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-slate-300 transition hover:border-white/20 hover:bg-white/10"
             >
-              <RotateCcwIcon />
+              <RotateCcw class="h-5 w-5" />
               <span class="hidden sm:inline">Restablecer</span>
             </button>
           </div>
@@ -179,7 +169,7 @@ const MoonIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="curre
                 color: draft.mode === 'light' ? '#000000' : draft.primaryColor,
                 backgroundColor: draft.mode === 'light' ? '#e2e8f0' : 'rgba(255,255,255,0.05)'
               }">
-              <MonitorIcon />
+              <Monitor class="h-5 w-5" />
             </div>
             <div>
               <h2 class="text-base font-semibold text-white">Tema y fondo</h2>
@@ -213,7 +203,7 @@ const MoonIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="curre
                   backgroundColor: draft.mode === 'light' ? '#e2e8f0' : 'rgba(255,255,255,0.05)'
                 }"
               >
-                <MoonIcon
+                <Moon
                   class="h-5 w-5"
                   :style="{ 
                     color: draft.mode === 'light'
@@ -250,7 +240,7 @@ const MoonIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="curre
                     backgroundColor: draft.mode === 'light' ? '#e2e8f0' : 'rgba(255,255,255,0.05)'
                   }"
                 >
-                  <SunIcon
+                  <Sun
                     class="h-5 w-5"
                     :style="{ color: draft.mode === 'light' ? '#000000' : '#94a3b8' }"
                   />
@@ -273,7 +263,7 @@ const MoonIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="curre
               :style="{ background: wallpaperBackground(wallpaper) }"
             >
               <div v-if="draft.selectedWallpaper === wallpaper.id" class="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-white text-[#0f172a]">
-                <CheckIcon />
+                <Check class="h-5 w-5" />
               </div>
               <div class="absolute bottom-1 left-1 rounded-lg px-2 py-0.5 text-xs font-medium text-white bg-black/60" style="color: white !important;">
                 {{ wallpaper.name }}
@@ -290,7 +280,7 @@ const MoonIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="curre
                 color: draft.mode === 'light' ? '#000000' : draft.primaryColor,
                 backgroundColor: draft.mode === 'light' ? '#e2e8f0' : 'rgba(255,255,255,0.05)'
               }">
-              <LayersIcon />
+              <Layers class="h-5 w-5" />
             </div>
             <div>
               <h2 class="text-base font-semibold text-white">Escala y dimensiones</h2>
@@ -348,7 +338,7 @@ const MoonIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="curre
                 color: draft.mode === 'light' ? '#000000' : draft.primaryColor,
                 backgroundColor: draft.mode === 'light' ? '#e2e8f0' : 'rgba(255,255,255,0.05)'
               }">
-              <TypeIcon />
+              <Type class="h-5 w-5" />
             </div>
             <div>
               <h2 class="text-base font-semibold text-white">Tipografía</h2>
@@ -410,7 +400,7 @@ const MoonIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="curre
                 color: draft.mode === 'light' ? '#000000' : draft.primaryColor,
                 backgroundColor: draft.mode === 'light' ? '#e2e8f0' : 'rgba(255,255,255,0.05)'
               }">
-              <PaletteIcon />
+              <Palette class="h-5 w-5" />
             </div>
             <div>
               <h2 class="text-base font-semibold text-white">Colores</h2>
@@ -498,7 +488,7 @@ const MoonIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="curre
                 color: draft.mode === 'light' ? '#000000' : draft.primaryColor,
                 backgroundColor: draft.mode === 'light' ? '#e2e8f0' : 'rgba(255,255,255,0.05)'
               }">
-              <LayersIcon />
+              <Layers class="h-5 w-5" />
             </div>
             <div>
               <h2 class="text-base font-semibold text-white">Transparencia y superficie</h2>
@@ -552,14 +542,14 @@ const MoonIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="curre
           @click="saveConfiguration"
           class="flex w-full items-center justify-center gap-2 rounded-2xl border border-transparent nxr-btn-primary px-6 py-4 text-base font-medium text-white transition shadow-lg"
         >
-          <SaveIcon class="h-6 w-6" />
+          <Save class="h-6 w-6" />
           <span>Guardar preferencias</span>
         </button>
         <button 
           @click="resetConfiguration"
           class="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-6 py-4 text-base font-medium text-slate-300 transition hover:border-white/20 hover:bg-white/10"
         >
-          <RotateCcwIcon class="h-6 w-6" />
+          <RotateCcw class="h-6 w-6" />
           <span>Restablecer valores</span>
         </button>
       </div>

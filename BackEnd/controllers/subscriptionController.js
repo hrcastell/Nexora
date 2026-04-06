@@ -102,7 +102,8 @@ exports.updateSubscription = async (req, res) => {
 // I'll add a simple payment registration that updates the subscription state.
 
 exports.registerPayment = async (req, res) => {
-     try {
+    const client = await db.getClient();
+    try {
         if (!req.user.is_super_admin) {
             return res.status(403).json({ error: 'Access denied.' });
         }
@@ -110,28 +111,71 @@ exports.registerPayment = async (req, res) => {
         const { id } = req.params; // Subscription ID
         const { amount, payment_date, next_due_date, notes } = req.body;
 
-        // In a real system, insert into a 'payments_history' table here.
-        // For this schema, we just update the subscription record.
-        
-        const result = await db.query(
+        const payDate = payment_date || new Date().toISOString().split('T')[0];
+
+        await client.query('BEGIN');
+
+        // 1. Update subscription state
+        const subResult = await client.query(
             `UPDATE public.subscriptions 
              SET last_payment_date = $1,
                  next_payment_date = $2,
                  status = 'active',
-                 notes = COALESCE($3, '') || ' | Payment registered: ' || $1::text
-             WHERE id = $4
+                 updated_at = CURRENT_TIMESTAMP
+             WHERE id = $3
              RETURNING *`,
-            [payment_date || new Date(), next_due_date, notes, id]
+            [payDate, next_due_date, id]
         );
 
-         if (result.rows.length === 0) {
+        if (subResult.rows.length === 0) {
+            await client.query('ROLLBACK');
             return res.status(404).json({ error: 'Subscription not found' });
         }
 
-        res.json(result.rows[0]);
+        const sub = subResult.rows[0];
 
-     } catch (error) {
+        // 2. Insert into payments_history
+        const paymentResult = await client.query(
+            `INSERT INTO public.payments_history 
+             (company_id, subscription_id, amount, payment_date, next_due_date, notes, registered_by)
+             VALUES ($1, $2, $3, $4, $5, $6, $7)
+             RETURNING *`,
+            [sub.company_id, id, amount || sub.amount, payDate, next_due_date, notes, req.user.id]
+        );
+
+        await client.query('COMMIT');
+
+        res.json({ subscription: sub, payment: paymentResult.rows[0] });
+
+    } catch (error) {
+        await client.query('ROLLBACK');
         console.error('Register payment error:', error);
         res.status(500).json({ error: 'Server error' });
-     }
-}
+    } finally {
+        client.release();
+    }
+};
+
+exports.getPaymentHistory = async (req, res) => {
+    try {
+        if (!req.user.is_super_admin) {
+            return res.status(403).json({ error: 'Access denied.' });
+        }
+
+        const { companyId } = req.params;
+
+        const result = await db.query(
+            `SELECT ph.*, u.full_name as registered_by_name
+             FROM public.payments_history ph
+             LEFT JOIN public.users u ON ph.registered_by = u.id
+             WHERE ph.company_id = $1
+             ORDER BY ph.payment_date DESC, ph.created_at DESC`,
+            [companyId]
+        );
+
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Get payment history error:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+};

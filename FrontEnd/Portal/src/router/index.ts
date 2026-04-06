@@ -8,6 +8,8 @@ import CompaniesListView from '../views/admin/CompaniesListView.vue'
 import CompanyDetailsView from '../views/admin/CompanyDetailsView.vue'
 import SolicitudesListView from '../views/admin/SolicitudesListView.vue'
 import VisualConfigView from '../views/VisualConfigView.vue'
+import UsersListView from '../views/admin/UsersListView.vue'
+import ReportsView from '../views/admin/ReportsView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -53,6 +55,16 @@ const router = createRouter({
           path: 'admin/requests',
           name: 'admin-requests',
           component: SolicitudesListView
+        },
+        {
+          path: 'admin/users',
+          name: 'admin-users',
+          component: UsersListView
+        },
+        {
+          path: 'admin/reports',
+          name: 'admin-reports',
+          component: ReportsView
         }
       ]
     },
@@ -63,27 +75,31 @@ const router = createRouter({
   ]
 })
 
+let authChecked = false
+
 router.beforeEach(async (to, _from, next) => {
   const authStore = useAuthStore()
-  
-  // Check auth state
-  // In a real app we might await a checkAuth() call here if persisting token
-  // but for now relying on Pinia state initialized from localStorage
-  
+
+  // On first navigation, validate persisted token against the server
+  if (!authChecked && authStore.token) {
+    authChecked = true
+    await authStore.checkAuth()
+  } else {
+    authChecked = true
+  }
+
   const isAuthenticated = authStore.isAuthenticated
   const hasCompany = !!authStore.currentCompany
 
   if (to.meta.requiresAuth && !isAuthenticated) {
     next('/login')
   } else if (to.meta.requiresGuest && isAuthenticated) {
-    // If guest tries to go to login but is auth, redirect depending on state
     if (hasCompany) {
       next('/dashboard')
     } else {
       next('/select-company')
     }
   } else if (to.meta.requiresCompany && !hasCompany) {
-    // If trying to access dashboard without company selected
     next('/select-company')
   } else {
     next()

@@ -15,6 +15,74 @@ const runSqlFile = async (filePath, schemaName, client) => {
     }
 };
 
+// Seed basic roles, permissions and role_permissions for a new tenant schema
+const seedTenantRoles = async (schemaName, client) => {
+    const s = schemaName;
+
+    // --- Roles ---
+    const roles = [
+        { name: 'super_admin', description: 'Acceso total a la aplicación. Rol de sistema.', is_system: true },
+        { name: 'admin',       description: 'Administrador de la empresa. Gestión completa.',  is_system: true },
+        { name: 'user',        description: 'Usuario estándar con acceso de lectura y creación.', is_system: true },
+        { name: 'viewer',      description: 'Solo lectura. Sin permisos de modificación.',      is_system: true },
+    ];
+
+    const roleIds = {};
+    for (const role of roles) {
+        const r = await client.query(
+            `INSERT INTO "${s}".roles (name, description, is_system_role)
+             VALUES ($1, $2, $3)
+             ON CONFLICT (name) DO UPDATE SET description = EXCLUDED.description
+             RETURNING id`,
+            [role.name, role.description, role.is_system]
+        );
+        roleIds[role.name] = r.rows[0].id;
+    }
+
+    // --- Permissions (module x action) ---
+    const modules = ['dashboard', 'companies', 'solicitudes', 'subscriptions', 'users', 'config', 'reports'];
+    const actions = ['view', 'create', 'edit', 'delete', 'approve'];
+
+    const permIds = {};
+    for (const module of modules) {
+        permIds[module] = {};
+        for (const action of actions) {
+            const p = await client.query(
+                `INSERT INTO "${s}".permissions (module, action, description)
+                 VALUES ($1, $2, $3)
+                 ON CONFLICT (module, action) DO UPDATE SET description = EXCLUDED.description
+                 RETURNING id`,
+                [module, action, `${action} en ${module}`]
+            );
+            permIds[module][action] = p.rows[0].id;
+        }
+    }
+
+    // --- Role-Permission matrix ---
+    const matrix = {
+        super_admin: { modules: modules, actions: actions },
+        admin:       { modules: modules, actions: actions },
+        user:        { modules: ['dashboard', 'companies', 'solicitudes', 'reports'], actions: ['view', 'create', 'edit'] },
+        viewer:      { modules: ['dashboard', 'companies', 'solicitudes', 'reports'], actions: ['view'] },
+    };
+
+    for (const [roleName, access] of Object.entries(matrix)) {
+        const roleId = roleIds[roleName];
+        for (const module of access.modules) {
+            for (const action of access.actions) {
+                const permId = permIds[module]?.[action];
+                if (!permId) continue;
+                await client.query(
+                    `INSERT INTO "${s}".role_permissions (role_id, permission_id)
+                     VALUES ($1, $2)
+                     ON CONFLICT DO NOTHING`,
+                    [roleId, permId]
+                );
+            }
+        }
+    }
+};
+
 exports.getAllCompanies = async (req, res) => {
     try {
         // Only Super Admin should see all companies or maybe filtered?
@@ -70,7 +138,10 @@ exports.createCompany = async (req, res) => {
         const templatePath = path.join(__dirname, '../templates/tenant_schema.sql');
         await runSqlFile(templatePath, schema_name, client);
 
-        // 3.5 Initialize Tenant Config (Populate config_company)
+        // 3.5 Seed base roles, permissions and RBAC matrix for the new tenant
+        await seedTenantRoles(schema_name, client);
+
+        // 3.6 Initialize Tenant Config (Populate config_company)
         await client.query(`
             INSERT INTO "${schema_name}".config_company (company_name, country, rut, address, email, phone)
             VALUES ($1, $2, $3, $4, $5, $6)

@@ -88,7 +88,7 @@ const handleLogin = async () => {
 
             <div class="space-y-4">
               <p class="text-sm font-semibold uppercase tracking-[0.28em] text-[#c0c7d1]">
-                TES App / Nexora Base
+                 Nexora Base
               </p>
               <h1 class="max-w-2xl text-4xl font-semibold leading-tight text-white md:text-5xl">
                 Portal de acceso inteligente
