@@ -7,11 +7,21 @@ module.exports = async function(req, res, next) {
   const token = req.header('x-auth-token');
   if (!token) return res.status(401).json({ error: 'No token, authorization denied' });
 
+  // ── 1. Verificar firma del JWT (errores aquí = 401) ────────────
+  let decoded;
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
+    decoded = jwt.verify(token, process.env.JWT_SECRET);
+  } catch (err) {
+    if (err.name === 'TokenExpiredError') {
+      return res.status(401).json({ error: 'Token expirado. Por favor inicia sesión nuevamente.' });
+    }
+    return res.status(401).json({ error: 'Token inválido' });
+  }
 
-    // ── Validar estado del usuario en cada request ─────────────
+  req.user = decoded;
+
+  // ── 2. Consultas DB de validación (errores aquí = 500) ─────────
+  try {
     const userRes = await db.query(
       'SELECT status, is_system_user, role FROM public.users WHERE id = $1 AND is_active = TRUE',
       [decoded.id]
@@ -32,7 +42,6 @@ module.exports = async function(req, res, next) {
     req.user.is_system_user = user.is_system_user;
     req.user.read_only      = user.status === 'suspendido';
 
-    // ── Validar estado comercial de la empresa ─────────────────
     if (decoded.company_id && !user.is_system_user) {
       const companyRes = await db.query(
         'SELECT commercial_status FROM public.companies WHERE id = $1',
@@ -57,9 +66,7 @@ module.exports = async function(req, res, next) {
 
     next();
   } catch (err) {
-    if (err.name === 'TokenExpiredError') {
-      return res.status(401).json({ error: 'Token expirado. Por favor inicia sesión nuevamente.' });
-    }
-    res.status(401).json({ error: 'Token inválido' });
+    console.error('Auth middleware DB error:', err.message);
+    res.status(500).json({ error: 'Error de servidor durante la autenticación' });
   }
 };

@@ -31,18 +31,25 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA hernancius
     GRANT USAGE, SELECT ON SEQUENCES TO hernanci_nexoragarage;
 
 -- ─────────────────────────────────────────────────────────────
--- 2. Nuevas tablas en public  (creadas en migración 02)
+-- 2. Schema public  →  TODAS las tablas + TODAS las secuencias
+--    Cubre: users, companies, company_users, subscriptions,
+--           solicitudes, payments_history, payment_agreements,
+--           invoices  (y cualquier tabla futura en public)
 -- ─────────────────────────────────────────────────────────────
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.payment_agreements TO hernanci_nexoragarage;
-GRANT SELECT, INSERT, UPDATE, DELETE ON public.invoices            TO hernanci_nexoragarage;
+GRANT SELECT, INSERT, UPDATE, DELETE
+    ON ALL TABLES IN SCHEMA public
+    TO hernanci_nexoragarage;
 
-GRANT USAGE, SELECT ON SEQUENCE public.payment_agreements_id_seq TO hernanci_nexoragarage;
-GRANT USAGE, SELECT ON SEQUENCE public.invoices_id_seq           TO hernanci_nexoragarage;
+GRANT USAGE, SELECT
+    ON ALL SEQUENCES IN SCHEMA public
+    TO hernanci_nexoragarage;
 
--- ─────────────────────────────────────────────────────────────
--- 3. Secuencia users_id_seq  (necesaria para INSERT en public.users)
--- ─────────────────────────────────────────────────────────────
-GRANT USAGE, SELECT ON SEQUENCE public.users_id_seq TO hernanci_nexoragarage;
+-- Permisos automáticos para objetos FUTUROS en public
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
+    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO hernanci_nexoragarage;
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
+    GRANT USAGE, SELECT ON SEQUENCES TO hernanci_nexoragarage;
 
 -- ─────────────────────────────────────────────────────────────
 -- 4. Para futuros tenants: repetir bloque 1 con el nuevo schema
