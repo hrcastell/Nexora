@@ -89,8 +89,13 @@ export const useAuthStore = defineStore('auth', () => {
       }
       
       return true;
-    } catch (error) {
-      logout();
+    } catch (error: any) {
+      // Only clear session on actual auth rejections (401/403).
+      // Do NOT logout on 500 or network errors — that would wipe a valid token.
+      const status = error?.response?.status;
+      if (status === 401 || status === 403) {
+        logout();
+      }
       return false;
     }
   }
