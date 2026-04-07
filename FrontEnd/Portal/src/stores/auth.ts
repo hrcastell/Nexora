@@ -8,6 +8,7 @@ export const useAuthStore = defineStore('auth', () => {
   const token = ref<string | null>(localStorage.getItem('token'));
   const companies = ref<Company[]>([]);
   const currentCompany = ref<Company | null>(null);
+  const readOnly = ref<boolean>(false);
   
   const isAuthenticated = computed(() => !!token.value);
 
@@ -35,13 +36,15 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const response = await api.post('/auth/select-company', { companyId });
       
-      const { company, token: finalToken } = response.data;
+      const { company, token: finalToken, read_only } = response.data;
       
       currentCompany.value = company;
       token.value = finalToken;
+      readOnly.value = !!read_only;
       
       localStorage.setItem('token', finalToken);
       localStorage.setItem('currentCompany', JSON.stringify(company));
+      localStorage.setItem('nexora_read_only', read_only ? '1' : '0');
       
       return true;
     } catch (error) {
@@ -55,9 +58,10 @@ export const useAuthStore = defineStore('auth', () => {
     token.value = null;
     companies.value = [];
     currentCompany.value = null;
+    readOnly.value = false;
     localStorage.removeItem('token');
     localStorage.removeItem('currentCompany');
-    // Router redirect should be handled by the component calling logout
+    localStorage.removeItem('nexora_read_only');
   }
 
   async function checkAuth() {
@@ -67,10 +71,21 @@ export const useAuthStore = defineStore('auth', () => {
       const response = await api.get('/auth/me');
       user.value = response.data.user;
       
-      // Restore company if stored
       const storedCompany = localStorage.getItem('currentCompany');
       if (storedCompany) {
         currentCompany.value = JSON.parse(storedCompany);
+      }
+
+      if (response.data.context) {
+        readOnly.value = !!response.data.context.read_only;
+        if (currentCompany.value && response.data.context.commercial_status) {
+          currentCompany.value = {
+            ...currentCompany.value,
+            commercial_status: response.data.context.commercial_status
+          };
+        }
+      } else {
+        readOnly.value = localStorage.getItem('nexora_read_only') === '1';
       }
       
       return true;
@@ -86,6 +101,7 @@ export const useAuthStore = defineStore('auth', () => {
     companies,
     currentCompany,
     isAuthenticated,
+    readOnly,
     login,
     selectCompany,
     logout,

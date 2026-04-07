@@ -12,28 +12,33 @@ exports.login = async (req, res) => {
   try {
     // 1. Find user in public.users
     const result = await db.query(
-      'SELECT * FROM public.users WHERE email = $1 AND is_active = TRUE',
+      `SELECT * FROM public.users WHERE email = $1`,
       [email]
     );
 
     if (result.rows.length === 0) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      return res.status(401).json({ error: 'Credenciales inválidas' });
     }
 
     const user = result.rows[0];
 
-    // 2. Validate password
-    // For the initial seed user, we might need a specific check if hashing isn't set up yet in DB
-    // But assuming standard flow:
-    const isMatch = await bcrypt.compare(password, user.password_hash);
-    
-    if (!isMatch) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+    if (user.status === 'bloqueado' && !user.is_system_user) {
+      return res.status(403).json({ error: 'Tu cuenta está bloqueada. Contacta al administrador.' });
+    }
+    if (!user.is_active) {
+      return res.status(403).json({ error: 'Cuenta inactiva. Contacta al administrador.' });
     }
 
-    // 3. Get User Companies
+    // 2. Validate password
+    const isMatch = await bcrypt.compare(password, user.password_hash);
+    if (!isMatch) {
+      return res.status(401).json({ error: 'Credenciales inválidas' });
+    }
+
+    // 3. Get User Companies with commercial_status
     const companiesResult = await db.query(
-      `SELECT c.id, c.name, c.schema_name, cu.is_company_admin 
+      `SELECT c.id, c.name, c.schema_name, c.commercial_status,
+              cu.is_company_admin
        FROM public.companies c
        JOIN public.company_users cu ON c.id = cu.company_id
        WHERE cu.user_id = $1 AND c.is_active = TRUE`,
@@ -42,22 +47,27 @@ exports.login = async (req, res) => {
 
     const companies = companiesResult.rows;
 
-    // 4. Determine response
-    // If user has no companies, they can't login (unless super admin, maybe?)
-    // If user has 1 company, auto-select? Or always show selector?
-    // Requirement says: "El sistema debe permitir entrar a una ventana donde pueda ver todas las compañías"
-    // So we return the list of companies and a temporary token (or just the list if we use a different flow)
-    
-    // We'll issue a temporary "pre-auth" token that allows fetching companies and selecting one
-    const preAuthToken = generateToken(user); 
+    // Update last_login_at
+    await db.query(
+      'UPDATE public.users SET last_login_at = CURRENT_TIMESTAMP WHERE id = $1',
+      [user.id]
+    );
+
+    const preAuthToken = generateToken(user);
 
     res.json({
-      message: 'Login successful',
+      message: 'Login exitoso',
       user: {
-        id: user.id,
-        email: user.email,
-        full_name: user.full_name,
-        is_super_admin: user.is_super_admin
+        id:             user.id,
+        email:          user.email,
+        full_name:      user.full_name,
+        first_name:     user.first_name,
+        last_name:      user.last_name,
+        avatar_url:     user.avatar_url,
+        role:           user.role,
+        status:         user.status,
+        is_super_admin: user.is_super_admin,
+        is_system_user: user.is_system_user
       },
       companies,
       token: preAuthToken
@@ -91,13 +101,37 @@ exports.selectCompany = async (req, res) => {
     const userResult = await db.query('SELECT * FROM public.users WHERE id = $1', [userId]);
     const user = userResult.rows[0];
 
-    // Generate full token with schema context
-    const token = generateToken(user, company.id, company.schema_name);
+    // Get company commercial_status and user status for the token extra payload
+    const companyFull = await db.query(
+      'SELECT commercial_status FROM public.companies WHERE id = $1', [company.id]
+    );
+    const userFull = await db.query(
+      'SELECT status, is_system_user, role FROM public.users WHERE id = $1', [userId]
+    );
+
+    const cs     = companyFull.rows[0]?.commercial_status || 'activa';
+    const uFull  = userFull.rows[0] || {};
+    const readOnly = uFull.status === 'suspendido' || cs === 'suspendida';
+
+    if (cs === 'bloqueada' && !uFull.is_system_user) {
+      return res.status(403).json({
+        error: 'Esta empresa tiene acceso bloqueado por estado comercial.',
+        commercial_status: cs
+      });
+    }
+
+    const token = generateToken(
+      { ...user, role: uFull.role, status: uFull.status, is_system_user: uFull.is_system_user },
+      company.id,
+      company.schema_name,
+      { read_only: readOnly, commercial_status: cs }
+    );
 
     res.json({
-      message: 'Company selected',
-      company,
-      token
+      message: 'Empresa seleccionada',
+      company: { ...company, commercial_status: cs },
+      token,
+      read_only: readOnly
     });
 
   } catch (error) {
@@ -118,7 +152,16 @@ exports.getMe = async (req, res) => {
             return res.status(404).json({ error: 'User not found' });
         }
 
-        res.json({ user: userResult.rows[0], context: { company_id: req.user.company_id, schema: req.user.schema_name } });
+        const u = userResult.rows[0];
+        res.json({
+          user: u,
+          context: {
+            company_id:        req.user.company_id,
+            schema:            req.user.schema_name,
+            read_only:         req.user.read_only || false,
+            commercial_status: req.user.commercial_status || null
+          }
+        });
     } catch (error) {
         res.status(500).json({ error: 'Server Error' });
     }
