@@ -1,13 +1,16 @@
 const express = require('express');
-const router = express.Router({ mergeParams: true }); // mergeParams for :id from parent
-const usersController = require('../controllers/usersController');
-const authMiddleware = require('../middleware/authMiddleware');
+const router = express.Router({ mergeParams: true });
+const ctrl   = require('../controllers/usersController');
+const auth   = require('../middleware/authMiddleware');
 
-router.use(authMiddleware);
+router.use(auth);
 
-router.get('/', usersController.getCompanyUsers);
-router.post('/', usersController.inviteUser);
-router.put('/:userId', usersController.updateCompanyUser);
-router.delete('/:userId', usersController.removeCompanyUser);
+router.get('/',                                  ctrl.getCompanyUsers);
+router.post('/',                                 ctrl.inviteUser);
+router.put('/:userId',                           ctrl.updateCompanyUser);
+router.patch('/:userId/status',                  ctrl.changeUserStatus);
+router.post('/:userId/profiles',                 ctrl.assignUserProfile);
+router.delete('/:userId/profiles/:profileId',    ctrl.removeUserProfile);
+router.delete('/:userId',                        ctrl.removeCompanyUser);
 
 module.exports = router;

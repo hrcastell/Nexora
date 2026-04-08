@@ -83,6 +83,104 @@ const seedTenantRoles = async (schemaName, client) => {
     }
 };
 
+// Seed modules, profiles and permission matrix for a new tenant
+const seedTenantExtended = async (schemaName, client) => {
+    const s = schemaName;
+
+    const BASE_MODULES = [
+        { code: 'dashboard',     name: 'Dashboard',         icon: 'LayoutDashboard', group_name: 'Core',      menu_order: 1 },
+        { code: 'companies',     name: 'Empresas',           icon: 'Building2',       group_name: 'Admin',     menu_order: 2 },
+        { code: 'users',         name: 'Usuarios',           icon: 'Users',           group_name: 'Seguridad', menu_order: 3 },
+        { code: 'profiles',      name: 'Perfiles',           icon: 'Shield',          group_name: 'Seguridad', menu_order: 4 },
+        { code: 'modules',       name: 'Módulos',            icon: 'Puzzle',          group_name: 'Seguridad', menu_order: 5 },
+        { code: 'commercial',    name: 'Control Comercial',  icon: 'CreditCard',      group_name: 'Comercial', menu_order: 6 },
+        { code: 'solicitudes',   name: 'Solicitudes',        icon: 'ClipboardList',   group_name: 'Operación', menu_order: 7 },
+        { code: 'subscriptions', name: 'Suscripciones',      icon: 'FileText',        group_name: 'Comercial', menu_order: 8 },
+        { code: 'config',        name: 'Configuración',      icon: 'Settings',        group_name: 'Admin',     menu_order: 9 },
+        { code: 'reports',       name: 'Reportes',           icon: 'BarChart2',       group_name: 'Análisis',  menu_order: 10 },
+    ];
+
+    const moduleIds = {};
+    for (const m of BASE_MODULES) {
+        const r = await client.query(
+            `INSERT INTO "${s}".modules (code, name, icon, group_name, menu_order, status, is_system_module)
+             VALUES ($1,$2,$3,$4,$5,'activo',TRUE)
+             ON CONFLICT (code) DO UPDATE SET name = EXCLUDED.name
+             RETURNING id`,
+            [m.code, m.name, m.icon, m.group_name, m.menu_order]
+        );
+        moduleIds[m.code] = r.rows[0].id;
+    }
+
+    const BASE_PROFILES = [
+        { code: 'acceso_total',  name: 'Acceso Total',          description: 'Acceso completo a todos los módulos', scope: 'global',  is_system: true },
+        { code: 'admin_empresa', name: 'Administrador Empresa', description: 'Gestión completa del tenant',         scope: 'empresa', is_system: true },
+        { code: 'supervisor',    name: 'Supervisor',            description: 'Supervisión y aprobaciones',          scope: 'empresa', is_system: false },
+        { code: 'operacion',     name: 'Operación',             description: 'Acceso operativo estándar',           scope: 'empresa', is_system: false },
+        { code: 'consulta',      name: 'Consulta',              description: 'Solo lectura',                        scope: 'empresa', is_system: false },
+    ];
+
+    const profileIds = {};
+    for (const p of BASE_PROFILES) {
+        const r = await client.query(
+            `INSERT INTO "${s}".profiles (code, name, description, scope, is_system_profile)
+             VALUES ($1,$2,$3,$4,$5)
+             ON CONFLICT (code) DO UPDATE SET name = EXCLUDED.name
+             RETURNING id`,
+            [p.code, p.name, p.description, p.scope, p.is_system]
+        );
+        profileIds[p.code] = r.rows[0].id;
+    }
+
+    // acceso_total: all modules, all permissions
+    for (const moduleId of Object.values(moduleIds)) {
+        await client.query(
+            `INSERT INTO "${s}".profile_permissions
+             (profile_id, module_id, can_view, can_create, can_edit, can_delete, can_approve, can_export, can_admin)
+             VALUES ($1,$2,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE)
+             ON CONFLICT (profile_id, module_id) DO NOTHING`,
+            [profileIds['acceso_total'], moduleId]
+        );
+    }
+
+    // admin_empresa: all except system modules admin
+    for (const [code, moduleId] of Object.entries(moduleIds)) {
+        const canAdmin = !['modules'].includes(code);
+        const canDelete = !['modules','profiles'].includes(code);
+        await client.query(
+            `INSERT INTO "${s}".profile_permissions
+             (profile_id, module_id, can_view, can_create, can_edit, can_delete, can_approve, can_export, can_admin)
+             VALUES ($1,$2,TRUE,TRUE,TRUE,$3,TRUE,TRUE,$4)
+             ON CONFLICT (profile_id, module_id) DO NOTHING`,
+            [profileIds['admin_empresa'], moduleId, canDelete, canAdmin]
+        );
+    }
+
+    // operacion: core operational modules only
+    for (const code of ['dashboard', 'solicitudes', 'reports']) {
+        if (!moduleIds[code]) continue;
+        await client.query(
+            `INSERT INTO "${s}".profile_permissions
+             (profile_id, module_id, can_view, can_create, can_edit, can_delete, can_approve, can_export, can_admin)
+             VALUES ($1,$2,TRUE,TRUE,TRUE,FALSE,FALSE,FALSE,FALSE)
+             ON CONFLICT (profile_id, module_id) DO NOTHING`,
+            [profileIds['operacion'], moduleIds[code]]
+        );
+    }
+
+    // consulta: view only
+    for (const code of ['dashboard', 'solicitudes', 'reports', 'companies']) {
+        if (!moduleIds[code]) continue;
+        await client.query(
+            `INSERT INTO "${s}".profile_permissions
+             (profile_id, module_id, can_view, can_create, can_edit, can_delete, can_approve, can_export, can_admin)
+             VALUES ($1,$2,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE)
+             ON CONFLICT (profile_id, module_id) DO NOTHING`,
+            [profileIds['consulta'], moduleIds[code]]
+        );
+    }
+};
+
 exports.getAllCompanies = async (req, res) => {
     try {
         // Only Super Admin should see all companies or maybe filtered?
@@ -141,7 +239,10 @@ exports.createCompany = async (req, res) => {
         // 3.5 Seed base roles, permissions and RBAC matrix for the new tenant
         await seedTenantRoles(schema_name, client);
 
-        // 3.6 Initialize Tenant Config (Populate config_company)
+        // 3.6 Seed modules, profiles and permission matrix
+        await seedTenantExtended(schema_name, client);
+
+        // 3.7 Initialize Tenant Config (Populate config_company)
         await client.query(`
             INSERT INTO "${schema_name}".config_company (company_name, country, rut, address, email, phone)
             VALUES ($1, $2, $3, $4, $5, $6)

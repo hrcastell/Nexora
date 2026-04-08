@@ -8,8 +8,11 @@ import CompaniesListView from '../views/admin/CompaniesListView.vue'
 import CompanyDetailsView from '../views/admin/CompanyDetailsView.vue'
 import SolicitudesListView from '../views/admin/SolicitudesListView.vue'
 import VisualConfigView from '../views/VisualConfigView.vue'
-import UsersListView from '../views/admin/UsersListView.vue'
+import UsersView from '../views/admin/UsersView.vue'
 import ReportsView from '../views/admin/ReportsView.vue'
+import ModulesView from '../views/admin/ModulesView.vue'
+import ProfilesView from '../views/admin/ProfilesView.vue'
+import CommercialView from '../views/admin/CommercialView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -59,7 +62,22 @@ const router = createRouter({
         {
           path: 'admin/users',
           name: 'admin-users',
-          component: UsersListView
+          component: UsersView
+        },
+        {
+          path: 'admin/profiles',
+          name: 'admin-profiles',
+          component: ProfilesView
+        },
+        {
+          path: 'admin/modules',
+          name: 'admin-modules',
+          component: ModulesView
+        },
+        {
+          path: 'admin/commercial',
+          name: 'admin-commercial',
+          component: CommercialView
         },
         {
           path: 'admin/reports',

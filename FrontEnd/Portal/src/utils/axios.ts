@@ -26,10 +26,16 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      // Clear token and redirect to login if token is invalid/expired
-      // But avoid infinite loops if already on login
-      if (!window.location.pathname.includes('/login')) {
+      const msg: string = error.response.data?.error ?? '';
+      const isRealAuthFailure =
+        msg.includes('Token expirado') ||
+        msg.includes('Token inválido') ||
+        msg.includes('No token') ||
+        msg.includes('no encontrado o inactivo');
+      if (isRealAuthFailure && !window.location.pathname.includes('/login')) {
         localStorage.removeItem('token');
+        localStorage.removeItem('currentCompany');
+        localStorage.removeItem('nexora_read_only');
         window.location.href = '/login';
       }
     }

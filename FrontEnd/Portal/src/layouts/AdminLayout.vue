@@ -13,7 +13,10 @@ import {
   ChevronDown,
   Mail,
   Users,
-  BarChart2
+  BarChart2,
+  Shield,
+  Puzzle,
+  CreditCard
 } from 'lucide-vue-next';
 
 const authStore = useAuthStore();
@@ -28,16 +31,22 @@ const mainNav = computed(() => [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
 ]);
 
-// Config submenu items (only for super_admin)
+// Config submenu items (only for super_admin / admin)
 const configNav = computed(() => {
-  if (!authStore.user?.is_super_admin) return [];
-  return [
-    { name: 'Empresas', href: '/admin/companies', icon: Building2 },
-    { name: 'Solicitudes', href: '/admin/requests', icon: Mail },
-    { name: 'Usuarios', href: '/admin/users', icon: Users },
-    { name: 'Reportes', href: '/admin/reports', icon: BarChart2 },
-    { name: 'Visual', href: '/admin/config', icon: Palette },
+  if (!authStore.user?.is_super_admin && authStore.user?.role !== 'admin') return [];
+  const items = [
+    { name: 'Empresas',     href: '/admin/companies',  icon: Building2  },
+    { name: 'Solicitudes',  href: '/admin/requests',   icon: Mail       },
+    { name: 'Usuarios',     href: '/admin/users',      icon: Users      },
+    { name: 'Perfiles',     href: '/admin/profiles',   icon: Shield     },
+    { name: 'Reportes',     href: '/admin/reports',    icon: BarChart2  },
+    { name: 'Visual',       href: '/admin/config',     icon: Palette    },
   ];
+  if (authStore.user?.is_super_admin) {
+    items.splice(4, 0, { name: 'M\u00f3dulos', href: '/admin/modules', icon: Puzzle });
+    items.push({ name: 'Comercial', href: '/admin/commercial', icon: CreditCard });
+  }
+  return items;
 });
 
 const isActive = (href: string) => route.path === href;
