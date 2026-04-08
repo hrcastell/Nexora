@@ -26,30 +26,32 @@ onMounted(() => {
 });
 
 const theme = computed(() => {
+  const isLight = document.documentElement.getAttribute('data-nexora-mode') === 'light';
+  
   switch (props.toast.type) {
     case 'success':
       return {
-        ring: 'border-emerald-400/25',
-        bg: 'bg-emerald-400/10',
-        text: 'text-emerald-200',
+        ring: 'border-emerald-500/30',
+        bg: isLight ? 'bg-emerald-500/15' : 'bg-emerald-400/10',
+        icon: 'text-emerald-600',
       };
     case 'warning':
       return {
-        ring: 'border-[#d4af37]/30',
-        bg: 'bg-[#d4af37]/10',
-        text: 'text-[#f5df9f]',
+        ring: 'border-amber-500/30',
+        bg: isLight ? 'bg-amber-500/15' : 'bg-[#d4af37]/10',
+        icon: 'text-amber-600',
       };
     case 'error':
       return {
-        ring: 'border-rose-400/25',
-        bg: 'bg-rose-400/10',
-        text: 'text-rose-200',
+        ring: 'border-rose-500/30',
+        bg: isLight ? 'bg-rose-500/15' : 'bg-rose-400/10',
+        icon: 'text-rose-600',
       };
     default:
       return {
-        ring: 'border-violet-400/25',
-        bg: 'bg-violet-400/10',
-        text: 'text-violet-200',
+        ring: 'border-violet-500/30',
+        bg: isLight ? 'bg-violet-500/15' : 'bg-violet-400/10',
+        icon: 'text-violet-600',
       };
   }
 });
@@ -78,25 +80,26 @@ import { computed } from 'vue';
 <template>
   <div 
     :class="[
-      'pointer-events-auto w-full rounded-[24px] border p-4 shadow-xl shadow-black/30 backdrop-blur-xl toast-in',
+      'pointer-events-auto w-full rounded-[24px] border p-4 shadow-xl backdrop-blur-xl toast-in',
+      'bg-white/95 dark:bg-[#0b1326]/95',
+      'shadow-black/10 dark:shadow-black/30',
       theme.ring,
-      'bg-[#0b1326]/95'
     ]"
   >
     <div class="flex items-start gap-3">
-      <div :class="['flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl', theme.bg, theme.text]">
+      <div :class="['flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl', theme.bg, theme.icon]">
         <component :is="IconComponent" />
       </div>
       <div class="min-w-0 flex-1">
         <div class="flex items-start justify-between gap-3">
           <div>
-            <p class="text-sm font-semibold text-white">{{ toast.title }}</p>
-            <p class="mt-1 text-sm leading-6 text-slate-300">{{ toast.message }}</p>
+            <p class="text-sm font-semibold text-slate-800 dark:text-white">{{ toast.title }}</p>
+            <p class="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">{{ toast.message }}</p>
           </div>
           <button
             type="button"
             @click="close"
-            class="rounded-xl p-1 text-slate-400 transition hover:bg-white/5 hover:text-white"
+            class="rounded-xl p-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-white"
           >
             <CloseIcon />
           </button>

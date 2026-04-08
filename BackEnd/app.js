@@ -14,7 +14,8 @@ const allowedOrigins = [
   'https://nexoragarage.hrcastell.com',
   'https://admin.nexoragarage.hrcastell.com'
 ];
-app.use(cors({
+
+const corsOptions = {
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
@@ -22,8 +23,12 @@ app.use(cors({
       callback(new Error(`CORS: origin ${origin} not allowed`));
     }
   },
-  credentials: true
-}));
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'x-auth-token'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
+};
+
+app.use(cors(corsOptions));
 
 app.use(morgan('dev'));
 app.use(express.json());
@@ -37,8 +42,15 @@ app.get('/', (req, res) => {
 // Routes
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/companies', require('./routes/companyRoutes'));
+app.use('/api/companies/:id/users', require('./routes/usersRoutes'));
+app.use('/api/companies/:id', require('./routes/companyConfigRoutes'));
 app.use('/api/solicitudes', require('./routes/solicitudesRoutes'));
 app.use('/api/subscriptions', require('./routes/subscriptionRoutes'));
+app.use('/api/stats', require('./routes/statsRoutes'));
+
+const authMiddleware = require('./middleware/authMiddleware');
+const usersController = require('./controllers/usersController');
+app.get('/api/users', authMiddleware, usersController.getAllUsers);
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {

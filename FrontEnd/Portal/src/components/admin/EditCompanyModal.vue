@@ -4,20 +4,26 @@ import api from '../../utils/axios';
 import { X, Loader2 } from 'lucide-vue-next';
 import { useVisualConfigStore } from '../../stores/visualConfig';
 
-interface InitialData {
-  name?: string;
-  contact_email?: string;
-  contact_phone?: string;
+interface Company {
+  id: number;
+  name: string;
+  schema_name: string;
+  country: string;
+  rut: string;
+  contact_email: string;
+  contact_phone: string;
+  address: string;
+  plan_type: string;
 }
 
 const props = defineProps<{
   isOpen: boolean;
-  initialData?: InitialData;
+  company: Company | null;
 }>();
 
 const emit = defineEmits<{
   (e: 'close'): void;
-  (e: 'created'): void;
+  (e: 'updated'): void;
 }>();
 
 const isLoading = ref(false);
@@ -43,7 +49,6 @@ const getButtonHoverBorder = () => isLightMode.value ? 'rgba(0, 0, 0, 0.12)' : '
 
 const form = reactive({
   name: '',
-  schema_name: '',
   rut: '',
   contact_email: '',
   contact_phone: '',
@@ -52,41 +57,32 @@ const form = reactive({
   plan_type: 'basic'
 });
 
-watch(() => props.isOpen, (open) => {
-  if (open && props.initialData) {
-    form.name = props.initialData.name || '';
-    form.contact_email = props.initialData.contact_email || '';
-    form.contact_phone = props.initialData.contact_phone || '';
+// Watch for company changes to populate form
+watch(() => props.company, (newCompany) => {
+  if (newCompany) {
+    form.name = newCompany.name;
+    form.rut = newCompany.rut;
+    form.contact_email = newCompany.contact_email;
+    form.contact_phone = newCompany.contact_phone || '';
+    form.address = newCompany.address || '';
+    form.country = newCompany.country;
+    form.plan_type = newCompany.plan_type;
   }
-});
-
-const resetForm = () => {
-  form.name = '';
-  form.schema_name = '';
-  form.rut = '';
-  form.contact_email = '';
-  form.contact_phone = '';
-  form.address = '';
-  form.country = 'Chile';
-  form.plan_type = 'basic';
-  error.value = '';
-};
+}, { immediate: true });
 
 const handleClose = () => {
-  resetForm();
+  error.value = '';
   emit('close');
 };
 
 const handleSubmit = async () => {
-  if (!form.name || !form.schema_name || !form.contact_email || !form.rut || !form.country) {
-    error.value = 'Nombre, Schema, RUT, Email y País son obligatorios.';
+  if (!form.name || !form.contact_email || !form.rut || !form.country) {
+    error.value = 'Nombre, RUT, Email y País son obligatorios.';
     return;
   }
 
-  // Validate schema format (lowercase, alphanumeric, underscores)
-  const schemaRegex = /^[a-z0-9_]+$/;
-  if (!schemaRegex.test(form.schema_name)) {
-    error.value = 'El nombre del schema solo puede contener letras minúsculas, números y guiones bajos.';
+  if (!props.company) {
+    error.value = 'No se encontró la empresa a editar.';
     return;
   }
 
@@ -94,14 +90,14 @@ const handleSubmit = async () => {
   error.value = '';
 
   try {
-    await api.post('/companies', form);
-    emit('created');
+    await api.put(`/companies/${props.company.id}`, form);
+    emit('updated');
     handleClose();
   } catch (err: any) {
     if (err.response && err.response.data && err.response.data.error) {
       error.value = err.response.data.error;
     } else {
-      error.value = 'Error al crear la empresa. Verifique los datos.';
+      error.value = 'Error al actualizar la empresa. Verifique los datos.';
     }
   } finally {
     isLoading.value = false;
@@ -138,11 +134,11 @@ const handleSubmit = async () => {
         <div class="sm:flex sm:items-start">
           <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
             <h3 class="text-lg leading-6 font-medium" :style="{ color: headerTextColor }" id="modal-title">
-              Registrar Nueva Empresa
+              Editar Empresa
             </h3>
             <div class="mt-2">
               <p class="text-sm" :style="{ color: mutedTextColor }">
-                Esto creará un nuevo registro y aprovisionará un schema dedicado en la base de datos.
+                Actualiza los datos de la empresa. El schema de base de datos no puede modificarse.
               </p>
             </div>
 
@@ -150,8 +146,8 @@ const handleSubmit = async () => {
               
               <!-- Name -->
               <div>
-                <label for="name" class="block text-sm font-medium mb-2" :style="{ color: labelColor }">Nombre de la Empresa *</label>
-                <input type="text" id="name" v-model="form.name" required class="mt-1 block w-full rounded-xl shadow-sm border p-2.5 text-sm transition-colors" 
+                <label for="edit-name" class="block text-sm font-medium mb-2" :style="{ color: labelColor }">Nombre de la Empresa *</label>
+                <input type="text" id="edit-name" v-model="form.name" required class="mt-1 block w-full rounded-xl shadow-sm border p-2.5 text-sm transition-colors" 
                        :style="{ 
                          backgroundColor: inputBg, 
                          borderColor: inputBorder, 
@@ -159,24 +155,22 @@ const handleSubmit = async () => {
                        }" />
               </div>
 
-              <!-- Schema Name -->
+              <!-- Schema Name (Read-only) -->
               <div>
-                <label for="schema" class="block text-sm font-medium mb-2" :style="{ color: labelColor }">Nombre del Schema (DB) *</label>
-                <div class="mt-1 flex rounded-md shadow-sm">
-                  <input type="text" id="schema" v-model="form.schema_name" required placeholder="ej: empresa_x" class="flex-1 min-w-0 block w-full px-3 py-2.5 rounded-xl text-sm border transition-colors" 
-                         :style="{ 
-                           backgroundColor: inputBg, 
-                           borderColor: inputBorder, 
-                           color: headerTextColor 
-                         }" />
-                </div>
-                <p class="mt-1 text-xs" :style="{ color: mutedTextColor }">Solo minúsculas, números y guiones bajos (_).</p>
+                <label for="edit-schema" class="block text-sm font-medium mb-2" :style="{ color: labelColor }">Nombre del Schema (DB)</label>
+                <input type="text" id="edit-schema" :value="company?.schema_name" disabled class="mt-1 block w-full rounded-xl shadow-sm border p-2.5 text-sm opacity-60 cursor-not-allowed" 
+                       :style="{ 
+                         backgroundColor: inputBg, 
+                         borderColor: inputBorder, 
+                         color: mutedTextColor 
+                       }" />
+                <p class="mt-1 text-xs" :style="{ color: mutedTextColor }">El schema no puede ser modificado una vez creado.</p>
               </div>
 
               <!-- RUT -->
               <div>
-                <label for="rut" class="block text-sm font-medium mb-2" :style="{ color: labelColor }">RUT / ID Tributario *</label>
-                <input type="text" id="rut" v-model="form.rut" required class="mt-1 block w-full rounded-xl shadow-sm border p-2.5 text-sm transition-colors" 
+                <label for="edit-rut" class="block text-sm font-medium mb-2" :style="{ color: labelColor }">RUT / ID Tributario *</label>
+                <input type="text" id="edit-rut" v-model="form.rut" required class="mt-1 block w-full rounded-xl shadow-sm border p-2.5 text-sm transition-colors" 
                        :style="{ 
                          backgroundColor: inputBg, 
                          borderColor: inputBorder, 
@@ -186,8 +180,8 @@ const handleSubmit = async () => {
 
               <!-- Country -->
               <div>
-                <label for="country" class="block text-sm font-medium mb-2" :style="{ color: labelColor }">País *</label>
-                <select id="country" v-model="form.country" class="mt-1 block w-full pl-3 pr-10 py-2.5 text-base rounded-xl border text-sm transition-colors" 
+                <label for="edit-country" class="block text-sm font-medium mb-2" :style="{ color: labelColor }">País *</label>
+                <select id="edit-country" v-model="form.country" class="mt-1 block w-full pl-3 pr-10 py-2.5 text-base rounded-xl border text-sm transition-colors" 
                         :style="{ 
                           backgroundColor: inputBg, 
                           borderColor: inputBorder, 
@@ -208,8 +202,8 @@ const handleSubmit = async () => {
 
               <!-- Email -->
               <div>
-                <label for="email" class="block text-sm font-medium mb-2" :style="{ color: labelColor }">Email de Contacto *</label>
-                <input type="email" id="email" v-model="form.contact_email" required class="mt-1 block w-full rounded-xl shadow-sm border p-2.5 text-sm transition-colors" 
+                <label for="edit-email" class="block text-sm font-medium mb-2" :style="{ color: labelColor }">Email de Contacto *</label>
+                <input type="email" id="edit-email" v-model="form.contact_email" required class="mt-1 block w-full rounded-xl shadow-sm border p-2.5 text-sm transition-colors" 
                        :style="{ 
                          backgroundColor: inputBg, 
                          borderColor: inputBorder, 
@@ -219,8 +213,8 @@ const handleSubmit = async () => {
 
               <!-- Phone -->
               <div>
-                <label for="phone" class="block text-sm font-medium mb-2" :style="{ color: labelColor }">Teléfono</label>
-                <input type="text" id="phone" v-model="form.contact_phone" class="mt-1 block w-full rounded-xl shadow-sm border p-2.5 text-sm transition-colors" 
+                <label for="edit-phone" class="block text-sm font-medium mb-2" :style="{ color: labelColor }">Teléfono</label>
+                <input type="text" id="edit-phone" v-model="form.contact_phone" class="mt-1 block w-full rounded-xl shadow-sm border p-2.5 text-sm transition-colors" 
                        :style="{ 
                          backgroundColor: inputBg, 
                          borderColor: inputBorder, 
@@ -230,8 +224,8 @@ const handleSubmit = async () => {
 
               <!-- Address -->
               <div>
-                <label for="address" class="block text-sm font-medium mb-2" :style="{ color: labelColor }">Dirección</label>
-                <textarea id="address" v-model="form.address" rows="2" class="mt-1 block w-full rounded-xl shadow-sm border p-2.5 text-sm transition-colors" 
+                <label for="edit-address" class="block text-sm font-medium mb-2" :style="{ color: labelColor }">Dirección</label>
+                <textarea id="edit-address" v-model="form.address" rows="2" class="mt-1 block w-full rounded-xl shadow-sm border p-2.5 text-sm transition-colors" 
                           :style="{ 
                             backgroundColor: inputBg, 
                             borderColor: inputBorder, 
@@ -241,8 +235,8 @@ const handleSubmit = async () => {
 
               <!-- Plan -->
               <div>
-                <label for="plan" class="block text-sm font-medium mb-2" :style="{ color: labelColor }">Plan Inicial</label>
-                <select id="plan" v-model="form.plan_type" class="mt-1 block w-full pl-3 pr-10 py-2.5 text-base rounded-xl border text-sm transition-colors" 
+                <label for="edit-plan" class="block text-sm font-medium mb-2" :style="{ color: labelColor }">Plan</label>
+                <select id="edit-plan" v-model="form.plan_type" class="mt-1 block w-full pl-3 pr-10 py-2.5 text-base rounded-xl border text-sm transition-colors" 
                         :style="{ 
                           backgroundColor: inputBg, 
                           borderColor: inputBorder, 
@@ -271,7 +265,7 @@ const handleSubmit = async () => {
                   class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 nxr-btn-primary text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0b1326] sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 transition-all"
                 >
                   <Loader2 v-if="isLoading" class="animate-spin -ml-1 mr-2 h-4 w-4" />
-                  {{ isLoading ? 'Creando...' : 'Crear Empresa' }}
+                  {{ isLoading ? 'Guardando...' : 'Guardar Cambios' }}
                 </button>
                 <button 
                   type="button" 

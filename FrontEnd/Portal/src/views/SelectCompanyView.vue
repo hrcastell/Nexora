@@ -2,15 +2,11 @@
 import { onMounted } from 'vue';
 import { useAuthStore } from '../stores/auth';
 import { useRouter } from 'vue-router';
+import { Building2, ArrowRight, Layers, LogOut } from 'lucide-vue-next';
 
 const authStore = useAuthStore();
 const router = useRouter();
 
-// Custom Icons
-const BuildingIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5"><path d="M4 21V7l8-4 8 4v14"/><path d="M9 21v-4h6v4"/><path d="M8 10h.01"/><path d="M12 10h.01"/><path d="M16 10h.01"/><path d="M8 13h.01"/><path d="M12 13h.01"/><path d="M16 13h.01"/></svg>` };
-const ArrowRightIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-4 w-4"><path d="M5 12h14"/><path d="M13 5l7 7-7 7"/></svg>` };
-const LayersIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-4 w-4"><path d="M12 3l9 5-9 5-9-5 9-5z"/><path d="M3 12l9 5 9-5"/><path d="M3 16l9 5 9-5"/></svg>` };
-const LogOutIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-4 w-4"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg>` };
 
 onMounted(() => {
   if (!authStore.isAuthenticated) {
@@ -114,7 +110,7 @@ const handleLogout = () => {
 
         <div class="mt-8 rounded-[28px] border border-white/10 bg-white/5 p-5">
           <div class="mb-4 flex items-center gap-2 text-sm font-semibold text-[#d8dde5]">
-            <LayersIcon />
+            <Layers class="h-4 w-4" />
             Resumen de Acceso
           </div>
           <div class="grid gap-3 sm:grid-cols-3">
@@ -146,7 +142,7 @@ const handleLogout = () => {
               </div>
             </div>
             <div class="rounded-2xl border border-[#d4af37]/20 bg-[#d4af37]/10 p-3 shadow-lg shadow-[#d4af37]/10">
-              <BuildingIcon class="h-6 w-6 text-[#f0ce6f]" />
+              <Building2 class="h-6 w-6 text-[#f0ce6f]" />
             </div>
           </div>
 
@@ -161,7 +157,7 @@ const handleLogout = () => {
               <div class="flex items-center justify-between gap-3">
                 <div class="flex items-center gap-4">
                   <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#243b7a] to-[#4c1d95]">
-                    <BuildingIcon class="h-5 w-5 text-white" />
+                    <Building2 class="h-5 w-5 text-white" />
                   </div>
                   <div>
                     <div class="flex items-center gap-2">
@@ -177,7 +173,7 @@ const handleLogout = () => {
                 </div>
                 <div class="flex items-center gap-2 text-sm font-medium text-[#d8dde5]">
                   <span>Seleccionar</span>
-                  <ArrowRightIcon />
+                  <ArrowRight class="h-4 w-4" />
                 </div>
               </div>
             </button>
@@ -185,7 +181,7 @@ const handleLogout = () => {
             <!-- Empty State -->
             <div v-if="authStore.companies.length === 0" class="rounded-3xl border border-white/10 bg-[#091224]/80 p-8 text-center">
               <div class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-white/5">
-                <BuildingIcon class="h-8 w-8 text-slate-500" />
+                <Building2 class="h-8 w-8 text-slate-500" />
               </div>
               <p class="text-sm font-medium text-white">No tienes empresas asignadas</p>
               <p class="mt-2 text-sm text-slate-400">
@@ -200,7 +196,7 @@ const handleLogout = () => {
               @click="handleLogout"
               class="flex w-full items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-3.5 text-sm font-medium text-slate-200 transition hover:bg-white/10 hover:text-white"
             >
-              <LogOutIcon />
+              <LogOut class="h-4 w-4" />
               Cerrar sesión y volver al login
             </button>
           </div>
