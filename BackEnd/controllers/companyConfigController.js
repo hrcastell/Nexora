@@ -35,11 +35,18 @@ exports.getCompanyConfig = async (req, res) => {
 // PUT /companies/:id/config — Update tenant config_company (branding)
 exports.updateCompanyConfig = async (req, res) => {
     try {
-        if (!req.user.is_super_admin) {
-            return res.status(403).json({ error: 'Access denied. Super Admin only.' });
-        }
-
         const { id: companyId } = req.params;
+
+        // Allow super_admin OR company_admin of this company
+        if (!req.user.is_super_admin) {
+            const link = await db.query(
+                'SELECT is_company_admin FROM public.company_users WHERE company_id = $1 AND user_id = $2',
+                [companyId, req.user.id]
+            );
+            if (link.rows.length === 0 || !link.rows[0].is_company_admin) {
+                return res.status(403).json({ error: 'Access denied. Super Admin or Company Admin only.' });
+            }
+        }
         const { company_name, country, rut, address, email, phone, logo_url, primary_color, secondary_color, font_family } = req.body;
 
         // Get schema_name

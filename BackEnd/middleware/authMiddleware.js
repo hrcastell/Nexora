@@ -23,7 +23,7 @@ module.exports = async function(req, res, next) {
   // ── 2. Consultas DB de validación (errores aquí = 500) ─────────
   try {
     const userRes = await db.query(
-      'SELECT status, is_system_user, role FROM public.users WHERE id = $1 AND is_active = TRUE',
+      'SELECT status, is_system_user, role, is_super_admin FROM public.users WHERE id = $1 AND is_active = TRUE',
       [decoded.id]
     );
 
@@ -40,6 +40,7 @@ module.exports = async function(req, res, next) {
     req.user.status         = user.status;
     req.user.role           = user.role || decoded.role;
     req.user.is_system_user = user.is_system_user;
+    req.user.is_super_admin = user.is_super_admin || false;
     req.user.read_only      = user.status === 'suspendido';
 
     if (decoded.company_id && !user.is_system_user) {

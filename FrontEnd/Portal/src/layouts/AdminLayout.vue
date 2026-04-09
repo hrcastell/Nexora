@@ -36,14 +36,14 @@ const configNav = computed(() => {
   if (!authStore.user?.is_super_admin && authStore.user?.role !== 'admin') return [];
   const items = [
     { name: 'Empresas',     href: '/admin/companies',  icon: Building2  },
-    { name: 'Solicitudes',  href: '/admin/requests',   icon: Mail       },
     { name: 'Usuarios',     href: '/admin/users',      icon: Users      },
     { name: 'Perfiles',     href: '/admin/profiles',   icon: Shield     },
-    { name: 'Reportes',     href: '/admin/reports',    icon: BarChart2  },
     { name: 'Visual',       href: '/admin/config',     icon: Palette    },
   ];
   if (authStore.user?.is_super_admin) {
-    items.splice(4, 0, { name: 'M\u00f3dulos', href: '/admin/modules', icon: Puzzle });
+    items.splice(1, 0, { name: 'Solicitudes', href: '/admin/requests', icon: Mail });
+    items.splice(5, 0, { name: 'M\u00f3dulos', href: '/admin/modules', icon: Puzzle });
+    items.splice(6, 0, { name: 'Reportes', href: '/admin/reports', icon: BarChart2 });
     items.push({ name: 'Comercial', href: '/admin/commercial', icon: CreditCard });
   }
   return items;

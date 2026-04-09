@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { CreditCard, Plus, Loader2, X, Save, ShieldAlert, RefreshCw, CheckCircle, AlertTriangle, XCircle, Clock } from 'lucide-vue-next';
+import { CreditCard, Plus, Loader2, X, Save, ShieldAlert, RefreshCw, CheckCircle, AlertTriangle, XCircle, Clock, FileText } from 'lucide-vue-next';
+import AppToast, { type ToastItem, type ToastType } from '../../components/AppToast.vue';
 import api from '../../utils/axios';
 import { useVisualConfigStore } from '../../stores/visualConfig';
 import { useAuthStore } from '../../stores/auth';
@@ -33,6 +34,30 @@ const showModal   = ref(false);
 const modalType   = ref<'agreement' | 'invoice' | 'payment'>('invoice');
 const isSaving    = ref(false);
 const saveError   = ref('');
+
+// Toast state
+const activeToast = ref<ToastItem | null>(null);
+const triggerToast = (title: string, message: string, type: ToastType) => {
+  activeToast.value = { id: Date.now(), title, message, type };
+};
+
+// Generate invoice from agreement
+const isGenerating = ref(false);
+async function generateInvoice(agreementId: number) {
+  if (!companyId.value) return;
+  isGenerating.value = true;
+  try {
+    await api.post(`/companies/${companyId.value}/agreements/${agreementId}/generate-invoice`);
+    triggerToast('Recibo generado', 'El recibo fue creado automáticamente desde el convenio.', 'success');
+    await loadData();
+    activeTab.value = 'invoices';
+  } catch (e: unknown) {
+    const err = e as { response?: { data?: { error?: string } } };
+    triggerToast('Error', err?.response?.data?.error ?? 'No se pudo generar el recibo.', 'error');
+  } finally {
+    isGenerating.value = false;
+  }
+}
 
 const agreementForm = ref({
   amount: '', currency: 'CLP', frequency: 'monthly',
@@ -114,6 +139,7 @@ async function saveForm() {
       await api.post(`/companies/${companyId.value}/invoices/${paymentForm.value.invoice_id}/payment`, paymentForm.value);
     }
     showModal.value = false;
+    triggerToast('Guardado', 'Registro creado correctamente.', 'success');
     await loadData();
   } catch (e: unknown) {
     const err = e as { response?: { data?: { error?: string } } };
@@ -332,6 +358,12 @@ const freqLabel   = (f: string) => ({ monthly: 'Mensual', quarterly: 'Trimestral
             </div>
             <p class="text-sm" :style="{ color: mutedColor }">{{ ag.service_description }}</p>
             <p class="text-xs mt-2" :style="{ color: mutedColor }">Desde {{ fmtDate(ag.start_date) }} · Gracia {{ ag.grace_period_days }} días</p>
+            <button v-if="perms.canManageCommercial.value && ag.status === 'activo'" @click="generateInvoice(ag.id)"
+              :disabled="isGenerating"
+              class="mt-3 flex items-center gap-1.5 rounded-2xl border border-blue-500/30 bg-blue-500/10 text-blue-300 px-3 py-1.5 text-xs font-medium hover:bg-blue-500/20 transition disabled:opacity-50">
+              <FileText class="h-3.5 w-3.5" />
+              {{ isGenerating ? 'Generando...' : 'Generar Recibo' }}
+            </button>
           </div>
         </div>
       </div>
@@ -538,6 +570,22 @@ const freqLabel   = (f: string) => ({ monthly: 'Mensual', quarterly: 'Trimestral
           </div>
         </div>
       </div>
+    </Teleport>
+
+    <!-- Toast Notification -->
+    <Teleport to="body">
+      <Transition
+        enter-active-class="transition duration-200 ease-out"
+        enter-from-class="opacity-0 translate-y-2"
+        enter-to-class="opacity-100 translate-y-0"
+        leave-active-class="transition duration-150 ease-in"
+        leave-from-class="opacity-100 translate-y-0"
+        leave-to-class="opacity-0 translate-y-2"
+      >
+        <div v-if="activeToast" class="fixed bottom-6 right-6 z-[9999] w-full max-w-sm pointer-events-none">
+          <AppToast :toast="activeToast" @close="activeToast = null" />
+        </div>
+      </Transition>
     </Teleport>
   </div>
 </template>

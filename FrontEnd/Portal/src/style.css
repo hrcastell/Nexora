@@ -196,3 +196,17 @@
   border-color: rgba(var(--nexora-accent-rgb), 0.12) !important;
   background: rgba(var(--nexora-accent-rgb), 0.05) !important;
 }
+
+/* ============================================================
+   DARK MODE SELECT / OPTION FIX
+   <option> elements ignore inline styles; force dark bg + light text
+   ============================================================ */
+select option {
+  background-color: #0d1829;
+  color: #ffffff;
+}
+
+[data-nexora-mode="light"] select option {
+  background-color: #ffffff;
+  color: #0f172a;
+}

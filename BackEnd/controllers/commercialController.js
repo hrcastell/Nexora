@@ -121,6 +121,89 @@ exports.updateAgreement = async (req, res) => {
     }
 };
 
+// ── Generación automática de recibo desde convenio ───────────
+
+// POST /api/companies/:id/agreements/:aId/generate-invoice
+exports.generateInvoiceFromAgreement = async (req, res) => {
+    try {
+        if (!isSuperAdmin(req)) return res.status(403).json({ error: 'Acceso denegado' });
+
+        const { id: companyId, aId } = req.params;
+
+        // Load agreement
+        const agResult = await db.query(
+            'SELECT * FROM public.payment_agreements WHERE id = $1 AND company_id = $2',
+            [aId, companyId]
+        );
+        if (agResult.rows.length === 0) return res.status(404).json({ error: 'Convenio no encontrado' });
+        const agreement = agResult.rows[0];
+
+        if (agreement.status !== 'activo') {
+            return res.status(400).json({ error: 'El convenio no está activo' });
+        }
+
+        // Find the last invoice for this agreement to calculate next period
+        const lastInvoice = await db.query(
+            `SELECT period_end FROM public.invoices
+             WHERE agreement_id = $1 AND company_id = $2
+             ORDER BY period_end DESC LIMIT 1`,
+            [aId, companyId]
+        );
+
+        let periodStart;
+        if (lastInvoice.rows.length > 0) {
+            // Next period starts the day after the last period ended
+            const lastEnd = new Date(lastInvoice.rows[0].period_end);
+            lastEnd.setDate(lastEnd.getDate() + 1);
+            periodStart = lastEnd;
+        } else {
+            periodStart = new Date(agreement.start_date);
+        }
+
+        // Calculate period_end based on frequency
+        const periodEnd = new Date(periodStart);
+        switch (agreement.frequency) {
+            case 'monthly':   periodEnd.setMonth(periodEnd.getMonth() + 1); periodEnd.setDate(periodEnd.getDate() - 1); break;
+            case 'quarterly': periodEnd.setMonth(periodEnd.getMonth() + 3); periodEnd.setDate(periodEnd.getDate() - 1); break;
+            case 'yearly':    periodEnd.setFullYear(periodEnd.getFullYear() + 1); periodEnd.setDate(periodEnd.getDate() - 1); break;
+            default:          periodEnd.setMonth(periodEnd.getMonth() + 1); periodEnd.setDate(periodEnd.getDate() - 1); break;
+        }
+
+        // Due date = period_end + grace_period_days
+        const dueDate = new Date(periodEnd);
+        dueDate.setDate(dueDate.getDate() + (agreement.grace_period_days || 5));
+
+        const fmt = (d) => d.toISOString().split('T')[0];
+
+        const result = await db.query(
+            `INSERT INTO public.invoices
+             (company_id, agreement_id, period_start, period_end, issue_date,
+              due_date, amount, currency, service_detail, status, notes, created_by)
+             VALUES ($1,$2,$3,$4,CURRENT_DATE,$5,$6,$7,$8,'emitido',$9,$10)
+             RETURNING *`,
+            [
+                companyId, aId, fmt(periodStart), fmt(periodEnd), fmt(dueDate),
+                agreement.amount, agreement.currency || 'CLP',
+                JSON.stringify([{ description: agreement.service_description, amount: agreement.amount }]),
+                `Generado automáticamente desde convenio #${aId}`,
+                req.user.id
+            ]
+        );
+
+        // Update company commercial status
+        await db.query(
+            `UPDATE public.companies SET commercial_status = 'pendiente_pago', updated_at = CURRENT_TIMESTAMP
+             WHERE id = $1 AND commercial_status = 'activa'`,
+            [companyId]
+        );
+
+        res.status(201).json(result.rows[0]);
+    } catch (error) {
+        console.error('Generate invoice from agreement error:', error);
+        res.status(500).json({ error: 'Error al generar recibo desde convenio' });
+    }
+};
+
 // ── Recibos / Facturas ────────────────────────────────────────
 
 // GET /api/companies/:id/invoices

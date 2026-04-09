@@ -60,6 +60,11 @@ exports.getCompanyUsers = async (req, res) => {
         }
         const schemaName = companyResult.rows[0].schema_name;
 
+        // Filter out super_admin users for non-super_admin requests
+        const whereClause = isSuperAdmin(req) 
+            ? `WHERE cu.company_id = $1`
+            : `WHERE cu.company_id = $1 AND (u.is_super_admin IS NULL OR u.is_super_admin = FALSE)`;
+
         const result = await db.query(
             `SELECT u.id, u.email, u.full_name, u.first_name, u.last_name,
                     u.phone, u.country, u.state_region, u.city, u.commune,
@@ -79,7 +84,7 @@ exports.getCompanyUsers = async (req, res) => {
              LEFT JOIN "${schemaName}".roles r ON up.role_id = r.id
              LEFT JOIN "${schemaName}".user_tenant_profiles utp ON u.id = utp.user_id
              LEFT JOIN "${schemaName}".profiles pr ON utp.profile_id = pr.id
-             WHERE cu.company_id = $1
+             ${whereClause}
              GROUP BY u.id, cu.is_company_admin, cu.id, up.role_id, r.name,
                       up.status, up.job_title, up.access_level
              ORDER BY cu.is_company_admin DESC, u.full_name ASC`,

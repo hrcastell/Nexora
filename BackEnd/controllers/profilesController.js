@@ -10,6 +10,11 @@ exports.getProfiles = async (req, res) => {
         const schema = getSchema(req);
         if (!schema) return res.status(400).json({ error: 'Contexto de empresa requerido' });
 
+        // Filter out 'acceso_total' profile for non-super_admin users
+        const whereClause = isSuperAdmin(req) 
+            ? ``
+            : `WHERE p.code != 'acceso_total'`;
+
         const result = await db.query(
             `SELECT p.*,
                     COUNT(DISTINCT pp.module_id) AS module_count,
@@ -17,6 +22,7 @@ exports.getProfiles = async (req, res) => {
              FROM "${schema}".profiles p
              LEFT JOIN "${schema}".profile_permissions pp ON pp.profile_id = p.id
              LEFT JOIN "${schema}".user_tenant_profiles utp ON utp.profile_id = p.id
+             ${whereClause}
              GROUP BY p.id
              ORDER BY p.is_system_profile DESC, p.name ASC`
         );

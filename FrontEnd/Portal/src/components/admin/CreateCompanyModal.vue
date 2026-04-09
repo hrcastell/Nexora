@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue';
 import api from '../../utils/axios';
-import { X, Loader2 } from 'lucide-vue-next';
+import { X, Loader2, Eye, EyeOff, ChevronDown, ChevronUp, UserPlus } from 'lucide-vue-next';
 import { useVisualConfigStore } from '../../stores/visualConfig';
 
 interface InitialData {
@@ -52,6 +52,30 @@ const form = reactive({
   plan_type: 'basic'
 });
 
+const showAdminSection = ref(false);
+const showPwd = ref(false);
+const showConfirmPwd = ref(false);
+const adminForm = reactive({
+  first_name: '',
+  last_name: '',
+  email: '',
+  password: '',
+  confirm_password: ''
+});
+
+const passwordStrength = computed(() => {
+  const p = adminForm.password;
+  if (!p) return 0;
+  let s = 0;
+  if (p.length >= 8) s++;
+  if (/[A-Z]/.test(p)) s++;
+  if (/[0-9]/.test(p)) s++;
+  if (/[^A-Za-z0-9]/.test(p)) s++;
+  return s;
+});
+const strengthLabel = computed(() => ['', 'Débil', 'Regular', 'Buena', 'Fuerte'][passwordStrength.value]);
+const strengthColor = computed(() => ['', 'bg-red-500', 'bg-amber-500', 'bg-blue-500', 'bg-emerald-500'][passwordStrength.value]);
+
 watch(() => props.isOpen, (open) => {
   if (open && props.initialData) {
     form.name = props.initialData.name || '';
@@ -69,6 +93,14 @@ const resetForm = () => {
   form.address = '';
   form.country = 'Chile';
   form.plan_type = 'basic';
+  adminForm.first_name = '';
+  adminForm.last_name = '';
+  adminForm.email = '';
+  adminForm.password = '';
+  adminForm.confirm_password = '';
+  showAdminSection.value = false;
+  showPwd.value = false;
+  showConfirmPwd.value = false;
   error.value = '';
 };
 
@@ -90,11 +122,36 @@ const handleSubmit = async () => {
     return;
   }
 
+  // Validate admin user fields if section is open
+  if (showAdminSection.value && adminForm.email) {
+    if (!adminForm.password) {
+      error.value = 'La contraseña del administrador es requerida.';
+      return;
+    }
+    if (adminForm.password !== adminForm.confirm_password) {
+      error.value = 'Las contraseñas del administrador no coinciden.';
+      return;
+    }
+    if (passwordStrength.value < 3) {
+      error.value = 'La contraseña debe tener mínimo 8 caracteres, una mayúscula, un número y un carácter especial.';
+      return;
+    }
+  }
+
   isLoading.value = true;
   error.value = '';
 
   try {
-    await api.post('/companies', form);
+    const payload: any = { ...form };
+    if (showAdminSection.value && adminForm.email && adminForm.password) {
+      payload.admin_user = {
+        first_name: adminForm.first_name,
+        last_name: adminForm.last_name,
+        email: adminForm.email,
+        password: adminForm.password
+      };
+    }
+    await api.post('/companies', payload);
     emit('created');
     handleClose();
   } catch (err: any) {
@@ -252,6 +309,75 @@ const handleSubmit = async () => {
                   <option value="pro" :style="{ backgroundColor: optionBg }">Pro</option>
                   <option value="enterprise" :style="{ backgroundColor: optionBg }">Enterprise</option>
                 </select>
+              </div>
+
+              <!-- Admin User Section (collapsible) -->
+              <div class="rounded-xl border p-4 transition-colors"
+                   :style="{ borderColor: inputBorder, backgroundColor: isLightMode ? 'rgba(0,0,0,0.02)' : 'rgba(255,255,255,0.02)' }">
+                <button type="button" @click="showAdminSection = !showAdminSection"
+                        class="flex items-center justify-between w-full text-left">
+                  <div class="flex items-center gap-2">
+                    <UserPlus class="h-4 w-4" :style="{ color: mutedTextColor }" />
+                    <span class="text-sm font-medium" :style="{ color: headerTextColor }">Administrador de la empresa</span>
+                  </div>
+                  <ChevronUp v-if="showAdminSection" class="h-4 w-4" :style="{ color: mutedTextColor }" />
+                  <ChevronDown v-else class="h-4 w-4" :style="{ color: mutedTextColor }" />
+                </button>
+                <p v-if="!showAdminSection" class="mt-1 text-xs" :style="{ color: mutedTextColor }">
+                  Opcional — Crea un usuario que administrará esta empresa.
+                </p>
+                <div v-if="showAdminSection" class="mt-4 space-y-3">
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label class="block text-xs font-medium mb-1" :style="{ color: labelColor }">Nombre</label>
+                      <input type="text" v-model="adminForm.first_name" class="block w-full rounded-xl border p-2.5 text-sm transition-colors"
+                             :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerTextColor }" />
+                    </div>
+                    <div>
+                      <label class="block text-xs font-medium mb-1" :style="{ color: labelColor }">Apellido</label>
+                      <input type="text" v-model="adminForm.last_name" class="block w-full rounded-xl border p-2.5 text-sm transition-colors"
+                             :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerTextColor }" />
+                    </div>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium mb-1" :style="{ color: labelColor }">Email del administrador *</label>
+                    <input type="email" v-model="adminForm.email" class="block w-full rounded-xl border p-2.5 text-sm transition-colors"
+                           :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerTextColor }" />
+                  </div>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label class="block text-xs font-medium mb-1" :style="{ color: labelColor }">Contraseña *</label>
+                      <div class="relative">
+                        <input :type="showPwd ? 'text' : 'password'" v-model="adminForm.password"
+                               class="block w-full rounded-xl border p-2.5 pr-9 text-sm transition-colors"
+                               :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerTextColor }" />
+                        <button type="button" @click="showPwd = !showPwd" class="absolute right-3 top-1/2 -translate-y-1/2">
+                          <Eye v-if="!showPwd" class="h-4 w-4" :style="{ color: mutedTextColor }" />
+                          <EyeOff v-else class="h-4 w-4" :style="{ color: mutedTextColor }" />
+                        </button>
+                      </div>
+                      <div v-if="adminForm.password" class="mt-1.5 flex items-center gap-2">
+                        <div class="flex-1 h-1 rounded-full" :style="{ backgroundColor: isLightMode ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.10)' }">
+                          <div class="h-full rounded-full transition-all" :class="strengthColor" :style="{ width: `${passwordStrength * 25}%` }" />
+                        </div>
+                        <span class="text-xs" :style="{ color: mutedTextColor }">{{ strengthLabel }}</span>
+                      </div>
+                    </div>
+                    <div>
+                      <label class="block text-xs font-medium mb-1" :style="{ color: labelColor }">Confirmar *</label>
+                      <div class="relative">
+                        <input :type="showConfirmPwd ? 'text' : 'password'" v-model="adminForm.confirm_password"
+                               class="block w-full rounded-xl border p-2.5 pr-9 text-sm transition-colors"
+                               :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerTextColor }" />
+                        <button type="button" @click="showConfirmPwd = !showConfirmPwd" class="absolute right-3 top-1/2 -translate-y-1/2">
+                          <Eye v-if="!showConfirmPwd" class="h-4 w-4" :style="{ color: mutedTextColor }" />
+                          <EyeOff v-else class="h-4 w-4" :style="{ color: mutedTextColor }" />
+                        </button>
+                      </div>
+                      <p v-if="adminForm.confirm_password && adminForm.password !== adminForm.confirm_password" class="mt-1 text-xs text-red-400">No coinciden</p>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <!-- Error Message -->
