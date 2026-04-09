@@ -25,6 +25,11 @@ const companyId = computed(() => auth.currentCompany?.id);
 const users     = ref<CompanyUser[]>([]);
 const profiles  = ref<Profile[]>([]);
 const isLoading = ref(true);
+
+// Company selector for super_admin when creating users
+interface CompanyOption { id: number; name: string; schema_name: string; }
+const allCompanies = ref<CompanyOption[]>([]);
+const selectedCompanyId = ref<number | null>(null);
 const search    = ref('');
 const filterStatus = ref('');
 const filterRole   = ref('');
@@ -91,6 +96,14 @@ async function loadData() {
     ]);
     users.value   = usersRes.data;
     profiles.value = profRes.data;
+
+    // Load companies list for super_admin
+    if (perms.isSuperAdmin.value && allCompanies.value.length === 0) {
+      try {
+        const cRes = await api.get('/companies');
+        allCompanies.value = cRes.data;
+      } catch { /* silent */ }
+    }
   } catch { /* silent */ } finally {
     isLoading.value = false;
   }
@@ -106,6 +119,7 @@ function openCreate() {
   saveError.value = '';
   showPwd.value = false;
   showConfirm.value = false;
+  selectedCompanyId.value = companyId.value ?? null;
   showModal.value = true;
 }
 
@@ -146,7 +160,10 @@ async function saveUser() {
 
   isSaving.value = true; saveError.value = '';
   try {
-    const cId = companyId.value;
+    const cId = (!isEditing.value && perms.isSuperAdmin.value && selectedCompanyId.value)
+      ? selectedCompanyId.value
+      : companyId.value;
+    if (!cId) { saveError.value = 'Debe seleccionar una empresa'; isSaving.value = false; return; }
     if (isEditing.value) {
       await api.put(`/companies/${cId}/users/${form.value.id}`, form.value);
     } else {
@@ -397,6 +414,18 @@ const initials = (u: CompanyUser) => `${u.first_name?.[0] ?? ''}${u.last_name?.[
           <div class="overflow-y-auto p-5 space-y-5 flex-1">
             <div v-if="saveError" class="flex items-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
               <ShieldAlert class="h-4 w-4 shrink-0" /> {{ saveError }}
+            </div>
+
+            <!-- Company selector (super_admin only, create mode) -->
+            <div v-if="perms.isSuperAdmin.value && !isEditing" class="rounded-2xl border p-4"
+              :style="{ borderColor: inputBorder, backgroundColor: isLight ? 'rgba(0,0,0,0.02)' : 'rgba(255,255,255,0.02)' }">
+              <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide" :style="{ color: mutedColor }">Empresa destino *</label>
+              <select v-model="selectedCompanyId" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
+                :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }">
+                <option :value="null" disabled>-- Seleccionar empresa --</option>
+                <option v-for="c in allCompanies" :key="c.id" :value="c.id">{{ c.name }} ({{ c.schema_name }})</option>
+              </select>
+              <p class="text-xs mt-1 opacity-60" :style="{ color: mutedColor }">El usuario será vinculado a esta empresa.</p>
             </div>
 
             <!-- Avatar Upload -->

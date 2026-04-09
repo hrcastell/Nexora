@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import api from '../../utils/axios';
-import { Plus, Search, Building2 } from 'lucide-vue-next';
+import { Plus, Search, Building2, Trash2 } from 'lucide-vue-next';
 import CreateCompanyModal from '../../components/admin/CreateCompanyModal.vue';
+import ConfirmDeleteModal from '../../components/admin/ConfirmDeleteModal.vue';
+import AppToast, { type ToastItem, type ToastType } from '../../components/AppToast.vue';
 import { useVisualConfigStore } from '../../stores/visualConfig';
+import { usePermissions } from '../../composables/usePermissions';
+import { useAuthStore } from '../../stores/auth';
 
 interface Company {
   id: number;
@@ -21,6 +25,48 @@ const companies = ref<Company[]>([]);
 const isLoading = ref(true);
 const searchQuery = ref('');
 const showCreateModal = ref(false);
+
+const perms = usePermissions();
+const authStore = useAuthStore();
+
+// Prevent deleting the company the super_admin is currently associated with
+const canDeleteCompany = (company: Company) => {
+  return perms.isSuperAdmin.value && authStore.currentCompany?.id !== company.id;
+};
+
+// Toast state
+const activeToast = ref<ToastItem | null>(null);
+const triggerToast = (title: string, message: string, type: ToastType) => {
+  activeToast.value = { id: Date.now(), title, message, type };
+};
+
+// Delete state
+const showDeleteModal = ref(false);
+const companyToDelete = ref<Company | null>(null);
+
+const openDeleteModal = (company: Company) => {
+  companyToDelete.value = company;
+  showDeleteModal.value = true;
+};
+
+const handleDeleteConfirmed = async () => {
+  if (!companyToDelete.value) return;
+  try {
+    await api.delete(`/companies/${companyToDelete.value.id}`);
+    triggerToast('Empresa eliminada', `"${companyToDelete.value.name}" y su schema fueron eliminados.`, 'success');
+    showDeleteModal.value = false;
+    companyToDelete.value = null;
+    await fetchCompanies();
+  } catch (error: any) {
+    triggerToast('Error', error.response?.data?.error || 'No se pudo eliminar la empresa.', 'error');
+    showDeleteModal.value = false;
+  }
+};
+
+const handleCompanyCreated = async () => {
+  triggerToast('Empresa creada', 'La empresa y su schema fueron creados exitosamente.', 'success');
+  await fetchCompanies();
+};
 
 // Theme-aware styling
 const configStore = useVisualConfigStore();
@@ -75,21 +121,22 @@ const filteredList = computed(() => {
 <template>
   <div class="space-y-5">
     <!-- Header - Nexora Style -->
-    <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-      <div class="flex items-center gap-4">
-        <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#243b7a] to-[#4c1d95]">
-          <Building2 class="h-6 w-6 text-white" />
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div class="flex items-center gap-3">
+        <div class="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#243b7a] to-[#4c1d95]">
+          <Building2 class="h-5 w-5 sm:h-6 sm:w-6 text-white" />
         </div>
         <div>
-          <h1 class="text-xl font-semibold" :style="{ color: headerTextColor }">Gestión de Empresas</h1>
-          <p class="text-sm" :style="{ color: mutedTextColor }">Administración de tenants y suscripciones</p>
+          <h1 class="text-lg sm:text-xl font-semibold" :style="{ color: headerTextColor }">Gestión de Empresas</h1>
+          <p class="text-xs sm:text-sm" :style="{ color: mutedTextColor }">Administración de tenants y suscripciones</p>
         </div>
       </div>
       
       <button
+        v-if="perms.isSuperAdmin.value"
         type="button"
         @click="showCreateModal = true"
-        class="flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-medium text-white transition nxr-btn-primary"
+        class="flex items-center justify-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-medium text-white transition nxr-btn-primary w-full sm:w-auto"
       >
         <Plus class="h-4 w-4" />
         <span>Nueva Empresa</span>
@@ -97,7 +144,7 @@ const filteredList = computed(() => {
     </div>
 
     <!-- Search Bar - Nexora Input Style -->
-    <div class="rounded-3xl border p-4" 
+    <div class="rounded-2xl sm:rounded-3xl border p-3 sm:p-4" 
          :style="{ 
            backgroundColor: searchBg, 
            borderColor: cardBorder 
@@ -109,7 +156,7 @@ const filteredList = computed(() => {
         <input
           type="text"
           v-model="searchQuery"
-          class="block w-full rounded-2xl border pl-11 pr-4 py-3 text-sm transition-all"
+          class="block w-full rounded-2xl border pl-11 pr-4 py-2.5 sm:py-3 text-sm transition-all"
           :style="{ 
             backgroundColor: searchInputBg, 
             borderColor: searchInputBorder, 
@@ -190,8 +237,12 @@ const filteredList = computed(() => {
           </div>
         </div>
         
-        <div class="mt-4 pt-4 border-t flex justify-end" 
+        <div class="mt-4 pt-4 border-t flex items-center justify-between" 
              :style="{ borderColor: getDividerBorderColor() }">
+          <button v-if="canDeleteCompany(company)" @click="openDeleteModal(company)"
+            class="rounded-xl p-2 hover:bg-red-500/10 transition" title="Eliminar empresa">
+            <Trash2 class="h-4 w-4 text-red-400" />
+          </button>
           <router-link 
             :to="`/admin/companies/${company.id}`" 
             class="inline-flex items-center gap-1 text-sm font-medium text-[#d4af37] hover:text-[#f5e3ab] transition-colors"
@@ -256,12 +307,18 @@ const filteredList = computed(() => {
             </td>
             <td class="px-3 py-4 text-sm" :style="{ color: mutedTextColor }">{{ company.plan_type }}</td>
             <td class="py-4 pl-3 pr-5 text-right">
-              <router-link 
-                :to="`/admin/companies/${company.id}`" 
-                class="text-sm font-medium text-[#d4af37] hover:text-[#f5e3ab] transition-colors"
-              >
-                Gestionar
-              </router-link>
+              <div class="flex items-center justify-end gap-2">
+                <router-link 
+                  :to="`/admin/companies/${company.id}`" 
+                  class="text-sm font-medium text-[#d4af37] hover:text-[#f5e3ab] transition-colors"
+                >
+                  Gestionar
+                </router-link>
+                <button v-if="canDeleteCompany(company)" @click="openDeleteModal(company)"
+                  class="rounded-xl p-1.5 hover:bg-red-500/10 transition" title="Eliminar empresa">
+                  <Trash2 class="h-4 w-4 text-red-400" />
+                </button>
+              </div>
             </td>
           </tr>
         </tbody>
@@ -269,10 +326,36 @@ const filteredList = computed(() => {
     </div>
   </div>
 
-  <!-- Create Company Modal - Outside container for proper overlay -->
+  <!-- Create Company Modal -->
   <CreateCompanyModal 
     :is-open="showCreateModal" 
     @close="showCreateModal = false"
-    @created="fetchCompanies"
+    @created="handleCompanyCreated"
   />
+
+  <!-- Confirm Delete Modal -->
+  <ConfirmDeleteModal
+    :is-open="showDeleteModal"
+    :entity-name="companyToDelete?.name ?? ''"
+    entity-type="Empresa"
+    :description="`Se eliminará permanentemente la empresa \&quot;${companyToDelete?.name}\&quot;, su schema (${companyToDelete?.schema_name}) y todos los datos asociados. Esta acción es irreversible.`"
+    @confirmed="handleDeleteConfirmed"
+    @cancelled="showDeleteModal = false; companyToDelete = null"
+  />
+
+  <!-- Toast Notification -->
+  <Teleport to="body">
+    <Transition
+      enter-active-class="transition duration-200 ease-out"
+      enter-from-class="opacity-0 translate-y-2"
+      enter-to-class="opacity-100 translate-y-0"
+      leave-active-class="transition duration-150 ease-in"
+      leave-from-class="opacity-100 translate-y-0"
+      leave-to-class="opacity-0 translate-y-2"
+    >
+      <div v-if="activeToast" class="fixed bottom-6 right-6 z-[9999] w-full max-w-sm pointer-events-none">
+        <AppToast :toast="activeToast" @close="activeToast = null" />
+      </div>
+    </Transition>
+  </Teleport>
 </template>

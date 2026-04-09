@@ -1,6 +1,7 @@
 const db = require('../config/db');
 const fs = require('fs');
 const path = require('path');
+const bcrypt = require('bcryptjs');
 
 // Helper to run SQL file
 const runSqlFile = async (filePath, schemaName, client) => {
@@ -183,13 +184,19 @@ const seedTenantExtended = async (schemaName, client) => {
 
 exports.getAllCompanies = async (req, res) => {
     try {
-        // Only Super Admin should see all companies or maybe filtered?
-        // For now, assuming Super Admin access based on requirements
-        if (!req.user.is_super_admin) {
-             return res.status(403).json({ error: 'Access denied. Super Admin only.' });
+        if (req.user.is_super_admin) {
+            const result = await db.query('SELECT * FROM public.companies ORDER BY created_at DESC');
+            return res.json(result.rows);
         }
 
-        const result = await db.query('SELECT * FROM public.companies ORDER BY created_at DESC');
+        // Company admins only see companies they are linked to
+        const result = await db.query(
+            `SELECT c.* FROM public.companies c
+             JOIN public.company_users cu ON c.id = cu.company_id
+             WHERE cu.user_id = $1
+             ORDER BY c.created_at DESC`,
+            [req.user.id]
+        );
         res.json(result.rows);
     } catch (error) {
         console.error('Get companies error:', error);
@@ -248,17 +255,78 @@ exports.createCompany = async (req, res) => {
             VALUES ($1, $2, $3, $4, $5, $6)
         `, [name, country, rut, address, contact_email, contact_phone]);
 
-        // 4. Create Initial Admin User for this Company (Optional: Reuse the creator or create a new one?)
-        // Strategy: Link the current Super Admin as a user in this company too, so they can manage it.
-        // Also, usually we might invite a new user. For now, let's just link the Super Admin.
+        // 4. Link Super Admin to company
         await client.query(`
             INSERT INTO public.company_users (company_id, user_id, is_company_admin)
             VALUES ($1, $2, TRUE)
         `, [newCompany.id, req.user.id]);
 
+        // 5. Create dedicated admin user for this company (optional)
+        const { admin_user } = req.body;
+        let createdAdminUserId = null;
+
+        if (admin_user && admin_user.email && admin_user.password) {
+            const PASSWORD_REGEX = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,}$/;
+            if (!PASSWORD_REGEX.test(admin_user.password)) {
+                await client.query('ROLLBACK');
+                return res.status(400).json({
+                    error: 'La contraseña del administrador debe tener mínimo 8 caracteres, una mayúscula, un número y un carácter especial'
+                });
+            }
+
+            const fName = admin_user.first_name || '';
+            const lName = admin_user.last_name || '';
+            const displayName = `${fName} ${lName}`.trim() || admin_user.email;
+            const passwordHash = await bcrypt.hash(admin_user.password, 10);
+
+            // Check if user already exists
+            let existingUser = await client.query(
+                'SELECT id FROM public.users WHERE email = $1', [admin_user.email]
+            );
+
+            if (existingUser.rows.length > 0) {
+                createdAdminUserId = existingUser.rows[0].id;
+            } else {
+                const newUserResult = await client.query(
+                    `INSERT INTO public.users
+                     (email, password_hash, full_name, first_name, last_name,
+                      role, status, is_super_admin, is_active, is_system_user, created_by)
+                     VALUES ($1,$2,$3,$4,$5,'admin','activo',FALSE,TRUE,FALSE,$6)
+                     RETURNING id`,
+                    [admin_user.email, passwordHash, displayName, fName, lName, req.user.id]
+                );
+                createdAdminUserId = newUserResult.rows[0].id;
+            }
+
+            // Link admin user to company
+            await client.query(
+                `INSERT INTO public.company_users (company_id, user_id, is_company_admin)
+                 VALUES ($1, $2, TRUE)
+                 ON CONFLICT (company_id, user_id) DO UPDATE SET is_company_admin = TRUE`,
+                [newCompany.id, createdAdminUserId]
+            );
+
+            // Assign admin role in tenant schema
+            const adminRole = await client.query(
+                `SELECT id FROM "${schema_name}".roles WHERE name = 'admin' LIMIT 1`
+            );
+            if (adminRole.rows.length > 0) {
+                await client.query(
+                    `INSERT INTO "${schema_name}".user_profiles (user_id, role_id, is_active, status, job_title, access_level)
+                     VALUES ($1, $2, TRUE, 'activo', 'Administrador', 'total')
+                     ON CONFLICT (user_id) DO UPDATE SET role_id = EXCLUDED.role_id`,
+                    [createdAdminUserId, adminRole.rows[0].id]
+                );
+            }
+        }
+
         await client.query('COMMIT');
 
-        res.status(201).json({ message: 'Company and Schema created successfully', company: newCompany });
+        res.status(201).json({
+            message: 'Company and Schema created successfully',
+            company: newCompany,
+            adminUserId: createdAdminUserId
+        });
 
     } catch (error) {
         await client.query('ROLLBACK');
@@ -277,6 +345,20 @@ exports.createCompany = async (req, res) => {
 exports.getCompanyById = async (req, res) => {
     try {
         const { id } = req.params;
+        
+        // Check if user has access: either super_admin or company admin of this company
+        if (!req.user.is_super_admin) {
+            const companyUserRes = await db.query(
+                'SELECT company_id FROM public.company_users WHERE user_id = $1 AND is_company_admin = TRUE',
+                [req.user.id]
+            );
+            
+            const userCompanyIds = companyUserRes.rows.map(row => row.company_id);
+            if (!userCompanyIds.includes(parseInt(id))) {
+                return res.status(403).json({ error: 'Access denied. You can only view your own company.' });
+            }
+        }
+        
         const result = await db.query('SELECT * FROM public.companies WHERE id = $1', [id]);
         
         if (result.rows.length === 0) {
@@ -326,4 +408,61 @@ exports.updateCompany = async (req, res) => {
         console.error('Update company error:', error);
         res.status(500).json({ error: 'Server error updating company' });
      }
+};
+
+exports.deleteCompany = async (req, res) => {
+    const client = await db.getClient();
+    try {
+        if (!req.user.is_super_admin) {
+            return res.status(403).json({ error: 'Access denied. Super Admin only.' });
+        }
+
+        const { id } = req.params;
+
+        // Check if super_admin is linked to this company (prevent self-deletion)
+        const linkedCompanyRes = await client.query(
+            'SELECT company_id FROM public.company_users WHERE user_id = $1 AND company_id = $2',
+            [req.user.id, id]
+        );
+        
+        if (linkedCompanyRes.rows.length > 0) {
+            return res.status(403).json({ error: 'No puedes eliminar una empresa a la que estás asociado.' });
+        }
+
+        // Get company info
+        const companyResult = await client.query(
+            'SELECT id, schema_name, name FROM public.companies WHERE id = $1', [id]
+        );
+        if (companyResult.rows.length === 0) {
+            return res.status(404).json({ error: 'Company not found' });
+        }
+
+        const { schema_name, name } = companyResult.rows[0];
+
+        await client.query('BEGIN');
+
+        // 1. Drop the tenant schema and all its objects
+        await client.query(`DROP SCHEMA IF EXISTS "${schema_name}" CASCADE`);
+
+        // 2. Delete related records in public schema
+        await client.query('DELETE FROM public.company_users WHERE company_id = $1', [id]);
+        await client.query('DELETE FROM public.payments_history WHERE company_id = $1', [id]);
+        await client.query('DELETE FROM public.invoices WHERE company_id = $1', [id]);
+        await client.query('DELETE FROM public.payment_agreements WHERE company_id = $1', [id]);
+        await client.query('DELETE FROM public.subscriptions WHERE company_id = $1', [id]);
+
+        // 3. Delete the company record
+        await client.query('DELETE FROM public.companies WHERE id = $1', [id]);
+
+        await client.query('COMMIT');
+
+        res.status(204).send();
+
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('Delete company error:', error);
+        res.status(500).json({ error: 'Server error deleting company' });
+    } finally {
+        client.release();
+    }
 };

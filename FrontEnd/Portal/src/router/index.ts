@@ -57,7 +57,8 @@ const router = createRouter({
         {
           path: 'admin/requests',
           name: 'admin-requests',
-          component: SolicitudesListView
+          component: SolicitudesListView,
+          meta: { requiresSuperAdmin: true }
         },
         {
           path: 'admin/users',
@@ -82,7 +83,8 @@ const router = createRouter({
         {
           path: 'admin/reports',
           name: 'admin-reports',
-          component: ReportsView
+          component: ReportsView,
+          meta: { requiresSuperAdmin: true }
         }
       ]
     },
@@ -119,6 +121,8 @@ router.beforeEach(async (to, _from, next) => {
     }
   } else if (to.meta.requiresCompany && !hasCompany) {
     next('/select-company')
+  } else if (to.meta.requiresSuperAdmin && !authStore.user?.is_super_admin) {
+    next('/dashboard')
   } else {
     next()
   }
