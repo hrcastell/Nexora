@@ -2,6 +2,7 @@ const db = require('../config/db');
 const fs = require('fs');
 const path = require('path');
 const bcrypt = require('bcryptjs');
+const { registerCompanyCoreModules } = require('./companyModulesController');
 
 // Helper to run SQL file
 const runSqlFile = async (filePath, schemaName, client) => {
@@ -249,6 +250,9 @@ exports.createCompany = async (req, res) => {
         // 3.6 Seed modules, profiles and permission matrix
         await seedTenantExtended(schema_name, client);
 
+        // 3.6.1 Register core modules (dashboard + configuration) in public.company_modules
+        await registerCompanyCoreModules(newCompany.id, client);
+
         // 3.7 Initialize Tenant Config (Populate config_company)
         await client.query(`
             INSERT INTO "${schema_name}".config_company (company_name, country, rut, address, email, phone)
@@ -381,6 +385,14 @@ exports.updateCompany = async (req, res) => {
         const { id } = req.params;
         const { name, rut, contact_email, contact_phone, address, country, plan_type, is_active } = req.body;
 
+        // Prevent deactivating the master schema
+        if (is_active === false) {
+            const masterCheck = await db.query('SELECT is_master FROM public.companies WHERE id = $1', [id]);
+            if (masterCheck.rows[0]?.is_master) {
+                return res.status(403).json({ error: 'El schema maestro (hernancius) no puede ser desactivado.' });
+            }
+        }
+
         const updateQuery = `
             UPDATE public.companies 
             SET name = COALESCE($1, name),
@@ -431,10 +443,15 @@ exports.deleteCompany = async (req, res) => {
 
         // Get company info
         const companyResult = await client.query(
-            'SELECT id, schema_name, name FROM public.companies WHERE id = $1', [id]
+            'SELECT id, schema_name, name, is_master FROM public.companies WHERE id = $1', [id]
         );
         if (companyResult.rows.length === 0) {
             return res.status(404).json({ error: 'Company not found' });
+        }
+
+        // Protect master schema
+        if (companyResult.rows[0].is_master) {
+            return res.status(403).json({ error: 'El schema maestro (hernancius) no puede ser eliminado.' });
         }
 
         const { schema_name, name } = companyResult.rows[0];

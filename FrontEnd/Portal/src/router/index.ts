@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import { useMenuStore } from '../stores/menu'
 import LoginView from '../views/LoginView.vue'
 import SelectCompanyView from '../views/SelectCompanyView.vue'
 import DashboardView from '../views/DashboardView.vue'
@@ -11,6 +12,7 @@ import VisualConfigView from '../views/VisualConfigView.vue'
 import UsersView from '../views/admin/UsersView.vue'
 import ReportsView from '../views/admin/ReportsView.vue'
 import ModulesView from '../views/admin/ModulesView.vue'
+import ModulesManagerView from '../views/admin/ModulesManagerView.vue'
 import ProfilesView from '../views/admin/ProfilesView.vue'
 import CommercialView from '../views/admin/CommercialView.vue'
 
@@ -42,49 +44,62 @@ const router = createRouter({
         {
           path: 'admin/config',
           name: 'admin-config',
-          component: VisualConfigView
+          component: VisualConfigView,
+          meta: { requiresModule: 'configuration', requiresTransaction: 'visual_config' }
         },
         {
           path: 'admin/companies',
           name: 'admin-companies',
-          component: CompaniesListView
+          component: CompaniesListView,
+          meta: { requiresModule: 'configuration', requiresTransaction: 'companies' }
         },
         {
           path: 'admin/companies/:id',
           name: 'admin-company-details',
-          component: CompanyDetailsView
+          component: CompanyDetailsView,
+          meta: { requiresModule: 'configuration', requiresTransaction: 'companies' }
         },
         {
           path: 'admin/requests',
           name: 'admin-requests',
           component: SolicitudesListView,
-          meta: { requiresSuperAdmin: true }
+          meta: { requiresSuperAdmin: true, requiresModule: 'configuration', requiresTransaction: 'requests' }
         },
         {
           path: 'admin/users',
           name: 'admin-users',
-          component: UsersView
+          component: UsersView,
+          meta: { requiresModule: 'configuration', requiresTransaction: 'users' }
         },
         {
           path: 'admin/profiles',
           name: 'admin-profiles',
-          component: ProfilesView
+          component: ProfilesView,
+          meta: { requiresModule: 'configuration', requiresTransaction: 'profiles' }
         },
         {
           path: 'admin/modules',
           name: 'admin-modules',
-          component: ModulesView
+          component: ModulesView,
+          meta: { requiresModule: 'configuration', requiresTransaction: 'modules' }
+        },
+        {
+          path: 'admin/modules-manager',
+          name: 'admin-modules-manager',
+          component: ModulesManagerView,
+          meta: { requiresSuperAdmin: true, requiresModule: 'configuration', requiresTransaction: 'modules' }
         },
         {
           path: 'admin/commercial',
           name: 'admin-commercial',
-          component: CommercialView
+          component: CommercialView,
+          meta: { requiresModule: 'configuration', requiresTransaction: 'commercial' }
         },
         {
           path: 'admin/reports',
           name: 'admin-reports',
           component: ReportsView,
-          meta: { requiresSuperAdmin: true }
+          meta: { requiresSuperAdmin: true, requiresModule: 'configuration', requiresTransaction: 'reports' }
         }
       ]
     },
@@ -99,6 +114,7 @@ let authChecked = false
 
 router.beforeEach(async (to, _from, next) => {
   const authStore = useAuthStore()
+  const menuStore = useMenuStore()
 
   // On first navigation, validate persisted token against the server
   if (!authChecked && authStore.token) {
@@ -110,22 +126,43 @@ router.beforeEach(async (to, _from, next) => {
 
   const isAuthenticated = authStore.isAuthenticated
   const hasCompany = !!authStore.currentCompany
+  const isSuperAdmin = !!authStore.user?.is_super_admin
 
   if (to.meta.requiresAuth && !isAuthenticated) {
-    next('/login')
-  } else if (to.meta.requiresGuest && isAuthenticated) {
-    if (hasCompany) {
-      next('/dashboard')
-    } else {
-      next('/select-company')
-    }
-  } else if (to.meta.requiresCompany && !hasCompany) {
-    next('/select-company')
-  } else if (to.meta.requiresSuperAdmin && !authStore.user?.is_super_admin) {
-    next('/dashboard')
-  } else {
-    next()
+    return next('/login')
   }
+  if (to.meta.requiresGuest && isAuthenticated) {
+    return next(hasCompany ? '/dashboard' : '/select-company')
+  }
+  if (to.meta.requiresCompany && !hasCompany) {
+    return next('/select-company')
+  }
+  if (to.meta.requiresSuperAdmin && !isSuperAdmin) {
+    return next('/dashboard')
+  }
+
+  // Module/transaction guard (aditivo) — super_admin bypass; también bypass si
+  // el menú aún no cargó (evita falsos negativos durante el bootstrap).
+  if (!isSuperAdmin && hasCompany && menuStore.loaded) {
+    const requiredModule = to.meta.requiresModule as string | undefined
+    const requiredTransaction = to.meta.requiresTransaction as string | undefined
+
+    if (requiredModule && !menuStore.hasModule(requiredModule)) {
+      return next('/dashboard')
+    }
+    // Validación por transacción: buscar por ruta exacta en el índice del menú.
+    // Si el path existe en las transacciones habilitadas, se permite.
+    if (requiredTransaction) {
+      const route = to.path
+      if (!menuStore.hasTransaction(route)) {
+        // Permitir rutas dinámicas (ej: /admin/companies/:id) cuyo padre sí está habilitado
+        const hasParent = Array.from(menuStore.routeIndex.keys()).some(r => r !== route && route.startsWith(r + '/'))
+        if (!hasParent) return next('/dashboard')
+      }
+    }
+  }
+
+  return next()
 })
 
 export default router

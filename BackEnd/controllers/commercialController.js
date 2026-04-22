@@ -18,6 +18,12 @@ exports.changeCommercialStatus = async (req, res) => {
             return res.status(400).json({ error: `Estado inválido. Valores: ${valid.join(', ')}` });
         }
 
+        // Protect master schema from suspension/blocking
+        const masterCheck = await db.query('SELECT is_master FROM public.companies WHERE id = $1', [id]);
+        if (masterCheck.rows[0]?.is_master && commercial_status !== 'activa') {
+            return res.status(403).json({ error: 'El schema maestro (hernancius) no puede ser suspendido ni bloqueado.' });
+        }
+
         const result = await db.query(
             `UPDATE public.companies SET commercial_status = $1, updated_at = CURRENT_TIMESTAMP
              WHERE id = $2 RETURNING id, name, commercial_status`,

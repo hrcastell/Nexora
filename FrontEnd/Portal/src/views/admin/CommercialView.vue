@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { CreditCard, Plus, Loader2, X, Save, ShieldAlert, RefreshCw, CheckCircle, AlertTriangle, XCircle, Clock, FileText } from 'lucide-vue-next';
 import AppToast, { type ToastItem, type ToastType } from '../../components/AppToast.vue';
 import api from '../../utils/axios';
 import { useVisualConfigStore } from '../../stores/visualConfig';
 import { useAuthStore } from '../../stores/auth';
 import { usePermissions } from '../../composables/usePermissions';
+import CompanySelector from '../../components/admin/CompanySelector.vue';
 import type { PaymentAgreement, Invoice, Payment, Company } from '../../types/auth';
 
 const cfg   = useVisualConfigStore();
@@ -22,7 +23,12 @@ const inputBg     = computed(() => isLight.value ? '#ffffff' : 'rgba(255,255,255
 const inputBorder = computed(() => isLight.value ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.12)');
 const modalBg     = computed(() => isLight.value ? '#ffffff' : '#0d1829');
 
-const companyId  = computed(() => auth.currentCompany?.id);
+const selectedCompanyId = ref<number | null>(null);
+const companyId  = computed(() =>
+  (perms.isSuperAdmin.value && selectedCompanyId.value)
+    ? selectedCompanyId.value
+    : auth.currentCompany?.id
+);
 const company    = ref<Company | null>(null);
 const agreements = ref<PaymentAgreement[]>([]);
 const invoices   = ref<Invoice[]>([]);
@@ -94,6 +100,14 @@ async function loadData() {
     isLoading.value = false;
   }
 }
+
+watch(selectedCompanyId, () => {
+  company.value = null;
+  agreements.value = [];
+  invoices.value = [];
+  payments.value = [];
+  loadData();
+});
 
 onMounted(loadData);
 
@@ -209,6 +223,7 @@ const freqLabel   = (f: string) => ({ monthly: 'Mensual', quarterly: 'Trimestral
           <p class="text-xs" :style="{ color: mutedColor }">Convenios de pago, recibos e historial de pagos</p>
         </div>
       </div>
+      <CompanySelector v-model="selectedCompanyId" placeholder="Mi empresa (hernancius)" />
       <button @click="loadData" class="flex items-center gap-2 rounded-2xl border px-3 py-2 text-sm transition hover:bg-white/5"
         :style="{ borderColor: cardBorder, color: mutedColor }">
         <RefreshCw class="h-4 w-4" /> Actualizar

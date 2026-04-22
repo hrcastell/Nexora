@@ -43,6 +43,15 @@ app.get('/', (req, res) => {
 // Static files — avatars
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// Module guard (log-only by default; set MODULE_GUARD=strict to block).
+// Mounted before routes so it inspects req.method + req.path for every /api/* call.
+// It reads req.user from the JWT that individual route-middlewares populate; since
+// this middleware runs BEFORE the per-route auth, it also runs a lightweight
+// token decode itself so req.user is available here.
+const moduleGuard = require('./middleware/requireModule');
+const preAuthForGuard = require('./middleware/optionalAuth');
+app.use('/api', preAuthForGuard, moduleGuard);
+
 // Routes
 app.use('/api/auth',                      require('./routes/authRoutes'));
 app.use('/api/companies',                  require('./routes/companyRoutes'));
@@ -54,6 +63,9 @@ app.use('/api/subscriptions',              require('./routes/subscriptionRoutes'
 app.use('/api/stats',                      require('./routes/statsRoutes'));
 app.use('/api/modules',                    require('./routes/modulesRoutes'));
 app.use('/api/profiles',                   require('./routes/profilesRoutes'));
+app.use('/api/catalog',                    require('./routes/catalogRoutes'));
+app.use('/api/menu',                       require('./routes/menuRoutes'));
+app.use('/api/companies/:id/modules',      require('./routes/companyModulesRoutes'));
 
 const authMiddleware  = require('./middleware/authMiddleware');
 const usersController = require('./controllers/usersController');

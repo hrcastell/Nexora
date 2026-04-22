@@ -2,6 +2,8 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import api from '../utils/axios';
 import type { User, Company } from '../types/auth';
+import { useVisualConfigStore } from './visualConfig';
+import { useMenuStore } from './menu';
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<User | null>(null);
@@ -46,6 +48,10 @@ export const useAuthStore = defineStore('auth', () => {
       localStorage.setItem('currentCompany', JSON.stringify(company));
       localStorage.setItem('nexora_read_only', read_only ? '1' : '0');
       
+      // Load dynamic menu (modules + transactions) for this company
+      const menuStore = useMenuStore();
+      await menuStore.loadMenu();
+
       return true;
     } catch (error) {
       console.error('Select company failed', error);
@@ -62,6 +68,9 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('token');
     localStorage.removeItem('currentCompany');
     localStorage.removeItem('nexora_read_only');
+    // Clear dynamic menu so next user doesn't see cached items
+    const menuStore = useMenuStore();
+    menuStore.reset();
   }
 
   async function checkAuth() {
@@ -87,7 +96,15 @@ export const useAuthStore = defineStore('auth', () => {
       } else {
         readOnly.value = localStorage.getItem('nexora_read_only') === '1';
       }
-      
+
+      // Load user-specific visual config from DB
+      const visualConfig = useVisualConfigStore();
+      await visualConfig.loadFromApi();
+
+      // Load dynamic menu (modules + transactions) for this company
+      const menuStore = useMenuStore();
+      await menuStore.loadMenu();
+
       return true;
     } catch (error: any) {
       // Only clear session on actual auth rejections (401/403).

@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { Users, Plus, Search, Loader2, Pencil, Trash2, X, Save, ShieldAlert, ShieldCheck, UserCheck, UserX, Upload, Eye, EyeOff } from 'lucide-vue-next';
 import api from '../../utils/axios';
 import { useVisualConfigStore } from '../../stores/visualConfig';
 import { useAuthStore } from '../../stores/auth';
 import { usePermissions } from '../../composables/usePermissions';
+import CompanySelector from '../../components/admin/CompanySelector.vue';
 import type { CompanyUser, Profile } from '../../types/auth';
 
 const cfg    = useVisualConfigStore();
@@ -26,7 +27,9 @@ const users     = ref<CompanyUser[]>([]);
 const profiles  = ref<Profile[]>([]);
 const isLoading = ref(true);
 
-// Company selector for super_admin when creating users
+// filterCompanyId: used in the list panel (super_admin only)
+const filterCompanyId   = ref<number | null>(null);
+// selectedCompanyId: used in the create modal (existing logic)
 interface CompanyOption { id: number; name: string; schema_name: string; }
 const allCompanies = ref<CompanyOption[]>([]);
 const selectedCompanyId = ref<number | null>(null);
@@ -90,14 +93,26 @@ const kpis = computed(() => ({
 async function loadData() {
   isLoading.value = true;
   try {
+    // super_admin with filter: show only that company's users
+    // super_admin without filter: show all users globally
+    // regular admin: show own company users
+    let usersUrl: string;
+    if (perms.isSuperAdmin.value) {
+      usersUrl = filterCompanyId.value
+        ? `/companies/${filterCompanyId.value}/users`
+        : '/users';
+    } else {
+      usersUrl = companyId.value ? `/companies/${companyId.value}/users` : '/users';
+    }
+
     const [usersRes, profRes] = await Promise.all([
-      api.get(companyId.value ? `/companies/${companyId.value}/users` : '/users'),
+      api.get(usersUrl),
       api.get('/profiles').catch(() => ({ data: [] }))
     ]);
-    users.value   = usersRes.data;
+    users.value    = usersRes.data;
     profiles.value = profRes.data;
 
-    // Load companies list for super_admin
+    // Load companies list for super_admin (modal create)
     if (perms.isSuperAdmin.value && allCompanies.value.length === 0) {
       try {
         const cRes = await api.get('/companies');
@@ -108,6 +123,8 @@ async function loadData() {
     isLoading.value = false;
   }
 }
+
+watch(filterCompanyId, () => loadData());
 
 onMounted(loadData);
 
@@ -276,8 +293,12 @@ const initials = (u: CompanyUser) => `${u.first_name?.[0] ?? ''}${u.last_name?.[
     </div>
 
     <!-- Toolbar -->
-    <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
-      <div class="relative flex-1">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center flex-wrap">
+      <CompanySelector
+        v-model="filterCompanyId"
+        placeholder="Todas las empresas"
+        :show-all="true" />
+      <div class="relative flex-1 min-w-[180px]">
         <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" :style="{ color: mutedColor }" />
         <input v-model="search" placeholder="Buscar usuario..." class="w-full rounded-2xl border pl-9 pr-4 py-2 text-sm focus:outline-none"
           :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />

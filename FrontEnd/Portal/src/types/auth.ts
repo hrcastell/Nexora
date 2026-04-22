@@ -81,6 +81,29 @@ export interface ProfilePermission {
   can_admin: boolean;
 }
 
+export interface TransactionPermission {
+  transaction_code: string;
+  transaction_name: string;
+  transaction_icon?: string;
+  route?: string;
+  can_view: boolean;
+  can_create: boolean;
+  can_edit: boolean;
+  can_delete: boolean;
+  can_approve: boolean;
+  can_export: boolean;
+  can_admin: boolean;
+}
+
+export interface ModuleGroup {
+  module_id: number;
+  module_code: string;
+  module_name: string;
+  module_icon?: string;
+  module_group?: string;
+  transactions: TransactionPermission[];
+}
+
 export interface CompanyUser extends User {
   is_company_admin: boolean;
   company_user_id: number;

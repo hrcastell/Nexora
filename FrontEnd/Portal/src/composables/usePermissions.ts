@@ -1,8 +1,10 @@
 import { computed } from 'vue';
 import { useAuthStore } from '../stores/auth';
+import { useMenuStore } from '../stores/menu';
 
 export function usePermissions() {
   const authStore = useAuthStore();
+  const menuStore = useMenuStore();
 
   const isSuperAdmin = computed(() => authStore.user?.is_super_admin === true);
   const isAdmin      = computed(() => isSuperAdmin.value || authStore.user?.role === 'admin');
@@ -17,6 +19,17 @@ export function usePermissions() {
   const canManageProfiles = computed(() => isAdmin.value && !isReadOnly.value);
   const canManageModules  = computed(() => isSuperAdmin.value && !isReadOnly.value);
   const canManageCommercial = computed(() => isSuperAdmin.value);
+
+  // ── Module/transaction helpers ─────────────────────────────────
+  // Delegan al useMenuStore cuando está cargado; super_admin siempre TRUE.
+  const hasModule = (code: string): boolean => {
+    if (isSuperAdmin.value) return true;
+    return menuStore.hasModule(code);
+  };
+  const hasTransaction = (route: string): boolean => {
+    if (isSuperAdmin.value) return true;
+    return menuStore.hasTransaction(route);
+  };
 
   const commercialAlert = computed(() => {
     const cs = commercialStatus.value;
@@ -39,5 +52,7 @@ export function usePermissions() {
     canManageModules,
     canManageCommercial,
     commercialAlert,
+    hasModule,
+    hasTransaction,
   };
 }

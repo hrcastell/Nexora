@@ -67,3 +67,10 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA public
 -- SELECT has_table_privilege('hernanci_nexoragarage', 'public.invoices', 'INSERT')           AS invoices_ok;
 -- SELECT has_table_privilege('hernanci_nexoragarage', 'public.payment_agreements', 'INSERT') AS agreements_ok;
 -- SELECT has_sequence_privilege('hernanci_nexoragarage', 'public.users_id_seq', 'USAGE')     AS users_seq_ok;
+
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA pch_motoservices
+    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO hernanci;
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA pch_motoservices
+    GRANT USAGE, SELECT ON SEQUENCES TO hernanci;

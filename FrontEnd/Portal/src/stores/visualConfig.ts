@@ -1,5 +1,6 @@
 import { ref, computed } from 'vue';
 import { defineStore } from 'pinia';
+import api from '../utils/axios';
 
 export type ThemeMode = 'dark' | 'light';
 
@@ -293,23 +294,66 @@ export const useVisualConfigStore = defineStore('visualConfig', () => {
     }
   }
 
-  // Save to localStorage
+  function getConfigSnapshot() {
+    return {
+      mode: mode.value,
+      selectedWallpaper: selectedWallpaper.value,
+      scale: scale.value,
+      fontId: fontId.value,
+      fontSize: fontSize.value,
+      primaryColor: primaryColor.value,
+      accentColor: accentColor.value,
+      customColor: customColor.value,
+      transparency: transparency.value,
+      corner: corner.value,
+    };
+  }
+
+  function applyConfig(config: Record<string, any>) {
+    mode.value              = config.mode              ?? DEFAULT_CONFIG.mode;
+    selectedWallpaper.value = config.selectedWallpaper ?? DEFAULT_CONFIG.wallpaper;
+    scale.value             = config.scale             ?? DEFAULT_CONFIG.scale;
+    fontId.value            = config.fontId            ?? DEFAULT_CONFIG.fontId;
+    fontSize.value          = config.fontSize          ?? DEFAULT_CONFIG.fontSize;
+    primaryColor.value      = config.primaryColor      ?? DEFAULT_CONFIG.primaryColor;
+    accentColor.value       = config.accentColor       ?? DEFAULT_CONFIG.accentColor;
+    customColor.value       = config.customColor       ?? DEFAULT_CONFIG.customColor;
+    transparency.value      = config.transparency      ?? DEFAULT_CONFIG.transparency;
+    corner.value            = config.corner            ?? DEFAULT_CONFIG.corner;
+  }
+
+  // Save to localStorage + API (per-user DB persistence)
   function saveToStorage() {
     try {
-      localStorage.setItem('nexora_visual_config', JSON.stringify({
-        mode: mode.value,
-        selectedWallpaper: selectedWallpaper.value,
-        scale: scale.value,
-        fontId: fontId.value,
-        fontSize: fontSize.value,
-        primaryColor: primaryColor.value,
-        accentColor: accentColor.value,
-        customColor: customColor.value,
-        transparency: transparency.value,
-        corner: corner.value,
-      }));
+      localStorage.setItem('nexora_visual_config', JSON.stringify(getConfigSnapshot()));
     } catch {
       // Ignore storage errors
+    }
+    // Also persist to DB
+    saveToApi();
+  }
+
+  // Load from API (per-user DB persistence). Falls back to localStorage on error.
+  async function loadFromApi() {
+    try {
+      const { data } = await api.get('/auth/visual-config');
+      if (data && typeof data === 'object') {
+        applyConfig(data);
+        try {
+          localStorage.setItem('nexora_visual_config', JSON.stringify(getConfigSnapshot()));
+        } catch { /* ignore */ }
+      }
+    } catch {
+      // Keep whatever was in localStorage
+    }
+  }
+
+  // Save to API (silent on failure; localStorage is the fallback)
+  async function saveToApi() {
+    try {
+      await api.put('/auth/visual-config', getConfigSnapshot());
+    } catch {
+      // Ignore — localStorage still has the data
     }
   }
 
@@ -354,5 +398,7 @@ export const useVisualConfigStore = defineStore('visualConfig', () => {
     resetToDefaults,
     loadFromStorage,
     saveToStorage,
+    loadFromApi,
+    saveToApi,
   };
 });

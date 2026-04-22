@@ -1,52 +1,85 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
+import type { Component } from 'vue';
 import { useAuthStore } from '../stores/auth';
 import { useVisualConfigStore, wallpaperBackground } from '../stores/visualConfig';
+import { useMenuStore } from '../stores/menu';
 import { useRoute, useRouter } from 'vue-router';
-import { 
-  Building2, 
-  LayoutDashboard, 
-  LogOut, 
-  Menu, 
-  Settings, 
+import {
+  Building2,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  Settings,
   Palette,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Mail,
   Users,
   BarChart2,
   Shield,
   Puzzle,
-  CreditCard
+  CreditCard,
+  FileText,
+  ClipboardList
 } from 'lucide-vue-next';
 
 const authStore = useAuthStore();
 const configStore = useVisualConfigStore();
+const menuStore = useMenuStore();
 const route = useRoute();
 const router = useRouter();
 const isMobileMenuOpen = ref(false);
-const isConfigExpanded = ref(true);
+const isConfigExpanded = ref(false);
+const isSidebarCollapsed = ref(false);
 
-// Main navigation items
+// Icon registry: resolves string codes from API to Lucide components
+const ICON_REGISTRY: Record<string, Component> = {
+  LayoutDashboard, Building2, Users, Shield, Puzzle, Mail, BarChart2,
+  CreditCard, Settings, Palette, FileText, ClipboardList
+};
+const resolveIcon = (code?: string): Component => {
+  if (code && ICON_REGISTRY[code]) return ICON_REGISTRY[code];
+  return Settings;
+};
+
+// Main navigation items (always visible)
 const mainNav = computed(() => [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
 ]);
 
-// Config submenu items (only for super_admin / admin)
-const configNav = computed(() => {
+// Hardcoded fallback (used if dynamic menu is empty/not loaded)
+const fallbackConfigNav = computed(() => {
   if (!authStore.user?.is_super_admin && authStore.user?.role !== 'admin') return [];
-  const items = [
-    { name: 'Empresas',     href: '/admin/companies',  icon: Building2  },
-    { name: 'Usuarios',     href: '/admin/users',      icon: Users      },
-    { name: 'Perfiles',     href: '/admin/profiles',   icon: Shield     },
-    { name: 'Visual',       href: '/admin/config',     icon: Palette    },
+  const items: { name: string; href: string; icon: Component }[] = [
+    { name: 'Empresas', href: '/admin/companies', icon: Building2 },
+    { name: 'Usuarios', href: '/admin/users',     icon: Users     },
+    { name: 'Perfiles', href: '/admin/profiles',  icon: Shield    },
+    { name: 'Visual',   href: '/admin/config',    icon: Palette   },
   ];
   if (authStore.user?.is_super_admin) {
     items.splice(1, 0, { name: 'Solicitudes', href: '/admin/requests', icon: Mail });
-    items.splice(5, 0, { name: 'M\u00f3dulos', href: '/admin/modules', icon: Puzzle });
-    items.splice(6, 0, { name: 'Reportes', href: '/admin/reports', icon: BarChart2 });
+    items.splice(5, 0, { name: 'Módulos',    href: '/admin/modules-manager', icon: Puzzle });
+    items.splice(6, 0, { name: 'Reportes',    href: '/admin/reports', icon: BarChart2 });
     items.push({ name: 'Comercial', href: '/admin/commercial', icon: CreditCard });
   }
   return items;
+});
+
+// Dynamic config submenu built from useMenuStore (configuration module's transactions)
+const dynamicConfigNav = computed<{ name: string; href: string; icon: Component }[]>(() => {
+  const configModule = menuStore.modules.find(m => m.code === 'configuration');
+  if (!configModule) return [];
+  return configModule.transactions
+    .filter(t => t.menu_visible && t.status === 'activo' && t.route && t.route !== '/dashboard')
+    .map(t => ({ name: t.name, href: t.route, icon: resolveIcon(t.icon) }));
+});
+
+// Active menu: dynamic if available, else fallback
+const configNav = computed<{ name: string; href: string; icon: Component }[]>(() => {
+  if (menuStore.loaded && dynamicConfigNav.value.length > 0) return dynamicConfigNav.value;
+  return fallbackConfigNav.value;
 });
 
 const isActive = (href: string) => route.path === href;
@@ -60,6 +93,10 @@ const toggleMobileMenu = () => {
 
 const toggleConfig = () => {
   isConfigExpanded.value = !isConfigExpanded.value;
+};
+
+const toggleSidebar = () => {
+  isSidebarCollapsed.value = !isSidebarCollapsed.value;
 };
 
 const logout = () => {
@@ -77,19 +114,6 @@ const logout = () => {
       fontFamily: configStore.currentFont.family
     }"
   >
-    <style>
-      @keyframes driftOne {
-        0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-        50% { transform: translate3d(16px, -18px, 0) scale(1.04); }
-      }
-      @keyframes driftTwo {
-        0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-        50% { transform: translate3d(-22px, 16px, 0) scale(1.06); }
-      }
-      .orb-one { animation: driftOne 8s ease-in-out infinite; }
-      .orb-two { animation: driftTwo 10s ease-in-out infinite; }
-    </style>
-
     <!-- Background Effects -->
     <div 
       class="fixed inset-0 transition-all duration-700 pointer-events-none z-0"
@@ -108,10 +132,11 @@ const logout = () => {
     />
 
     <!-- Sidebar -->
-    <aside 
+    <aside
       :class="[
         isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full',
-        'fixed inset-y-0 left-0 z-50 w-[280px] shrink-0 border-r border-white/10 nxr-sidebar px-5 py-6 backdrop-blur-xl transition-transform duration-300 md:static md:translate-x-0 flex flex-col'
+        'fixed inset-y-0 left-0 z-50 w-[280px] shrink-0 border-r border-white/10 nxr-sidebar px-5 py-6 backdrop-blur-xl transition-all duration-300 md:static md:translate-x-0 flex flex-col',
+        isSidebarCollapsed ? 'md:w-0 md:px-0 md:border-opacity-0 md:overflow-hidden' : ''
       ]"
     >
       <!-- Logo -->
@@ -124,7 +149,7 @@ const logout = () => {
       </div>
 
       <!-- Navigation -->
-      <nav class="mt-8 flex-1 overflow-y-auto">
+      <nav class="mt-8 flex-1 overflow-y-auto custom-scrollbar">
         <p class="px-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Menú</p>
         <div class="mt-3 space-y-2">
           <!-- Dashboard -->
@@ -240,6 +265,15 @@ const logout = () => {
                 Panel de administración
               </h1>
             </div>
+            <button
+              @click="toggleSidebar"
+              class="flex items-center gap-2 rounded-2xl border nxr-glass px-3 py-2 text-xs font-medium text-slate-300 transition hover:text-white shrink-0"
+              :title="isSidebarCollapsed ? 'Mostrar menú' : 'Ocultar menú'"
+            >
+              <ChevronLeft v-if="!isSidebarCollapsed" class="h-4 w-4" />
+              <ChevronRight v-else class="h-4 w-4" />
+              <span class="hidden lg:inline">{{ isSidebarCollapsed ? 'Mostrar menú' : 'Ocultar menú' }}</span>
+            </button>
           </div>
         </header>
 
@@ -251,3 +285,35 @@ const logout = () => {
     </main>
   </div>
 </template>
+
+<style scoped>
+/* ── Scrollbar estilizado para el menú lateral ── */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(148, 163, 184, 0.25);
+  border-radius: 3px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(148, 163, 184, 0.45);
+}
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.25) transparent;
+}
+
+@keyframes driftOne {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(16px, -18px, 0) scale(1.04); }
+}
+@keyframes driftTwo {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(-22px, 16px, 0) scale(1.06); }
+}
+.orb-one { animation: driftOne 8s ease-in-out infinite; }
+.orb-two { animation: driftTwo 10s ease-in-out infinite; }
+</style>
