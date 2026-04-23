@@ -23,6 +23,9 @@ export interface Company {
   name: string;
   schema_name: string;
   is_company_admin?: boolean;
+  is_master?: boolean;
+  plan_type?: string;
+  subscription_plan_id?: number | null;
   commercial_status?: 'activa' | 'pendiente_pago' | 'suspendida' | 'bloqueada';
 }
 

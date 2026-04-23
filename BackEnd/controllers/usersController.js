@@ -8,6 +8,62 @@ const isAdmin      = (req) => isSuperAdmin(req) || req.user.role === 'admin';
 
 const PASSWORD_REGEX = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,}$/;
 
+const normalizeProfileIds = (input) => {
+    if (!Array.isArray(input)) return null;
+    return [...new Set(
+        input
+            .map((v) => Number(v))
+            .filter((v) => Number.isInteger(v) && v > 0)
+    )];
+};
+
+const defaultRoleNameFromUserRole = (role) => {
+    if (role === 'admin') return 'admin';
+    return 'user';
+};
+
+const defaultProfileCodeFromUserRole = ({ role, isCompanyAdmin }) => {
+    if (role === 'admin' || isCompanyAdmin) return 'admin_empresa';
+    if (role === 'outer_user') return 'consulta';
+    if (role === 'inner_user') return 'operacion';
+    return null;
+};
+
+async function resolveRoleId(client, schemaName, explicitRoleId, roleNameHint) {
+    if (explicitRoleId) return explicitRoleId;
+    const roleName = roleNameHint || 'user';
+    const roleRes = await client.query(
+        `SELECT id FROM "${schemaName}".roles WHERE name = $1 LIMIT 1`,
+        [roleName]
+    );
+    return roleRes.rows[0]?.id || null;
+}
+
+async function resolveProfileIds(client, schemaName, normalizedProfileIds, role, isCompanyAdmin) {
+    if (normalizedProfileIds !== null) return normalizedProfileIds;
+
+    const defaultProfileCode = defaultProfileCodeFromUserRole({ role, isCompanyAdmin });
+    if (!defaultProfileCode) return [];
+
+    const profRes = await client.query(
+        `SELECT id FROM "${schemaName}".profiles WHERE code = $1 LIMIT 1`,
+        [defaultProfileCode]
+    );
+    if (profRes.rows.length === 0) return [];
+    return [profRes.rows[0].id];
+}
+
+async function assertProfilesExist(client, schemaName, profileIds) {
+    if (!profileIds.length) return;
+    const check = await client.query(
+        `SELECT id FROM "${schemaName}".profiles WHERE id = ANY($1::int[])`,
+        [profileIds]
+    );
+    if (check.rows.length !== profileIds.length) {
+        throw Object.assign(new Error('Uno o más perfiles seleccionados no existen en esta empresa'), { code: 'INVALID_PROFILE' });
+    }
+}
+
 // ── Protección de usuario raíz ────────────────────────────────
 const assertNotSystemUser = async (userId, client) => {
     const conn = client || db;
@@ -183,13 +239,12 @@ exports.inviteUser = async (req, res) => {
             [companyId, userId, is_company_admin || false]
         );
 
-        let assignedRoleId = role_id || null;
-        if (!assignedRoleId) {
-            const defaultRole = await client.query(
-                `SELECT id FROM "${schemaName}".roles WHERE name = 'user' LIMIT 1`
-            );
-            if (defaultRole.rows.length > 0) assignedRoleId = defaultRole.rows[0].id;
-        }
+        const assignedRoleId = await resolveRoleId(
+            client,
+            schemaName,
+            role_id || null,
+            defaultRoleNameFromUserRole(role || 'inner_user')
+        );
         if (assignedRoleId) {
             await client.query(
                 `INSERT INTO "${schemaName}".user_profiles
@@ -204,12 +259,25 @@ exports.inviteUser = async (req, res) => {
             );
         }
 
-        if (Array.isArray(profile_ids) && profile_ids.length > 0) {
-            for (let i = 0; i < profile_ids.length; i++) {
+        const normalizedProfileIds = normalizeProfileIds(profile_ids);
+        const requestedProfiles = (normalizedProfileIds && normalizedProfileIds.length > 0)
+            ? normalizedProfileIds
+            : null;
+        const finalProfileIds = await resolveProfileIds(
+            client,
+            schemaName,
+            requestedProfiles,
+            role || 'inner_user',
+            !!is_company_admin
+        );
+        await assertProfilesExist(client, schemaName, finalProfileIds);
+
+        if (finalProfileIds.length > 0) {
+            for (let i = 0; i < finalProfileIds.length; i++) {
                 await client.query(
                     `INSERT INTO "${schemaName}".user_tenant_profiles (user_id, profile_id, is_primary, assigned_by)
                      VALUES ($1,$2,$3,$4) ON CONFLICT (user_id, profile_id) DO NOTHING`,
-                    [userId, profile_ids[i], i === 0, req.user.id]
+                    [userId, finalProfileIds[i], i === 0, req.user.id]
                 );
             }
         }
@@ -221,6 +289,7 @@ exports.inviteUser = async (req, res) => {
         await client.query('ROLLBACK');
         console.error('Create user error:', error);
         if (error.code === 'SYSTEM_USER') return res.status(403).json({ error: error.message });
+        if (error.code === 'INVALID_PROFILE') return res.status(400).json({ error: error.message });
         if (error.code === '23505')       return res.status(400).json({ error: 'El correo electrónico ya está en uso' });
         res.status(500).json({ error: 'Error al crear usuario' });
     } finally {
@@ -239,7 +308,7 @@ exports.updateCompanyUser = async (req, res) => {
         const { id: companyId, userId } = req.params;
         const {
             first_name, last_name, phone, country, state_region, city, commune,
-            role, is_company_admin, role_id, status, job_title, access_level
+            role, is_company_admin, role_id, status, job_title, access_level, profile_ids
         } = req.body;
 
         await client.query('BEGIN');
@@ -284,7 +353,24 @@ exports.updateCompanyUser = async (req, res) => {
             );
         }
 
-        if (role_id !== undefined || status !== undefined || job_title !== undefined || access_level !== undefined) {
+        const shouldUpsertUserProfile =
+            role_id !== undefined ||
+            status !== undefined ||
+            job_title !== undefined ||
+            access_level !== undefined ||
+            role !== undefined ||
+            is_company_admin !== undefined;
+
+        if (shouldUpsertUserProfile) {
+            const roleHint = role !== undefined
+                ? role
+                : (is_company_admin === true ? 'admin' : 'inner_user');
+            const resolvedRoleId = await resolveRoleId(
+                client,
+                schemaName,
+                role_id || null,
+                defaultRoleNameFromUserRole(roleHint)
+            );
             await client.query(
                 `INSERT INTO "${schemaName}".user_profiles
                  (user_id, role_id, is_active, status, job_title, access_level)
@@ -297,8 +383,43 @@ exports.updateCompanyUser = async (req, res) => {
                     job_title    = COALESCE($4, "${schemaName}".user_profiles.job_title),
                     access_level = COALESCE($5, "${schemaName}".user_profiles.access_level),
                     updated_at   = CURRENT_TIMESTAMP`,
-                [userId, role_id, status, job_title, access_level]
+                [userId, resolvedRoleId, status, job_title, access_level]
             );
+        }
+
+        const normalizedProfileIds = normalizeProfileIds(profile_ids);
+        if (normalizedProfileIds !== null) {
+            await assertProfilesExist(client, schemaName, normalizedProfileIds);
+            await client.query(
+                `DELETE FROM "${schemaName}".user_tenant_profiles WHERE user_id = $1`,
+                [userId]
+            );
+
+            for (let i = 0; i < normalizedProfileIds.length; i++) {
+                await client.query(
+                    `INSERT INTO "${schemaName}".user_tenant_profiles (user_id, profile_id, is_primary, assigned_by)
+                     VALUES ($1,$2,$3,$4)
+                     ON CONFLICT (user_id, profile_id) DO UPDATE SET is_primary = EXCLUDED.is_primary`,
+                    [userId, normalizedProfileIds[i], i === 0, req.user.id]
+                );
+            }
+        } else if (role === 'admin' || is_company_admin === true) {
+            const currentProfiles = await client.query(
+                `SELECT COUNT(*)::int AS count FROM "${schemaName}".user_tenant_profiles WHERE user_id = $1`,
+                [userId]
+            );
+            if ((currentProfiles.rows[0]?.count || 0) === 0) {
+                const defaults = await resolveProfileIds(client, schemaName, null, 'admin', true);
+                await assertProfilesExist(client, schemaName, defaults);
+                for (let i = 0; i < defaults.length; i++) {
+                    await client.query(
+                        `INSERT INTO "${schemaName}".user_tenant_profiles (user_id, profile_id, is_primary, assigned_by)
+                         VALUES ($1,$2,$3,$4)
+                         ON CONFLICT (user_id, profile_id) DO UPDATE SET is_primary = EXCLUDED.is_primary`,
+                        [userId, defaults[i], i === 0, req.user.id]
+                    );
+                }
+            }
         }
 
         await client.query('COMMIT');
@@ -307,6 +428,7 @@ exports.updateCompanyUser = async (req, res) => {
         await client.query('ROLLBACK');
         console.error('Update company user error:', error);
         if (error.code === 'SYSTEM_USER') return res.status(403).json({ error: error.message });
+        if (error.code === 'INVALID_PROFILE') return res.status(400).json({ error: error.message });
         res.status(500).json({ error: 'Error al actualizar usuario' });
     } finally {
         client.release();
@@ -443,6 +565,33 @@ exports.uploadAvatar = async (req, res) => {
     }
 };
 
+// DELETE /api/users/:userId — Eliminar usuario global (super_admin only)
+// Used when the user has no remaining company associations (orphaned after company deletion).
+exports.deleteUser = async (req, res) => {
+    try {
+        if (!isSuperAdmin(req)) return res.status(403).json({ error: 'Solo super_admin puede eliminar usuarios globalmente' });
+
+        const { userId } = req.params;
+        await assertNotSystemUser(userId);
+
+        const existing = await db.query('SELECT id, full_name FROM public.users WHERE id = $1', [userId]);
+        if (existing.rows.length === 0) return res.status(404).json({ error: 'Usuario no encontrado' });
+
+        // Check if the user still belongs to any company
+        const linked = await db.query('SELECT company_id FROM public.company_users WHERE user_id = $1 LIMIT 1', [userId]);
+        if (linked.rows.length > 0) {
+            return res.status(409).json({ error: 'El usuario aún pertenece a una o más empresas. Desvincúlalo primero.' });
+        }
+
+        await db.query('DELETE FROM public.users WHERE id = $1', [userId]);
+        res.json({ message: 'Usuario eliminado del sistema' });
+    } catch (error) {
+        console.error('Delete user error:', error);
+        if (error.code === 'SYSTEM_USER') return res.status(403).json({ error: error.message });
+        res.status(500).json({ error: 'Error al eliminar usuario' });
+    }
+};
+
 // DELETE /api/companies/:id/users/:userId — Desvincular usuario de empresa
 exports.removeCompanyUser = async (req, res) => {
     try {
@@ -470,3 +619,4 @@ exports.removeCompanyUser = async (req, res) => {
         res.status(500).json({ error: 'Error al desvincular usuario' });
     }
 };
+

@@ -15,6 +15,7 @@ import ModulesView from '../views/admin/ModulesView.vue'
 import ModulesManagerView from '../views/admin/ModulesManagerView.vue'
 import ProfilesView from '../views/admin/ProfilesView.vue'
 import CommercialView from '../views/admin/CommercialView.vue'
+import SubscriptionsView from '../views/admin/SubscriptionsView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -94,6 +95,12 @@ const router = createRouter({
           name: 'admin-commercial',
           component: CommercialView,
           meta: { requiresModule: 'configuration', requiresTransaction: 'commercial' }
+        },
+        {
+          path: 'admin/subscriptions',
+          name: 'admin-subscriptions',
+          component: SubscriptionsView,
+          meta: { requiresSuperAdmin: true, requiresModule: 'configuration', requiresTransaction: 'subscriptions' }
         },
         {
           path: 'admin/reports',

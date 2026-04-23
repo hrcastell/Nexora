@@ -63,39 +63,125 @@ exports.getAgreements = async (req, res) => {
 
 // POST /api/companies/:id/agreements
 exports.createAgreement = async (req, res) => {
+    const client = await db.getClient();
     try {
         if (!isSuperAdmin(req)) return res.status(403).json({ error: 'Solo el super administrador puede crear convenios' });
 
         const { id: companyId } = req.params;
-        const { amount, currency, frequency, start_date, due_day, service_description, grace_period_days } = req.body;
+        const {
+            amount,
+            currency,
+            frequency,
+            start_date,
+            due_day,
+            service_description,
+            grace_period_days,
+            subscription_plan_id,
+            replace_active
+        } = req.body;
 
-        if (!amount || !start_date || !service_description) {
-            return res.status(400).json({ error: 'Monto, fecha de inicio y descripción son requeridos' });
+        await client.query('BEGIN');
+
+        const companyCheck = await client.query('SELECT id FROM public.companies WHERE id = $1', [companyId]);
+        if (companyCheck.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ error: 'Empresa no encontrada' });
         }
-        if (due_day && (due_day < 1 || due_day > 28)) {
-            return res.status(400).json({ error: 'El día límite debe estar entre 1 y 28' });
+
+        const hasPlanField = Object.prototype.hasOwnProperty.call(req.body, 'subscription_plan_id');
+        const parsedPlanId = subscription_plan_id ? Number(subscription_plan_id) : null;
+        const hasPlan = Number.isInteger(parsedPlanId) && parsedPlanId > 0;
+        if (hasPlanField && subscription_plan_id !== null && subscription_plan_id !== '' && !hasPlan) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({ error: 'El plan seleccionado no es valido' });
         }
 
-        const companyCheck = await db.query('SELECT id FROM public.companies WHERE id = $1', [companyId]);
-        if (companyCheck.rows.length === 0) return res.status(404).json({ error: 'Empresa no encontrada' });
+        let resolvedAmount = amount;
+        let resolvedCurrency = currency || 'CLP';
+        let resolvedFrequency = frequency || 'monthly';
+        let resolvedDueDay = due_day || 1;
+        let resolvedDescription = service_description;
+        let resolvedGrace = grace_period_days || 5;
 
-        const result = await db.query(
+        if (hasPlan) {
+            const planRes = await client.query(
+                'SELECT * FROM public.subscription_plans WHERE id = $1 AND is_active = TRUE',
+                [parsedPlanId]
+            );
+            if (planRes.rows.length === 0) {
+                await client.query('ROLLBACK');
+                return res.status(400).json({ error: 'El plan seleccionado no existe o esta inactivo' });
+            }
+
+            const plan = planRes.rows[0];
+            resolvedAmount = plan.amount;
+            resolvedCurrency = plan.currency || 'CLP';
+            resolvedFrequency = plan.payment_frequency || 'monthly';
+            resolvedDueDay = plan.due_day || 1;
+            resolvedDescription = `Suscripcion plan ${plan.name}`;
+            resolvedGrace = plan.grace_period_days || 5;
+
+            await client.query(
+                `UPDATE public.companies
+                 SET subscription_plan_id = $1,
+                     plan_type = $2,
+                     updated_at = CURRENT_TIMESTAMP
+                 WHERE id = $3`,
+                [plan.id, plan.code, companyId]
+            );
+        }
+
+        const agreementStartDate = start_date || new Date().toISOString().split('T')[0];
+
+        if (resolvedAmount === null || resolvedAmount === undefined || resolvedAmount === '' || !agreementStartDate || !resolvedDescription) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({ error: 'Monto, fecha de inicio y descripcion son requeridos' });
+        }
+
+        const dueDayValue = Number(resolvedDueDay);
+        if (dueDayValue < 1 || dueDayValue > 28) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({ error: 'El dia limite debe estar entre 1 y 28' });
+        }
+
+        if (replace_active !== false) {
+            await client.query(
+                `UPDATE public.payment_agreements
+                 SET status = 'inactivo', updated_at = CURRENT_TIMESTAMP
+                 WHERE company_id = $1 AND status = 'activo'`,
+                [companyId]
+            );
+        }
+
+        const result = await client.query(
             `INSERT INTO public.payment_agreements
              (company_id, amount, currency, frequency, start_date, due_day,
               service_description, grace_period_days, status, created_by)
              VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'activo',$9)
              RETURNING *`,
-            [companyId, amount, currency || 'CLP', frequency || 'monthly',
-             start_date, due_day || 1, service_description, grace_period_days || 5, req.user.id]
+            [
+                companyId,
+                Number(resolvedAmount),
+                resolvedCurrency,
+                resolvedFrequency,
+                agreementStartDate,
+                dueDayValue,
+                resolvedDescription,
+                Number(resolvedGrace) || 5,
+                req.user.id
+            ]
         );
 
+        await client.query('COMMIT');
         res.status(201).json(result.rows[0]);
     } catch (error) {
+        await client.query('ROLLBACK');
         console.error('Create agreement error:', error);
         res.status(500).json({ error: 'Error al crear convenio' });
+    } finally {
+        client.release();
     }
 };
-
 // PUT /api/companies/:id/agreements/:aId
 exports.updateAgreement = async (req, res) => {
     try {
@@ -400,3 +486,4 @@ exports.getPaymentHistory = async (req, res) => {
         res.status(500).json({ error: 'Error al obtener historial de pagos' });
     }
 };
+

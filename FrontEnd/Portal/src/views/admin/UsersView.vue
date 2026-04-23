@@ -22,7 +22,7 @@ const inputBg     = computed(() => isLight.value ? '#ffffff' : 'rgba(255,255,255
 const inputBorder = computed(() => isLight.value ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.12)');
 const modalBg     = computed(() => isLight.value ? '#ffffff' : '#0d1829');
 
-const companyId = computed(() => auth.currentCompany?.id);
+const companyId = computed<number | null>(() => auth.currentCompany?.id ?? null);
 const users     = ref<CompanyUser[]>([]);
 const profiles  = ref<Profile[]>([]);
 const isLoading = ref(true);
@@ -33,6 +33,11 @@ const filterCompanyId   = ref<number | null>(null);
 interface CompanyOption { id: number; name: string; schema_name: string; }
 const allCompanies = ref<CompanyOption[]>([]);
 const selectedCompanyId = ref<number | null>(null);
+const scopedCompanyId = computed<number | null>(() => {
+  if (perms.isSuperAdmin.value) return filterCompanyId.value;
+  return companyId.value;
+});
+const canManageScopedUsers = computed(() => !perms.isSuperAdmin.value || !!scopedCompanyId.value);
 const search    = ref('');
 const filterStatus = ref('');
 const filterRole   = ref('');
@@ -67,7 +72,7 @@ const passwordStrength = computed(() => {
   if (/[^A-Za-z0-9]/.test(p))   s++;
   return s;
 });
-const strengthLabel = computed(() => ['', 'Débil', 'Regular', 'Buena', 'Fuerte'][passwordStrength.value]);
+const strengthLabel = computed(() => ['', 'Debil', 'Regular', 'Buena', 'Fuerte'][passwordStrength.value]);
 const strengthColor = computed(() => ['', 'bg-red-500', 'bg-amber-500', 'bg-blue-500', 'bg-emerald-500'][passwordStrength.value]);
 
 const filteredUsers = computed(() => {
@@ -90,6 +95,25 @@ const kpis = computed(() => ({
   blocked:   users.value.filter(u => u.status === 'bloqueado').length,
 }));
 
+async function loadProfilesForCompany(targetCompanyId: number | null) {
+  try {
+    if (perms.isSuperAdmin.value) {
+      if (!targetCompanyId) {
+        profiles.value = [];
+        return;
+      }
+      const res = await api.get(`/companies/${targetCompanyId}/profiles`);
+      profiles.value = Array.isArray(res.data) ? res.data : [];
+      return;
+    }
+
+    const res = await api.get('/profiles');
+    profiles.value = Array.isArray(res.data) ? res.data : [];
+  } catch {
+    profiles.value = [];
+  }
+}
+
 async function loadData() {
   isLoading.value = true;
   try {
@@ -105,12 +129,11 @@ async function loadData() {
       usersUrl = companyId.value ? `/companies/${companyId.value}/users` : '/users';
     }
 
-    const [usersRes, profRes] = await Promise.all([
+    const [usersRes] = await Promise.all([
       api.get(usersUrl),
-      api.get('/profiles').catch(() => ({ data: [] }))
+      loadProfilesForCompany(scopedCompanyId.value),
     ]);
     users.value    = usersRes.data;
-    profiles.value = profRes.data;
 
     // Load companies list for super_admin (modal create)
     if (perms.isSuperAdmin.value && allCompanies.value.length === 0) {
@@ -125,6 +148,10 @@ async function loadData() {
 }
 
 watch(filterCompanyId, () => loadData());
+watch(selectedCompanyId, async (next) => {
+  if (!showModal.value || isEditing.value || !perms.isSuperAdmin.value) return;
+  await loadProfilesForCompany(next ?? null);
+});
 
 onMounted(loadData);
 
@@ -136,11 +163,20 @@ function openCreate() {
   saveError.value = '';
   showPwd.value = false;
   showConfirm.value = false;
-  selectedCompanyId.value = companyId.value ?? null;
+  selectedCompanyId.value = perms.isSuperAdmin.value
+    ? (filterCompanyId.value ?? companyId.value ?? null)
+    : (companyId.value ?? null);
+  void loadProfilesForCompany(perms.isSuperAdmin.value ? selectedCompanyId.value : companyId.value);
   showModal.value = true;
 }
 
-function openEdit(u: CompanyUser) {
+async function openEdit(u: CompanyUser) {
+  if (perms.isSuperAdmin.value && !scopedCompanyId.value) {
+    alert('Selecciona una empresa para editar usuarios y perfiles.');
+    return;
+  }
+  await loadProfilesForCompany(scopedCompanyId.value);
+
   isEditing.value = true;
   form.value = {
     id: u.id, email: u.email,
@@ -171,20 +207,32 @@ function onAvatarChange(e: Event) {
 
 async function saveUser() {
   if (!form.value.first_name || !form.value.email) { saveError.value = 'Nombre y correo son requeridos'; return; }
-  if (!isEditing.value && !form.value.password) { saveError.value = 'La contraseña es requerida'; return; }
-  if (form.value.password && form.value.password !== form.value.confirm_password) { saveError.value = 'Las contraseñas no coinciden'; return; }
-  if (form.value.password && passwordStrength.value < 3) { saveError.value = 'La contraseña debe tener mínimo 8 caracteres, una mayúscula, un número y un carácter especial'; return; }
+  if (!isEditing.value && !form.value.password) { saveError.value = 'La contrasena es requerida'; return; }
+  if (form.value.password && form.value.password !== form.value.confirm_password) { saveError.value = 'Las contrasenas no coinciden'; return; }
+  if (form.value.password && passwordStrength.value < 3) { saveError.value = 'La contrasena debe tener minimo 8 caracteres, una mayuscula, un numero y un caracter especial'; return; }
 
   isSaving.value = true; saveError.value = '';
   try {
-    const cId = (!isEditing.value && perms.isSuperAdmin.value && selectedCompanyId.value)
-      ? selectedCompanyId.value
-      : companyId.value;
+    const cId = isEditing.value
+      ? scopedCompanyId.value
+      : (perms.isSuperAdmin.value
+        ? (selectedCompanyId.value ?? filterCompanyId.value ?? companyId.value)
+        : companyId.value);
     if (!cId) { saveError.value = 'Debe seleccionar una empresa'; isSaving.value = false; return; }
+
+    const payload = {
+      ...form.value,
+      profile_ids: [...new Set(
+        (form.value.profile_ids ?? [])
+          .map(v => Number(v))
+          .filter(v => Number.isInteger(v) && v > 0)
+      )]
+    };
+
     if (isEditing.value) {
-      await api.put(`/companies/${cId}/users/${form.value.id}`, form.value);
+      await api.put(`/companies/${cId}/users/${form.value.id}`, payload);
     } else {
-      const res = await api.post(`/companies/${cId}/users`, form.value);
+      const res = await api.post(`/companies/${cId}/users`, payload);
       if (avatarFile.value && res.data.userId) {
         const fd = new FormData();
         fd.append('avatar', avatarFile.value);
@@ -209,9 +257,11 @@ async function saveUser() {
 }
 
 async function changeStatus(u: CompanyUser, status: string) {
-  if (u.is_system_user) { alert('No se puede cambiar el estado del usuario raíz del sistema'); return; }
+  if (u.is_system_user) { alert('No se puede cambiar el estado del usuario raiz del sistema'); return; }
+  const cId = scopedCompanyId.value;
+  if (!cId) { alert('Selecciona una empresa para gestionar el estado del usuario.'); return; }
   try {
-    await api.patch(`/companies/${companyId.value}/users/${u.id}/status`, { status });
+    await api.patch(`/companies/${cId}/users/${u.id}/status`, { status });
     u.status = status as CompanyUser['status'];
   } catch (e: unknown) {
     const err = e as { response?: { data?: { error?: string } } };
@@ -220,17 +270,38 @@ async function changeStatus(u: CompanyUser, status: string) {
 }
 
 async function removeUser(u: CompanyUser) {
-  if (u.is_system_user) { alert('No se puede desvincular al usuario raíz del sistema'); return; }
-  if (!confirm(`¿Desvincular a "${u.full_name}" de la empresa?`)) return;
+  if (u.is_system_user) { alert('No se puede desvincular al usuario raiz del sistema'); return; }
+
+  // If viewing a specific company, unlink from that company.
+  // If viewing all users (super_admin global view), permanently delete the user.
+  const targetCompanyId = filterCompanyId.value ?? (perms.isSuperAdmin.value ? null : companyId.value);
+
+  const confirmMsg = targetCompanyId
+    ? `Desvincular a "${u.full_name}" de esta empresa?`
+    : `Eliminar permanentemente al usuario "${u.full_name}" del sistema? Esta accion no se puede deshacer.`;
+
+  if (!confirm(confirmMsg)) return;
   try {
-    await api.delete(`/companies/${companyId.value}/users/${u.id}`);
+    if (targetCompanyId) {
+      await api.delete(`/companies/${targetCompanyId}/users/${u.id}`);
+    } else {
+      await api.delete(`/users/${u.id}`);
+    }
     await loadData();
   } catch (e: unknown) {
     const err = e as { response?: { data?: { error?: string } } };
-    alert(err?.response?.data?.error ?? 'Error al desvincular usuario');
+    alert(err?.response?.data?.error ?? 'Error al eliminar usuario');
   }
 }
 
+function toggleProfile(profileId: number) {
+  const idx = form.value.profile_ids.indexOf(profileId);
+  if (idx >= 0) {
+    form.value.profile_ids.splice(idx, 1);
+    return;
+  }
+  form.value.profile_ids.push(profileId);
+}
 const statusBadge = (s?: string) => {
   if (s === 'activo')     return 'bg-emerald-500/15 text-emerald-300 border-emerald-500/25';
   if (s === 'suspendido') return 'bg-amber-500/15 text-amber-300 border-amber-500/25';
@@ -244,7 +315,7 @@ const roleBadge = (r?: string) => {
   return 'bg-slate-500/10 text-slate-400 border-slate-500/20';
 };
 
-const fmtDate = (d?: string) => d ? new Date(d).toLocaleDateString('es-CL') : '—';
+const fmtDate = (d?: string) => d ? new Date(d).toLocaleDateString('es-CL') : '-';
 const BACKEND_BASE = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3000';
 const avatarSrc = (u: CompanyUser) => u.avatar_url
   ? (u.avatar_url.startsWith('http') ? u.avatar_url : `${BACKEND_BASE}${u.avatar_url}`)
@@ -262,7 +333,7 @@ const initials = (u: CompanyUser) => `${u.first_name?.[0] ?? ''}${u.last_name?.[
           <Users class="h-5 w-5" />
         </div>
         <div>
-          <h1 class="text-lg font-semibold" :style="{ color: headerColor }">Gestión de Usuarios</h1>
+          <h1 class="text-lg font-semibold" :style="{ color: headerColor }">Gestion de Usuarios</h1>
           <p class="text-xs" :style="{ color: mutedColor }">Administra usuarios, roles, perfiles y estados de acceso</p>
         </div>
       </div>
@@ -319,6 +390,9 @@ const initials = (u: CompanyUser) => `${u.first_name?.[0] ?? ''}${u.last_name?.[
         <option value="outer_user">Usuario externo</option>
       </select>
     </div>
+    <p v-if="perms.isSuperAdmin.value && !filterCompanyId" class="text-xs" :style="{ color: mutedColor }">
+      Vista global: para editar estado, perfil o datos de un usuario, selecciona una empresa.
+    </p>
 
     <!-- Table -->
     <div v-if="isLoading" class="flex justify-center py-12">
@@ -341,7 +415,7 @@ const initials = (u: CompanyUser) => `${u.first_name?.[0] ?? ''}${u.last_name?.[
               <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide" :style="{ color: mutedColor }">Cargo</th>
               <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide" :style="{ color: mutedColor }">Perfiles</th>
               <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide" :style="{ color: mutedColor }">Estado</th>
-              <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide" :style="{ color: mutedColor }">Último acceso</th>
+              <th class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide" :style="{ color: mutedColor }">Ultimo acceso</th>
               <th v-if="perms.canManageUsers.value" class="py-3 pl-3 pr-5 text-right text-xs font-semibold uppercase tracking-wide" :style="{ color: mutedColor }">Acciones</th>
             </tr>
           </thead>
@@ -373,7 +447,7 @@ const initials = (u: CompanyUser) => `${u.first_name?.[0] ?? ''}${u.last_name?.[
                   {{ ({ super_admin: 'Super Admin', admin: 'Admin', inner_user: 'Interno', outer_user: 'Externo' } as Record<string,string>)[u.role ?? ''] ?? u.role }}
                 </span>
               </td>
-              <td class="px-3 py-3 text-sm" :style="{ color: mutedColor }">{{ u.job_title || '—' }}</td>
+              <td class="px-3 py-3 text-sm" :style="{ color: mutedColor }">{{ u.job_title || '-' }}</td>
               <td class="px-3 py-3">
                 <div class="flex flex-wrap gap-1">
                   <span v-for="p in (u.profiles ?? []).slice(0,2)" :key="p.id"
@@ -392,13 +466,19 @@ const initials = (u: CompanyUser) => `${u.first_name?.[0] ?? ''}${u.last_name?.[
               <td class="px-3 py-3 text-sm" :style="{ color: mutedColor }">{{ fmtDate(u.last_login_at) }}</td>
               <td v-if="perms.canManageUsers.value" class="py-3 pl-3 pr-5 text-right">
                 <div class="flex items-center justify-end gap-1">
-                  <button v-if="!u.is_system_user && u.status !== 'activo'" @click="changeStatus(u, 'activo')" class="rounded-xl p-1.5 hover:bg-emerald-500/10 transition" title="Activar">
+                  <button v-if="!u.is_system_user && u.status !== 'activo'" @click="changeStatus(u, 'activo')" class="rounded-xl p-1.5 hover:bg-emerald-500/10 transition" title="Activar"
+                    :disabled="!canManageScopedUsers"
+                    :class="{ 'opacity-40 cursor-not-allowed': !canManageScopedUsers }">
                     <UserCheck class="h-4 w-4 text-emerald-400" />
                   </button>
-                  <button v-if="!u.is_system_user && u.status === 'activo'" @click="changeStatus(u, 'suspendido')" class="rounded-xl p-1.5 hover:bg-amber-500/10 transition" title="Suspender">
+                  <button v-if="!u.is_system_user && u.status === 'activo'" @click="changeStatus(u, 'suspendido')" class="rounded-xl p-1.5 hover:bg-amber-500/10 transition" title="Suspender"
+                    :disabled="!canManageScopedUsers"
+                    :class="{ 'opacity-40 cursor-not-allowed': !canManageScopedUsers }">
                     <UserX class="h-4 w-4 text-amber-400" />
                   </button>
-                  <button @click="openEdit(u)" class="rounded-xl p-1.5 hover:bg-white/10 transition">
+                  <button @click="openEdit(u)" class="rounded-xl p-1.5 hover:bg-white/10 transition"
+                    :disabled="!canManageScopedUsers"
+                    :class="{ 'opacity-40 cursor-not-allowed': !canManageScopedUsers }">
                     <Pencil class="h-4 w-4" :style="{ color: mutedColor }" />
                   </button>
                   <button v-if="!u.is_system_user" @click="removeUser(u)" class="rounded-xl p-1.5 hover:bg-red-500/10 transition">
@@ -432,7 +512,7 @@ const initials = (u: CompanyUser) => `${u.first_name?.[0] ?? ''}${u.last_name?.[
           </div>
 
           <!-- Body (scrollable) -->
-          <div class="overflow-y-auto p-5 space-y-5 flex-1">
+          <div class="overflow-y-auto custom-scrollbar p-5 space-y-5 flex-1">
             <div v-if="saveError" class="flex items-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
               <ShieldAlert class="h-4 w-4 shrink-0" /> {{ saveError }}
             </div>
@@ -446,7 +526,7 @@ const initials = (u: CompanyUser) => `${u.first_name?.[0] ?? ''}${u.last_name?.[
                 <option :value="null" disabled>-- Seleccionar empresa --</option>
                 <option v-for="c in allCompanies" :key="c.id" :value="c.id">{{ c.name }} ({{ c.schema_name }})</option>
               </select>
-              <p class="text-xs mt-1 opacity-60" :style="{ color: mutedColor }">El usuario será vinculado a esta empresa.</p>
+              <p class="text-xs mt-1 opacity-60" :style="{ color: mutedColor }">El usuario sera vinculado a esta empresa.</p>
             </div>
 
             <!-- Avatar Upload -->
@@ -466,7 +546,7 @@ const initials = (u: CompanyUser) => `${u.first_name?.[0] ?? ''}${u.last_name?.[
                   Subir imagen
                   <input type="file" accept="image/jpeg,image/png,image/webp" class="hidden" @change="onAvatarChange" />
                 </label>
-                <p class="text-xs mt-1 opacity-60" :style="{ color: mutedColor }">JPG, PNG o WebP · máx 2 MB</p>
+                <p class="text-xs mt-1 opacity-60" :style="{ color: mutedColor }">JPG, PNG o WebP · max 2 MB</p>
               </div>
             </div>
 
@@ -485,22 +565,22 @@ const initials = (u: CompanyUser) => `${u.first_name?.[0] ?? ''}${u.last_name?.[
                     :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
                 </div>
                 <div class="col-span-2">
-                  <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Correo electrónico *</label>
+                  <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Correo electronico *</label>
                   <input v-model="form.email" type="email" :disabled="isEditing" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none disabled:opacity-50"
                     :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
                 </div>
                 <div>
-                  <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Teléfono</label>
+                  <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Telefono</label>
                   <input v-model="form.phone" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
                     :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
                 </div>
                 <div>
-                  <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">País</label>
+                  <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Pais</label>
                   <input v-model="form.country" placeholder="Chile" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
                     :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
                 </div>
                 <div>
-                  <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Región / Estado</label>
+                  <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Region / Estado</label>
                   <input v-model="form.state_region" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
                     :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
                 </div>
@@ -544,17 +624,20 @@ const initials = (u: CompanyUser) => `${u.first_name?.[0] ?? ''}${u.last_name?.[
                   <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Nivel de acceso</label>
                   <select v-model="form.access_level" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
                     :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }">
-                    <option value="por_modulo">Por módulo</option>
+                    <option value="por_modulo">Por modulo</option>
                     <option value="total">Acceso total</option>
-                    <option value="supervision">Supervisión</option>
+                    <option value="supervision">Supervision</option>
                   </select>
                 </div>
                 <div class="col-span-2">
                   <label class="mb-1.5 block text-xs font-medium" :style="{ color: mutedColor }">Perfiles funcionales</label>
                   <div class="flex flex-wrap gap-2">
+                    <p v-if="profiles.length === 0" class="text-xs" :style="{ color: mutedColor }">
+                      No hay perfiles disponibles para la empresa seleccionada.
+                    </p>
                     <button v-for="p in profiles" :key="p.id"
                       type="button"
-                      @click="form.profile_ids.includes(p.id) ? form.profile_ids.splice(form.profile_ids.indexOf(p.id), 1) : form.profile_ids.push(p.id)"
+                      @click="toggleProfile(p.id)"
                       class="text-xs rounded-full px-3 py-1 border transition"
                       :class="form.profile_ids.includes(p.id)
                         ? 'bg-blue-500/20 text-blue-300 border-blue-500/40'
@@ -566,14 +649,14 @@ const initials = (u: CompanyUser) => `${u.first_name?.[0] ?? ''}${u.last_name?.[
               </div>
             </div>
 
-            <!-- Contraseña (solo creación o cambio opcional) -->
+            <!-- Contrasena (solo creacion o cambio opcional) -->
             <div>
               <p class="text-xs font-semibold uppercase tracking-wide mb-3" :style="{ color: mutedColor }">
-                {{ isEditing ? 'Cambiar contraseña (opcional)' : 'Contraseña *' }}
+                {{ isEditing ? 'Cambiar contrasena (opcional)' : 'Contrasena *' }}
               </p>
               <div class="grid grid-cols-2 gap-3">
                 <div class="relative">
-                  <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Contraseña</label>
+                  <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Contrasena</label>
                   <div class="relative">
                     <input v-model="form.password" :type="showPwd ? 'text' : 'password'" class="w-full rounded-2xl border px-3 py-2 pr-9 text-sm focus:outline-none"
                       :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
@@ -591,7 +674,7 @@ const initials = (u: CompanyUser) => `${u.first_name?.[0] ?? ''}${u.last_name?.[
                   </div>
                 </div>
                 <div class="relative">
-                  <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Confirmar contraseña</label>
+                  <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Confirmar contrasena</label>
                   <div class="relative">
                     <input v-model="form.confirm_password" :type="showConfirm ? 'text' : 'password'" class="w-full rounded-2xl border px-3 py-2 pr-9 text-sm focus:outline-none"
                       :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
@@ -600,7 +683,7 @@ const initials = (u: CompanyUser) => `${u.first_name?.[0] ?? ''}${u.last_name?.[
                       <EyeOff v-else class="h-4 w-4" :style="{ color: mutedColor }" />
                     </button>
                   </div>
-                  <p v-if="form.confirm_password && form.password !== form.confirm_password" class="mt-1 text-xs text-red-400">Las contraseñas no coinciden</p>
+                  <p v-if="form.confirm_password && form.password !== form.confirm_password" class="mt-1 text-xs text-red-400">Las contrasenas no coinciden</p>
                 </div>
               </div>
             </div>
@@ -622,3 +705,29 @@ const initials = (u: CompanyUser) => `${u.first_name?.[0] ?? ''}${u.last_name?.[
     </Teleport>
   </div>
 </template>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(148, 163, 184, 0.25);
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(148, 163, 184, 0.45);
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.25) transparent;
+}
+</style>
+
+

@@ -18,10 +18,12 @@ const props = withDefaults(defineProps<{
   placeholder?: string;
   label?: string;
   showAll?: boolean;
+  excludeMaster?: boolean;
 }>(), {
   placeholder: '-- Seleccionar empresa --',
   label: 'Empresa',
   showAll: true,
+  excludeMaster: false,
 });
 
 const emit = defineEmits<{
@@ -46,7 +48,9 @@ async function load() {
   isLoading.value = true;
   try {
     const res = await api.get('/companies');
-    companies.value = res.data;
+    companies.value = props.excludeMaster
+      ? res.data.filter((c: CompanyOption) => !c.is_master)
+      : res.data;
   } catch { /* silent */ } finally {
     isLoading.value = false;
   }

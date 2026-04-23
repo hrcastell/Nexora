@@ -3,11 +3,44 @@ const db = require('../config/db');
 const getSchema    = (req) => req.user.schema_name;
 const isSuperAdmin = (req) => req.user.is_super_admin === true;
 const isAdmin      = (req) => isSuperAdmin(req) || req.user.role === 'admin';
+const PROTECTED_PROFILE_CODES = new Set(['acceso_total', 'admin_empresa']);
 
 // Helper: resolve schema_name from company id (for super_admin cross-company ops)
 async function getSchemaForCompany(companyId) {
     const r = await db.query('SELECT schema_name FROM public.companies WHERE id = $1', [companyId]);
     return r.rows[0]?.schema_name ?? null;
+}
+
+async function getProfileByIdInSchema(schema, profileId) {
+    const result = await db.query(
+        `SELECT id, code, is_system_profile
+         FROM "${schema}".profiles
+         WHERE id = $1`,
+        [profileId]
+    );
+    return result.rows[0] || null;
+}
+
+function isProtectedProfileCode(code) {
+    return PROTECTED_PROFILE_CODES.has(code);
+}
+
+async function getActorAllowedTransactionCodes(schema, userId) {
+    const profileRows = await db.query(
+        `SELECT profile_id FROM "${schema}".user_tenant_profiles WHERE user_id = $1`,
+        [userId]
+    );
+    const profileIds = profileRows.rows.map(r => r.profile_id);
+    if (profileIds.length === 0) return new Set();
+
+    const allowedRows = await db.query(
+        `SELECT DISTINCT transaction_code
+         FROM "${schema}".profile_transaction_permissions
+         WHERE profile_id = ANY($1::int[])
+           AND can_view = TRUE`,
+        [profileIds]
+    );
+    return new Set(allowedRows.rows.map(r => r.transaction_code));
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -226,10 +259,10 @@ exports.getProfiles = async (req, res) => {
         const schema = getSchema(req);
         if (!schema) return res.status(400).json({ error: 'Contexto de empresa requerido' });
 
-        // Filter out 'acceso_total' profile for non-super_admin users
+        // Non-super_admin cannot see protected profiles
         const whereClause = isSuperAdmin(req) 
             ? ``
-            : `WHERE p.code != 'acceso_total'`;
+            : `WHERE p.code NOT IN ('acceso_total', 'admin_empresa')`;
 
         const result = await db.query(
             `SELECT p.*,
@@ -258,6 +291,9 @@ exports.getProfileById = async (req, res) => {
         const { id } = req.params;
         const result = await db.query(`SELECT * FROM "${schema}".profiles WHERE id = $1`, [id]);
         if (result.rows.length === 0) return res.status(404).json({ error: 'Perfil no encontrado' });
+        if (!isSuperAdmin(req) && isProtectedProfileCode(result.rows[0].code)) {
+            return res.status(403).json({ error: 'No tienes permisos para ver este perfil' });
+        }
         res.json(result.rows[0]);
     } catch (error) {
         console.error('Get profile error:', error);
@@ -272,6 +308,11 @@ exports.getProfilePermissions = async (req, res) => {
         if (!schema) return res.status(400).json({ error: 'Contexto de empresa requerido' });
 
         const { id } = req.params;
+        const targetProfile = await getProfileByIdInSchema(schema, id);
+        if (!targetProfile) return res.status(404).json({ error: 'Perfil no encontrado' });
+        if (!isSuperAdmin(req) && isProtectedProfileCode(targetProfile.code)) {
+            return res.status(403).json({ error: 'No tienes permisos para gestionar este perfil' });
+        }
 
         const result = await db.query(
             `SELECT pp.*,
@@ -309,8 +350,11 @@ exports.updateProfilePermissions = async (req, res) => {
             return res.status(400).json({ error: 'El campo permissions debe ser un array' });
         }
 
-        const profileCheck = await db.query(`SELECT id FROM "${schema}".profiles WHERE id = $1`, [id]);
-        if (profileCheck.rows.length === 0) return res.status(404).json({ error: 'Perfil no encontrado' });
+        const targetProfile = await getProfileByIdInSchema(schema, id);
+        if (!targetProfile) return res.status(404).json({ error: 'Perfil no encontrado' });
+        if (!isSuperAdmin(req) && isProtectedProfileCode(targetProfile.code)) {
+            return res.status(403).json({ error: 'No tienes permisos para gestionar este perfil' });
+        }
 
         await client.query('BEGIN');
 
@@ -356,11 +400,12 @@ exports.getProfilePermissionsFull = async (req, res) => {
         const { id } = req.params;
 
         // Verificar que el perfil existe en este tenant
-        const profileCheck = await db.query(
-            `SELECT id FROM "${schema}".profiles WHERE id = $1`, [id]
-        );
-        if (profileCheck.rows.length === 0)
+        const targetProfile = await getProfileByIdInSchema(schema, id);
+        if (!targetProfile)
             return res.status(404).json({ error: 'Perfil no encontrado' });
+        if (!isSuperAdmin(req) && isProtectedProfileCode(targetProfile.code)) {
+            return res.status(403).json({ error: 'No tienes permisos para gestionar este perfil' });
+        }
 
         // Obtener company_id desde el JWT
         const companyId = req.user.company_id;
@@ -404,6 +449,12 @@ exports.getProfilePermissionsFull = async (req, res) => {
             ORDER BY mt.tab_order ASC, mt.name ASC
         `, [moduleCodes]);
 
+        let transactionRows = txRes.rows;
+        if (!isSuperAdmin(req)) {
+            const allowedTxCodes = await getActorAllowedTransactionCodes(schema, req.user.id);
+            transactionRows = transactionRows.filter(t => allowedTxCodes.has(t.transaction_code));
+        }
+
         // Permisos actuales del perfil por transaction_code
         const permsRes = await db.query(`
             SELECT transaction_code,
@@ -423,7 +474,7 @@ exports.getProfilePermissionsFull = async (req, res) => {
             module_name:  mod.module_name,
             module_icon:  mod.module_icon,
             module_group: mod.module_group,
-            transactions: txRes.rows
+            transactions: transactionRows
                 .filter(t => t.module_code === mod.module_code)
                 .map(t => ({
                     transaction_code: t.transaction_code,
@@ -435,7 +486,8 @@ exports.getProfilePermissionsFull = async (req, res) => {
                         can_delete: false, can_approve: false, can_export: false, can_admin: false
                     })
                 }))
-        }));
+        }))
+        .filter(mod => isSuperAdmin(req) || mod.transactions.length > 0);
 
         res.json(result);
     } catch (error) {
@@ -461,11 +513,23 @@ exports.updateProfilePermissionsFull = async (req, res) => {
         if (!Array.isArray(permissions))
             return res.status(400).json({ error: 'El campo permissions debe ser un array' });
 
-        const profileCheck = await db.query(
-            `SELECT id FROM "${schema}".profiles WHERE id = $1`, [id]
-        );
-        if (profileCheck.rows.length === 0)
+        const targetProfile = await getProfileByIdInSchema(schema, id);
+        if (!targetProfile)
             return res.status(404).json({ error: 'Perfil no encontrado' });
+        if (!isSuperAdmin(req) && isProtectedProfileCode(targetProfile.code)) {
+            return res.status(403).json({ error: 'No tienes permisos para gestionar este perfil' });
+        }
+
+        let allowedTxCodes = null;
+        if (!isSuperAdmin(req)) {
+            allowedTxCodes = await getActorAllowedTransactionCodes(schema, req.user.id);
+            const disallowed = permissions
+                .map(p => p?.transaction_code)
+                .filter(code => typeof code === 'string' && !allowedTxCodes.has(code));
+            if (disallowed.length > 0) {
+                return res.status(403).json({ error: 'No puedes modificar transacciones fuera de tu alcance' });
+            }
+        }
 
         await client.query('BEGIN');
 
@@ -475,6 +539,7 @@ exports.updateProfilePermissionsFull = async (req, res) => {
                 can_view = false, can_create = false, can_edit = false,
                 can_delete = false, can_approve = false, can_export = false, can_admin = false
             } = p;
+            if (!transaction_code || (allowedTxCodes && !allowedTxCodes.has(transaction_code))) continue;
 
             await client.query(`
                 INSERT INTO "${schema}".profile_transaction_permissions
@@ -518,6 +583,9 @@ exports.createProfile = async (req, res) => {
 
         const slugRegex = /^[a-z0-9_]+$/;
         if (!slugRegex.test(code)) return res.status(400).json({ error: 'El código solo puede contener letras minúsculas, números y guiones bajos' });
+        if (!isSuperAdmin(req) && isProtectedProfileCode(code)) {
+            return res.status(403).json({ error: 'No puedes crear perfiles reservados del sistema' });
+        }
 
         const result = await db.query(
             `INSERT INTO "${schema}".profiles (code, name, description, scope, is_system_profile, created_by)
@@ -547,6 +615,9 @@ exports.updateProfile = async (req, res) => {
 
         const existing = await db.query(`SELECT * FROM "${schema}".profiles WHERE id = $1`, [id]);
         if (existing.rows.length === 0) return res.status(404).json({ error: 'Perfil no encontrado' });
+        if (!isSuperAdmin(req) && isProtectedProfileCode(existing.rows[0].code)) {
+            return res.status(403).json({ error: 'No puedes modificar un perfil reservado del sistema' });
+        }
 
         if (existing.rows[0].is_system_profile && !isSuperAdmin(req)) {
             return res.status(403).json({ error: 'Los perfiles del sistema solo pueden ser modificados por el super administrador' });
@@ -583,6 +654,9 @@ exports.deleteProfile = async (req, res) => {
 
         const existing = await db.query(`SELECT * FROM "${schema}".profiles WHERE id = $1`, [id]);
         if (existing.rows.length === 0) return res.status(404).json({ error: 'Perfil no encontrado' });
+        if (!isSuperAdmin(req) && isProtectedProfileCode(existing.rows[0].code)) {
+            return res.status(403).json({ error: 'No puedes eliminar un perfil reservado del sistema' });
+        }
 
         if (existing.rows[0].is_system_profile) {
             return res.status(403).json({ error: 'No se puede eliminar un perfil del sistema' });

@@ -5,7 +5,7 @@ import {
   Shield, Plus, Search, Loader2, Pencil, Trash2, X, Save,
   ShieldAlert, CheckSquare, Square, ChevronDown, ChevronRight,
   LayoutDashboard, Building2, Users, BarChart2, Mail,
-  CreditCard, Settings, Palette, FileText, ClipboardList, Puzzle
+  CreditCard, Settings, Palette, FileText, ClipboardList, Puzzle, Lock
 } from 'lucide-vue-next';
 import api from '../../utils/axios';
 import { useVisualConfigStore } from '../../stores/visualConfig';
@@ -16,7 +16,7 @@ import type { Profile, ModuleGroup, TransactionPermission } from '../../types/au
 const cfg      = useVisualConfigStore();
 const perms    = usePermissions();
 
-// ── Company selector (super_admin only) ───────────────────────
+// Company selector (super_admin only)
 const selectedCompanyId = ref<number | null>(null);
 
 const profilesUrl     = computed(() =>
@@ -41,7 +41,7 @@ const inputBorder = computed(() => isLight.value ? 'rgba(0,0,0,0.15)' : 'rgba(25
 const panelBg     = computed(() => isLight.value ? 'rgba(248,250,252,0.98)' : 'rgba(8,16,31,0.6)');
 const modalBg     = computed(() => isLight.value ? '#ffffff' : '#0d1829');
 
-// ── Icon registry ─────────────────────────────────────────────
+// Icon registry
 const ICON_REGISTRY: Record<string, Component> = {
   LayoutDashboard, Building2, Users, Shield, Puzzle, Mail, BarChart2,
   CreditCard, Settings, Palette, FileText, ClipboardList
@@ -49,7 +49,7 @@ const ICON_REGISTRY: Record<string, Component> = {
 const resolveIcon = (code?: string): Component =>
   (code && ICON_REGISTRY[code]) ? ICON_REGISTRY[code] : Settings;
 
-// ── State ─────────────────────────────────────────────────────
+// State
 const profiles        = ref<Profile[]>([]);
 const isLoading       = ref(true);
 const search          = ref('');
@@ -73,20 +73,23 @@ const ACTION_LABELS: Record<string, string> = {
   can_delete: 'Elim.', can_approve: 'Apr.', can_export: 'Exp.', can_admin: 'Admin'
 };
 
-// ── Computed ──────────────────────────────────────────────────
+// Computed
 const filteredProfiles = computed(() => {
+  const base = profiles.value.filter(p => (
+    perms.isSuperAdmin.value || !['acceso_total', 'admin_empresa'].includes(p.code)
+  ));
   const q = search.value.toLowerCase();
-  if (!q) return profiles.value;
-  return profiles.value.filter(p =>
+  if (!q) return base;
+  return base.filter(p =>
     p.name.toLowerCase().includes(q) || p.code.toLowerCase().includes(q)
   );
 });
 
 const kpis = computed(() => ({
-  total:  profiles.value.length,
-  active: profiles.value.filter(p => p.is_active).length,
-  system: profiles.value.filter(p => p.is_system_profile).length,
-  custom: profiles.value.filter(p => !p.is_system_profile).length,
+  total:  filteredProfiles.value.length,
+  active: filteredProfiles.value.filter(p => p.is_active).length,
+  system: filteredProfiles.value.filter(p => p.is_system_profile).length,
+  custom: filteredProfiles.value.filter(p => !p.is_system_profile).length,
 }));
 
 function enabledCount(mod: ModuleGroup): number {
@@ -95,7 +98,7 @@ function enabledCount(mod: ModuleGroup): number {
   ).length;
 }
 
-// ── Load ──────────────────────────────────────────────────────
+// Load
 async function loadProfiles() {
   isLoading.value = true;
   selectedProfile.value = null;
@@ -178,7 +181,7 @@ async function savePermissions() {
   }
 }
 
-// ── Toggle helpers ────────────────────────────────────────────
+// Toggle helpers
 function toggleExpanded(code: string) {
   expanded.value[code] = !expanded.value[code];
 }
@@ -209,7 +212,19 @@ function moduleAllSelected(mod: ModuleGroup): boolean {
     mod.transactions.every(tx => txAllSelected(tx));
 }
 
-// ── Profile CRUD ──────────────────────────────────────────────
+function canEditProfileMeta(p: Profile): boolean {
+  if (!perms.canManageProfiles.value) return false;
+  if (perms.isSuperAdmin.value) return true;
+  return !p.is_system_profile;
+}
+
+function canDeleteProfile(p: Profile): boolean {
+  if (!perms.canManageProfiles.value) return false;
+  if (p.is_system_profile) return false;
+  return true;
+}
+
+// Profile CRUD
 onMounted(loadProfiles);
 
 function openCreate() {
@@ -220,6 +235,7 @@ function openCreate() {
 }
 
 function openEdit(p: Profile) {
+  if (!canEditProfileMeta(p)) return;
   isEditing.value = true;
   form.value = { id: p.id, code: p.code, name: p.name, description: p.description ?? '', scope: p.scope };
   saveError.value = '';
@@ -227,7 +243,7 @@ function openEdit(p: Profile) {
 }
 
 async function saveProfile() {
-  if (!form.value.code || !form.value.name) { saveError.value = 'Código y nombre son requeridos'; return; }
+  if (!form.value.code || !form.value.name) { saveError.value = 'Codigo y nombre son requeridos'; return; }
   isSaving.value = true;
   saveError.value = '';
   try {
@@ -247,6 +263,7 @@ async function saveProfile() {
 }
 
 async function deleteProfile(p: Profile) {
+  if (!canDeleteProfile(p)) return;
   if (!confirm(`¿Eliminar el perfil "${p.name}"?`)) return;
   try {
     await api.delete(`${profilesUrl.value}/${p.id}`);
@@ -261,7 +278,7 @@ async function deleteProfile(p: Profile) {
   }
 }
 
-const scopeLabel = (s: string) => ({ global: 'Global', empresa: 'Empresa', modulo: 'Módulo' }[s] ?? s);
+const scopeLabel = (s: string) => ({ global: 'Global', empresa: 'Empresa', modulo: 'Modulo' }[s] ?? s);
 const scopeColor = (s: string) => {
   if (s === 'global')  return 'bg-purple-500/15 text-purple-300 border-purple-500/25';
   if (s === 'empresa') return 'bg-blue-500/15 text-blue-300 border-blue-500/25';
@@ -280,7 +297,7 @@ const scopeColor = (s: string) => {
         </div>
         <div>
           <h1 class="text-lg font-semibold" :style="{ color: headerColor }">Perfiles y Permisos</h1>
-          <p class="text-xs" :style="{ color: mutedColor }">Define perfiles y su acceso por transacción dentro de cada módulo habilitado</p>
+          <p class="text-xs" :style="{ color: mutedColor }">Define perfiles y su acceso por transaccion dentro de cada modulo habilitado</p>
         </div>
       </div>
       <div class="flex items-center gap-3 flex-wrap">
@@ -348,11 +365,11 @@ const scopeColor = (s: string) => {
               </div>
             </div>
             <div class="flex gap-1 shrink-0" @click.stop>
-              <button v-if="perms.canManageProfiles.value" @click="openEdit(p)"
+              <button v-if="canEditProfileMeta(p)" @click="openEdit(p)"
                 class="rounded-lg p-1 hover:bg-white/10 transition">
                 <Pencil class="h-3.5 w-3.5" :style="{ color: mutedColor }" />
               </button>
-              <button v-if="perms.canManageProfiles.value && !p.is_system_profile" @click="deleteProfile(p)"
+              <button v-if="canDeleteProfile(p)" @click="deleteProfile(p)"
                 class="rounded-lg p-1 hover:bg-red-500/10 transition">
                 <Trash2 class="h-3.5 w-3.5 text-red-400" />
               </button>
@@ -361,7 +378,7 @@ const scopeColor = (s: string) => {
         </div>
       </div>
 
-      <!-- Panel de permisos por transacción -->
+      <!-- Panel de permisos por transaccion -->
       <div class="lg:col-span-2 rounded-2xl border flex flex-col" :style="{ backgroundColor: cardBg, borderColor: cardBorder }">
 
         <!-- Empty state -->
@@ -370,14 +387,28 @@ const scopeColor = (s: string) => {
           <p class="text-sm">Selecciona un perfil para gestionar sus permisos</p>
         </div>
 
+        <!-- Usuario sin permiso de configurar: solo ve un aviso -->
+        <template v-else-if="!perms.canManageProfiles.value">
+          <div class="flex flex-col items-center justify-center py-20 gap-4" :style="{ color: mutedColor }">
+            <div class="flex h-14 w-14 items-center justify-center rounded-2xl"
+              :style="{ backgroundColor: 'rgba(212,175,55,0.10)', color: '#D4AF37' }">
+              <Lock class="h-7 w-7" />
+            </div>
+            <div class="text-center space-y-1">
+              <p class="text-sm font-medium" :style="{ color: headerColor }">Configuracion restringida</p>
+              <p class="text-xs max-w-xs">La configuracion de permisos es gestionada por el administrador del sistema.</p>
+            </div>
+          </div>
+        </template>
+
         <template v-else>
           <!-- Header del detalle -->
           <div class="flex items-center justify-between border-b px-5 py-4" :style="{ borderColor: cardBorder }">
             <div>
               <h3 class="font-semibold" :style="{ color: headerColor }">{{ selectedProfile.name }}</h3>
               <p class="text-xs mt-0.5" :style="{ color: mutedColor }">
-                {{ selectedProfile.description || 'Sin descripción' }} &middot;
-                {{ moduleGroups.length }} módulo{{ moduleGroups.length !== 1 ? 's' : '' }} habilitados
+                {{ selectedProfile.description || 'Sin descripcion' }} &middot;
+                {{ moduleGroups.length }} modulo{{ moduleGroups.length !== 1 ? 's' : '' }} habilitados
               </p>
             </div>
             <button v-if="perms.canManageProfiles.value" @click="savePermissions" :disabled="isSavingPerms"
@@ -403,14 +434,14 @@ const scopeColor = (s: string) => {
             <Loader2 class="h-6 w-6 animate-spin text-[#D4AF37]" />
           </div>
 
-          <!-- Módulos vacíos -->
+          <!-- Modulos vacios -->
           <div v-else-if="moduleGroups.length === 0" class="flex flex-col items-center justify-center py-16 gap-2" :style="{ color: mutedColor }">
             <Puzzle class="h-10 w-10 opacity-25" />
-            <p class="text-sm">No hay módulos habilitados para esta empresa.</p>
-            <p class="text-xs opacity-60">Activa módulos desde el Gestor de Módulos.</p>
+            <p class="text-sm">No hay modulos habilitados para esta empresa.</p>
+            <p class="text-xs opacity-60">Activa modulos desde el Gestor de Modulos.</p>
           </div>
 
-          <!-- Acordeones de módulos -->
+          <!-- Acordeones de modulos -->
           <div v-else class="flex-1 overflow-y-auto custom-scrollbar divide-y" :style="{ borderColor: cardBorder }">
             <div v-for="mod in moduleGroups" :key="mod.module_code">
 
@@ -436,7 +467,7 @@ const scopeColor = (s: string) => {
                   }">
                   {{ enabledCount(mod) }}/{{ mod.transactions.length }}
                 </span>
-                <!-- Toggle todo el módulo -->
+                <!-- Toggle todo el modulo -->
                 <button v-if="perms.canManageProfiles.value && mod.transactions.length > 0"
                   @click.stop="toggleModuleAll(mod, !moduleAllSelected(mod))"
                   class="shrink-0 rounded-lg p-1 hover:bg-white/10 transition"
@@ -451,14 +482,14 @@ const scopeColor = (s: string) => {
               <div v-if="expanded[mod.module_code]"
                 class="border-t" :style="{ borderColor: cardBorder, backgroundColor: panelBg }">
                 <div v-if="mod.transactions.length === 0" class="px-5 py-4 text-xs" :style="{ color: mutedColor }">
-                  Este módulo no tiene transacciones configuradas.
+                  Este modulo no tiene transacciones configuradas.
                 </div>
                 <div v-else class="overflow-x-auto">
                   <table class="min-w-full text-xs">
                     <thead class="border-b" :style="{ borderColor: cardBorder }">
                       <tr>
                         <th class="py-2 pl-12 pr-3 text-left font-semibold uppercase tracking-wide" :style="{ color: mutedColor }">
-                          Transacción
+                          Transaccion
                         </th>
                         <th v-for="a in ACTIONS" :key="a"
                           class="px-1.5 py-2 text-center font-semibold uppercase tracking-wide w-10"
@@ -526,7 +557,7 @@ const scopeColor = (s: string) => {
               <ShieldAlert class="h-4 w-4 shrink-0" /> {{ saveError }}
             </div>
             <div>
-              <label class="mb-1.5 block text-xs font-medium" :style="{ color: mutedColor }">Código *</label>
+              <label class="mb-1.5 block text-xs font-medium" :style="{ color: mutedColor }">Codigo *</label>
               <input v-model="form.code" :disabled="isEditing" placeholder="ej: rrhh_supervisor"
                 class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none disabled:opacity-50"
                 :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
@@ -538,7 +569,7 @@ const scopeColor = (s: string) => {
                 :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
             </div>
             <div>
-              <label class="mb-1.5 block text-xs font-medium" :style="{ color: mutedColor }">Descripción</label>
+              <label class="mb-1.5 block text-xs font-medium" :style="{ color: mutedColor }">Descripcion</label>
               <textarea v-model="form.description" rows="2"
                 class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none resize-none"
                 :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
@@ -549,7 +580,7 @@ const scopeColor = (s: string) => {
                 :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }">
                 <option value="empresa">Empresa</option>
                 <option value="global">Global</option>
-                <option value="modulo">Módulo</option>
+                <option value="modulo">Modulo</option>
               </select>
             </div>
           </div>
@@ -576,3 +607,4 @@ const scopeColor = (s: string) => {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover { background-color: rgba(148,163,184,0.4); }
 .custom-scrollbar { scrollbar-width: thin; scrollbar-color: rgba(148,163,184,0.22) transparent; }
 </style>
+

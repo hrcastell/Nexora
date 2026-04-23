@@ -55,11 +55,13 @@ app.use('/api', preAuthForGuard, moduleGuard);
 // Routes
 app.use('/api/auth',                      require('./routes/authRoutes'));
 app.use('/api/companies',                  require('./routes/companyRoutes'));
-app.use('/api/companies/:id/users',        require('./routes/usersRoutes'));
-app.use('/api/companies/:id',              require('./routes/commercialRoutes'));
-app.use('/api/companies/:id',              require('./routes/companyConfigRoutes'));
+app.use('/api/companies/:id/users',            require('./routes/usersRoutes'));
+app.use('/api/companies/:companyId/profiles',  require('./routes/companyProfilesRoutes'));
+app.use('/api/companies/:id',                  require('./routes/commercialRoutes'));
+app.use('/api/companies/:id',                  require('./routes/companyConfigRoutes'));
 app.use('/api/solicitudes',                require('./routes/solicitudesRoutes'));
 app.use('/api/subscriptions',              require('./routes/subscriptionRoutes'));
+app.use('/api/subscription-plans',         require('./routes/subscriptionPlansRoutes'));
 app.use('/api/stats',                      require('./routes/statsRoutes'));
 app.use('/api/modules',                    require('./routes/modulesRoutes'));
 app.use('/api/profiles',                   require('./routes/profilesRoutes'));
@@ -71,8 +73,9 @@ const authMiddleware  = require('./middleware/authMiddleware');
 const usersController = require('./controllers/usersController');
 const upload          = require('./utils/upload');
 
-app.get('/api/users',          authMiddleware, usersController.getAllUsers);
-app.post('/api/users/avatar',  authMiddleware, upload.single('avatar'), usersController.uploadAvatar);
+app.get('/api/users',             authMiddleware, usersController.getAllUsers);
+app.delete('/api/users/:userId',  authMiddleware, usersController.deleteUser);
+app.post('/api/users/avatar',     authMiddleware, upload.single('avatar'), usersController.uploadAvatar);
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {

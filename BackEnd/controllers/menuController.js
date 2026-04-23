@@ -19,12 +19,16 @@ const db = require('../config/db');
  * Orden de autorización:
  *   1. compañía actual (JWT)
  *   2. módulo habilitado (company_modules.is_enabled)
- *   3. transacción habilitada (por ahora todas las del catálogo activas)
- *   4. TODO: permisos de perfil (fase futura)
+ *   3. transacción activa en catálogo
+ *   4. perfil del usuario (profile_transaction_permissions.can_view) — super_admin omite este filtro
  */
 exports.getMyMenu = async (req, res) => {
     try {
-        const companyId = req.user.company_id;
+        const companyId   = req.user.company_id;
+        const isSuperAdmin = req.user.is_super_admin === true;
+        const schema      = req.user.schema_name;
+        const userId      = req.user.id;
+
         if (!companyId) {
             return res.status(400).json({ error: 'Contexto de empresa requerido' });
         }
@@ -63,17 +67,49 @@ exports.getMyMenu = async (req, res) => {
             [moduleIds]
         );
 
+        let allTx = txRes.rows;
+
+        // Filtrar por can_view del perfil cuando no es super_admin
+        if (!isSuperAdmin && schema) {
+            try {
+                // Perfiles asignados al usuario en este tenant
+                const profilesRes = await db.query(
+                    `SELECT profile_id FROM "${schema}".user_tenant_profiles WHERE user_id = $1`,
+                    [userId]
+                );
+                const profileIds = profilesRes.rows.map(r => r.profile_id);
+
+                if (profileIds.length > 0) {
+                    // Códigos de transacción donde al menos un perfil del usuario tiene can_view=TRUE
+                    const allowedRes = await db.query(
+                        `SELECT DISTINCT transaction_code
+                         FROM "${schema}".profile_transaction_permissions
+                         WHERE profile_id = ANY($1::int[])
+                           AND can_view = TRUE`,
+                        [profileIds]
+                    );
+                    const allowed = new Set(allowedRes.rows.map(r => r.transaction_code));
+                    allTx = allTx.filter(tx => allowed.has(tx.code));
+                } else {
+                    // Sin perfil asignado: no se muestra ninguna transacción
+                    allTx = [];
+                }
+            } catch {
+                // Si el schema no tiene la tabla aún, degradamos a mostrar todo
+            }
+        }
+
         // Agrupar transacciones por módulo
         const txByModule = {};
-        for (const tx of txRes.rows) {
+        for (const tx of allTx) {
             if (!txByModule[tx.module_id]) txByModule[tx.module_id] = [];
             txByModule[tx.module_id].push(tx);
         }
 
-        const tree = modules.map(m => ({
-            ...m,
-            transactions: txByModule[m.id] || []
-        }));
+        // Excluir módulos sin ninguna transacción visible (salvo super_admin)
+        const tree = modules
+            .map(m => ({ ...m, transactions: txByModule[m.id] || [] }))
+            .filter(m => isSuperAdmin || m.transactions.length > 0);
 
         res.json({ company_id: companyId, modules: tree });
     } catch (error) {

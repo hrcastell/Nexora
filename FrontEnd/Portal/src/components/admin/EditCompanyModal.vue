@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive, computed, watch } from 'vue';
+import { ref, reactive, computed, watch, onMounted } from 'vue';
 import api from '../../utils/axios';
 import { X, Loader2 } from 'lucide-vue-next';
 import { useVisualConfigStore } from '../../stores/visualConfig';
@@ -14,7 +14,19 @@ interface Company {
   contact_phone: string;
   address: string;
   plan_type: string;
+  subscription_plan_id?: number | null;
 }
+
+interface SubscriptionPlan { id: number; code: string; name: string; is_active: boolean; }
+const plans = ref<SubscriptionPlan[]>([]);
+
+onMounted(async () => {
+  try {
+    const res = await api.get('/subscription-plans');
+    plans.value = res.data;
+    syncPlanTypeFromSelection(form.subscription_plan_id);
+  } catch { /* silent */ }
+});
 
 const props = defineProps<{
   isOpen: boolean;
@@ -54,8 +66,18 @@ const form = reactive({
   contact_phone: '',
   address: '',
   country: 'Chile',
-  plan_type: 'basic'
+  plan_type: 'basic',
+  subscription_plan_id: null as number | null
 });
+
+function syncPlanTypeFromSelection(planId: number | null) {
+  if (planId == null) {
+    form.plan_type = 'none';
+    return;
+  }
+  const selected = plans.value.find(p => p.id === planId);
+  if (selected) form.plan_type = selected.code;
+}
 
 // Watch for company changes to populate form
 watch(() => props.company, (newCompany) => {
@@ -67,8 +89,13 @@ watch(() => props.company, (newCompany) => {
     form.address = newCompany.address || '';
     form.country = newCompany.country;
     form.plan_type = newCompany.plan_type;
+    form.subscription_plan_id = newCompany.subscription_plan_id ?? null;
   }
 }, { immediate: true });
+
+watch(() => form.subscription_plan_id, (newPlanId) => {
+  syncPlanTypeFromSelection(newPlanId);
+});
 
 const handleClose = () => {
   error.value = '';
@@ -235,16 +262,11 @@ const handleSubmit = async () => {
 
               <!-- Plan -->
               <div>
-                <label for="edit-plan" class="block text-sm font-medium mb-2" :style="{ color: labelColor }">Plan</label>
-                <select id="edit-plan" v-model="form.plan_type" class="mt-1 block w-full pl-3 pr-10 py-2.5 text-base rounded-xl border text-sm transition-colors" 
-                        :style="{ 
-                          backgroundColor: inputBg, 
-                          borderColor: inputBorder, 
-                          color: headerTextColor 
-                        }">
-                  <option value="basic" :style="{ backgroundColor: optionBg }">Básico</option>
-                  <option value="pro" :style="{ backgroundColor: optionBg }">Pro</option>
-                  <option value="enterprise" :style="{ backgroundColor: optionBg }">Enterprise</option>
+                <label for="edit-plan" class="block text-sm font-medium mb-2" :style="{ color: labelColor }">Plan de Suscripción</label>
+                <select id="edit-plan" v-model="form.subscription_plan_id" class="mt-1 block w-full pl-3 pr-10 py-2.5 text-base rounded-xl border text-sm transition-colors"
+                        :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerTextColor }">
+                  <option :value="null" :style="{ backgroundColor: optionBg }">Sin plan</option>
+                  <option v-for="p in plans" :key="p.id" :value="p.id" :style="{ backgroundColor: optionBg }">{{ p.name }}</option>
                 </select>
               </div>
 

@@ -86,7 +86,7 @@ exports.selectCompany = async (req, res) => {
   try {
     // Verify user belongs to company
     const result = await db.query(
-      `SELECT c.id, c.name, c.schema_name 
+      `SELECT c.id, c.name, c.schema_name, c.is_master
        FROM public.companies c
        JOIN public.company_users cu ON c.id = cu.company_id
        WHERE c.id = $1 AND cu.user_id = $2`,
@@ -109,8 +109,44 @@ exports.selectCompany = async (req, res) => {
       'SELECT status, is_system_user, role FROM public.users WHERE id = $1', [userId]
     );
 
-    const cs     = companyFull.rows[0]?.commercial_status || 'activa';
+    let cs     = companyFull.rows[0]?.commercial_status || 'activa';
     const uFull  = userFull.rows[0] || {};
+
+    // Auto-bloqueo por morosidad (solo para empresas no maestras)
+    if (!company.is_master) {
+      const overdueRes = await db.query(
+        `SELECT (CURRENT_DATE - due_date)::integer AS days_overdue
+         FROM public.invoices
+         WHERE company_id = $1
+           AND status IN ('emitido', 'pendiente')
+           AND due_date < CURRENT_DATE
+         ORDER BY days_overdue DESC
+         LIMIT 1`,
+        [company.id]
+      );
+      if (overdueRes.rows.length > 0) {
+        const daysOverdue = overdueRes.rows[0].days_overdue;
+        const graceRes = await db.query(
+          `SELECT COALESCE(
+             (SELECT grace_period_days FROM public.payment_agreements
+              WHERE company_id = $1 AND status = 'activo'
+              ORDER BY created_at DESC LIMIT 1),
+             (SELECT grace_period_days FROM public.companies WHERE id = $1)
+           ) AS grace_period_days`,
+          [company.id]
+        );
+        const graceDays = parseInt(graceRes.rows[0]?.grace_period_days) || 5;
+        const newStatus = daysOverdue > graceDays ? 'bloqueada' : 'pendiente_pago';
+        if (cs !== newStatus) {
+          await db.query(
+            'UPDATE public.companies SET commercial_status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
+            [newStatus, company.id]
+          );
+          cs = newStatus;
+        }
+      }
+    }
+
     const readOnly = uFull.status === 'suspendido' || cs === 'suspendida';
 
     if (cs === 'bloqueada' && !uFull.is_system_user) {
@@ -140,6 +176,33 @@ exports.selectCompany = async (req, res) => {
   }
 };
 
+exports.getVisualConfig = async (req, res) => {
+    try {
+        const result = await db.query(
+            'SELECT visual_config FROM public.users WHERE id = $1',
+            [req.user.id]
+        );
+        const config = result.rows[0]?.visual_config ?? null;
+        res.json(config ?? {});
+    } catch (error) {
+        res.status(500).json({ error: 'Error al obtener configuración visual' });
+    }
+};
+
+exports.updateVisualConfig = async (req, res) => {
+    try {
+        const payload = (req.body && typeof req.body === 'object') ? req.body : {};
+        await db.query(
+            'UPDATE public.users SET visual_config = $1::jsonb WHERE id = $2',
+            [JSON.stringify(payload), req.user.id]
+        );
+        res.json({ ok: true });
+    } catch (error) {
+        console.error('updateVisualConfig error:', error.message);
+        res.status(500).json({ error: 'Error al guardar configuración visual' });
+    }
+};
+
 exports.getMe = async (req, res) => {
     try {
         if (!req.user || !req.user.id) {
@@ -166,3 +229,4 @@ exports.getMe = async (req, res) => {
         res.status(500).json({ error: 'Server Error' });
     }
 }
+

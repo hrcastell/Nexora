@@ -26,6 +26,11 @@ export const useAuthStore = defineStore('auth', () => {
       
       localStorage.setItem('token', tempToken);
 
+      // Bind visual config to the authenticated user immediately.
+      const visualConfig = useVisualConfigStore();
+      visualConfig.setUser(userData.id);
+      await visualConfig.loadFromApi();
+
       // Return true if login successful
       return true;
     } catch (error) {
@@ -68,6 +73,9 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('token');
     localStorage.removeItem('currentCompany');
     localStorage.removeItem('nexora_read_only');
+    // Reset visual state and unbind user to avoid cross-user leakage.
+    const visualConfig = useVisualConfigStore();
+    visualConfig.clearUserContext();
     // Clear dynamic menu so next user doesn't see cached items
     const menuStore = useMenuStore();
     menuStore.reset();
@@ -97,8 +105,9 @@ export const useAuthStore = defineStore('auth', () => {
         readOnly.value = localStorage.getItem('nexora_read_only') === '1';
       }
 
-      // Load user-specific visual config from DB
+      // Load user-specific visual config (localStorage first, then DB)
       const visualConfig = useVisualConfigStore();
+      visualConfig.setUser(response.data.user.id);
       await visualConfig.loadFromApi();
 
       // Load dynamic menu (modules + transactions) for this company

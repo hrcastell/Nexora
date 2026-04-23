@@ -146,7 +146,7 @@ async function loadCompanyModules(companyId: number) {
       companyModulesMap.value[row.code] = {
         id:          row.assignment_id ?? undefined,
         code:        row.code,
-        is_enabled:  row.is_enabled !== false,
+        is_enabled:  row.is_enabled === true,
         is_visible:  row.is_visible !== false,
         is_required: row.is_required === true || row.is_core === true,
         menu_order:  row.menu_order ?? row.menu_order_default ?? 0,
@@ -391,19 +391,32 @@ onMounted(loadCatalog);
                   <option value="borrador">Borrador</option>
                 </select>
               </div>
-              <div class="col-span-2 flex flex-wrap gap-6 pt-2">
-                <label class="flex items-center gap-2 text-sm cursor-pointer" :style="{ color: headerColor }">
-                  <input type="checkbox" v-model="mod.menu_visible_default" :disabled="!perms.isSuperAdmin.value" />
-                  Visible en menú por defecto
-                </label>
-                <label class="flex items-center gap-2 text-sm cursor-pointer" :style="{ color: headerColor }">
-                  <input type="checkbox" v-model="mod.is_core" :disabled="!perms.isSuperAdmin.value" />
-                  Módulo core (obligatorio para toda compañía)
-                </label>
-                <label class="flex items-center gap-2 text-sm" :style="{ color: mutedColor }">
-                  <input type="checkbox" :checked="mod.is_global" disabled />
-                  Global
-                </label>
+              <div class="col-span-2 pt-2 space-y-2.5">
+                <p class="text-[11px] uppercase tracking-wider font-semibold" :style="{ color: mutedColor }">
+                  Valores predeterminados del catálogo global
+                  <span class="normal-case font-normal ml-1 opacity-75">(aplican al crear nuevas empresas, no afectan empresas existentes)</span>
+                </p>
+                <div class="flex flex-wrap gap-6">
+                  <label class="flex items-center gap-2 text-sm cursor-pointer" :style="{ color: headerColor }">
+                    <input type="checkbox" v-model="mod.menu_visible_default" :disabled="!perms.isSuperAdmin.value" />
+                    Visible en menú por defecto
+                  </label>
+                  <label class="flex items-center gap-2 text-sm cursor-pointer" :style="{ color: headerColor }">
+                    <input type="checkbox" v-model="mod.is_core" :disabled="!perms.isSuperAdmin.value" />
+                    Módulo core (obligatorio para toda compañía)
+                  </label>
+                  <label class="flex items-center gap-2 text-sm" :style="{ color: mutedColor }">
+                    <input type="checkbox" :checked="mod.is_global" disabled />
+                    Global
+                  </label>
+                </div>
+                <p v-if="perms.isSuperAdmin.value && activeCompanyId" class="text-[11px] rounded-xl border px-3 py-1.5 inline-flex items-center gap-1.5"
+                  :style="{ borderColor: 'rgba(212,175,55,0.30)', backgroundColor: 'rgba(212,175,55,0.07)', color: '#D4AF37' }">
+                  <Eye class="h-3 w-3 shrink-0" />
+                  Para habilitar / deshabilitar este módulo en la empresa seleccionada, usa el icono
+                  <Eye class="h-3 w-3 shrink-0 inline" /> / <EyeOff class="h-3 w-3 shrink-0 inline" />
+                  en el encabezado del acordeón.
+                </p>
               </div>
             </div>
             <div v-if="perms.isSuperAdmin.value" class="mt-4 flex justify-end">

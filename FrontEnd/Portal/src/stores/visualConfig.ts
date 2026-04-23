@@ -117,6 +117,11 @@ export function wallpaperBackground(wallpaper: Wallpaper): string {
 }
 
 export const useVisualConfigStore = defineStore('visualConfig', () => {
+  // Current user â€” used to scope localStorage to a single user
+  const _userId = ref<number | null>(null);
+  const _legacyStorageKey = 'nexora_visual_config';
+  const _storageKey = () => (_userId.value ? `nexora_visual_config_${_userId.value}` : null);
+
   // State - Nexora Defaults
   const mode = ref<ThemeMode>(DEFAULT_CONFIG.mode);
   const selectedWallpaper = ref(DEFAULT_CONFIG.wallpaper);
@@ -272,26 +277,46 @@ export const useVisualConfigStore = defineStore('visualConfig', () => {
     corner.value = DEFAULT_CONFIG.corner;
   }
 
-  // Load from localStorage on init
+  // Load from localStorage â€” uses user-specific key when userId is known
   function loadFromStorage() {
     try {
-      const stored = localStorage.getItem('nexora_visual_config');
-      if (stored) {
-        const config = JSON.parse(stored);
-        mode.value = config.mode ?? DEFAULT_CONFIG.mode;
-        selectedWallpaper.value = config.selectedWallpaper ?? DEFAULT_CONFIG.wallpaper;
-        scale.value = config.scale ?? DEFAULT_CONFIG.scale;
-        fontId.value = config.fontId ?? DEFAULT_CONFIG.fontId;
-        fontSize.value = config.fontSize ?? DEFAULT_CONFIG.fontSize;
-        primaryColor.value = config.primaryColor ?? DEFAULT_CONFIG.primaryColor;
-        accentColor.value = config.accentColor ?? DEFAULT_CONFIG.accentColor;
-        customColor.value = config.customColor ?? DEFAULT_CONFIG.customColor;
-        transparency.value = config.transparency ?? DEFAULT_CONFIG.transparency;
-        corner.value = config.corner ?? DEFAULT_CONFIG.corner;
+      const storageKey = _storageKey();
+      if (!storageKey) {
+        resetToDefaults();
+        return;
       }
+
+      const stored = localStorage.getItem(storageKey);
+      if (stored) {
+        applyConfig(JSON.parse(stored));
+        return;
+      }
+      // One-time migration from legacy global key to user-specific key.
+      const legacyStored = localStorage.getItem(_legacyStorageKey);
+      if (legacyStored) {
+        applyConfig(JSON.parse(legacyStored));
+        localStorage.setItem(storageKey, JSON.stringify(getConfigSnapshot()));
+        localStorage.removeItem(_legacyStorageKey);
+        return;
+      }
+
+      resetToDefaults();
     } catch {
       // Ignore storage errors
     }
+  }
+
+  // Bind a user ID and immediately load their config from localStorage.
+  // Called after login; ensures different users never share visual state.
+  function setUser(userId: number) {
+    if (_userId.value === userId) return;
+    _userId.value = userId;
+    loadFromStorage();
+  }
+
+  function clearUserContext() {
+    _userId.value = null;
+    resetToDefaults();
   }
 
   function getConfigSnapshot() {
@@ -322,42 +347,51 @@ export const useVisualConfigStore = defineStore('visualConfig', () => {
     corner.value            = config.corner            ?? DEFAULT_CONFIG.corner;
   }
 
-  // Save to localStorage + API (per-user DB persistence)
+  // Save to user-specific localStorage key + API
   function saveToStorage() {
+    const storageKey = _storageKey();
+    if (!storageKey) return;
+
     try {
-      localStorage.setItem('nexora_visual_config', JSON.stringify(getConfigSnapshot()));
+      localStorage.setItem(storageKey, JSON.stringify(getConfigSnapshot()));
     } catch {
       // Ignore storage errors
     }
-    // Also persist to DB
-    saveToApi();
+    void saveToApi();
   }
 
-  // Load from API (per-user DB persistence). Falls back to localStorage on error.
+  // Load from API. On success overwrites localStorage with the authoritative DB value.
   async function loadFromApi() {
+    if (!_userId.value) return;
+
     try {
       const { data } = await api.get('/auth/visual-config');
-      if (data && typeof data === 'object') {
+      if (data && typeof data === 'object' && Object.keys(data).length > 0) {
         applyConfig(data);
+        const storageKey = _storageKey();
         try {
-          localStorage.setItem('nexora_visual_config', JSON.stringify(getConfigSnapshot()));
+          if (storageKey) {
+            localStorage.setItem(storageKey, JSON.stringify(getConfigSnapshot()));
+          }
         } catch { /* ignore */ }
       }
     } catch {
-      // Keep whatever was in localStorage
+      // API unavailable - keep whatever loadFromStorage / setUser already applied
     }
   }
 
   // Save to API (silent on failure; localStorage is the fallback)
   async function saveToApi() {
+    if (!_userId.value) return;
+
     try {
       await api.put('/auth/visual-config', getConfigSnapshot());
     } catch {
-      // Ignore — localStorage still has the data
+      // Ignore - localStorage still has the data
     }
   }
 
-  // Initialize
+  // Initialize with anonymous/default state (no userId yet)
   loadFromStorage();
 
   return {
@@ -396,9 +430,12 @@ export const useVisualConfigStore = defineStore('visualConfig', () => {
     setTransparency,
     setCorner,
     resetToDefaults,
+    setUser,
+    clearUserContext,
     loadFromStorage,
     saveToStorage,
     loadFromApi,
     saveToApi,
   };
 });
+

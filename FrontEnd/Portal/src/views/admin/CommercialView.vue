@@ -24,11 +24,11 @@ const inputBorder = computed(() => isLight.value ? 'rgba(0,0,0,0.15)' : 'rgba(25
 const modalBg     = computed(() => isLight.value ? '#ffffff' : '#0d1829');
 
 const selectedCompanyId = ref<number | null>(null);
-const companyId  = computed(() =>
-  (perms.isSuperAdmin.value && selectedCompanyId.value)
-    ? selectedCompanyId.value
-    : auth.currentCompany?.id
-);
+const companyId  = computed(() => {
+  if (perms.isSuperAdmin.value && selectedCompanyId.value) return selectedCompanyId.value;
+  if (auth.currentCompany?.is_master) return null;
+  return auth.currentCompany?.id ?? null;
+});
 const company    = ref<Company | null>(null);
 const agreements = ref<PaymentAgreement[]>([]);
 const invoices   = ref<Invoice[]>([]);
@@ -40,6 +40,21 @@ const showModal   = ref(false);
 const modalType   = ref<'agreement' | 'invoice' | 'payment'>('invoice');
 const isSaving    = ref(false);
 const saveError   = ref('');
+
+interface SubscriptionPlan {
+  id: number;
+  code: string;
+  name: string;
+  amount: number;
+  currency: string;
+  payment_frequency: string;
+  due_day: number;
+  grace_period_days: number;
+  is_active: boolean;
+}
+
+const subscriptionPlans = ref<SubscriptionPlan[]>([]);
+const plansLoading = ref(false);
 
 // Toast state
 const activeToast = ref<ToastItem | null>(null);
@@ -65,10 +80,20 @@ async function generateInvoice(agreementId: number) {
   }
 }
 
-const agreementForm = ref({
-  amount: '', currency: 'CLP', frequency: 'monthly',
-  start_date: '', due_day: 1, service_description: '', grace_period_days: 5
+const todayIso = () => new Date().toISOString().split('T')[0];
+const defaultAgreementForm = () => ({
+  subscription_plan_id: null as number | null,
+  replace_active: true,
+  amount: '',
+  currency: 'CLP',
+  frequency: 'monthly',
+  start_date: todayIso(),
+  due_day: 1,
+  service_description: '',
+  grace_period_days: 5
 });
+
+const agreementForm = ref(defaultAgreementForm());
 
 const invoiceForm = ref({
   agreement_id: '' as string | number,
@@ -81,6 +106,31 @@ const paymentForm = ref({
   amount: '', payment_date: new Date().toISOString().split('T')[0],
   payment_method: 'transferencia', reference: '', notes: ''
 });
+
+async function loadSubscriptionPlans() {
+  if (!perms.canManageCommercial.value) return;
+  plansLoading.value = true;
+  try {
+    const { data } = await api.get('/subscription-plans');
+    subscriptionPlans.value = data;
+  } catch {
+    subscriptionPlans.value = [];
+  } finally {
+    plansLoading.value = false;
+  }
+}
+
+function applyPlanToAgreementForm(planId: number | null) {
+  if (!planId) return;
+  const plan = subscriptionPlans.value.find((p) => p.id === planId);
+  if (!plan) return;
+  agreementForm.value.amount = String(plan.amount ?? 0);
+  agreementForm.value.currency = plan.currency || 'CLP';
+  agreementForm.value.frequency = plan.payment_frequency || 'monthly';
+  agreementForm.value.due_day = plan.due_day ?? 1;
+  agreementForm.value.grace_period_days = plan.grace_period_days ?? 5;
+  agreementForm.value.service_description = `Suscripción plan ${plan.name}`;
+}
 
 async function loadData() {
   if (!companyId.value) return;
@@ -109,11 +159,18 @@ watch(selectedCompanyId, () => {
   loadData();
 });
 
-onMounted(loadData);
+onMounted(async () => {
+  await Promise.all([loadSubscriptionPlans(), loadData()]);
+});
 
 function openAgreementModal() {
   modalType.value = 'agreement';
-  agreementForm.value = { amount: '', currency: 'CLP', frequency: 'monthly', start_date: '', due_day: 1, service_description: '', grace_period_days: 5 };
+  agreementForm.value = defaultAgreementForm();
+  const preferredPlanId = company.value?.subscription_plan_id ?? null;
+  if (preferredPlanId) {
+    agreementForm.value.subscription_plan_id = preferredPlanId;
+    applyPlanToAgreementForm(preferredPlanId);
+  }
   saveError.value = '';
   showModal.value = true;
 }
@@ -137,10 +194,22 @@ async function saveForm() {
   saveError.value = '';
   try {
     if (modalType.value === 'agreement') {
-      if (!agreementForm.value.amount || !agreementForm.value.start_date || !agreementForm.value.service_description) {
+      const hasPlan = !!agreementForm.value.subscription_plan_id;
+      if (!hasPlan && (!agreementForm.value.amount || !agreementForm.value.start_date || !agreementForm.value.service_description)) {
         saveError.value = 'Monto, fecha de inicio y descripción son requeridos'; isSaving.value = false; return;
       }
-      await api.post(`/companies/${companyId.value}/agreements`, agreementForm.value);
+      const payload = {
+        subscription_plan_id: agreementForm.value.subscription_plan_id,
+        replace_active: agreementForm.value.replace_active,
+        amount: agreementForm.value.amount === '' ? null : Number(agreementForm.value.amount),
+        currency: agreementForm.value.currency,
+        frequency: agreementForm.value.frequency,
+        start_date: agreementForm.value.start_date,
+        due_day: Number(agreementForm.value.due_day),
+        service_description: agreementForm.value.service_description,
+        grace_period_days: Number(agreementForm.value.grace_period_days)
+      };
+      await api.post(`/companies/${companyId.value}/agreements`, payload);
     } else if (modalType.value === 'invoice') {
       if (!invoiceForm.value.period_start || !invoiceForm.value.due_date || !invoiceForm.value.amount) {
         saveError.value = 'Período, fecha límite y monto son requeridos'; isSaving.value = false; return;
@@ -223,13 +292,22 @@ const freqLabel   = (f: string) => ({ monthly: 'Mensual', quarterly: 'Trimestral
           <p class="text-xs" :style="{ color: mutedColor }">Convenios de pago, recibos e historial de pagos</p>
         </div>
       </div>
-      <CompanySelector v-model="selectedCompanyId" placeholder="Mi empresa (hernancius)" />
+      <CompanySelector v-model="selectedCompanyId" :excludeMaster="true" placeholder="-- Seleccionar empresa --" />
       <button @click="loadData" class="flex items-center gap-2 rounded-2xl border px-3 py-2 text-sm transition hover:bg-white/5"
         :style="{ borderColor: cardBorder, color: mutedColor }">
         <RefreshCw class="h-4 w-4" /> Actualizar
       </button>
     </div>
 
+    <!-- Sin empresa seleccionada (empresa maestra sin contexto de facturación) -->
+    <div v-if="companyId === null" class="rounded-2xl border p-14 text-center"
+      :style="{ backgroundColor: cardBg, borderColor: cardBorder }">
+      <CreditCard class="h-12 w-12 mx-auto mb-4 opacity-25" :style="{ color: mutedColor }" />
+      <p class="text-sm font-medium" :style="{ color: headerColor }">Selecciona una empresa cliente para ver su información comercial.</p>
+      <p class="text-xs mt-2" :style="{ color: mutedColor }">La empresa maestra no tiene datos de facturación.</p>
+    </div>
+
+    <template v-else>
     <!-- Loader -->
     <div v-if="isLoading" class="flex justify-center py-16">
       <Loader2 class="h-7 w-7 animate-spin text-[#D4AF37]" />
@@ -242,14 +320,14 @@ const freqLabel   = (f: string) => ({ monthly: 'Mensual', quarterly: 'Trimestral
           <div>
             <p class="text-xs uppercase tracking-wide mb-1" :style="{ color: mutedColor }">Estado comercial</p>
             <div class="flex items-center gap-3">
-              <span class="text-lg font-semibold" :style="{ color: headerColor }">{{ auth.currentCompany?.name }}</span>
+              <span class="text-lg font-semibold" :style="{ color: headerColor }">{{ company?.name ?? auth.currentCompany?.name }}</span>
               <span class="text-xs rounded-full px-3 py-1 border font-medium"
                 :class="csColor(company?.commercial_status ?? auth.currentCompany?.commercial_status)">
                 {{ (company?.commercial_status ?? auth.currentCompany?.commercial_status ?? 'activa').replace('_', ' ') }}
               </span>
             </div>
           </div>
-          <div v-if="perms.canManageCommercial.value" class="flex flex-wrap gap-2">
+          <div v-if="perms.canManageCommercial.value && !company?.is_master" class="flex flex-wrap gap-2">
             <button @click="changeCommercialStatus('activa')" class="text-xs rounded-2xl px-3 py-1.5 border border-emerald-500/30 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 transition">Activar</button>
             <button @click="changeCommercialStatus('suspendida')" class="text-xs rounded-2xl px-3 py-1.5 border border-orange-500/30 bg-orange-500/10 text-orange-300 hover:bg-orange-500/20 transition">Suspender</button>
             <button @click="changeCommercialStatus('bloqueada')" class="text-xs rounded-2xl px-3 py-1.5 border border-red-500/30 bg-red-500/10 text-red-300 hover:bg-red-500/20 transition">Bloquear</button>
@@ -416,6 +494,7 @@ const freqLabel   = (f: string) => ({ monthly: 'Mensual', quarterly: 'Trimestral
         </div>
       </div>
     </template>
+    </template><!-- /v-else companyId -->
 
     <!-- Modal Genérico -->
     <Teleport to="body">
@@ -438,6 +517,27 @@ const freqLabel   = (f: string) => ({ monthly: 'Mensual', quarterly: 'Trimestral
             <!-- Convenio Form -->
             <template v-if="modalType === 'agreement'">
               <div class="grid grid-cols-2 gap-3">
+                <div class="col-span-2">
+                  <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Plan de suscripción</label>
+                  <select
+                    v-model.number="agreementForm.subscription_plan_id"
+                    @change="applyPlanToAgreementForm(agreementForm.subscription_plan_id)"
+                    class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
+                    :disabled="plansLoading"
+                    :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }">
+                    <option :value="null">Convenio manual</option>
+                    <option v-for="plan in subscriptionPlans" :key="plan.id" :value="plan.id">
+                      {{ plan.name }} · {{ fmtCurrency(plan.amount, plan.currency) }}
+                    </option>
+                  </select>
+                  <p class="mt-1 text-xs" :style="{ color: mutedColor }">
+                    Selecciona un plan para cargar automáticamente el convenio y reemplazar el activo actual.
+                  </p>
+                </div>
+                <label class="col-span-2 inline-flex items-center gap-2 text-xs" :style="{ color: mutedColor }">
+                  <input v-model="agreementForm.replace_active" type="checkbox" class="h-4 w-4 rounded" />
+                  Reemplazar convenio activo actual
+                </label>
                 <div>
                   <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Monto *</label>
                   <input v-model="agreementForm.amount" type="number" placeholder="0" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
@@ -604,3 +704,4 @@ const freqLabel   = (f: string) => ({ monthly: 'Mensual', quarterly: 'Trimestral
     </Teleport>
   </div>
 </template>
+

@@ -17,6 +17,68 @@ const runSqlFile = async (filePath, schemaName, client) => {
     }
 };
 
+const normalizePlanCode = (value) =>
+    typeof value === 'string' && value.trim() ? value.trim().toLowerCase() : null;
+
+const parsePlanId = (value) => {
+    if (value === null || value === undefined || value === '') return null;
+    const n = Number(value);
+    return Number.isInteger(n) && n > 0 ? n : null;
+};
+
+const resolveSubscriptionPlan = async (client, { subscriptionPlanId, planCode }) => {
+    if (subscriptionPlanId) {
+        const byId = await client.query(
+            'SELECT * FROM public.subscription_plans WHERE id = $1 AND is_active = TRUE',
+            [subscriptionPlanId]
+        );
+        return byId.rows[0] || null;
+    }
+
+    if (planCode) {
+        const byCode = await client.query(
+            'SELECT * FROM public.subscription_plans WHERE code = $1 AND is_active = TRUE',
+            [planCode]
+        );
+        return byCode.rows[0] || null;
+    }
+
+    return null;
+};
+
+const createAgreementFromPlan = async (client, { companyId, plan, createdBy, replaceActive = false }) => {
+    if (!plan) return null;
+
+    if (replaceActive) {
+        await client.query(
+            `UPDATE public.payment_agreements
+             SET status = 'inactivo', updated_at = CURRENT_TIMESTAMP
+             WHERE company_id = $1 AND status = 'activo'`,
+            [companyId]
+        );
+    }
+
+    const result = await client.query(
+        `INSERT INTO public.payment_agreements
+         (company_id, amount, currency, frequency, start_date, due_day,
+          service_description, grace_period_days, status, created_by)
+         VALUES ($1, $2, $3, $4, CURRENT_DATE, $5, $6, $7, 'activo', $8)
+         RETURNING *`,
+        [
+            companyId,
+            plan.amount,
+            plan.currency || 'CLP',
+            plan.payment_frequency || 'monthly',
+            plan.due_day || 1,
+            `Suscripcion plan ${plan.name}`,
+            plan.grace_period_days || 5,
+            createdBy
+        ]
+    );
+
+    return result.rows[0];
+};
+
 // Seed basic roles, permissions and role_permissions for a new tenant schema
 const seedTenantRoles = async (schemaName, client) => {
     const s = schemaName;
@@ -181,6 +243,75 @@ const seedTenantExtended = async (schemaName, client) => {
             [profileIds['consulta'], moduleIds[code]]
         );
     }
+
+    // ── profile_transaction_permissions ──────────────────────────────────────
+    // Modelo nuevo: permisos por transacción del catálogo global.
+    // Códigos de transacción = public.module_transactions.code (migración 05).
+    // [can_view, can_create, can_edit, can_delete, can_approve, can_export, can_admin]
+    const txMatrix = {
+        acceso_total: {
+            dashboard:     [true,  true,  true,  true,  true,  true,  true],
+            companies:     [true,  true,  true,  true,  true,  true,  true],
+            requests:      [true,  true,  true,  true,  true,  true,  true],
+            users:         [true,  true,  true,  true,  true,  true,  true],
+            profiles:      [true,  true,  true,  true,  true,  true,  true],
+            modules:       [true,  true,  true,  true,  true,  true,  true],
+            reports:       [true,  true,  true,  true,  true,  true,  true],
+            commercial:    [true,  true,  true,  true,  true,  true,  true],
+            subscriptions: [true,  true,  true,  true,  true,  true,  true],
+            visual_config: [true,  true,  true,  true,  true,  true,  true],
+        },
+        admin_empresa: {
+            dashboard:     [true,  true,  true,  false, true,  true,  false],
+            companies:     [true,  true,  true,  false, true,  true,  false],
+            requests:      [true,  true,  true,  false, true,  true,  false],
+            users:         [true,  true,  true,  true,  true,  true,  false],
+            profiles:      [true,  true,  true,  false, true,  true,  false],
+            modules:       [true,  false, false, false, false, false, false],
+            reports:       [true,  false, false, false, true,  true,  false],
+            commercial:    [true,  true,  true,  false, true,  true,  false],
+            subscriptions: [true,  false, false, false, false, true,  false],
+            visual_config: [true,  false, true,  false, false, false, false],
+        },
+        supervisor: {
+            dashboard:     [true,  false, false, false, false, true,  false],
+            companies:     [true,  false, false, false, true,  false, false],
+            requests:      [true,  false, false, false, true,  true,  false],
+            users:         [true,  false, false, false, false, false, false],
+            profiles:      [true,  false, false, false, false, false, false],
+            modules:       [true,  false, false, false, false, false, false],
+            reports:       [true,  false, false, false, true,  true,  false],
+            commercial:    [true,  false, false, false, true,  true,  false],
+            subscriptions: [true,  false, false, false, false, true,  false],
+            visual_config: [true,  false, false, false, false, false, false],
+        },
+        operacion: {
+            dashboard:     [true,  false, false, false, false, false, false],
+            requests:      [true,  true,  true,  false, false, false, false],
+            reports:       [true,  false, false, false, false, true,  false],
+            visual_config: [true,  false, false, false, false, false, false],
+        },
+        consulta: {
+            dashboard:     [true,  false, false, false, false, false, false],
+            companies:     [true,  false, false, false, false, false, false],
+            requests:      [true,  false, false, false, false, false, false],
+            reports:       [true,  false, false, false, false, true,  false],
+        },
+    };
+
+    for (const [profileCode, txPerms] of Object.entries(txMatrix)) {
+        const profileId = profileIds[profileCode];
+        if (!profileId) continue;
+        for (const [txCode, p] of Object.entries(txPerms)) {
+            await client.query(
+                `INSERT INTO "${s}".profile_transaction_permissions
+                 (profile_id, transaction_code, can_view, can_create, can_edit, can_delete, can_approve, can_export, can_admin)
+                 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+                 ON CONFLICT (profile_id, transaction_code) DO NOTHING`,
+                [profileId, txCode, ...p]
+            );
+        }
+    }
 };
 
 exports.getAllCompanies = async (req, res) => {
@@ -213,7 +344,10 @@ exports.createCompany = async (req, res) => {
             return res.status(403).json({ error: 'Access denied. Super Admin only.' });
         }
 
-        const { name, schema_name, rut, contact_email, contact_phone, address, country, plan_type } = req.body;
+        const { name, schema_name, rut, contact_email, contact_phone, address, country, plan_type, subscription_plan_id } = req.body;
+        const hasSubscriptionPlanField = Object.prototype.hasOwnProperty.call(req.body, 'subscription_plan_id');
+        const requestedPlanId = parsePlanId(subscription_plan_id);
+        const requestedPlanCode = normalizePlanCode(plan_type);
 
         // Basic validation
         if (!name || !schema_name || !contact_email || !country) {
@@ -228,15 +362,58 @@ exports.createCompany = async (req, res) => {
 
         await client.query('BEGIN');
 
+        let selectedPlan = null;
+        if (hasSubscriptionPlanField) {
+            if (subscription_plan_id !== null && subscription_plan_id !== '' && !requestedPlanId) {
+                await client.query('ROLLBACK');
+                return res.status(400).json({ error: 'El plan de suscripcion seleccionado no es valido.' });
+            }
+            if (requestedPlanId) {
+                selectedPlan = await resolveSubscriptionPlan(client, { subscriptionPlanId: requestedPlanId });
+                if (!selectedPlan) {
+                    await client.query('ROLLBACK');
+                    return res.status(400).json({ error: 'El plan de suscripcion seleccionado no existe o esta inactivo.' });
+                }
+            }
+        } else if (requestedPlanCode && requestedPlanCode !== 'none') {
+            selectedPlan = await resolveSubscriptionPlan(client, { planCode: requestedPlanCode });
+            if (!selectedPlan) {
+                await client.query('ROLLBACK');
+                return res.status(400).json({ error: 'El codigo de plan de suscripcion no existe o esta inactivo.' });
+            }
+        }
+
+        const finalPlanType = selectedPlan?.code || (requestedPlanCode && requestedPlanCode !== 'none' ? requestedPlanCode : 'none');
+        const finalSubscriptionPlanId = selectedPlan?.id || null;
+
         // 1. Create Company Record in Public Schema
         const insertCompanyQuery = `
-            INSERT INTO public.companies (name, schema_name, rut, contact_email, contact_phone, address, country, plan_type)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            INSERT INTO public.companies (name, schema_name, rut, contact_email, contact_phone, address, country, plan_type, subscription_plan_id)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
             RETURNING *
         `;
-        const companyResult = await client.query(insertCompanyQuery, [name, schema_name, rut, contact_email, contact_phone, address, country, plan_type || 'basic']);
+        const companyResult = await client.query(insertCompanyQuery, [
+            name,
+            schema_name,
+            rut,
+            contact_email,
+            contact_phone,
+            address,
+            country,
+            finalPlanType,
+            finalSubscriptionPlanId
+        ]);
         const newCompany = companyResult.rows[0];
 
+        // 1.5 Auto-create payment agreement from selected subscription plan
+        if (selectedPlan) {
+            await createAgreementFromPlan(client, {
+                companyId: newCompany.id,
+                plan: selectedPlan,
+                createdBy: req.user.id,
+                replaceActive: false
+            });
+        }
         // 2. Create Schema
         await client.query(`CREATE SCHEMA IF NOT EXISTS "${schema_name}"`);
 
@@ -322,6 +499,18 @@ exports.createCompany = async (req, res) => {
                     [createdAdminUserId, adminRole.rows[0].id]
                 );
             }
+
+            const adminEmpresaProfile = await client.query(
+                `SELECT id FROM "${schema_name}".profiles WHERE code = 'admin_empresa' LIMIT 1`
+            );
+            if (adminEmpresaProfile.rows.length > 0) {
+                await client.query(
+                    `INSERT INTO "${schema_name}".user_tenant_profiles (user_id, profile_id, is_primary, assigned_by)
+                     VALUES ($1, $2, TRUE, $3)
+                     ON CONFLICT (user_id, profile_id) DO UPDATE SET is_primary = TRUE`,
+                    [createdAdminUserId, adminEmpresaProfile.rows[0].id, req.user.id]
+                );
+            }
         }
 
         await client.query('COMMIT');
@@ -377,51 +566,116 @@ exports.getCompanyById = async (req, res) => {
 };
 
 exports.updateCompany = async (req, res) => {
-     try {
+    const client = await db.getClient();
+    try {
         if (!req.user.is_super_admin) {
             return res.status(403).json({ error: 'Access denied. Super Admin only.' });
         }
 
         const { id } = req.params;
-        const { name, rut, contact_email, contact_phone, address, country, plan_type, is_active } = req.body;
+        const { name, rut, contact_email, contact_phone, address, country, plan_type, is_active, subscription_plan_id } = req.body;
+
+        const hasSubscriptionPlanField = Object.prototype.hasOwnProperty.call(req.body, 'subscription_plan_id');
+        const requestedPlanId = parsePlanId(subscription_plan_id);
+        const requestedPlanCode = normalizePlanCode(plan_type);
+        const shouldUpdatePlan = hasSubscriptionPlanField || requestedPlanCode !== null;
+
+        await client.query('BEGIN');
+
+        const currentCompanyRes = await client.query('SELECT * FROM public.companies WHERE id = $1', [id]);
+        if (currentCompanyRes.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ error: 'Company not found' });
+        }
+        const currentCompany = currentCompanyRes.rows[0];
 
         // Prevent deactivating the master schema
-        if (is_active === false) {
-            const masterCheck = await db.query('SELECT is_master FROM public.companies WHERE id = $1', [id]);
-            if (masterCheck.rows[0]?.is_master) {
-                return res.status(403).json({ error: 'El schema maestro (hernancius) no puede ser desactivado.' });
+        if (is_active === false && currentCompany.is_master) {
+            await client.query('ROLLBACK');
+            return res.status(403).json({ error: 'El schema maestro (hernancius) no puede ser desactivado.' });
+        }
+
+        let selectedPlan = null;
+        if (hasSubscriptionPlanField) {
+            if (subscription_plan_id !== null && subscription_plan_id !== '' && !requestedPlanId) {
+                await client.query('ROLLBACK');
+                return res.status(400).json({ error: 'El plan de suscripcion seleccionado no es valido.' });
+            }
+            if (requestedPlanId) {
+                selectedPlan = await resolveSubscriptionPlan(client, { subscriptionPlanId: requestedPlanId });
+                if (!selectedPlan) {
+                    await client.query('ROLLBACK');
+                    return res.status(400).json({ error: 'El plan de suscripcion seleccionado no existe o esta inactivo.' });
+                }
+            }
+        } else if (requestedPlanCode && requestedPlanCode !== 'none') {
+            selectedPlan = await resolveSubscriptionPlan(client, { planCode: requestedPlanCode });
+            if (!selectedPlan) {
+                await client.query('ROLLBACK');
+                return res.status(400).json({ error: 'El codigo de plan de suscripcion no existe o esta inactivo.' });
             }
         }
 
+        const finalPlanType = selectedPlan?.code || (requestedPlanCode && requestedPlanCode !== 'none' ? requestedPlanCode : 'none');
+        const finalSubscriptionPlanId = selectedPlan?.id || null;
+
         const updateQuery = `
-            UPDATE public.companies 
+            UPDATE public.companies
             SET name = COALESCE($1, name),
                 rut = COALESCE($2, rut),
                 contact_email = COALESCE($3, contact_email),
                 contact_phone = COALESCE($4, contact_phone),
                 address = COALESCE($5, address),
                 country = COALESCE($6, country),
-                plan_type = COALESCE($7, plan_type),
+                plan_type = CASE WHEN $11 THEN $7 ELSE plan_type END,
                 is_active = COALESCE($8, is_active),
+                subscription_plan_id = CASE WHEN $12 THEN $9 ELSE subscription_plan_id END,
                 updated_at = CURRENT_TIMESTAMP
-            WHERE id = $9
+            WHERE id = $10
             RETURNING *
         `;
-        
-        const result = await db.query(updateQuery, [name, rut, contact_email, contact_phone, address, country, plan_type, is_active, id]);
 
-        if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Company not found' });
+        const result = await client.query(updateQuery, [
+            name,
+            rut,
+            contact_email,
+            contact_phone,
+            address,
+            country,
+            finalPlanType,
+            is_active,
+            finalSubscriptionPlanId,
+            id,
+            shouldUpdatePlan,
+            shouldUpdatePlan
+        ]);
+
+        const updatedCompany = result.rows[0];
+
+        const previousPlanId = currentCompany.subscription_plan_id ? Number(currentCompany.subscription_plan_id) : null;
+        const nextPlanId = updatedCompany.subscription_plan_id ? Number(updatedCompany.subscription_plan_id) : null;
+        const planChanged = previousPlanId !== nextPlanId;
+
+        if (selectedPlan && planChanged) {
+            await createAgreementFromPlan(client, {
+                companyId: updatedCompany.id,
+                plan: selectedPlan,
+                createdBy: req.user.id,
+                replaceActive: true
+            });
         }
 
-        res.json(result.rows[0]);
+        await client.query('COMMIT');
+        res.json(updatedCompany);
 
-     } catch (error) {
+    } catch (error) {
+        await client.query('ROLLBACK');
         console.error('Update company error:', error);
         res.status(500).json({ error: 'Server error updating company' });
-     }
+    } finally {
+        client.release();
+    }
 };
-
 exports.deleteCompany = async (req, res) => {
     const client = await db.getClient();
     try {
@@ -431,14 +685,9 @@ exports.deleteCompany = async (req, res) => {
 
         const { id } = req.params;
 
-        // Check if super_admin is linked to this company (prevent self-deletion)
-        const linkedCompanyRes = await client.query(
-            'SELECT company_id FROM public.company_users WHERE user_id = $1 AND company_id = $2',
-            [req.user.id, id]
-        );
-        
-        if (linkedCompanyRes.rows.length > 0) {
-            return res.status(403).json({ error: 'No puedes eliminar una empresa a la que estás asociado.' });
+        // Prevent deleting the company currently active in the JWT session
+        if (String(req.user.company_id) === String(id)) {
+            return res.status(403).json({ error: 'No puedes eliminar la empresa en la que estás actualmente activo. Cambia de empresa e inténtalo de nuevo.' });
         }
 
         // Get company info
@@ -483,3 +732,5 @@ exports.deleteCompany = async (req, res) => {
         client.release();
     }
 };
+
+

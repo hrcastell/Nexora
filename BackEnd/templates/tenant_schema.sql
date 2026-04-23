@@ -90,7 +90,29 @@ CREATE TABLE IF NOT EXISTS {schema_name}.profiles (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- 8. Profile Permissions (Matrix: profile x module x actions)
+-- 8. Profile Transaction Permissions (Matrix: profile x transaction x actions)
+-- Referencias por código de transacción (public.module_transactions.code) para evitar FK cross-schema.
+CREATE TABLE IF NOT EXISTS {schema_name}.profile_transaction_permissions (
+    id               SERIAL PRIMARY KEY,
+    profile_id       INT         NOT NULL,
+    transaction_code VARCHAR(80) NOT NULL,
+    can_view         BOOLEAN     NOT NULL DEFAULT FALSE,
+    can_create       BOOLEAN     NOT NULL DEFAULT FALSE,
+    can_edit         BOOLEAN     NOT NULL DEFAULT FALSE,
+    can_delete       BOOLEAN     NOT NULL DEFAULT FALSE,
+    can_approve      BOOLEAN     NOT NULL DEFAULT FALSE,
+    can_export       BOOLEAN     NOT NULL DEFAULT FALSE,
+    can_admin        BOOLEAN     NOT NULL DEFAULT FALSE,
+    updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_ptp_profile_tx  UNIQUE (profile_id, transaction_code),
+    CONSTRAINT fk_ptp_profile     FOREIGN KEY (profile_id)
+        REFERENCES {schema_name}.profiles(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_ptp_profile_id ON {schema_name}.profile_transaction_permissions (profile_id);
+CREATE INDEX IF NOT EXISTS idx_ptp_tx_code    ON {schema_name}.profile_transaction_permissions (transaction_code);
+
+-- 9. Profile Permissions (Matrix legacy: profile x module x actions)
 CREATE TABLE IF NOT EXISTS {schema_name}.profile_permissions (
     id SERIAL PRIMARY KEY,
     profile_id INTEGER NOT NULL REFERENCES {schema_name}.profiles(id) ON DELETE CASCADE,
@@ -105,7 +127,7 @@ CREATE TABLE IF NOT EXISTS {schema_name}.profile_permissions (
     UNIQUE(profile_id, module_id)
 );
 
--- 9. User Tenant Profiles (Multiple profiles per user)
+-- 10. User Tenant Profiles (Multiple profiles per user)
 CREATE TABLE IF NOT EXISTS {schema_name}.user_tenant_profiles (
     id SERIAL PRIMARY KEY,
     user_id INTEGER NOT NULL,
@@ -116,7 +138,7 @@ CREATE TABLE IF NOT EXISTS {schema_name}.user_tenant_profiles (
     UNIQUE(user_id, profile_id)
 );
 
--- 10. Customers
+-- 11. Customers
 CREATE TABLE IF NOT EXISTS {schema_name}.customers (
     id SERIAL PRIMARY KEY,
     first_name VARCHAR(100),

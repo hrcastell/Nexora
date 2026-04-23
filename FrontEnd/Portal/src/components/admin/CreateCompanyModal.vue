@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive, computed, watch } from 'vue';
+import { ref, reactive, computed, watch, onMounted } from 'vue';
 import api from '../../utils/axios';
 import { X, Loader2, Eye, EyeOff, ChevronDown, ChevronUp, UserPlus } from 'lucide-vue-next';
 import { useVisualConfigStore } from '../../stores/visualConfig';
@@ -41,6 +41,10 @@ const getButtonHoverBg = () => isLightMode.value ? 'rgba(0, 0, 0, 0.08)' : 'rgba
 const getButtonBorder = () => isLightMode.value ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.10)';
 const getButtonHoverBorder = () => isLightMode.value ? 'rgba(0, 0, 0, 0.12)' : 'rgba(255, 255, 255, 0.15)';
 
+interface SubscriptionPlan { id: number; code: string; name: string; is_active: boolean; }
+const plans = ref<SubscriptionPlan[]>([]);
+const plansLoading = ref(false);
+
 const form = reactive({
   name: '',
   schema_name: '',
@@ -49,7 +53,39 @@ const form = reactive({
   contact_phone: '',
   address: '',
   country: 'Chile',
-  plan_type: 'basic'
+  plan_type: 'basic',
+  subscription_plan_id: null as number | null
+});
+
+function syncPlanTypeFromSelection(planId: number | null) {
+  if (planId == null) {
+    form.plan_type = 'none';
+    return;
+  }
+  const selected = plans.value.find(p => p.id === planId);
+  if (selected) form.plan_type = selected.code;
+}
+
+onMounted(async () => {
+  plansLoading.value = true;
+  try {
+    const res = await api.get('/subscription-plans');
+    plans.value = res.data;
+    const basic = plans.value.find(p => p.code === 'basic');
+    if (basic) {
+      form.subscription_plan_id = basic.id;
+      form.plan_type = basic.code;
+    }
+    if (!basic) {
+      syncPlanTypeFromSelection(form.subscription_plan_id);
+    }
+  } catch { /* silent */ } finally {
+    plansLoading.value = false;
+  }
+});
+
+watch(() => form.subscription_plan_id, (newPlanId) => {
+  syncPlanTypeFromSelection(newPlanId);
 });
 
 const showAdminSection = ref(false);
@@ -92,7 +128,9 @@ const resetForm = () => {
   form.contact_phone = '';
   form.address = '';
   form.country = 'Chile';
-  form.plan_type = 'basic';
+  const basicPlan = plans.value.find(p => p.code === 'basic') ?? null;
+  form.subscription_plan_id = basicPlan?.id ?? null;
+  form.plan_type = basicPlan?.code ?? 'none';
   adminForm.first_name = '';
   adminForm.last_name = '';
   adminForm.email = '';
@@ -298,16 +336,11 @@ const handleSubmit = async () => {
 
               <!-- Plan -->
               <div>
-                <label for="plan" class="block text-sm font-medium mb-2" :style="{ color: labelColor }">Plan Inicial</label>
-                <select id="plan" v-model="form.plan_type" class="mt-1 block w-full pl-3 pr-10 py-2.5 text-base rounded-xl border text-sm transition-colors" 
-                        :style="{ 
-                          backgroundColor: inputBg, 
-                          borderColor: inputBorder, 
-                          color: headerTextColor 
-                        }">
-                  <option value="basic" :style="{ backgroundColor: optionBg }">Básico</option>
-                  <option value="pro" :style="{ backgroundColor: optionBg }">Pro</option>
-                  <option value="enterprise" :style="{ backgroundColor: optionBg }">Enterprise</option>
+                <label for="plan" class="block text-sm font-medium mb-2" :style="{ color: labelColor }">Plan de Suscripción</label>
+                <select id="plan" v-model="form.subscription_plan_id" class="mt-1 block w-full pl-3 pr-10 py-2.5 text-base rounded-xl border text-sm transition-colors"
+                        :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerTextColor }">
+                  <option :value="null" :style="{ backgroundColor: optionBg }">Sin plan</option>
+                  <option v-for="p in plans" :key="p.id" :value="p.id" :style="{ backgroundColor: optionBg }">{{ p.name }}</option>
                 </select>
               </div>
 
