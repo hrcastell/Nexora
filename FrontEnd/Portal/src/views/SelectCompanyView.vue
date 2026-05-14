@@ -1,11 +1,16 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useAuthStore } from '../stores/auth';
 import { useRouter } from 'vue-router';
 import { Building2, ArrowRight, Layers, LogOut } from 'lucide-vue-next';
+import InfoModal from '../components/admin/InfoModal.vue';
 
 const authStore = useAuthStore();
 const router = useRouter();
+
+// Info modal state
+const showInfoModal = ref(false);
+const infoModalConfig = ref({ title: '', message: '', type: 'error' as 'success' | 'warning' | 'error' | 'info' });
 
 
 onMounted(() => {
@@ -19,7 +24,12 @@ const handleSelectCompany = async (companyId: number) => {
     await authStore.selectCompany(companyId);
     router.push('/dashboard');
   } catch (error) {
-    alert('Error al seleccionar la compañía');
+    infoModalConfig.value = {
+      title: 'Error',
+      message: 'Error al seleccionar la compañía. Por favor intenta nuevamente.',
+      type: 'error'
+    };
+    showInfoModal.value = true;
   }
 };
 
@@ -203,5 +213,13 @@ const handleLogout = () => {
         </div>
       </section>
     </div>
+
+    <!-- Info Modal -->
+    <InfoModal
+      :isOpen="showInfoModal"
+      :title="infoModalConfig.title"
+      :message="infoModalConfig.message"
+      :type="infoModalConfig.type"
+      @close="showInfoModal = false" />
   </div>
 </template>

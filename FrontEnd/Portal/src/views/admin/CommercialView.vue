@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import { CreditCard, Plus, Loader2, X, Save, ShieldAlert, RefreshCw, CheckCircle, AlertTriangle, XCircle, Clock, FileText } from 'lucide-vue-next';
 import AppToast, { type ToastItem, type ToastType } from '../../components/AppToast.vue';
+import ConfirmActionModal from '../../components/admin/ConfirmActionModal.vue';
 import api from '../../utils/axios';
 import { useVisualConfigStore } from '../../stores/visualConfig';
 import { useAuthStore } from '../../stores/auth';
@@ -61,6 +62,10 @@ const activeToast = ref<ToastItem | null>(null);
 const triggerToast = (title: string, message: string, type: ToastType) => {
   activeToast.value = { id: Date.now(), title, message, type };
 };
+
+// Confirm modal state
+const showConfirmStatus = ref(false);
+const pendingStatus = ref('');
 
 // Generate invoice from agreement
 const isGenerating = ref(false);
@@ -232,14 +237,23 @@ async function saveForm() {
   }
 }
 
-async function changeCommercialStatus(status: string) {
-  if (!confirm(`¿Cambiar el estado comercial a "${status}"?`)) return;
+function openChangeStatus(status: string) {
+  pendingStatus.value = status;
+  showConfirmStatus.value = true;
+}
+
+async function handleConfirmStatusChange() {
+  const status = pendingStatus.value;
   try {
     await api.patch(`/companies/${companyId.value}/commercial-status`, { commercial_status: status });
+    const statusLabel = { activa: 'activada', suspendida: 'suspendida', bloqueada: 'bloqueada' }[status] ?? status;
+    triggerToast('Estado actualizado', `Empresa ${statusLabel} correctamente.`, 'success');
+    showConfirmStatus.value = false;
     await loadData();
   } catch (e: unknown) {
     const err = e as { response?: { data?: { error?: string } } };
-    alert(err?.response?.data?.error ?? 'Error');
+    triggerToast('Error', err?.response?.data?.error ?? 'Error al cambiar estado', 'error');
+    showConfirmStatus.value = false;
   }
 }
 
@@ -328,9 +342,9 @@ const freqLabel   = (f: string) => ({ monthly: 'Mensual', quarterly: 'Trimestral
             </div>
           </div>
           <div v-if="perms.canManageCommercial.value && !company?.is_master" class="flex flex-wrap gap-2">
-            <button @click="changeCommercialStatus('activa')" class="text-xs rounded-2xl px-3 py-1.5 border border-emerald-500/30 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 transition">Activar</button>
-            <button @click="changeCommercialStatus('suspendida')" class="text-xs rounded-2xl px-3 py-1.5 border border-orange-500/30 bg-orange-500/10 text-orange-300 hover:bg-orange-500/20 transition">Suspender</button>
-            <button @click="changeCommercialStatus('bloqueada')" class="text-xs rounded-2xl px-3 py-1.5 border border-red-500/30 bg-red-500/10 text-red-300 hover:bg-red-500/20 transition">Bloquear</button>
+            <button @click="openChangeStatus('activa')" class="text-xs rounded-2xl px-3 py-1.5 border border-emerald-500/30 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 transition">Activar</button>
+            <button @click="openChangeStatus('suspendida')" class="text-xs rounded-2xl px-3 py-1.5 border border-orange-500/30 bg-orange-500/10 text-orange-300 hover:bg-orange-500/20 transition">Suspender</button>
+            <button @click="openChangeStatus('bloqueada')" class="text-xs rounded-2xl px-3 py-1.5 border border-red-500/30 bg-red-500/10 text-red-300 hover:bg-red-500/20 transition">Bloquear</button>
           </div>
         </div>
 
@@ -702,6 +716,15 @@ const freqLabel   = (f: string) => ({ monthly: 'Mensual', quarterly: 'Trimestral
         </div>
       </Transition>
     </Teleport>
+
+    <!-- Confirm Status Change Modal -->
+    <ConfirmActionModal
+      :isOpen="showConfirmStatus"
+      title="Cambiar estado comercial"
+      :message="'Cambiar el estado comercial a ' + pendingStatus + '?'"
+      confirmText="Confirmar"
+      variant="warning"
+      @confirmed="handleConfirmStatusChange"
+      @cancelled="showConfirmStatus = false; pendingStatus = ''" />
   </div>
 </template>
-

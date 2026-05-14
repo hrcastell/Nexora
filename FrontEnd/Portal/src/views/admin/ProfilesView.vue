@@ -11,6 +11,8 @@ import api from '../../utils/axios';
 import { useVisualConfigStore } from '../../stores/visualConfig';
 import { usePermissions } from '../../composables/usePermissions';
 import CompanySelector from '../../components/admin/CompanySelector.vue';
+import ConfirmActionModal from '../../components/admin/ConfirmActionModal.vue';
+import AppToast, { type ToastItem, type ToastType } from '../../components/AppToast.vue';
 import type { Profile, ModuleGroup, TransactionPermission } from '../../types/auth';
 
 const cfg      = useVisualConfigStore();
@@ -66,6 +68,16 @@ const isEditing        = ref(false);
 const isSaving         = ref(false);
 const saveError        = ref('');
 const form = ref({ id: 0, code: '', name: '', description: '', scope: 'empresa' as Profile['scope'] });
+
+// Modals state
+const showConfirmDelete = ref(false);
+const profileToDelete = ref<Profile | null>(null);
+
+// Toast state
+const activeToast = ref<ToastItem | null>(null);
+const triggerToast = (title: string, message: string, type: ToastType) => {
+  activeToast.value = { id: Date.now(), title, message, type };
+};
 
 const ACTIONS = ['can_view', 'can_create', 'can_edit', 'can_delete', 'can_approve', 'can_export', 'can_admin'] as const;
 const ACTION_LABELS: Record<string, string> = {
@@ -262,19 +274,29 @@ async function saveProfile() {
   }
 }
 
-async function deleteProfile(p: Profile) {
+function openDeleteProfile(p: Profile) {
   if (!canDeleteProfile(p)) return;
-  if (!confirm(`¿Eliminar el perfil "${p.name}"?`)) return;
+  profileToDelete.value = p;
+  showConfirmDelete.value = true;
+}
+
+async function handleConfirmDelete() {
+  if (!profileToDelete.value) return;
+  const p = profileToDelete.value;
   try {
     await api.delete(`${profilesUrl.value}/${p.id}`);
     if (selectedProfile.value?.id === p.id) {
       selectedProfile.value = null;
       moduleGroups.value = [];
     }
+    triggerToast('Perfil eliminado', `"${p.name}" fue eliminado correctamente.`, 'success');
+    showConfirmDelete.value = false;
+    profileToDelete.value = null;
     await loadProfiles();
   } catch (e: unknown) {
     const err = e as { response?: { data?: { error?: string } } };
-    alert(err?.response?.data?.error ?? 'Error al eliminar perfil');
+    triggerToast('Error', err?.response?.data?.error ?? 'Error al eliminar perfil', 'error');
+    showConfirmDelete.value = false;
   }
 }
 
@@ -369,7 +391,7 @@ const scopeColor = (s: string) => {
                 class="rounded-lg p-1 hover:bg-white/10 transition">
                 <Pencil class="h-3.5 w-3.5" :style="{ color: mutedColor }" />
               </button>
-              <button v-if="canDeleteProfile(p)" @click="deleteProfile(p)"
+              <button v-if="canDeleteProfile(p)" @click="openDeleteProfile(p)"
                 class="rounded-lg p-1 hover:bg-red-500/10 transition">
                 <Trash2 class="h-3.5 w-3.5 text-red-400" />
               </button>
@@ -596,6 +618,32 @@ const scopeColor = (s: string) => {
           </div>
         </div>
       </div>
+    </Teleport>
+
+    <!-- Confirm Delete Modal -->
+    <ConfirmActionModal
+      :isOpen="showConfirmDelete"
+      :title="profileToDelete ? 'Eliminar perfil' : ''"
+      :message="profileToDelete ? 'Eliminar el perfil ' + profileToDelete.name + '? Esta acción no se puede deshacer.' : ''"
+      confirmText="Eliminar"
+      variant="danger"
+      @confirmed="handleConfirmDelete"
+      @cancelled="showConfirmDelete = false; profileToDelete = null" />
+
+    <!-- Toast -->
+    <Teleport to="body">
+      <Transition
+        enter-active-class="transition duration-200 ease-out"
+        enter-from-class="opacity-0 translate-y-2"
+        enter-to-class="opacity-100 translate-y-0"
+        leave-active-class="transition duration-150 ease-in"
+        leave-from-class="opacity-100 translate-y-0"
+        leave-to-class="opacity-0 translate-y-2"
+      >
+        <div v-if="activeToast" class="fixed bottom-6 right-6 z-[9999] w-full max-w-sm pointer-events-none">
+          <AppToast :toast="activeToast" @close="activeToast = null" />
+        </div>
+      </Transition>
     </Teleport>
   </div>
 </template>

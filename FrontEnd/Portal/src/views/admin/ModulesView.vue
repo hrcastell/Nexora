@@ -4,6 +4,8 @@ import { Puzzle, Plus, Search, Loader2, Pencil, Trash2, ToggleLeft, ToggleRight,
 import api from '../../utils/axios';
 import { useVisualConfigStore } from '../../stores/visualConfig';
 import { usePermissions } from '../../composables/usePermissions';
+import ConfirmActionModal from '../../components/admin/ConfirmActionModal.vue';
+import AppToast, { type ToastItem, type ToastType } from '../../components/AppToast.vue';
 import type { NexoraModule } from '../../types/auth';
 
 const cfg   = useVisualConfigStore();
@@ -28,6 +30,16 @@ const showModal  = ref(false);
 const isEditing  = ref(false);
 const isSaving   = ref(false);
 const saveError  = ref('');
+
+// Modals state
+const showConfirmDelete = ref(false);
+const moduleToDelete = ref<NexoraModule | null>(null);
+
+// Toast state
+const activeToast = ref<ToastItem | null>(null);
+const triggerToast = (title: string, message: string, type: ToastType) => {
+  activeToast.value = { id: Date.now(), title, message, type };
+};
 
 const form = ref({
   id: 0, code: '', name: '', description: '', icon: '', group_name: '',
@@ -103,14 +115,24 @@ async function toggleStatus(m: NexoraModule) {
   } catch { /* silent */ }
 }
 
-async function deleteModule(m: NexoraModule) {
-  if (!confirm(`¿Eliminar el módulo "${m.name}"? Esta acción no se puede deshacer.`)) return;
+function openDeleteModule(m: NexoraModule) {
+  moduleToDelete.value = m;
+  showConfirmDelete.value = true;
+}
+
+async function handleConfirmDelete() {
+  if (!moduleToDelete.value) return;
+  const m = moduleToDelete.value;
   try {
     await api.delete(`/modules/${m.id}`);
+    triggerToast('Módulo eliminado', `"${m.name}" fue eliminado correctamente.`, 'success');
+    showConfirmDelete.value = false;
+    moduleToDelete.value = null;
     await loadModules();
   } catch (e: unknown) {
     const err = e as { response?: { data?: { error?: string } } };
-    alert(err?.response?.data?.error ?? 'Error al eliminar módulo');
+    triggerToast('Error', err?.response?.data?.error ?? 'Error al eliminar módulo', 'error');
+    showConfirmDelete.value = false;
   }
 }
 
@@ -226,7 +248,7 @@ const fmtDate = (d?: string) => d ? new Date(d).toLocaleDateString('es-CL') : '�
                 <button @click="openEdit(mod)" class="rounded-xl p-1.5 transition hover:bg-white/10">
                   <Pencil class="h-4 w-4" :style="{ color: mutedColor }" />
                 </button>
-                <button v-if="!mod.is_system_module" @click="deleteModule(mod)" class="rounded-xl p-1.5 transition hover:bg-red-500/10">
+                <button v-if="!mod.is_system_module" @click="openDeleteModule(mod)" class="rounded-xl p-1.5 transition hover:bg-red-500/10">
                   <Trash2 class="h-4 w-4 text-red-400" />
                 </button>
               </div>
@@ -328,6 +350,32 @@ const fmtDate = (d?: string) => d ? new Date(d).toLocaleDateString('es-CL') : '�
           </div>
         </div>
       </div>
+    </Teleport>
+
+    <!-- Confirm Delete Modal -->
+    <ConfirmActionModal
+      :isOpen="showConfirmDelete"
+      :title="moduleToDelete ? 'Eliminar módulo' : ''"
+      :message="moduleToDelete ? 'Eliminar el módulo ' + moduleToDelete.name + '? Esta acción no se puede deshacer.' : ''"
+      confirmText="Eliminar"
+      variant="danger"
+      @confirmed="handleConfirmDelete"
+      @cancelled="showConfirmDelete = false; moduleToDelete = null" />
+
+    <!-- Toast -->
+    <Teleport to="body">
+      <Transition
+        enter-active-class="transition duration-200 ease-out"
+        enter-from-class="opacity-0 translate-y-2"
+        enter-to-class="opacity-100 translate-y-0"
+        leave-active-class="transition duration-150 ease-in"
+        leave-from-class="opacity-100 translate-y-0"
+        leave-to-class="opacity-0 translate-y-2"
+      >
+        <div v-if="activeToast" class="fixed bottom-6 right-6 z-[9999] w-full max-w-sm pointer-events-none">
+          <AppToast :toast="activeToast" @close="activeToast = null" />
+        </div>
+      </Transition>
     </Teleport>
   </div>
 </template>

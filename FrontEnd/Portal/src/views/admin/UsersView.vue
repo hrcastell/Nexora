@@ -6,6 +6,9 @@ import { useVisualConfigStore } from '../../stores/visualConfig';
 import { useAuthStore } from '../../stores/auth';
 import { usePermissions } from '../../composables/usePermissions';
 import CompanySelector from '../../components/admin/CompanySelector.vue';
+import ConfirmActionModal from '../../components/admin/ConfirmActionModal.vue';
+import InfoModal from '../../components/admin/InfoModal.vue';
+import AppToast, { type ToastItem, type ToastType } from '../../components/AppToast.vue';
 import type { CompanyUser, Profile } from '../../types/auth';
 
 const cfg    = useVisualConfigStore();
@@ -48,6 +51,19 @@ const isSaving   = ref(false);
 const saveError  = ref('');
 const showPwd    = ref(false);
 const showConfirm = ref(false);
+
+// Modals state
+const showConfirmDelete = ref(false);
+const userToDelete = ref<CompanyUser | null>(null);
+const showInfoModal = ref(false);
+const infoModalConfig = ref({ title: '', message: '', type: 'info' as 'success' | 'warning' | 'error' | 'info' });
+
+// Toast state
+const activeToast = ref<ToastItem | null>(null);
+const triggerToast = (title: string, message: string, type: ToastType) => {
+  activeToast.value = { id: Date.now(), title, message, type };
+};
+
 const avatarFile  = ref<File | null>(null);
 const avatarPreview = ref<string>('');
 
@@ -172,7 +188,12 @@ function openCreate() {
 
 async function openEdit(u: CompanyUser) {
   if (perms.isSuperAdmin.value && !scopedCompanyId.value) {
-    alert('Selecciona una empresa para editar usuarios y perfiles.');
+    infoModalConfig.value = {
+      title: 'Empresa requerida',
+      message: 'Selecciona una empresa para editar usuarios y perfiles.',
+      type: 'warning'
+    };
+    showInfoModal.value = true;
     return;
   }
   await loadProfilesForCompany(scopedCompanyId.value);
@@ -257,40 +278,70 @@ async function saveUser() {
 }
 
 async function changeStatus(u: CompanyUser, status: string) {
-  if (u.is_system_user) { alert('No se puede cambiar el estado del usuario raiz del sistema'); return; }
+  if (u.is_system_user) {
+    infoModalConfig.value = {
+      title: 'Acción no permitida',
+      message: 'No se puede cambiar el estado del usuario raíz del sistema.',
+      type: 'warning'
+    };
+    showInfoModal.value = true;
+    return;
+  }
   const cId = scopedCompanyId.value;
-  if (!cId) { alert('Selecciona una empresa para gestionar el estado del usuario.'); return; }
+  if (!cId) {
+    infoModalConfig.value = {
+      title: 'Empresa requerida',
+      message: 'Selecciona una empresa para gestionar el estado del usuario.',
+      type: 'warning'
+    };
+    showInfoModal.value = true;
+    return;
+  }
   try {
     await api.patch(`/companies/${cId}/users/${u.id}/status`, { status });
     u.status = status as CompanyUser['status'];
+    const statusLabel = { activo: 'activado', suspendido: 'suspendido', bloqueado: 'bloqueado' }[status] ?? status;
+    triggerToast('Estado actualizado', `Usuario ${statusLabel} correctamente.`, 'success');
   } catch (e: unknown) {
     const err = e as { response?: { data?: { error?: string } } };
-    alert(err?.response?.data?.error ?? 'Error al cambiar estado');
+    triggerToast('Error', err?.response?.data?.error ?? 'Error al cambiar estado', 'error');
   }
 }
 
-async function removeUser(u: CompanyUser) {
-  if (u.is_system_user) { alert('No se puede desvincular al usuario raiz del sistema'); return; }
+function openRemoveUser(u: CompanyUser) {
+  if (u.is_system_user) {
+    infoModalConfig.value = {
+      title: 'Acción no permitida',
+      message: 'No se puede desvincular al usuario raíz del sistema.',
+      type: 'warning'
+    };
+    showInfoModal.value = true;
+    return;
+  }
+  userToDelete.value = u;
+  showConfirmDelete.value = true;
+}
 
-  // If viewing a specific company, unlink from that company.
-  // If viewing all users (super_admin global view), permanently delete the user.
+async function handleConfirmDelete() {
+  if (!userToDelete.value) return;
+  const u = userToDelete.value;
   const targetCompanyId = filterCompanyId.value ?? (perms.isSuperAdmin.value ? null : companyId.value);
 
-  const confirmMsg = targetCompanyId
-    ? `Desvincular a "${u.full_name}" de esta empresa?`
-    : `Eliminar permanentemente al usuario "${u.full_name}" del sistema? Esta accion no se puede deshacer.`;
-
-  if (!confirm(confirmMsg)) return;
   try {
     if (targetCompanyId) {
       await api.delete(`/companies/${targetCompanyId}/users/${u.id}`);
+      triggerToast('Usuario desvinculado', `"${u.full_name}" fue desvinculado de la empresa.`, 'success');
     } else {
       await api.delete(`/users/${u.id}`);
+      triggerToast('Usuario eliminado', `"${u.full_name}" fue eliminado permanentemente.`, 'success');
     }
+    showConfirmDelete.value = false;
+    userToDelete.value = null;
     await loadData();
   } catch (e: unknown) {
     const err = e as { response?: { data?: { error?: string } } };
-    alert(err?.response?.data?.error ?? 'Error al eliminar usuario');
+    triggerToast('Error', err?.response?.data?.error ?? 'Error al eliminar usuario', 'error');
+    showConfirmDelete.value = false;
   }
 }
 
@@ -481,7 +532,7 @@ const initials = (u: CompanyUser) => `${u.first_name?.[0] ?? ''}${u.last_name?.[
                     :class="{ 'opacity-40 cursor-not-allowed': !canManageScopedUsers }">
                     <Pencil class="h-4 w-4" :style="{ color: mutedColor }" />
                   </button>
-                  <button v-if="!u.is_system_user" @click="removeUser(u)" class="rounded-xl p-1.5 hover:bg-red-500/10 transition">
+                  <button v-if="!u.is_system_user" @click="openRemoveUser(u)" class="rounded-xl p-1.5 hover:bg-red-500/10 transition">
                     <Trash2 class="h-4 w-4 text-red-400" />
                   </button>
                 </div>
@@ -702,6 +753,40 @@ const initials = (u: CompanyUser) => `${u.first_name?.[0] ?? ''}${u.last_name?.[
           </div>
         </div>
       </div>
+    </Teleport>
+
+    <!-- Confirm Delete Modal -->
+    <ConfirmActionModal
+      :isOpen="showConfirmDelete"
+      :title="userToDelete ? (filterCompanyId || !perms.isSuperAdmin.value ? 'Desvincular usuario' : 'Eliminar usuario') : ''"
+      :message="userToDelete ? (filterCompanyId || !perms.isSuperAdmin.value ? 'Desvincular a ' + userToDelete.full_name + ' de esta empresa?' : 'Eliminar permanentemente a ' + userToDelete.full_name + ' del sistema? Esta acción no se puede deshacer.') : ''"
+      confirmText="Confirmar"
+      variant="danger"
+      @confirmed="handleConfirmDelete"
+      @cancelled="showConfirmDelete = false; userToDelete = null" />
+
+    <!-- Info Modal -->
+    <InfoModal
+      :isOpen="showInfoModal"
+      :title="infoModalConfig.title"
+      :message="infoModalConfig.message"
+      :type="infoModalConfig.type"
+      @close="showInfoModal = false" />
+
+    <!-- Toast -->
+    <Teleport to="body">
+      <Transition
+        enter-active-class="transition duration-200 ease-out"
+        enter-from-class="opacity-0 translate-y-2"
+        enter-to-class="opacity-100 translate-y-0"
+        leave-active-class="transition duration-150 ease-in"
+        leave-from-class="opacity-100 translate-y-0"
+        leave-to-class="opacity-0 translate-y-2"
+      >
+        <div v-if="activeToast" class="fixed bottom-6 right-6 z-[9999] w-full max-w-sm pointer-events-none">
+          <AppToast :toast="activeToast" @close="activeToast = null" />
+        </div>
+      </Transition>
     </Teleport>
   </div>
 </template>

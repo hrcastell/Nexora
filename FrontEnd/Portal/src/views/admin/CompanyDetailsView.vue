@@ -3,7 +3,7 @@ import { ref, onMounted, computed } from 'vue';
 import api from '../../utils/axios';
 import { ArrowLeft, Loader2, FileText, DollarSign, Building2, Receipt, Users, Settings, UserPlus, Trash2, Shield, ShieldCheck, Palette, Check, RotateCcw, Upload } from 'lucide-vue-next';
 import { useVisualConfigStore } from '../../stores/visualConfig';
-import EditCompanyModal from '../../components/admin/EditCompanyModal.vue';
+import ConfirmActionModal from '../../components/admin/ConfirmActionModal.vue';
 import AppToast, { type ToastItem, type ToastType } from '../../components/AppToast.vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -99,6 +99,10 @@ const triggerToast = (title: string, message: string, type: ToastType) => {
   activeToast.value = { id: Date.now(), title, message, type };
 };
 
+// Confirm modal state
+const showConfirmRemove = ref(false);
+const userToRemove = ref<CompanyUser | null>(null);
+
 // Invite user state
 const showInviteModal = ref(false);
 const isInviting = ref(false);
@@ -127,9 +131,6 @@ const modalBorder = computed(() => isLightMode.value ? 'rgba(0, 0, 0, 0.08)' : '
 const inputBg = computed(() => isLightMode.value ? 'rgba(255, 255, 255, 0.90)' : 'rgba(255, 255, 255, 0.05)');
 const inputBorder = computed(() => isLightMode.value ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.10)');
 
-// Edit Company Modal
-const showEditModal = ref(false);
-
 // Logo upload handler
 const MAX_LOGO_SIZE = 3 * 1024 * 1024; // 3MB
 
@@ -157,8 +158,6 @@ const handleLogoUpload = (e: Event) => {
 // Helper functions for template
 const getButtonBg = () => isLightMode.value ? 'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.05)';
 const getButtonHoverBg = () => isLightMode.value ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.08)';
-const getButtonBorder = () => isLightMode.value ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.10)';
-const getButtonHoverBorder = () => isLightMode.value ? 'rgba(0, 0, 0, 0.12)' : 'rgba(255, 255, 255, 0.15)';
 const getTabsBg = () => isLightMode.value ? 'rgba(255, 255, 255, 0.95)' : 'rgba(255, 255, 255, 0.05)';
 
 onMounted(async () => {
@@ -267,13 +266,23 @@ const toggleUserActive = async (user: CompanyUser) => {
   }
 };
 
-const removeUser = async (user: CompanyUser) => {
-  if (!confirm(`¿Eliminar a ${user.full_name} de esta empresa?`)) return;
+const openRemoveUser = (user: CompanyUser) => {
+  userToRemove.value = user;
+  showConfirmRemove.value = true;
+};
+
+const handleConfirmRemove = async () => {
+  if (!userToRemove.value) return;
+  const user = userToRemove.value;
   try {
     await api.delete(`/companies/${companyId}/users/${user.id}`);
     companyUsers.value = companyUsers.value.filter(u => u.id !== user.id);
-  } catch (error) {
-    console.error('Error removing user:', error);
+    triggerToast('Usuario eliminado', `${user.full_name} fue desvinculado de la empresa.`, 'success');
+    showConfirmRemove.value = false;
+    userToRemove.value = null;
+  } catch (error: any) {
+    triggerToast('Error', error.response?.data?.error || 'No se pudo eliminar el usuario.', 'error');
+    showConfirmRemove.value = false;
   }
 };
 
@@ -309,9 +318,6 @@ const getInvoiceStatusColor = (status: string) => {
   }
 };
 
-const handleEditCompany = () => {
-  showEditModal.value = true;
-};
 
 </script>
 
@@ -352,21 +358,6 @@ const handleEditCompany = () => {
             {{ company.is_active ? 'Activa' : 'Inactiva' }}
           </span>
         </div>
-        
-        <button
-          type="button"
-          class="flex items-center gap-2 rounded-2xl border px-4 py-2.5 text-sm font-medium transition"
-          :style="{ 
-            backgroundColor: getButtonBg(), 
-            borderColor: getButtonBorder(), 
-            color: mutedTextColor 
-          }"
-          @mouseover="(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = getButtonHoverBg(); (e.currentTarget as HTMLElement).style.borderColor = getButtonHoverBorder(); }"
-          @mouseleave="(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = getButtonBg(); (e.currentTarget as HTMLElement).style.borderColor = getButtonBorder(); }"
-          @click="handleEditCompany"
-        >
-          Editar Datos
-        </button>
       </div>
     </div>
 
@@ -618,7 +609,7 @@ const handleEditCompany = () => {
                   <button @click="toggleUserActive(user)" title="Activar/Desactivar" class="p-1.5 rounded-lg transition-colors hover:bg-white/10" :style="{ color: mutedTextColor }">
                     <Check class="h-4 w-4" />
                   </button>
-                  <button @click="removeUser(user)" title="Eliminar de empresa" class="p-1.5 rounded-lg transition-colors hover:bg-rose-500/20 text-rose-400">
+                  <button @click="openRemoveUser(user)" title="Eliminar de empresa" class="p-1.5 rounded-lg transition-colors hover:bg-rose-500/20 text-rose-400">
                     <Trash2 class="h-4 w-4" />
                   </button>
                 </div>
@@ -835,11 +826,14 @@ const handleEditCompany = () => {
     </Transition>
   </Teleport>
 
-  <!-- Edit Company Modal -->
-  <EditCompanyModal 
-    :is-open="showEditModal"
-    :company="company"
-    @close="showEditModal = false"
-    @updated="fetchData"
+  <!-- Confirm Remove User Modal -->
+  <ConfirmActionModal
+    :isOpen="showConfirmRemove"
+    :title="userToRemove ? 'Eliminar usuario' : ''"
+    :message="userToRemove ? 'Eliminar a ' + userToRemove.full_name + ' de esta empresa?' : ''"
+    confirmText="Eliminar"
+    variant="danger"
+    @confirmed="handleConfirmRemove"
+    @cancelled="showConfirmRemove = false; userToRemove = null" />
   />
 </template>

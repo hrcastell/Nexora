@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { FileText, Plus, Loader2, X, Save, Pencil, Trash2, ShieldAlert } from 'lucide-vue-next';
 import AppToast, { type ToastItem, type ToastType } from '../../components/AppToast.vue';
+import ConfirmActionModal from '../../components/admin/ConfirmActionModal.vue';
 import api from '../../utils/axios';
 import { useVisualConfigStore } from '../../stores/visualConfig';
 import { usePermissions } from '../../composables/usePermissions';
@@ -46,6 +47,10 @@ const activeToast = ref<ToastItem | null>(null);
 const triggerToast = (title: string, message: string, type: ToastType) => {
   activeToast.value = { id: Date.now(), title, message, type };
 };
+
+// Confirm modal state
+const showConfirmDelete = ref(false);
+const planToDelete = ref<SubscriptionPlan | null>(null);
 
 const defaultForm = () => ({
   code: '',
@@ -126,16 +131,24 @@ async function savePlan() {
   }
 }
 
-async function deletePlan(plan: SubscriptionPlan) {
-  if (!confirm(`¿Eliminar el plan "${plan.name}"? Esta acción no se puede deshacer.`)) return;
+function openDeletePlan(plan: SubscriptionPlan) {
+  planToDelete.value = plan;
+  showConfirmDelete.value = true;
+}
+
+async function handleConfirmDelete() {
+  if (!planToDelete.value) return;
+  const plan = planToDelete.value;
   try {
     await api.delete(`/subscription-plans/${plan.id}`);
     triggerToast('Eliminado', `El plan "${plan.name}" fue eliminado.`, 'success');
+    showConfirmDelete.value = false;
+    planToDelete.value = null;
     await loadPlans();
   } catch (e: unknown) {
-    const err = e as { response?: { data?: { error?: string }; status?: number } };
-    const msg = err?.response?.data?.error ?? 'Error al eliminar';
-    triggerToast('Error', msg, 'error');
+    const err = e as { response?: { data?: { error?: string } } };
+    triggerToast('Error', err?.response?.data?.error ?? 'Error al eliminar plan', 'error');
+    showConfirmDelete.value = false;
   }
 }
 
@@ -222,7 +235,7 @@ const fmtCurrency = (n: number, c = 'CLP') =>
               class="flex items-center gap-1.5 text-xs rounded-xl px-3 py-1.5 border border-blue-500/30 bg-blue-500/10 text-blue-300 hover:bg-blue-500/20 transition">
               <Pencil class="h-3 w-3" /> Editar
             </button>
-            <button @click="deletePlan(plan)"
+            <button @click="openDeletePlan(plan)"
               class="flex items-center gap-1.5 text-xs rounded-xl px-3 py-1.5 border border-red-500/30 bg-red-500/10 text-red-300 hover:bg-red-500/20 transition">
               <Trash2 class="h-3 w-3" /> Eliminar
             </button>
@@ -356,5 +369,15 @@ const fmtCurrency = (n: number, c = 'CLP') =>
         </div>
       </Transition>
     </Teleport>
+
+    <!-- Confirm Delete Modal -->
+    <ConfirmActionModal
+      :isOpen="showConfirmDelete"
+      :title="planToDelete ? 'Eliminar plan' : ''"
+      :message="planToDelete ? 'Eliminar el plan ' + planToDelete.name + '? Esta acción no se puede deshacer.' : ''"
+      confirmText="Eliminar"
+      variant="danger"
+      @confirmed="handleConfirmDelete"
+      @cancelled="showConfirmDelete = false; planToDelete = null" />
   </div>
 </template>
