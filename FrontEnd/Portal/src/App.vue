@@ -12,10 +12,8 @@ const applyGlobalConfig = () => {
     root.style.setProperty(key, String(val));
   });
 
-  // 2. Scale: use CSS zoom so the entire UI scales uniformly (including rem-based fonts)
-  root.style.zoom = configStore.scale + '%';
-
-  // 3. Base font-size: affects Tailwind rem units (text-sm = 0.875rem, etc.)
+  // 2. Base font-size: affects Tailwind rem units (text-sm = 0.875rem, etc.)
+  // Note: CSS zoom removed — non-standard and unreliable cross-browser. fontSize handles scaling.
   root.style.fontSize = configStore.fontSize + 'px';
 
   // 4. Theme mode attribute – CSS overrides target [data-nexora-mode="light"]

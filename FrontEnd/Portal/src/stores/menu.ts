@@ -2,6 +2,18 @@ import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import api from '../utils/axios';
 
+export type PermissionAction = 'can_view' | 'can_create' | 'can_edit' | 'can_delete' | 'can_approve' | 'can_export' | 'can_admin';
+
+export interface TransactionPerms {
+  can_view: boolean;
+  can_create: boolean;
+  can_edit: boolean;
+  can_delete: boolean;
+  can_approve: boolean;
+  can_export: boolean;
+  can_admin: boolean;
+}
+
 export interface MenuTransaction {
   id: number;
   module_id: number;
@@ -13,6 +25,14 @@ export interface MenuTransaction {
   tab_order: number;
   menu_visible: boolean;
   status: string;
+  // Permission flags — populated when backend returns them (future)
+  can_view?: boolean;
+  can_create?: boolean;
+  can_edit?: boolean;
+  can_delete?: boolean;
+  can_approve?: boolean;
+  can_export?: boolean;
+  can_admin?: boolean;
 }
 
 export interface MenuModule {
@@ -60,6 +80,32 @@ export const useMenuStore = defineStore('menu', () => {
     return map;
   });
 
+  /**
+   * permissionIndex: maps transaction_code → permission flags.
+   * Transactions present in the menu tree already passed can_view=TRUE
+   * (filtered by menuController). Additional flags (can_create, etc.) are
+   * populated when the backend returns them on the transaction object.
+   * Falls back to { can_view: true, all others: false } for menu-visible transactions
+   * until the backend is extended to return full flags.
+   */
+  const permissionIndex = computed(() => {
+    const map = new Map<string, TransactionPerms>();
+    for (const m of modules.value) {
+      for (const t of m.transactions) {
+        map.set(t.code, {
+          can_view:   t.can_view   ?? true,
+          can_create: t.can_create ?? false,
+          can_edit:   t.can_edit   ?? false,
+          can_delete: t.can_delete ?? false,
+          can_approve: t.can_approve ?? false,
+          can_export: t.can_export ?? false,
+          can_admin:  t.can_admin  ?? false,
+        });
+      }
+    }
+    return map;
+  });
+
   function hasModule(code: string): boolean {
     if (!loaded.value) return true; // antes de la carga, permitir (fallback)
     return moduleCodes.value.has(code);
@@ -97,6 +143,7 @@ export const useMenuStore = defineStore('menu', () => {
     isEmpty,
     moduleCodes,
     routeIndex,
+    permissionIndex,
     hasModule,
     hasTransaction,
     loadMenu,

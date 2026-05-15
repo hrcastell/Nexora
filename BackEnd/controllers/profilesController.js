@@ -57,10 +57,11 @@ exports.getProfilesByCompany = async (req, res) => {
 
         const result = await db.query(
             `SELECT p.*,
-                    COUNT(DISTINCT pp.module_id) AS module_count,
-                    COUNT(DISTINCT utp.user_id)  AS user_count
+                    COUNT(DISTINCT ptp.transaction_code) AS module_count,
+                    COUNT(DISTINCT utp.user_id)          AS user_count
              FROM "${schema}".profiles p
-             LEFT JOIN "${schema}".profile_permissions pp ON pp.profile_id = p.id
+             LEFT JOIN "${schema}".profile_transaction_permissions ptp
+                    ON ptp.profile_id = p.id AND ptp.can_view = TRUE
              LEFT JOIN "${schema}".user_tenant_profiles utp ON utp.profile_id = p.id
              GROUP BY p.id
              ORDER BY p.is_system_profile DESC, p.name ASC`
@@ -260,16 +261,18 @@ exports.getProfiles = async (req, res) => {
         if (!schema) return res.status(400).json({ error: 'Contexto de empresa requerido' });
 
         // Non-super_admin cannot see protected profiles
-        const whereClause = isSuperAdmin(req) 
+        const whereClause = isSuperAdmin(req)
             ? ``
             : `WHERE p.code NOT IN ('acceso_total', 'admin_empresa')`;
 
+        // module_count: número de transacciones con al menos un permiso activo (sistema actual)
         const result = await db.query(
             `SELECT p.*,
-                    COUNT(DISTINCT pp.module_id) AS module_count,
-                    COUNT(DISTINCT utp.user_id)  AS user_count
+                    COUNT(DISTINCT ptp.transaction_code) AS module_count,
+                    COUNT(DISTINCT utp.user_id)          AS user_count
              FROM "${schema}".profiles p
-             LEFT JOIN "${schema}".profile_permissions pp ON pp.profile_id = p.id
+             LEFT JOIN "${schema}".profile_transaction_permissions ptp
+                    ON ptp.profile_id = p.id AND ptp.can_view = TRUE
              LEFT JOIN "${schema}".user_tenant_profiles utp ON utp.profile_id = p.id
              ${whereClause}
              GROUP BY p.id
@@ -301,93 +304,21 @@ exports.getProfileById = async (req, res) => {
     }
 };
 
-// GET /api/profiles/:id/permissions — Matriz de permisos del perfil
-exports.getProfilePermissions = async (req, res) => {
-    try {
-        const schema = getSchema(req);
-        if (!schema) return res.status(400).json({ error: 'Contexto de empresa requerido' });
+// GET /api/profiles/:id/permissions — DEPRECATED
+// Operaba sobre {schema}.modules + {schema}.profile_permissions (ambas tablas legacy).
+// Usar /api/profiles/:id/permissions-full que opera sobre profile_transaction_permissions.
+exports.getProfilePermissions = (_req, res) => res.status(410).json({
+    error:   'Endpoint deprecado',
+    message: 'Usa GET /api/profiles/:id/permissions-full para la matriz de permisos por transacción.',
+});
 
-        const { id } = req.params;
-        const targetProfile = await getProfileByIdInSchema(schema, id);
-        if (!targetProfile) return res.status(404).json({ error: 'Perfil no encontrado' });
-        if (!isSuperAdmin(req) && isProtectedProfileCode(targetProfile.code)) {
-            return res.status(403).json({ error: 'No tienes permisos para gestionar este perfil' });
-        }
-
-        const result = await db.query(
-            `SELECT pp.*,
-                    m.code AS module_code, m.name AS module_name,
-                    m.icon AS module_icon, m.group_name AS module_group,
-                    m.status AS module_status
-             FROM "${schema}".modules m
-             LEFT JOIN "${schema}".profile_permissions pp
-                    ON pp.module_id = m.id AND pp.profile_id = $1
-             WHERE m.status = 'activo'
-             ORDER BY m.menu_order ASC, m.name ASC`,
-            [id]
-        );
-
-        res.json(result.rows);
-    } catch (error) {
-        console.error('Get profile permissions error:', error);
-        res.status(500).json({ error: 'Error al obtener permisos del perfil' });
-    }
-};
-
-// PUT /api/profiles/:id/permissions — Actualizar matriz de permisos
-exports.updateProfilePermissions = async (req, res) => {
-    const client = await db.getClient();
-    try {
-        if (!isAdmin(req)) return res.status(403).json({ error: 'Acceso denegado' });
-
-        const schema = getSchema(req);
-        if (!schema) return res.status(400).json({ error: 'Contexto de empresa requerido' });
-
-        const { id } = req.params;
-        const { permissions } = req.body; // Array de { module_id, can_view, can_create, can_edit, can_delete, can_approve, can_export, can_admin }
-
-        if (!Array.isArray(permissions)) {
-            return res.status(400).json({ error: 'El campo permissions debe ser un array' });
-        }
-
-        const targetProfile = await getProfileByIdInSchema(schema, id);
-        if (!targetProfile) return res.status(404).json({ error: 'Perfil no encontrado' });
-        if (!isSuperAdmin(req) && isProtectedProfileCode(targetProfile.code)) {
-            return res.status(403).json({ error: 'No tienes permisos para gestionar este perfil' });
-        }
-
-        await client.query('BEGIN');
-
-        for (const perm of permissions) {
-            const { module_id, can_view, can_create, can_edit, can_delete, can_approve, can_export, can_admin } = perm;
-            await client.query(
-                `INSERT INTO "${schema}".profile_permissions
-                 (profile_id, module_id, can_view, can_create, can_edit, can_delete, can_approve, can_export, can_admin)
-                 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
-                 ON CONFLICT (profile_id, module_id) DO UPDATE SET
-                    can_view    = EXCLUDED.can_view,
-                    can_create  = EXCLUDED.can_create,
-                    can_edit    = EXCLUDED.can_edit,
-                    can_delete  = EXCLUDED.can_delete,
-                    can_approve = EXCLUDED.can_approve,
-                    can_export  = EXCLUDED.can_export,
-                    can_admin   = EXCLUDED.can_admin`,
-                [id, module_id,
-                 can_view ?? false, can_create ?? false, can_edit ?? false,
-                 can_delete ?? false, can_approve ?? false, can_export ?? false, can_admin ?? false]
-            );
-        }
-
-        await client.query('COMMIT');
-        res.json({ message: 'Permisos actualizados correctamente' });
-    } catch (error) {
-        await client.query('ROLLBACK');
-        console.error('Update profile permissions error:', error);
-        res.status(500).json({ error: 'Error al actualizar permisos' });
-    } finally {
-        client.release();
-    }
-};
+// PUT /api/profiles/:id/permissions — DEPRECATED
+// Operaba sobre {schema}.profile_permissions (tabla legacy por módulo).
+// Usar PUT /api/profiles/:id/permissions-full que opera sobre profile_transaction_permissions.
+exports.updateProfilePermissions = (_req, res) => res.status(410).json({
+    error:   'Endpoint deprecado',
+    message: 'Usa PUT /api/profiles/:id/permissions-full para actualizar permisos por transacción.',
+});
 
 // GET /api/profiles/:id/permissions-full
 // Devuelve módulos habilitados de la empresa, con sus transacciones y el estado

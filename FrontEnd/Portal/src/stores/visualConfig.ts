@@ -205,6 +205,7 @@ export const useVisualConfigStore = defineStore('visualConfig', () => {
       
       // Glass effects - dark: transparent, light: opaque
       '--nexora-glass-bg': isDark ? 'rgba(9, 18, 36, 0.80)' : 'rgba(255, 255, 255, 0.95)',
+      '--nexora-glass-bg-strong': isDark ? 'rgba(9, 18, 36, 0.95)' : 'rgba(255, 255, 255, 1.00)',
       '--nexora-glass-bg-subtle': isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)',
       '--nexora-glass-blur': isDark ? '16px' : '0px',
       

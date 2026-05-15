@@ -59,22 +59,27 @@ CREATE TABLE IF NOT EXISTS {schema_name}.user_profiles (
     UNIQUE(user_id)
 );
 
--- 6. Modules (Functional modules available in this tenant)
-CREATE TABLE IF NOT EXISTS {schema_name}.modules (
-    id SERIAL PRIMARY KEY,
-    code VARCHAR(50) NOT NULL UNIQUE,
-    name VARCHAR(100) NOT NULL,
-    description TEXT,
-    icon VARCHAR(50),
-    group_name VARCHAR(50),
-    is_global BOOLEAN DEFAULT TRUE,
-    show_in_menu BOOLEAN DEFAULT TRUE,
-    menu_order INTEGER DEFAULT 0,
-    status VARCHAR(20) DEFAULT 'activo',
-    is_system_module BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
+-- 6. [DEPRECATED] Modules tenant-local — NO CREAR en nuevos tenants
+-- El catálogo de módulos vive en public.module_catalog (global).
+-- La asignación empresa↔módulo vive en public.company_modules.
+-- La tabla {schema}.modules era un duplicado sin uso real en el menú/permisos.
+-- Mantenida aquí solo como referencia histórica. NO descomentar.
+--
+-- CREATE TABLE IF NOT EXISTS {schema_name}.modules (
+--     id SERIAL PRIMARY KEY,
+--     code VARCHAR(50) NOT NULL UNIQUE,
+--     name VARCHAR(100) NOT NULL,
+--     description TEXT,
+--     icon VARCHAR(50),
+--     group_name VARCHAR(50),
+--     is_global BOOLEAN DEFAULT TRUE,
+--     show_in_menu BOOLEAN DEFAULT TRUE,
+--     menu_order INTEGER DEFAULT 0,
+--     status VARCHAR(20) DEFAULT 'activo',
+--     is_system_module BOOLEAN DEFAULT FALSE,
+--     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+--     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+-- );
 
 -- 7. Profiles (Functional access groups)
 CREATE TABLE IF NOT EXISTS {schema_name}.profiles (
@@ -112,20 +117,25 @@ CREATE TABLE IF NOT EXISTS {schema_name}.profile_transaction_permissions (
 CREATE INDEX IF NOT EXISTS idx_ptp_profile_id ON {schema_name}.profile_transaction_permissions (profile_id);
 CREATE INDEX IF NOT EXISTS idx_ptp_tx_code    ON {schema_name}.profile_transaction_permissions (transaction_code);
 
--- 9. Profile Permissions (Matrix legacy: profile x module x actions)
-CREATE TABLE IF NOT EXISTS {schema_name}.profile_permissions (
-    id SERIAL PRIMARY KEY,
-    profile_id INTEGER NOT NULL REFERENCES {schema_name}.profiles(id) ON DELETE CASCADE,
-    module_id INTEGER NOT NULL REFERENCES {schema_name}.modules(id) ON DELETE CASCADE,
-    can_view BOOLEAN DEFAULT FALSE,
-    can_create BOOLEAN DEFAULT FALSE,
-    can_edit BOOLEAN DEFAULT FALSE,
-    can_delete BOOLEAN DEFAULT FALSE,
-    can_approve BOOLEAN DEFAULT FALSE,
-    can_export BOOLEAN DEFAULT FALSE,
-    can_admin BOOLEAN DEFAULT FALSE,
-    UNIQUE(profile_id, module_id)
-);
+-- 9. [DEPRECATED] Profile Permissions legacy (Matrix: profile x module x actions)
+-- Reemplazada por profile_transaction_permissions (granularidad por transacción).
+-- No se usa en ningún endpoint activo del sistema de permisos del menú.
+-- La UI de ProfilesView opera exclusivamente sobre profile_transaction_permissions.
+-- Mantenida aquí solo como referencia. NO descomentar en nuevos tenants.
+--
+-- CREATE TABLE IF NOT EXISTS {schema_name}.profile_permissions (
+--     id SERIAL PRIMARY KEY,
+--     profile_id INTEGER NOT NULL REFERENCES {schema_name}.profiles(id) ON DELETE CASCADE,
+--     module_id  INTEGER NOT NULL,  -- era FK a {schema}.modules (también deprecated)
+--     can_view   BOOLEAN DEFAULT FALSE,
+--     can_create BOOLEAN DEFAULT FALSE,
+--     can_edit   BOOLEAN DEFAULT FALSE,
+--     can_delete BOOLEAN DEFAULT FALSE,
+--     can_approve BOOLEAN DEFAULT FALSE,
+--     can_export BOOLEAN DEFAULT FALSE,
+--     can_admin  BOOLEAN DEFAULT FALSE,
+--     UNIQUE(profile_id, module_id)
+-- );
 
 -- 10. User Tenant Profiles (Multiple profiles per user)
 CREATE TABLE IF NOT EXISTS {schema_name}.user_tenant_profiles (

@@ -22,7 +22,11 @@ import {
   Puzzle,
   CreditCard,
   FileText,
-  ClipboardList
+  ClipboardList,
+  Wrench,
+  Package,
+  Receipt,
+  Loader2
 } from 'lucide-vue-next';
 
 const authStore = useAuthStore();
@@ -31,68 +35,54 @@ const menuStore = useMenuStore();
 const route = useRoute();
 const router = useRouter();
 const isMobileMenuOpen = ref(false);
-const isConfigExpanded = ref(false);
 const isSidebarCollapsed = ref(false);
+
+// Track expanded state per module code
+const expandedModules = ref<Record<string, boolean>>({});
 
 // Icon registry: resolves string codes from API to Lucide components
 const ICON_REGISTRY: Record<string, Component> = {
   LayoutDashboard, Building2, Users, Shield, Puzzle, Mail, BarChart2,
-  CreditCard, Settings, Palette, FileText, ClipboardList
+  CreditCard, Settings, Palette, FileText, ClipboardList, Wrench, Package, Receipt
 };
 const resolveIcon = (code?: string): Component => {
   if (code && ICON_REGISTRY[code]) return ICON_REGISTRY[code];
   return Settings;
 };
 
-// Main navigation items (always visible)
-const mainNav = computed(() => [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-]);
-
-// Hardcoded fallback (used if dynamic menu is empty/not loaded)
-const fallbackConfigNav = computed(() => {
-  if (!authStore.user?.is_super_admin && authStore.user?.role !== 'admin') return [];
-  const items: { name: string; href: string; icon: Component }[] = [
-    { name: 'Empresas', href: '/admin/companies', icon: Building2 },
-    { name: 'Usuarios', href: '/admin/users',     icon: Users     },
-    { name: 'Perfiles', href: '/admin/profiles',  icon: Shield    },
-    { name: 'Visual',   href: '/admin/config',    icon: Palette   },
-  ];
-  if (authStore.user?.is_super_admin) {
-    items.splice(1, 0, { name: 'Solicitudes', href: '/admin/requests', icon: Mail });
-    items.splice(5, 0, { name: 'Módulos',    href: '/admin/modules-manager', icon: Puzzle });
-    items.splice(6, 0, { name: 'Reportes',    href: '/admin/reports', icon: BarChart2 });
-    items.push({ name: 'Comercial', href: '/admin/commercial', icon: CreditCard });
-  }
-  return items;
-});
-
-// Dynamic config submenu built from useMenuStore (configuration module's transactions)
-const dynamicConfigNav = computed<{ name: string; href: string; icon: Component }[]>(() => {
-  const configModule = menuStore.modules.find(m => m.code === 'configuration');
-  if (!configModule) return [];
-  return configModule.transactions
-    .filter(t => t.menu_visible && t.status === 'activo' && t.route && t.route !== '/dashboard')
-    .map(t => ({ name: t.name, href: t.route, icon: resolveIcon(t.icon) }));
-});
-
-// Active menu: dynamic if available, else fallback
-const configNav = computed<{ name: string; href: string; icon: Component }[]>(() => {
-  if (menuStore.loaded && dynamicConfigNav.value.length > 0) return dynamicConfigNav.value;
-  return fallbackConfigNav.value;
+/**
+ * Dynamic nav modules from menuStore.
+ * - Excludes 'dashboard' module (rendered separately as main nav item).
+ * - Each module with its visible transactions becomes a sidebar section.
+ */
+const navModules = computed(() => {
+  return menuStore.modules
+    .filter(m => m.code !== 'dashboard' && m.is_visible !== false)
+    .map(m => ({
+      ...m,
+      visibleTransactions: m.transactions.filter(
+        t => t.menu_visible && t.status === 'activo' && t.route
+      )
+    }))
+    .filter(m => m.visibleTransactions.length > 0);
 });
 
 const isActive = (href: string) => route.path === href;
-const isConfigActive = computed(() => {
-  return configNav.value.some(item => route.path.startsWith(item.href));
-});
+
+function isModuleActive(m: typeof navModules.value[0]): boolean {
+  return m.visibleTransactions.some(t => route.path.startsWith(t.route));
+}
+
+function toggleModule(code: string) {
+  expandedModules.value[code] = !expandedModules.value[code];
+}
+
+function isModuleExpanded(code: string): boolean {
+  return !!expandedModules.value[code];
+}
 
 const toggleMobileMenu = () => {
   isMobileMenuOpen.value = !isMobileMenuOpen.value;
-};
-
-const toggleConfig = () => {
-  isConfigExpanded.value = !isConfigExpanded.value;
 };
 
 const toggleSidebar = () => {
@@ -152,78 +142,90 @@ const logout = () => {
       <nav class="mt-8 flex-1 overflow-y-auto custom-scrollbar">
         <p class="px-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Menú</p>
         <div class="mt-3 space-y-2">
-          <!-- Dashboard -->
+
+          <!-- Dashboard (always visible) -->
           <router-link
-            v-for="item in mainNav"
-            :key="item.name"
-            :to="item.href"
+            to="/dashboard"
             :class="[
               'flex w-full items-center gap-3 rounded-2xl border px-4 py-3 text-left transition',
-              isActive(item.href)
+              isActive('/dashboard')
                 ? 'nxr-nav-active shadow-lg'
                 : 'border-transparent bg-transparent text-slate-300 hover:border-white/10 hover:bg-white/5'
             ]"
             @click="isMobileMenuOpen = false"
           >
-            <div :class="['flex h-10 w-10 items-center justify-center rounded-2xl', isActive(item.href) ? 'nxr-nav-icon-active' : 'bg-white/5 text-slate-400']">
-              <component :is="item.icon" />
+            <div :class="['flex h-10 w-10 items-center justify-center rounded-2xl', isActive('/dashboard') ? 'nxr-nav-icon-active' : 'bg-white/5 text-slate-400']">
+              <LayoutDashboard class="h-5 w-5" />
             </div>
-            <span class="text-sm font-medium">{{ item.name }}</span>
+            <span class="text-sm font-medium">Dashboard</span>
           </router-link>
 
-          <!-- Configuración expandable menu (only for super_admin) -->
-          <div v-if="configNav.length > 0" class="mt-2">
-            <button
-              @click="toggleConfig"
-              :class="[
-                'flex w-full items-center gap-3 rounded-2xl border px-4 py-3 text-left transition',
-                isConfigActive
-                  ? 'nxr-nav-active shadow-lg'
-                  : 'border-transparent bg-transparent text-slate-300 hover:border-white/10 hover:bg-white/5'
-              ]"
-            >
-              <div :class="['flex h-10 w-10 items-center justify-center rounded-2xl', isConfigActive ? 'nxr-nav-icon-active' : 'bg-white/5 text-slate-400']">
-                <Settings class="h-5 w-5" />
-              </div>
-              <span class="text-sm font-medium flex-1">Configuración</span>
-              <ChevronDown :class="['h-4 w-4 transition-transform', isConfigExpanded ? 'rotate-180' : '']" />
-            </button>
-
-            <!-- Config submenu -->
-            <div v-show="isConfigExpanded" class="mt-2 space-y-1 pl-4">
-              <router-link
-                v-for="item in configNav"
-                :key="item.name"
-                :to="item.href"
-                :class="[
-                  'flex w-full items-center gap-3 rounded-2xl border px-4 py-2.5 text-left transition',
-                  isActive(item.href)
-                    ? 'nxr-nav-active'
-                    : 'border-transparent bg-transparent text-slate-400 hover:border-white/10 hover:bg-white/5 hover:text-slate-300'
-                ]"
-                @click="isMobileMenuOpen = false"
-              >
-                <div :class="['flex h-8 w-8 items-center justify-center rounded-xl', isActive(item.href) ? 'nxr-nav-icon-active' : 'bg-white/5 text-slate-500']">
-                  <component :is="item.icon" class="h-4 w-4" />
-                </div>
-                <span class="text-sm">{{ item.name }}</span>
-              </router-link>
-            </div>
+          <!-- Loading state while menu loads -->
+          <div v-if="!menuStore.loaded" class="flex items-center gap-3 px-4 py-3 text-slate-500">
+            <Loader2 class="h-4 w-4 animate-spin" />
+            <span class="text-xs">Cargando módulos...</span>
           </div>
+
+          <!-- Dynamic modules (one expandable section per module) -->
+          <template v-else>
+            <div
+              v-for="mod in navModules"
+              :key="mod.code"
+              class="mt-1"
+            >
+              <!-- Module toggle button -->
+              <button
+                @click="toggleModule(mod.code)"
+                :class="[
+                  'flex w-full items-center gap-3 rounded-2xl border px-4 py-3 text-left transition',
+                  isModuleActive(mod)
+                    ? 'nxr-nav-active shadow-lg'
+                    : 'border-transparent bg-transparent text-slate-300 hover:border-white/10 hover:bg-white/5'
+                ]"
+              >
+                <div :class="['flex h-10 w-10 items-center justify-center rounded-2xl', isModuleActive(mod) ? 'nxr-nav-icon-active' : 'bg-white/5 text-slate-400']">
+                  <component :is="resolveIcon(mod.icon)" class="h-5 w-5" />
+                </div>
+                <span class="text-sm font-medium flex-1">{{ mod.name }}</span>
+                <ChevronDown :class="['h-4 w-4 transition-transform', isModuleExpanded(mod.code) ? 'rotate-180' : '']" />
+              </button>
+
+              <!-- Module transactions submenu -->
+              <div v-show="isModuleExpanded(mod.code)" class="mt-1 space-y-1 pl-4">
+                <router-link
+                  v-for="tx in mod.visibleTransactions"
+                  :key="tx.code"
+                  :to="tx.route"
+                  :class="[
+                    'flex w-full items-center gap-3 rounded-2xl border px-4 py-2.5 text-left transition',
+                    isActive(tx.route)
+                      ? 'nxr-nav-active'
+                      : 'border-transparent bg-transparent text-slate-400 hover:border-white/10 hover:bg-white/5 hover:text-slate-300'
+                  ]"
+                  @click="isMobileMenuOpen = false"
+                >
+                  <div :class="['flex h-8 w-8 items-center justify-center rounded-xl', isActive(tx.route) ? 'nxr-nav-icon-active' : 'bg-white/5 text-slate-500']">
+                    <component :is="resolveIcon(tx.icon)" class="h-4 w-4" />
+                  </div>
+                  <span class="text-sm">{{ tx.name }}</span>
+                </router-link>
+              </div>
+            </div>
+          </template>
+
         </div>
       </nav>
 
-      <!-- User Context -->
       <!-- Logout -->
-        <div class="mt-auto pt-6">
-          <button 
-            @click="logout"
-            class="flex w-full items-center justify-center gap-2 rounded-2xl border nxr-glass px-4 py-3 text-sm font-medium text-slate-200 transition hover:text-white"
-          >
-            <LogOut class="h-5 w-5" />
-            Cerrar sesión
-          </button>
-        </div>
+      <div class="mt-auto pt-6">
+        <button 
+          @click="logout"
+          class="flex w-full items-center justify-center gap-2 rounded-2xl border nxr-glass px-4 py-3 text-sm font-medium text-slate-200 transition hover:text-white"
+        >
+          <LogOut class="h-5 w-5" />
+          Cerrar sesión
+        </button>
+      </div>
     </aside>
 
     <!-- Main Content -->
