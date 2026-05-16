@@ -161,7 +161,7 @@ export const useVisualConfigStore = defineStore('visualConfig', () => {
     if (mode.value === 'dark') {
       return hexToRgba('#091224', transparency.value / 100);
     }
-    return 'rgba(255, 255, 255, 0.95)';
+    return hexToRgba('#ffffff', Math.max(transparency.value / 100, 0.75));
   });
 
   const cardBorder = computed(() => {

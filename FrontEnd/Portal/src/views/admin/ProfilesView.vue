@@ -35,7 +35,7 @@ const permFullBaseUrl = computed(() =>
 const isLight     = computed(() => cfg.mode === 'light');
 const headerColor = computed(() => isLight.value ? '#0f172a' : '#ffffff');
 const mutedColor  = computed(() => isLight.value ? '#475569' : '#94a3b8');
-const cardBg      = computed(() => isLight.value ? 'rgba(255,255,255,0.95)' : 'rgba(9,18,36,0.85)');
+const cardBg      = computed(() => cfg.cardBg);
 const cardBorder  = computed(() => isLight.value ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.10)');
 const rowHoverBg  = computed(() => isLight.value ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.04)');
 const inputBg     = computed(() => isLight.value ? '#ffffff' : 'rgba(255,255,255,0.05)');
