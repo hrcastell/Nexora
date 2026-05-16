@@ -12,18 +12,24 @@
   background: var(--nexora-surface) !important;
   border-color: var(--nexora-border-color) !important;
   border-radius: var(--nexora-corner-lg) !important;
+  backdrop-filter: blur(var(--nexora-glass-blur));
+  -webkit-backdrop-filter: blur(var(--nexora-glass-blur));
 }
 
 .nxr-glass {
   background: var(--nexora-glass-bg) !important;
   border-color: var(--nexora-border-color) !important;
   border-radius: var(--nexora-corner) !important;
+  backdrop-filter: blur(var(--nexora-glass-blur));
+  -webkit-backdrop-filter: blur(var(--nexora-glass-blur));
 }
 
 .nxr-glass-strong {
   background: var(--nexora-glass-bg-strong) !important;
   border-color: var(--nexora-border-color) !important;
   border-radius: var(--nexora-corner) !important;
+  backdrop-filter: blur(var(--nexora-glass-blur));
+  -webkit-backdrop-filter: blur(var(--nexora-glass-blur));
 }
 
 /* --- Utility: dynamic corner radius --- */

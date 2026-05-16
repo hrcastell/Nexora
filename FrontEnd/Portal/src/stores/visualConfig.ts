@@ -154,7 +154,9 @@ export const useVisualConfigStore = defineStore('visualConfig', () => {
       const alphaStrong = Math.min(alpha + 0.05, 1);
       return `linear-gradient(180deg, ${hexToRgba('#0b1326', alpha)}, ${hexToRgba('#08101f', alphaStrong)})`;
     }
-    return `linear-gradient(180deg, #ffffff, #f8fafc)`;
+    const alpha      = transparency.value / 100;
+    const alphaStrong = Math.min(alpha + 0.05, 1);
+    return `linear-gradient(180deg, ${hexToRgba('#ffffff', alpha)}, ${hexToRgba('#f8fafc', alphaStrong)})`;
   });
 
   const cardBg = computed(() => {
@@ -204,13 +206,13 @@ export const useVisualConfigStore = defineStore('visualConfig', () => {
       '--nexora-border-subtle': isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
       
       // Glass effects - opacity driven by transparency slider (30–95 → 0.30–0.95)
-      '--nexora-glass-bg':        isDark ? hexToRgba('#091224', transparency.value / 100)         : 'rgba(255, 255, 255, 0.95)',
-      '--nexora-glass-bg-strong': isDark ? hexToRgba('#091224', Math.min((transparency.value + 10) / 100, 1)) : 'rgba(255, 255, 255, 1.00)',
-      '--nexora-glass-bg-subtle': isDark ? `rgba(255, 255, 255, ${Math.max((100 - transparency.value) / 1000, 0.03).toFixed(3)})` : 'rgba(0, 0, 0, 0.03)',
-      '--nexora-glass-blur': isDark ? '16px' : '0px',
+      '--nexora-glass-bg':        isDark ? hexToRgba('#091224', transparency.value / 100)         : hexToRgba('#ffffff', Math.max(transparency.value / 100, 0.60)),
+      '--nexora-glass-bg-strong': isDark ? hexToRgba('#091224', Math.min((transparency.value + 10) / 100, 1)) : hexToRgba('#ffffff', Math.min((transparency.value + 10) / 100, 0.98)),
+      '--nexora-glass-bg-subtle': isDark ? `rgba(255, 255, 255, ${Math.max((100 - transparency.value) / 1000, 0.03).toFixed(3)})` : `rgba(0, 0, 0, ${Math.max((100 - transparency.value) / 1000, 0.02).toFixed(3)})`,
+      '--nexora-glass-blur': isDark ? '16px' : '12px',
       
       // Layout
-      '--nexora-sidebar-bg': isDark ? hexToRgba('#08101f', Math.min((transparency.value + 5) / 100, 0.98)) : 'rgba(248, 250, 252, 0.95)',
+      '--nexora-sidebar-bg': isDark ? hexToRgba('#08101f', Math.min((transparency.value + 5) / 100, 0.98)) : hexToRgba('#f8fafc', Math.min((transparency.value + 5) / 100, 0.98)),
       '--nexora-font-family': currentFont.value.family,
       '--nexora-font-size': `${fontSize.value}px`,
       '--nexora-corner': `${corner.value}px`,

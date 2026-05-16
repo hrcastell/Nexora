@@ -99,7 +99,6 @@ const logout = () => {
   <div 
     class="h-screen overflow-hidden transition-colors duration-300 flex"
     :style="{ 
-      background: configStore.shellBg, 
       color: configStore.textColor,
       fontFamily: configStore.currentFont.family
     }"
