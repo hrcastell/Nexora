@@ -150,16 +150,16 @@ export const useVisualConfigStore = defineStore('visualConfig', () => {
   
   const surface = computed(() => {
     if (mode.value === 'dark') {
-      // Dark mode: transparent glass effect with purple/gold hint
-      return `linear-gradient(180deg, ${hexToRgba('#0b1326', transparency.value / 100)}, ${hexToRgba('#08101f', 0.96)})`;
+      const alpha      = transparency.value / 100;
+      const alphaStrong = Math.min(alpha + 0.05, 1);
+      return `linear-gradient(180deg, ${hexToRgba('#0b1326', alpha)}, ${hexToRgba('#08101f', alphaStrong)})`;
     }
-    // Light mode: opaque surface preventing wallpaper visibility
     return `linear-gradient(180deg, #ffffff, #f8fafc)`;
   });
 
   const cardBg = computed(() => {
     if (mode.value === 'dark') {
-      return `rgba(9, 18, 36, ${transparency.value / 100})`; // #091224 with transparency
+      return hexToRgba('#091224', transparency.value / 100);
     }
     return 'rgba(255, 255, 255, 0.95)';
   });
@@ -203,14 +203,14 @@ export const useVisualConfigStore = defineStore('visualConfig', () => {
       '--nexora-border-color': isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)',
       '--nexora-border-subtle': isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
       
-      // Glass effects - dark: transparent, light: opaque
-      '--nexora-glass-bg': isDark ? 'rgba(9, 18, 36, 0.80)' : 'rgba(255, 255, 255, 0.95)',
-      '--nexora-glass-bg-strong': isDark ? 'rgba(9, 18, 36, 0.95)' : 'rgba(255, 255, 255, 1.00)',
-      '--nexora-glass-bg-subtle': isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.03)',
+      // Glass effects - opacity driven by transparency slider (30–95 → 0.30–0.95)
+      '--nexora-glass-bg':        isDark ? hexToRgba('#091224', transparency.value / 100)         : 'rgba(255, 255, 255, 0.95)',
+      '--nexora-glass-bg-strong': isDark ? hexToRgba('#091224', Math.min((transparency.value + 10) / 100, 1)) : 'rgba(255, 255, 255, 1.00)',
+      '--nexora-glass-bg-subtle': isDark ? `rgba(255, 255, 255, ${Math.max((100 - transparency.value) / 1000, 0.03).toFixed(3)})` : 'rgba(0, 0, 0, 0.03)',
       '--nexora-glass-blur': isDark ? '16px' : '0px',
       
       // Layout
-      '--nexora-sidebar-bg': isDark ? 'rgba(8, 16, 31, 0.95)' : 'rgba(248, 250, 252, 0.95)',
+      '--nexora-sidebar-bg': isDark ? hexToRgba('#08101f', Math.min((transparency.value + 5) / 100, 0.98)) : 'rgba(248, 250, 252, 0.95)',
       '--nexora-font-family': currentFont.value.family,
       '--nexora-font-size': `${fontSize.value}px`,
       '--nexora-corner': `${corner.value}px`,
