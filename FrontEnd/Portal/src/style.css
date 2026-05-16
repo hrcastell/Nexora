@@ -11,17 +11,24 @@
 .nxr-surface {
   background: var(--nexora-surface) !important;
   border-color: var(--nexora-border-color) !important;
+  border-radius: var(--nexora-corner-lg) !important;
 }
 
 .nxr-glass {
   background: var(--nexora-glass-bg) !important;
   border-color: var(--nexora-border-color) !important;
+  border-radius: var(--nexora-corner) !important;
 }
 
 .nxr-glass-strong {
   background: var(--nexora-glass-bg-strong) !important;
   border-color: var(--nexora-border-color) !important;
+  border-radius: var(--nexora-corner) !important;
 }
+
+/* --- Utility: dynamic corner radius --- */
+.nxr-corner    { border-radius: var(--nexora-corner) !important; }
+.nxr-corner-lg { border-radius: var(--nexora-corner-lg) !important; }
 
 /* --- Navigation active state (uses primary color dynamically) --- */
 .nxr-nav-active {
@@ -181,14 +188,10 @@
   backdrop-filter: blur(12px);
 }
 
-/* Sidebar: solid on mobile, transparent on desktop (shows wallpaper through) */
+/* Sidebar: uses --nexora-sidebar-bg on all viewports so transparency slider works.
+   The wallpaper still shows through because the var already has partial alpha. */
 .nxr-sidebar {
   background-color: var(--nexora-sidebar-bg);
-}
-@media (min-width: 768px) {
-  .nxr-sidebar {
-    background-color: transparent !important;
-  }
 }
 
 /* Hover state for nav items using accent color */
