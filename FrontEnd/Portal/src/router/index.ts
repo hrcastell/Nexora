@@ -11,7 +11,6 @@ import SolicitudesListView from '../views/admin/SolicitudesListView.vue'
 import VisualConfigView from '../views/VisualConfigView.vue'
 import UsersView from '../views/admin/UsersView.vue'
 import ReportsView from '../views/admin/ReportsView.vue'
-import ModulesView from '../views/admin/ModulesView.vue'
 import ModulesManagerView from '../views/admin/ModulesManagerView.vue'
 import ProfilesView from '../views/admin/ProfilesView.vue'
 import CommercialView from '../views/admin/CommercialView.vue'
@@ -81,14 +80,12 @@ const router = createRouter({
         {
           path: 'admin/modules',
           name: 'admin-modules',
-          component: ModulesView,
-          meta: { requiresModule: 'configuration', requiresTransaction: 'modules' }
+          component: ModulesManagerView,
+          meta: { requiresSuperAdmin: true, requiresModule: 'configuration', requiresTransaction: 'modules' }
         },
         {
           path: 'admin/modules-manager',
-          name: 'admin-modules-manager',
-          component: ModulesManagerView,
-          meta: { requiresSuperAdmin: true, requiresModule: 'configuration', requiresTransaction: 'modules' }
+          redirect: '/admin/modules'
         },
         {
           path: 'admin/commercial',
@@ -110,6 +107,39 @@ const router = createRouter({
         }
       ]
     },
+    // ── Business Cores ────────────────────────────────────────────────────────
+    // Patrón estándar para registrar un Core de negocio futuro.
+    // Cada Core corresponde a un módulo en public.module_catalog con
+    // category='business_core'. El guard `requiresModule` asegura que la
+    // empresa tenga el módulo habilitado en company_modules.
+    //
+    // Ejemplo para Core: Taller Mecánico (code='workshop')
+    // {
+    //   path: 'workshop/orders',
+    //   name: 'workshop-orders',
+    //   component: () => import('../views/workshop/screens_workshop_orders.vue'),
+    //   meta: { requiresModule: 'workshop', requiresTransaction: 'workshop_orders' }
+    // },
+    // {
+    //   path: 'workshop/orders/:id',
+    //   name: 'workshop-order-detail',
+    //   component: () => import('../views/workshop/screens_workshop_order_detail.vue'),
+    //   meta: { requiresModule: 'workshop', requiresTransaction: 'workshop_orders' }
+    // },
+    //
+    // Ejemplo para Core: Clientes (code='customers')
+    // {
+    //   path: 'customers',
+    //   name: 'customers-list',
+    //   component: () => import('../views/customers/screens_customers_list.vue'),
+    //   meta: { requiresModule: 'customers', requiresTransaction: 'customers_list' }
+    // },
+    //
+    // Para instalar un Core en una empresa: ModulesManagerView → toggle is_enabled
+    // Para que aparezca en el menú: agregar transacciones en public.module_transactions
+    // El sidebar en AdminLayout renderiza el módulo automáticamente cuando está habilitado.
+    // ─────────────────────────────────────────────────────────────────────────────
+
     {
       path: '/:pathMatch(.*)*',
       redirect: '/dashboard'

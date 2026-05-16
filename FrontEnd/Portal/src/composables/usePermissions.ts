@@ -1,6 +1,7 @@
 import { computed } from 'vue';
 import { useAuthStore } from '../stores/auth';
 import { useMenuStore } from '../stores/menu';
+import type { PermissionAction } from '../stores/menu';
 
 export function usePermissions() {
   const authStore = useAuthStore();
@@ -31,6 +32,22 @@ export function usePermissions() {
     return menuStore.hasTransaction(route);
   };
 
+  /**
+   * canDo(transactionCode, action) — verifica un permiso granular por transacción.
+   * - super_admin: siempre TRUE
+   * - Antes de que el menu cargue: TRUE (fallback permisivo para no bloquear UI)
+   * - Transacción no encontrada en el índice: FALSE
+   *
+   * Uso: canDo('users', 'can_delete'), canDo('companies', 'can_create')
+   */
+  const canDo = (transactionCode: string, action: PermissionAction): boolean => {
+    if (isSuperAdmin.value) return true;
+    if (!menuStore.loaded) return true;
+    const perms = menuStore.permissionIndex.get(transactionCode);
+    if (!perms) return false;
+    return perms[action] === true;
+  };
+
   const commercialAlert = computed(() => {
     const cs = commercialStatus.value;
     if (cs === 'pendiente_pago') return { type: 'warning', message: 'Tu empresa tiene un pago pendiente. Regulariza para evitar restricciones.' };
@@ -54,5 +71,6 @@ export function usePermissions() {
     commercialAlert,
     hasModule,
     hasTransaction,
+    canDo,
   };
 }

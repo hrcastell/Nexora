@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import api from '../../utils/axios';
-import { ArrowLeft, Loader2, FileText, DollarSign, Building2, Receipt, Users, Settings, UserPlus, Trash2, Shield, ShieldCheck, Palette, Check, RotateCcw, Upload } from 'lucide-vue-next';
+import { ArrowLeft, Loader2, FileText, DollarSign, Building2, Receipt, Users, Settings, UserPlus, Trash2, Shield, ShieldCheck, Palette, Check, RotateCcw, Upload, Puzzle, ToggleLeft, ToggleRight } from 'lucide-vue-next';
 import { useVisualConfigStore } from '../../stores/visualConfig';
 import ConfirmActionModal from '../../components/admin/ConfirmActionModal.vue';
 import AppToast, { type ToastItem, type ToastType } from '../../components/AppToast.vue';
@@ -85,13 +85,30 @@ interface CompanyConfig {
   font_family: string;
 }
 
+interface CompanyModule {
+  module_id: number;
+  code: string;
+  name: string;
+  description: string;
+  icon: string;
+  group_name: string;
+  category: string;
+  version: string;
+  is_enabled: boolean;
+  is_required: boolean;
+  is_core: boolean;
+  status: string;
+}
+
 const company = ref<Company | null>(null);
 const invoices = ref<Invoice[]>([]);
 const commercialPayments = ref<CommercialPayment[]>([]);
 const companyUsers = ref<CompanyUser[]>([]);
 const companyConfig = ref<CompanyConfig | null>(null);
+const companyModules = ref<CompanyModule[]>([]);
+const isTogglingModule = ref<Record<number, boolean>>({});
 const isLoading = ref(true);
-const activeTab = ref('details'); // 'details' | 'payments' | 'users' | 'config'
+const activeTab = ref('details'); // 'details' | 'payments' | 'users' | 'modules' | 'config'
 
 // Toast state
 const activeToast = ref<ToastItem | null>(null);
@@ -167,13 +184,14 @@ onMounted(async () => {
 const fetchData = async () => {
   isLoading.value = true;
   try {
-    const [companyRes, invoicesRes, cPaymentsRes, usersRes, configRes, rolesRes] = await Promise.allSettled([
+    const [companyRes, invoicesRes, cPaymentsRes, usersRes, configRes, rolesRes, modulesRes] = await Promise.allSettled([
       api.get(`/companies/${companyId}`),
       api.get(`/companies/${companyId}/invoices`),
       api.get(`/companies/${companyId}/payments`),
       api.get(`/companies/${companyId}/users`),
       api.get(`/companies/${companyId}/config`),
-      api.get(`/companies/${companyId}/roles`)
+      api.get(`/companies/${companyId}/roles`),
+      api.get(`/companies/${companyId}/modules`)
     ]);
 
     if (companyRes.status === 'fulfilled')   company.value            = companyRes.value.data;
@@ -182,6 +200,7 @@ const fetchData = async () => {
     if (usersRes.status === 'fulfilled')     companyUsers.value       = usersRes.value.data;
     if (configRes.status === 'fulfilled')    companyConfig.value      = configRes.value.data;
     if (rolesRes.status === 'fulfilled')     availableRoles.value     = rolesRes.value.data || [];
+    if (modulesRes.status === 'fulfilled')   companyModules.value     = modulesRes.value.data || [];
 
     const configData = configRes.status === 'fulfilled' ? configRes.value.data : null;
     if (configData) {
@@ -303,6 +322,34 @@ const saveConfig = async () => {
   }
 };
 
+const toggleModule = async (mod: CompanyModule) => {
+  if (mod.is_required || mod.is_core) {
+    triggerToast('No permitido', 'Los módulos base no pueden deshabilitarse.', 'error');
+    return;
+  }
+  isTogglingModule.value[mod.module_id] = true;
+  try {
+    const res = await api.put(`/companies/${companyId}/modules/${mod.code}`, {
+      is_enabled: !mod.is_enabled
+    });
+    mod.is_enabled = res.data?.is_enabled ?? !mod.is_enabled;
+    triggerToast(
+      mod.is_enabled ? 'Módulo activado' : 'Módulo desactivado',
+      `${mod.name} fue ${mod.is_enabled ? 'habilitado' : 'deshabilitado'} correctamente.`,
+      'success'
+    );
+  } catch (error: any) {
+    triggerToast('Error', error.response?.data?.error || 'No se pudo actualizar el módulo.', 'error');
+  } finally {
+    isTogglingModule.value[mod.module_id] = false;
+  }
+};
+
+const moduleCategoryLabel = (cat: string) => {
+  if (cat === 'business_core') return 'Core de Negocio';
+  return 'Base';
+};
+
 const formatDate = (dateString: string) => {
   if (!dateString) return '-';
   return new Date(dateString).toLocaleDateString('es-CL');
@@ -395,6 +442,16 @@ const getInvoiceStatusColor = (status: string) => {
           <Users class="h-4 w-4" />
           Usuarios
           <span class="rounded-full bg-white/10 px-1.5 py-0.5 text-xs">{{ companyUsers.length }}</span>
+        </button>
+        <button
+          @click="activeTab = 'modules'"
+          class="flex items-center gap-1.5 sm:gap-2 rounded-xl border px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-medium transition"
+          :class="activeTab === 'modules' ? 'nxr-nav-active' : 'border-transparent'"
+          :style="{ color: activeTab === 'modules' ? '' : mutedTextColor }"
+        >
+          <Puzzle class="h-4 w-4" />
+          Módulos
+          <span class="rounded-full bg-white/10 px-1.5 py-0.5 text-xs">{{ companyModules.filter(m => m.is_enabled).length }}</span>
         </button>
         <button
           @click="activeTab = 'config'"
@@ -617,6 +674,79 @@ const getInvoiceStatusColor = (status: string) => {
             </tr>
           </tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- Modules Tab -->
+    <div v-if="activeTab === 'modules'" class="space-y-4">
+      <div class="rounded-2xl border overflow-hidden" :style="{ backgroundColor: cardBg, borderColor: cardBorder }">
+        <div class="border-b p-4" :style="{ backgroundColor: tableHeaderBg, borderColor: cardBorder }">
+          <div class="flex items-center gap-2">
+            <Puzzle class="h-4 w-4" :style="{ color: mutedTextColor }" />
+            <h3 class="text-sm font-medium" :style="{ color: headerTextColor }">Módulos asignados</h3>
+          </div>
+          <p class="text-xs mt-0.5" :style="{ color: mutedTextColor }">
+            Activa o desactiva módulos para esta empresa. Los módulos base no pueden deshabilitarse.
+          </p>
+        </div>
+
+        <div v-if="companyModules.length === 0" class="p-8 text-center" :style="{ color: mutedTextColor }">
+          <Puzzle class="h-10 w-10 mx-auto mb-2 opacity-25" />
+          <p class="text-sm">No hay módulos asignados a esta empresa.</p>
+        </div>
+
+        <div v-else class="divide-y" :style="{ borderColor: cardBorder }">
+          <div
+            v-for="mod in companyModules"
+            :key="mod.module_id"
+            class="flex items-center gap-4 px-5 py-4 transition-colors"
+            @mouseover="(e) => (e.currentTarget as HTMLElement).style.backgroundColor = tableHoverBg"
+            @mouseleave="(e) => (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'"
+          >
+            <!-- Icon -->
+            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl"
+              :style="{ backgroundColor: mod.is_enabled ? 'rgba(212,175,55,0.12)' : 'rgba(148,163,184,0.08)', color: mod.is_enabled ? '#D4AF37' : '#64748b' }">
+              <Puzzle class="h-5 w-5" />
+            </div>
+
+            <!-- Info -->
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <p class="text-sm font-medium" :style="{ color: headerTextColor }">{{ mod.name }}</p>
+                <span class="text-xs rounded-full px-2 py-0.5 border"
+                  :class="mod.category === 'business_core'
+                    ? 'bg-purple-500/10 text-purple-300 border-purple-500/20'
+                    : 'bg-blue-500/10 text-blue-300 border-blue-500/20'">
+                  {{ moduleCategoryLabel(mod.category) }}
+                </span>
+                <span v-if="mod.version" class="text-xs rounded-full px-2 py-0.5 border bg-white/5 border-white/10" :style="{ color: mutedTextColor }">
+                  v{{ mod.version }}
+                </span>
+                <span v-if="mod.is_required || mod.is_core" class="text-xs rounded-full px-2 py-0.5 border bg-amber-500/10 text-amber-300 border-amber-500/20">
+                  Requerido
+                </span>
+              </div>
+              <p class="text-xs mt-0.5 truncate" :style="{ color: mutedTextColor }">{{ mod.description || mod.code }}</p>
+            </div>
+
+            <!-- Toggle -->
+            <button
+              @click="toggleModule(mod)"
+              :disabled="mod.is_required || mod.is_core || isTogglingModule[mod.module_id]"
+              class="shrink-0 flex items-center gap-2 rounded-2xl border px-3 py-1.5 text-xs font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
+              :style="{
+                backgroundColor: mod.is_enabled ? 'rgba(16,185,129,0.10)' : 'rgba(148,163,184,0.08)',
+                borderColor:     mod.is_enabled ? 'rgba(16,185,129,0.25)' : 'rgba(148,163,184,0.20)',
+                color:           mod.is_enabled ? '#6ee7b7' : '#94a3b8'
+              }"
+            >
+              <Loader2 v-if="isTogglingModule[mod.module_id]" class="h-4 w-4 animate-spin" />
+              <ToggleRight v-else-if="mod.is_enabled" class="h-4 w-4" />
+              <ToggleLeft v-else class="h-4 w-4" />
+              {{ mod.is_enabled ? 'Activo' : 'Inactivo' }}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
