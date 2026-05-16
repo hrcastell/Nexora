@@ -21,9 +21,14 @@ exports.getCompanyModules = async (req, res) => {
 
         const result = await db.query(
             `SELECT
-                m.id, m.code, m.name, m.description, m.icon, m.group_name,
+                m.id AS module_id, m.code, m.name, m.description, m.icon, m.group_name,
                 m.is_core, m.is_global, m.is_system, m.menu_order_default, m.status,
-                cm.id AS assignment_id, cm.is_enabled, cm.is_visible, cm.is_required,
+                COALESCE(m.category, 'core_base') AS category,
+                COALESCE(m.version,  '1.0.0')     AS version,
+                cm.id AS assignment_id,
+                COALESCE(cm.is_enabled,  FALSE) AS is_enabled,
+                COALESCE(cm.is_visible,  TRUE)  AS is_visible,
+                COALESCE(cm.is_required, FALSE) AS is_required,
                 cm.menu_order, cm.enabled_at, cm.disabled_at, cm.notes
              FROM public.module_catalog m
              LEFT JOIN public.company_modules cm
@@ -69,10 +74,9 @@ exports.upsertCompanyModule = async (req, res) => {
 
         await client.query('BEGIN');
 
-        const enabled    = is_enabled !== undefined ? !!is_enabled : true;
-        const visible    = is_visible !== undefined ? !!is_visible : true;
-        const orderVal   = Number.isFinite(menu_order) ? menu_order : null;
-        const disabledAt = enabled ? null : 'CURRENT_TIMESTAMP';
+        const enabled  = is_enabled !== undefined ? !!is_enabled : true;
+        const visible  = is_visible !== undefined ? !!is_visible : true;
+        const orderVal = Number.isFinite(menu_order) ? menu_order : null;
 
         const upsertQuery = `
             INSERT INTO public.company_modules

@@ -12,7 +12,11 @@ const db = require('../config/db');
  *   modules: [{
  *     id, code, name, icon, group_name, is_core, is_required,
  *     menu_order, is_visible,
- *     transactions: [{ id, code, name, route, icon, tab_order, menu_visible }]
+ *     transactions: [{
+ *       id, code, name, route, icon, tab_order, menu_visible,
+ *       can_view, can_create, can_edit, can_delete,
+ *       can_approve, can_export, can_admin
+ *     }]
  *   }]
  * }
  *
@@ -21,13 +25,14 @@ const db = require('../config/db');
  *   2. módulo habilitado (company_modules.is_enabled)
  *   3. transacción activa en catálogo
  *   4. perfil del usuario (profile_transaction_permissions.can_view) — super_admin omite este filtro
+ *   5. flags granulares adjuntados a cada transacción para uso de canDo() en frontend
  */
 exports.getMyMenu = async (req, res) => {
     try {
-        const companyId   = req.user.company_id;
+        const companyId    = req.user.company_id;
         const isSuperAdmin = req.user.is_super_admin === true;
-        const schema      = req.user.schema_name;
-        const userId      = req.user.id;
+        const schema       = req.user.schema_name;
+        const userId       = req.user.id;
 
         if (!companyId) {
             return res.status(400).json({ error: 'Contexto de empresa requerido' });
@@ -69,7 +74,10 @@ exports.getMyMenu = async (req, res) => {
 
         let allTx = txRes.rows;
 
-        // Filtrar por can_view del perfil cuando no es super_admin
+        // Mapa de flags granulares por transaction_code (vacío para super_admin)
+        // Para super_admin todos los flags son TRUE implícitamente — se añaden en el mapeo final.
+        const permsMap = new Map();
+
         if (!isSuperAdmin && schema) {
             try {
                 // Perfiles asignados al usuario en este tenant
@@ -80,30 +88,49 @@ exports.getMyMenu = async (req, res) => {
                 const profileIds = profilesRes.rows.map(r => r.profile_id);
 
                 if (profileIds.length > 0) {
-                    // Códigos de transacción donde al menos un perfil del usuario tiene can_view=TRUE
-                    const allowedRes = await db.query(
-                        `SELECT DISTINCT transaction_code
+                    // Flags consolidados: OR lógico entre todos los perfiles del usuario
+                    // (si cualquier perfil permite la acción, el usuario puede hacerla)
+                    const flagsRes = await db.query(
+                        `SELECT
+                            transaction_code,
+                            bool_or(can_view)    AS can_view,
+                            bool_or(can_create)  AS can_create,
+                            bool_or(can_edit)    AS can_edit,
+                            bool_or(can_delete)  AS can_delete,
+                            bool_or(can_approve) AS can_approve,
+                            bool_or(can_export)  AS can_export,
+                            bool_or(can_admin)   AS can_admin
                          FROM "${schema}".profile_transaction_permissions
                          WHERE profile_id = ANY($1::int[])
-                           AND can_view = TRUE`,
+                         GROUP BY transaction_code`,
                         [profileIds]
                     );
-                    const allowed = new Set(allowedRes.rows.map(r => r.transaction_code));
-                    allTx = allTx.filter(tx => allowed.has(tx.code));
+
+                    for (const row of flagsRes.rows) {
+                        permsMap.set(row.transaction_code, row);
+                    }
+
+                    // Filtrar transacciones visibles: solo las que can_view = TRUE
+                    allTx = allTx.filter(tx => permsMap.get(tx.code)?.can_view === true);
                 } else {
                     // Sin perfil asignado: no se muestra ninguna transacción
                     allTx = [];
                 }
             } catch {
-                // Si el schema no tiene la tabla aún, degradamos a mostrar todo
+                // Si el schema no tiene la tabla aún, degradamos a mostrar todo sin filtrar
             }
         }
 
-        // Agrupar transacciones por módulo
+        // Agrupar transacciones por módulo, adjuntando flags granulares
         const txByModule = {};
         for (const tx of allTx) {
             if (!txByModule[tx.module_id]) txByModule[tx.module_id] = [];
-            txByModule[tx.module_id].push(tx);
+
+            const flags = isSuperAdmin
+                ? { can_view: true, can_create: true, can_edit: true, can_delete: true, can_approve: true, can_export: true, can_admin: true }
+                : (permsMap.get(tx.code) ?? { can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_export: false, can_admin: false });
+
+            txByModule[tx.module_id].push({ ...tx, ...flags });
         }
 
         // Excluir módulos sin ninguna transacción visible (salvo super_admin)
