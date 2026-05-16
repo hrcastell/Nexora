@@ -54,6 +54,8 @@ interface CatalogModule {
   menu_visible_default: boolean;
   menu_order_default: number;
   status: string;
+  category?: string;
+  version?: string;
   transactions: CatalogTransaction[];
 }
 interface CompanyModuleAssignment {
@@ -318,6 +320,8 @@ onMounted(loadCatalog);
               <span class="text-xs rounded-full px-2 py-0.5 border" :class="statusBadgeClass(mod.status)">{{ mod.status }}</span>
               <span v-if="mod.is_core" class="text-[10px] rounded-full px-2 py-0.5 border bg-purple-500/10 text-purple-300 border-purple-500/20 uppercase tracking-wider">Core</span>
               <span v-else-if="mod.is_system" class="text-[10px] rounded-full px-2 py-0.5 border bg-blue-500/10 text-blue-300 border-blue-500/20 uppercase tracking-wider">Sistema</span>
+              <span v-if="mod.category === 'business_core'" class="text-[10px] rounded-full px-2 py-0.5 border bg-amber-500/10 text-amber-300 border-amber-500/20 uppercase tracking-wider">Negocio</span>
+              <span v-if="mod.version" class="text-[10px] rounded-full px-2 py-0.5 border bg-white/5 border-white/10" :style="{ color: mutedColor }">v{{ mod.version }}</span>
             </div>
             <p class="text-xs mt-0.5" :style="{ color: mutedColor }">
               <span class="font-mono">{{ mod.code }}</span>
