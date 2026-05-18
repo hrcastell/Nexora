@@ -104,6 +104,18 @@ const router = createRouter({
           name: 'admin-reports',
           component: ReportsView,
           meta: { requiresSuperAdmin: true, requiresModule: 'configuration', requiresTransaction: 'reports' }
+        },
+        {
+          path: 'admin/notifications',
+          name: 'admin-notifications',
+          component: () => import('../views/admin/screens_notifications_center.vue'),
+          meta: { requiresModule: 'configuration', requiresTransaction: 'notifications' }
+        },
+        {
+          path: 'admin/notifications/settings',
+          name: 'admin-notifications-settings',
+          component: () => import('../views/admin/screens_notification_preferences.vue'),
+          meta: { requiresModule: 'configuration', requiresTransaction: 'notification_settings' }
         }
       ]
     },
