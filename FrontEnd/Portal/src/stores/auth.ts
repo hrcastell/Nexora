@@ -116,9 +116,13 @@ export const useAuthStore = defineStore('auth', () => {
       visualConfig.setUser(response.data.user.id);
       await visualConfig.loadFromApi();
 
-      // Load dynamic menu (modules + transactions) for this company
-      const menuStore = useMenuStore();
-      await menuStore.loadMenu();
+      // Only load the menu when there is a company context in the token.
+      // A pre-auth token (returned by /auth/login before selectCompany) has
+      // company_id = null, which causes menuController to return 400.
+      if (response.data.context?.company_id) {
+        const menuStore = useMenuStore();
+        await menuStore.loadMenu();
+      }
 
       return true;
     } catch (error: any) {
