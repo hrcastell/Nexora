@@ -10,6 +10,16 @@ const notifStore = useNotificationsStore();
 
 const isOpen = ref(false);
 const dropdownRef = ref<HTMLElement | null>(null);
+const bellButtonRef = ref<HTMLElement | null>(null);
+
+const dropdownStyle = computed(() => {
+  if (!bellButtonRef.value) return {};
+  const rect = bellButtonRef.value.getBoundingClientRect();
+  return {
+    top:   `${rect.bottom + 8}px`,
+    right: `${window.innerWidth - rect.right}px`,
+  };
+});
 
 const recentNotifications = computed<Notification[]>(() =>
   notifStore.notifications.slice(0, 5)
@@ -101,6 +111,7 @@ function timeAgo(dateStr: string): string {
   <div ref="dropdownRef" class="relative">
     <!-- Bell button -->
     <button
+      ref="bellButtonRef"
       @click="toggle"
       class="relative flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-slate-300 transition hover:bg-white/10 hover:text-white"
       :title="'Notificaciones'"
@@ -115,11 +126,14 @@ function timeAgo(dateStr: string): string {
       </span>
     </button>
 
-    <!-- Dropdown panel -->
+    <!-- Dropdown panel — teleported to body to escape parent stacking contexts -->
+    <Teleport to="body">
     <Transition name="dropdown">
       <div
         v-if="isOpen"
-        class="absolute right-0 top-12 z-50 w-80 rounded-[24px] border border-white/10 bg-[#0b1326]/95 shadow-2xl shadow-black/40 backdrop-blur-xl"
+        ref="dropdownPanelRef"
+        class="fixed z-[200] w-80 rounded-[24px] border border-white/10 bg-[#0b1326]/95 shadow-2xl shadow-black/40 backdrop-blur-xl"
+        :style="dropdownStyle"
       >
         <!-- Header -->
         <div class="flex items-center justify-between border-b border-white/10 px-4 py-3">
@@ -213,6 +227,7 @@ function timeAgo(dateStr: string): string {
         </div>
       </div>
     </Transition>
+    </Teleport>
   </div>
 </template>
 
