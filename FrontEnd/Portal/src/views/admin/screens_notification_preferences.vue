@@ -23,7 +23,9 @@ const form = reactive({
   }
 });
 
-const CATEGORY_LABELS: Record<string, { label: string; description: string }> = {
+type CategoryKey = keyof typeof form.categories;
+
+const CATEGORY_LABELS: Record<CategoryKey, { label: string; description: string }> = {
   system:        { label: 'Sistema',        description: 'Notificaciones del sistema y mantenimiento' },
   users:         { label: 'Usuarios',       description: 'Creación y cambios en usuarios' },
   subscriptions: { label: 'Suscripciones',  description: 'Cambios en planes y suscripciones' },
@@ -31,6 +33,8 @@ const CATEGORY_LABELS: Record<string, { label: string; description: string }> = 
   billing:       { label: 'Facturación',    description: 'Cobros, pagos y facturas' },
   modules:       { label: 'Módulos',        description: 'Activación y desactivación de módulos' },
 };
+
+const categoryKeys = Object.keys(CATEGORY_LABELS) as CategoryKey[];
 
 onMounted(async () => {
   await notifStore.fetchPreferences();
@@ -140,19 +144,19 @@ function toggleAll() {
 
       <div class="space-y-3">
         <div
-          v-for="(info, key) in CATEGORY_LABELS"
+          v-for="key in categoryKeys"
           :key="key"
           class="flex items-center justify-between rounded-2xl border border-white/5 bg-white/2 px-4 py-3 transition hover:bg-white/5"
         >
           <div>
-            <p class="text-xs font-medium text-slate-200">{{ info.label }}</p>
-            <p class="mt-0.5 text-[11px] text-slate-600">{{ info.description }}</p>
+            <p class="text-xs font-medium text-slate-200">{{ CATEGORY_LABELS[key].label }}</p>
+            <p class="mt-0.5 text-[11px] text-slate-600">{{ CATEGORY_LABELS[key].description }}</p>
           </div>
           <button
-            @click="form.categories[key as keyof typeof form.categories] = !form.categories[key as keyof typeof form.categories]"
+            @click="form.categories[key] = !form.categories[key]"
             :class="[
               'relative flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border transition-colors duration-200',
-              form.categories[key as keyof typeof form.categories]
+              form.categories[key]
                 ? 'border-violet-500/60 bg-violet-500/30'
                 : 'border-white/10 bg-white/10'
             ]"
@@ -160,7 +164,7 @@ function toggleAll() {
             <span
               :class="[
                 'absolute h-4 w-4 rounded-full bg-white shadow transition-transform duration-200',
-                form.categories[key as keyof typeof form.categories] ? 'translate-x-6' : 'translate-x-1'
+                form.categories[key] ? 'translate-x-6' : 'translate-x-1'
               ]"
             />
           </button>
