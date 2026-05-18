@@ -4,6 +4,7 @@ import api from '../utils/axios';
 import type { User, Company } from '../types/auth';
 import { useVisualConfigStore } from './visualConfig';
 import { useMenuStore } from './menu';
+import { resetAuthCheckPromise } from '../router';
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<User | null>(null);
@@ -52,6 +53,10 @@ export const useAuthStore = defineStore('auth', () => {
       localStorage.setItem('token', finalToken);
       localStorage.setItem('currentCompany', JSON.stringify(company));
       localStorage.setItem('nexora_read_only', read_only ? '1' : '0');
+
+      // Reset the router's auth-check promise so the next beforeEach
+      // re-validates with the new company-scoped token (which has company_id).
+      resetAuthCheckPromise();
       
       // Load dynamic menu (modules + transactions) for this company
       const menuStore = useMenuStore();

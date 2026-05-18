@@ -165,6 +165,12 @@ const router = createRouter({
 // would call checkAuth() independently, causing intermittent logouts.
 let authCheckPromise: Promise<boolean> | null = null
 
+// Called by selectCompany() after a new company-scoped token is stored,
+// so the next beforeEach re-runs checkAuth() with the definitive token.
+export function resetAuthCheckPromise() {
+  authCheckPromise = null
+}
+
 router.beforeEach(async (to, _from, next) => {
   const authStore = useAuthStore()
   const menuStore = useMenuStore()
