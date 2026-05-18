@@ -21,26 +21,12 @@ api.interceptors.request.use(
   }
 );
 
-// Interceptor to handle errors (e.g., 401 Unauthorized)
+// Interceptor to handle errors — only reject, never redirect directly.
+// Logout/redirect decisions belong to the auth store and router guard,
+// not here. Doing it here caused double-logout races on mobile refresh.
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response && error.response.status === 401) {
-      const msg: string = error.response.data?.error ?? '';
-      const isRealAuthFailure =
-        msg.includes('Token expirado') ||
-        msg.includes('Token inválido') ||
-        msg.includes('No token') ||
-        msg.includes('no encontrado o inactivo');
-      if (isRealAuthFailure && !window.location.pathname.includes('/login')) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('currentCompany');
-        localStorage.removeItem('nexora_read_only');
-        window.location.href = '/login';
-      }
-    }
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
 export default api;

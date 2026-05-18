@@ -147,18 +147,23 @@ const router = createRouter({
   ]
 })
 
-let authChecked = false
+// Shared promise for the initial token validation.
+// Using a Promise instead of a boolean flag prevents race conditions on
+// mobile where multiple navigations can fire during bootstrap and each
+// would call checkAuth() independently, causing intermittent logouts.
+let authCheckPromise: Promise<boolean> | null = null
 
 router.beforeEach(async (to, _from, next) => {
   const authStore = useAuthStore()
   const menuStore = useMenuStore()
 
-  // On first navigation, validate persisted token against the server
-  if (!authChecked && authStore.token) {
-    authChecked = true
-    await authStore.checkAuth()
-  } else {
-    authChecked = true
+  // On first navigation, validate persisted token against the server.
+  // All concurrent navigations share the same promise so checkAuth() runs once.
+  if (authStore.token && !authCheckPromise) {
+    authCheckPromise = authStore.checkAuth()
+  }
+  if (authCheckPromise) {
+    await authCheckPromise
   }
 
   const isAuthenticated = authStore.isAuthenticated

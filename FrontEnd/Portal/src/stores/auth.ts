@@ -83,15 +83,23 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function checkAuth() {
     if (!token.value) return false;
-    
+
+    // Hydrate persisted state BEFORE the network call so that if the
+    // request fails (slow mobile, timeout, 5xx) the UI is already restored
+    // and the router guard doesn't see an empty currentCompany.
+    if (!currentCompany.value) {
+      const storedCompany = localStorage.getItem('currentCompany');
+      if (storedCompany) {
+        try { currentCompany.value = JSON.parse(storedCompany); } catch { /* ignore */ }
+      }
+    }
+    if (!readOnly.value) {
+      readOnly.value = localStorage.getItem('nexora_read_only') === '1';
+    }
+
     try {
       const response = await api.get('/auth/me');
       user.value = response.data.user;
-      
-      const storedCompany = localStorage.getItem('currentCompany');
-      if (storedCompany) {
-        currentCompany.value = JSON.parse(storedCompany);
-      }
 
       if (response.data.context) {
         readOnly.value = !!response.data.context.read_only;
@@ -101,8 +109,6 @@ export const useAuthStore = defineStore('auth', () => {
             commercial_status: response.data.context.commercial_status
           };
         }
-      } else {
-        readOnly.value = localStorage.getItem('nexora_read_only') === '1';
       }
 
       // Load user-specific visual config (localStorage first, then DB)
@@ -117,7 +123,8 @@ export const useAuthStore = defineStore('auth', () => {
       return true;
     } catch (error: any) {
       // Only clear session on actual auth rejections (401/403).
-      // Do NOT logout on 500 or network errors — that would wipe a valid token.
+      // Network errors (timeout, 5xx, offline) must NOT wipe a valid token —
+      // that is the main cause of mobile-refresh logout.
       const status = error?.response?.status;
       if (status === 401 || status === 403) {
         logout();
