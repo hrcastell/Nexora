@@ -68,6 +68,7 @@ app.use('/api/profiles',                   require('./routes/profilesRoutes'));
 app.use('/api/catalog',                    require('./routes/catalogRoutes'));
 app.use('/api/menu',                       require('./routes/menuRoutes'));
 app.use('/api/companies/:id/modules',      require('./routes/companyModulesRoutes'));
+app.use('/api/notifications',              require('./routes/notificationsRoutes'));
 
 const authMiddleware  = require('./middleware/authMiddleware');
 const usersController = require('./controllers/usersController');

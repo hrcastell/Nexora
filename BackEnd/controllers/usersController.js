@@ -2,6 +2,7 @@ const db     = require('../config/db');
 const bcrypt = require('bcryptjs');
 const path   = require('path');
 const fs     = require('fs');
+const { createNotification } = require('../utils/notifications');
 
 const isSuperAdmin = (req) => req.user.is_super_admin === true;
 const isAdmin      = (req) => isSuperAdmin(req) || req.user.role === 'admin';
@@ -283,6 +284,18 @@ exports.inviteUser = async (req, res) => {
         }
 
         await client.query('COMMIT');
+
+        // Notificar al administrador que creó el usuario
+        createNotification({
+            userId:    req.user.id,
+            companyId: Number(companyId),
+            type:      'success',
+            category:  'users',
+            title:     'Usuario creado',
+            body:      `El usuario ${displayName} (${email}) fue creado correctamente.`,
+            actionUrl: `/admin/users`
+        });
+
         res.status(201).json({ message: 'Usuario creado correctamente', userId });
 
     } catch (error) {

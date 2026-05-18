@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const { createNotification } = require('../utils/notifications');
 
 const isSuperAdmin = (req) => req.user?.is_super_admin === true;
 const isAdmin      = (req) => isSuperAdmin(req) || req.user?.role === 'admin';
@@ -100,6 +101,18 @@ exports.upsertCompanyModule = async (req, res) => {
         ]);
 
         await client.query('COMMIT');
+
+        const actionLabel = enabled ? 'habilitado' : 'deshabilitado';
+        createNotification({
+            userId:    req.user.id,
+            companyId: Number(companyId),
+            type:      enabled ? 'success' : 'warning',
+            category:  'modules',
+            title:     `Módulo ${actionLabel}`,
+            body:      `El módulo '${moduleCode}' fue ${actionLabel} en la empresa.`,
+            actionUrl: `/admin/modules`
+        });
+
         res.json(result.rows[0]);
     } catch (error) {
         await client.query('ROLLBACK');
