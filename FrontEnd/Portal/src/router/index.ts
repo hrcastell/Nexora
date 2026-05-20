@@ -125,32 +125,114 @@ const router = createRouter({
     // category='business_core'. El guard `requiresModule` asegura que la
     // empresa tenga el módulo habilitado en company_modules.
     //
-    // Ejemplo para Core: Taller Mecánico (code='workshop')
-    // {
-    //   path: 'workshop/orders',
-    //   name: 'workshop-orders',
-    //   component: () => import('../views/workshop/screens_workshop_orders.vue'),
-    //   meta: { requiresModule: 'workshop', requiresTransaction: 'workshop_orders' }
-    // },
-    // {
-    //   path: 'workshop/orders/:id',
-    //   name: 'workshop-order-detail',
-    //   component: () => import('../views/workshop/screens_workshop_order_detail.vue'),
-    //   meta: { requiresModule: 'workshop', requiresTransaction: 'workshop_orders' }
-    // },
-    //
-    // Ejemplo para Core: Clientes (code='customers')
-    // {
-    //   path: 'customers',
-    //   name: 'customers-list',
-    //   component: () => import('../views/customers/screens_customers_list.vue'),
-    //   meta: { requiresModule: 'customers', requiresTransaction: 'customers_list' }
-    // },
-    //
     // Para instalar un Core en una empresa: ModulesManagerView → toggle is_enabled
     // Para que aparezca en el menú: agregar transacciones en public.module_transactions
     // El sidebar en AdminLayout renderiza el módulo automáticamente cuando está habilitado.
     // ─────────────────────────────────────────────────────────────────────────────
+
+    // ── Core 1: Garage Operations (code='garage_operations') ─────────────────
+    {
+      path: '/',
+      component: AdminLayout,
+      meta: { requiresAuth: true, requiresCompany: true },
+      children: [
+        {
+          path: 'garage',
+          name: 'garage-dashboard',
+          component: () => import('../views/garage/screens_garage_dashboard.vue'),
+          meta: { requiresModule: 'garage_operations', requiresTransaction: 'garage_dashboard' }
+        },
+        {
+          path: 'garage/dashboard',
+          redirect: '/garage'
+        },
+        {
+          path: 'garage/customers',
+          name: 'garage-customers',
+          component: () => import('../views/garage/screens_garage_customers.vue'),
+          meta: { requiresModule: 'garage_operations', requiresTransaction: 'garage_customers' }
+        },
+        {
+          path: 'garage/customers/:id',
+          name: 'garage-customer-detail',
+          component: () => import('../views/garage/screens_garage_customer_detail.vue'),
+          meta: { requiresModule: 'garage_operations', requiresTransaction: 'garage_customers' }
+        },
+        {
+          path: 'garage/vehicles',
+          name: 'garage-vehicles',
+          component: () => import('../views/garage/screens_garage_vehicles.vue'),
+          meta: { requiresModule: 'garage_operations', requiresTransaction: 'garage_vehicles' }
+        },
+        {
+          path: 'garage/vehicles/:id',
+          name: 'garage-vehicle-detail',
+          component: () => import('../views/garage/screens_garage_vehicle_detail.vue'),
+          meta: { requiresModule: 'garage_operations', requiresTransaction: 'garage_vehicles' }
+        },
+        {
+          path: 'garage/vehicles/search',
+          name: 'garage-vehicle-search',
+          component: () => import('../views/garage/screens_garage_vehicle_search.vue'),
+          meta: { requiresModule: 'garage_operations', requiresTransaction: 'garage_vehicles' }
+        },
+        {
+          path: 'garage/appointments',
+          name: 'garage-appointments',
+          component: () => import('../views/garage/screens_garage_appointments.vue'),
+          meta: { requiresModule: 'garage_operations', requiresTransaction: 'garage_appointments' }
+        },
+        {
+          path: 'garage/work-orders',
+          name: 'garage-work-orders',
+          component: () => import('../views/garage/screens_garage_work_orders.vue'),
+          meta: { requiresModule: 'garage_operations', requiresTransaction: 'garage_work_orders' }
+        },
+        {
+          path: 'garage/work-orders/:id',
+          name: 'garage-work-order-detail',
+          component: () => import('../views/garage/screens_garage_work_order_detail.vue'),
+          meta: { requiresModule: 'garage_operations', requiresTransaction: 'garage_work_orders' }
+        },
+        {
+          path: 'garage/employees',
+          name: 'garage-employees',
+          component: () => import('../views/garage/screens_garage_employees.vue'),
+          meta: { requiresModule: 'garage_operations', requiresTransaction: 'garage_employees' }
+        },
+        {
+          path: 'garage/labor-rates',
+          name: 'garage-labor-rates',
+          component: () => import('../views/garage/screens_garage_labor_rates.vue'),
+          meta: { requiresModule: 'garage_operations', requiresTransaction: 'garage_labor_rates' }
+        },
+        {
+          path: 'garage/products',
+          name: 'garage-products',
+          component: () => import('../views/garage/screens_garage_products.vue'),
+          meta: { requiresModule: 'garage_operations', requiresTransaction: 'garage_products' }
+        },
+        {
+          path: 'garage/service-templates',
+          name: 'garage-service-templates',
+          component: () => import('../views/garage/screens_garage_service_templates.vue'),
+          meta: { requiresModule: 'garage_operations', requiresTransaction: 'garage_service_templates' }
+        },
+        {
+          path: 'garage/catalogs',
+          name: 'garage-catalogs',
+          component: () => import('../views/garage/screens_garage_catalogs.vue'),
+          meta: { requiresModule: 'garage_operations', requiresTransaction: 'garage_catalogs' }
+        },
+        {
+          path: 'garage/settings',
+          name: 'garage-settings',
+          component: () => import('../views/garage/screens_garage_settings.vue'),
+          meta: { requiresModule: 'garage_operations', requiresTransaction: 'garage_settings' }
+        },
+      ]
+    },
+    // ─────────────────────────────────────────────────────────────────────────
 
     {
       path: '/:pathMatch(.*)*',

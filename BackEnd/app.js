@@ -70,6 +70,12 @@ app.use('/api/menu',                       require('./routes/menuRoutes'));
 app.use('/api/companies/:id/modules',      require('./routes/companyModulesRoutes'));
 app.use('/api/notifications',              require('./routes/notificationsRoutes'));
 
+// ── Core 1: Garage Operations ──────────────────────────────────
+// Ruta directa (usuario opera en su propia empresa del token)
+app.use('/api/garage',                     require('./routes/garage/garageRoutes'));
+// Ruta cross-company (super_admin opera en empresa específica)
+app.use('/api/companies/:id/garage',       require('./routes/garage/garageRoutes'));
+
 const authMiddleware  = require('./middleware/authMiddleware');
 const usersController = require('./controllers/usersController');
 const upload          = require('./utils/upload');
