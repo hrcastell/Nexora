@@ -73,7 +73,7 @@ const navModules = computed(() => {
     .map(m => ({
       ...m,
       visibleTransactions: m.transactions.filter(
-        t => t.menu_visible && t.status === 'activo' && t.route
+        t => t.menu_visible && t.status === 'activo' && t.route && t.can_view === true
       )
     }))
     .filter(m => m.visibleTransactions.length > 0);
@@ -155,8 +155,9 @@ const logout = () => {
         <p class="px-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Menú</p>
         <div class="mt-3 space-y-2">
 
-          <!-- Dashboard (always visible) -->
+          <!-- Dashboard global — solo visible para super_admin (métricas del sistema) -->
           <router-link
+            v-if="authStore.user?.is_super_admin"
             to="/dashboard"
             :class="[
               'flex w-full items-center gap-3 rounded-2xl border px-4 py-3 text-left transition',

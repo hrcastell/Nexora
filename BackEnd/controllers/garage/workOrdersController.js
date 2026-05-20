@@ -1,6 +1,11 @@
+const path = require('path');
+const fs   = require('fs');
 const db = require('../../config/db');
 const { resolveSchema }        = require('../../utils/tenantResolver');
 const { recalculateTotals }    = require('../../utils/calculateWorkOrderTotals');
+const { makeGarageUpload }     = require('../../utils/upload');
+
+const workOrderPhotoUpload = makeGarageUpload('vehicles', 10);
 
 const VALID_STATUSES = ['draft', 'received', 'diagnosis', 'approved', 'in_progress', 'waiting_parts', 'completed', 'delivered', 'cancelled'];
 
@@ -38,7 +43,9 @@ exports.list = async (req, res) => {
                     wo.customer_id, wo.vehicle_id, wo.assigned_employee_id,
                     c.first_name || ' ' || COALESCE(c.last_name,'') AS customer_name,
                     vb.name || ' ' || COALESCE(vm.name,'') AS vehicle_desc, v.plate,
-                    e.first_name || ' ' || COALESCE(e.last_name,'') AS employee_name
+                    e.first_name || ' ' || COALESCE(e.last_name,'') AS employee_name,
+                    (SELECT photo_url FROM ${schema}.vehicle_photos
+                     WHERE work_order_id = wo.id ORDER BY created_at ASC LIMIT 1) AS first_photo_url
              FROM ${schema}.work_orders wo
              LEFT JOIN ${schema}.customers c        ON c.id = wo.customer_id
              LEFT JOIN ${schema}.vehicles v         ON v.id = wo.vehicle_id
@@ -102,12 +109,32 @@ exports.getById = async (req, res) => {
             [req.params.id]
         );
 
+        // Issue 10A: load products for each service so UI shows them after add/remove
+        const serviceIds = services.rows.map(s => s.id);
+        let productsByService = {};
+        if (serviceIds.length > 0) {
+            const prodsRes = await db.query(
+                `SELECT * FROM ${schema}.work_order_service_products
+                 WHERE work_order_service_id = ANY($1::int[])
+                 ORDER BY id ASC`,
+                [serviceIds]
+            );
+            for (const p of prodsRes.rows) {
+                if (!productsByService[p.work_order_service_id]) productsByService[p.work_order_service_id] = [];
+                productsByService[p.work_order_service_id].push(p);
+            }
+        }
+        const servicesWithProducts = services.rows.map(s => ({
+            ...s,
+            products: productsByService[s.id] || []
+        }));
+
         const history = await db.query(
             `SELECT * FROM ${schema}.work_order_status_history WHERE work_order_id = $1 ORDER BY created_at ASC`,
             [req.params.id]
         );
 
-        res.json({ ...woRes.rows[0], services: services.rows, history: history.rows });
+        res.json({ ...woRes.rows[0], services: servicesWithProducts, history: history.rows });
     } catch (err) {
         console.error('workOrdersController.getById error:', err.message);
         res.status(err.statusCode || 500).json({ error: err.message || 'Error al obtener orden' });
@@ -384,5 +411,91 @@ exports.cancel = async (req, res) => {
         res.status(err.statusCode || 500).json({ error: err.message || 'Error al cancelar orden' });
     } finally {
         client.release();
+    }
+};
+
+// ─── FOTOS DE ORDEN DE TRABAJO ─────────────────────────────────
+
+/**
+ * GET /garage/work-orders/:id/photos
+ */
+exports.listPhotos = async (req, res) => {
+    try {
+        const { schema } = await resolveSchema(req);
+        const result = await db.query(
+            `SELECT * FROM ${schema}.vehicle_photos
+             WHERE work_order_id = $1
+             ORDER BY stage ASC, sort_order ASC, created_at ASC`,
+            [req.params.id]
+        );
+        res.json(result.rows);
+    } catch (err) {
+        console.error('workOrdersController.listPhotos error:', err.message);
+        res.status(err.statusCode || 500).json({ error: err.message || 'Error al obtener fotos' });
+    }
+};
+
+/**
+ * POST /garage/work-orders/:id/photos
+ * Middleware: injectGarageSchema, workOrderPhotoUpload.single('photo')
+ */
+exports.uploadPhoto = [
+    workOrderPhotoUpload.single('photo'),
+    async (req, res) => {
+        try {
+            if (!req.file) return res.status(400).json({ error: 'No se proporcionó ningún archivo' });
+            const { schema } = await resolveSchema(req);
+            const woCheck = await db.query(
+                `SELECT id, vehicle_id FROM ${schema}.work_orders WHERE id = $1`, [req.params.id]
+            );
+            if (woCheck.rows.length === 0) {
+                fs.unlinkSync(req.file.path);
+                return res.status(404).json({ error: 'Orden no encontrada' });
+            }
+            const vehicleId = woCheck.rows[0].vehicle_id;
+            const { stage = 'entry', caption, sort_order } = req.body;
+            if (!['entry', 'delivery'].includes(stage)) {
+                fs.unlinkSync(req.file.path);
+                return res.status(400).json({ error: 'stage debe ser entry o delivery' });
+            }
+            const photoUrl = `/uploads/garage/vehicles/${schema}/${req.file.filename}`;
+            const result = await db.query(
+                `INSERT INTO ${schema}.vehicle_photos
+                 (vehicle_id, work_order_id, photo_url, stage, caption, sort_order, uploaded_by)
+                 VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *`,
+                [vehicleId, req.params.id, photoUrl, stage,
+                 caption || null, sort_order != null ? parseInt(sort_order) : 0, req.user?.id || null]
+            );
+            res.status(201).json(result.rows[0]);
+        } catch (err) {
+            if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+            console.error('workOrdersController.uploadPhoto error:', err.message);
+            res.status(err.statusCode || 500).json({ error: err.message || 'Error al subir foto' });
+        }
+    }
+];
+
+/**
+ * DELETE /garage/work-orders/:id/photos/:photoId
+ */
+exports.deletePhoto = async (req, res) => {
+    try {
+        if (req.user?.read_only) return res.status(403).json({ error: 'Operación no permitida en modo solo lectura' });
+        const { schema } = await resolveSchema(req);
+        const existing = await db.query(
+            `SELECT photo_url FROM ${schema}.vehicle_photos WHERE id = $1 AND work_order_id = $2`,
+            [req.params.photoId, req.params.id]
+        );
+        if (existing.rows.length === 0) return res.status(404).json({ error: 'Foto no encontrada' });
+        const photoUrl = existing.rows[0].photo_url;
+        await db.query(`DELETE FROM ${schema}.vehicle_photos WHERE id = $1`, [req.params.photoId]);
+        if (photoUrl) {
+            const filePath = path.join(__dirname, '..', '..', photoUrl);
+            if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+        }
+        res.json({ message: 'Foto eliminada' });
+    } catch (err) {
+        console.error('workOrdersController.deletePhoto error:', err.message);
+        res.status(err.statusCode || 500).json({ error: err.message || 'Error al eliminar foto' });
     }
 };

@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ArrowLeft, Edit, RefreshCw, ArrowRight } from 'lucide-vue-next';
+import { ArrowLeft, Edit, RefreshCw, ArrowRight, CreditCard } from 'lucide-vue-next';
+import api from '../../utils/axios';
 import { useGarageWorkOrdersStore } from '../../stores/garageWorkOrders';
 import widgets_garage_work_order_status_badge from '../../widgets/widgets_garage_work_order_status_badge.vue';
 import widgets_garage_work_order_services_editor from '../../widgets/widgets_garage_work_order_services_editor.vue';
 import widgets_garage_change_status_modal from '../../widgets/widgets_garage_change_status_modal.vue';
 import widgets_garage_work_order_form_modal from '../../widgets/widgets_garage_work_order_form_modal.vue';
-import type { WorkOrderStatus } from '../../types/garage';
+import widgets_garage_vehicle_photo_gallery from '../../widgets/widgets_garage_vehicle_photo_gallery.vue';
+import type { WorkOrderStatus, VehiclePhoto } from '../../types/garage';
 
 const route  = useRoute();
 const router = useRouter();
@@ -15,8 +17,34 @@ const store  = useGarageWorkOrdersStore();
 
 const showStatusModal = ref(false);
 const showEdit        = ref(false);
-const activeTab       = ref<'services' | 'info' | 'history'>('services');
+const activeTab       = ref<'services' | 'photos' | 'info' | 'history'>('services');
 const recalcLoading   = ref(false);
+const photos          = ref<VehiclePhoto[]>([]);
+const photosLoaded    = ref(false);
+
+async function loadPhotos() {
+  if (!store.current) return;
+  const res = await api.get(`/garage/work-orders/${store.current.id}/photos`);
+  photos.value = res.data;
+  photosLoaded.value = true;
+}
+
+async function onPhotoUpload(file: File, stage: 'entry' | 'delivery') {
+  if (!store.current) return;
+  const formData = new FormData();
+  formData.append('photo', file);
+  formData.append('stage', stage);
+  await api.post(`/garage/work-orders/${store.current.id}/photos`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  });
+  await loadPhotos();
+}
+
+async function onPhotoDelete(photoId: number) {
+  if (!store.current) return;
+  await api.delete(`/garage/work-orders/${store.current.id}/photos/${photoId}`);
+  photos.value = photos.value.filter(p => p.id !== photoId);
+}
 
 onMounted(async () => {
   const id = parseInt(route.params.id as string);
@@ -54,6 +82,13 @@ const PRIORITY_LABEL: Record<string, string> = { low: 'Baja', normal: 'Normal', 
       <div class="flex items-center gap-2">
         <button class="flex items-center gap-2 px-3 py-2 rounded-xl text-sm bg-white/10 text-white hover:bg-white/20 transition-colors" @click="showEdit = true">
           <Edit :size="14" /> Editar
+        </button>
+        <button
+          v-if="store.current"
+          class="flex items-center gap-2 px-3 py-2 rounded-xl text-sm bg-white/10 text-white hover:bg-white/20 transition-colors"
+          @click="router.push(`/garage/work-orders/${store.current.id}/payments`)"
+        >
+          <CreditCard :size="14" /> Cobros
         </button>
         <button
           v-if="store.current && !['delivered','cancelled'].includes(store.current.status)"
@@ -108,13 +143,14 @@ const PRIORITY_LABEL: Record<string, string> = { low: 'Baja', normal: 'Normal', 
         </div>
       </div>
 
-      <div class="flex gap-2">
-        <button v-for="tab in ['services','info','history']" :key="tab"
+      <div class="flex gap-2 flex-wrap">
+        <button
+          v-for="tab in ['services','photos','info','history']" :key="tab"
           class="px-4 py-2 rounded-xl text-sm transition-colors"
           :class="activeTab === tab ? 'bg-[var(--nexora-primary)] text-white' : 'bg-white/5 text-white/60 hover:bg-white/10'"
-          @click="activeTab = tab as 'services' | 'info' | 'history'"
+          @click="activeTab = tab as 'services' | 'photos' | 'info' | 'history'; if(tab==='photos' && !photosLoaded) loadPhotos()"
         >
-          {{ tab === 'services' ? `Servicios (${store.current.services?.length ?? 0})` : tab === 'info' ? 'Información' : 'Historial' }}
+          {{ tab === 'services' ? `Servicios (${store.current.services?.length ?? 0})` : tab === 'photos' ? `Fotos (${photos.length})` : tab === 'info' ? 'Información' : 'Historial' }}
         </button>
       </div>
 
@@ -125,6 +161,17 @@ const PRIORITY_LABEL: Record<string, string> = { low: 'Baja', normal: 'Normal', 
           :disabled="['delivered','cancelled'].includes(store.current.status)"
           :currency="store.current.currency"
           @updated="reload"
+        />
+      </div>
+
+      <div v-if="activeTab === 'photos'" class="p-4 rounded-2xl border border-white/10" :style="{ background: 'var(--nexora-glass-bg)' }">
+        <widgets_garage_vehicle_photo_gallery
+          :vehicle-id="store.current.vehicle_id"
+          :photos="photos"
+          :disabled="['delivered','cancelled'].includes(store.current.status)"
+          :max-photos="20"
+          @upload="onPhotoUpload"
+          @delete="onPhotoDelete"
         />
       </div>
 

@@ -373,6 +373,8 @@ CREATE TABLE IF NOT EXISTS {schema_name}.service_templates (
     suggested_role      VARCHAR(120),
     suggested_specialty VARCHAR(150),
     base_labor_rate     NUMERIC(12,2),
+    margin_pct          NUMERIC(6,2)  DEFAULT 0,
+    tax_pct             NUMERIC(6,2)  DEFAULT 0,
     currency            VARCHAR(10)   DEFAULT 'CLP',
     status              VARCHAR(30)   DEFAULT 'active',
     created_at          TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
@@ -509,6 +511,9 @@ CREATE TABLE IF NOT EXISTS {schema_name}.work_orders (
     subtotal_products        NUMERIC(12,2) DEFAULT 0,
     total_amount             NUMERIC(12,2) DEFAULT 0,
     currency                 VARCHAR(10)   DEFAULT 'CLP',
+    payment_status           VARCHAR(30)   DEFAULT 'pending',
+    amount_paid              NUMERIC(12,2) DEFAULT 0,
+    amount_pending           NUMERIC(12,2) DEFAULT 0,
     created_by               INTEGER,
     created_at               TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
     updated_at               TIMESTAMP     DEFAULT CURRENT_TIMESTAMP
@@ -521,15 +526,37 @@ CREATE INDEX IF NOT EXISTS idx_work_orders_appointment ON {schema_name}.work_ord
 CREATE INDEX IF NOT EXISTS idx_work_orders_entry_date  ON {schema_name}.work_orders(entry_date);
 
 -- FKs diferidas (tablas que se referencian circularmente)
-ALTER TABLE {schema_name}.appointments
-    ADD CONSTRAINT IF NOT EXISTS fk_appt_converted_work_order
-    FOREIGN KEY (converted_work_order_id)
-    REFERENCES {schema_name}.work_orders(id) ON DELETE SET NULL;
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_constraint
+        WHERE conname = 'fk_appt_converted_work_order'
+          AND conrelid = '{schema_name}.appointments'::regclass
+    ) THEN
+        ALTER TABLE {schema_name}.appointments
+            ADD CONSTRAINT fk_appt_converted_work_order
+            FOREIGN KEY (converted_work_order_id)
+            REFERENCES {schema_name}.work_orders(id) ON DELETE SET NULL;
+    END IF;
+END;
+$$;
 
-ALTER TABLE {schema_name}.vehicle_photos
-    ADD CONSTRAINT IF NOT EXISTS fk_vehicle_photos_work_order
-    FOREIGN KEY (work_order_id)
-    REFERENCES {schema_name}.work_orders(id) ON DELETE SET NULL;
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_constraint
+        WHERE conname = 'fk_vehicle_photos_work_order'
+          AND conrelid = '{schema_name}.vehicle_photos'::regclass
+    ) THEN
+        ALTER TABLE {schema_name}.vehicle_photos
+            ADD CONSTRAINT fk_vehicle_photos_work_order
+            FOREIGN KEY (work_order_id)
+            REFERENCES {schema_name}.work_orders(id) ON DELETE SET NULL;
+    END IF;
+END;
+$$;
 
 CREATE INDEX IF NOT EXISTS idx_vehicle_photos_work_order ON {schema_name}.vehicle_photos(work_order_id);
 
@@ -547,6 +574,10 @@ CREATE TABLE IF NOT EXISTS {schema_name}.work_order_services (
     labor_total          NUMERIC(12,2) DEFAULT 0,
     products_total       NUMERIC(12,2) DEFAULT 0,
     service_total        NUMERIC(12,2) DEFAULT 0,
+    margin_pct           NUMERIC(6,2)  DEFAULT 0,
+    tax_pct              NUMERIC(6,2)  DEFAULT 0,
+    margin_amount        NUMERIC(12,2) DEFAULT 0,
+    tax_amount           NUMERIC(12,2) DEFAULT 0,
     created_at           TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
     updated_at           TIMESTAMP     DEFAULT CURRENT_TIMESTAMP
 );
@@ -579,3 +610,36 @@ CREATE TABLE IF NOT EXISTS {schema_name}.work_order_status_history (
 );
 
 CREATE INDEX IF NOT EXISTS idx_wosh_work_order ON {schema_name}.work_order_status_history(work_order_id);
+
+-- ─── PAGOS DE ÓRDENES DE TRABAJO ──────────────────────────────
+
+CREATE TABLE IF NOT EXISTS {schema_name}.work_order_payments (
+    id              SERIAL PRIMARY KEY,
+    work_order_id   INTEGER       NOT NULL REFERENCES {schema_name}.work_orders(id) ON DELETE CASCADE,
+    amount          NUMERIC(12,2) NOT NULL,
+    currency        VARCHAR(10)   DEFAULT 'CLP',
+    payment_method  VARCHAR(60),
+    reference       VARCHAR(120),
+    notes           TEXT,
+    payment_date    DATE          NOT NULL DEFAULT CURRENT_DATE,
+    registered_by   INTEGER,
+    created_at      TIMESTAMP     DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_wop_work_order ON {schema_name}.work_order_payments(work_order_id);
+CREATE INDEX IF NOT EXISTS idx_wop_date       ON {schema_name}.work_order_payments(payment_date);
+
+-- ─── HISTORIAL DE TRASPASO DE PROPIETARIO ─────────────────────
+
+CREATE TABLE IF NOT EXISTS {schema_name}.vehicle_ownership_transfers (
+    id                   SERIAL PRIMARY KEY,
+    vehicle_id           INTEGER      NOT NULL REFERENCES {schema_name}.vehicles(id) ON DELETE CASCADE,
+    previous_customer_id INTEGER      REFERENCES {schema_name}.customers(id) ON DELETE SET NULL,
+    new_customer_id      INTEGER      NOT NULL REFERENCES {schema_name}.customers(id),
+    transfer_reason      TEXT,
+    transferred_by       INTEGER,
+    created_at           TIMESTAMP    DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_vot_vehicle  ON {schema_name}.vehicle_ownership_transfers(vehicle_id);
+CREATE INDEX IF NOT EXISTS idx_vot_customer ON {schema_name}.vehicle_ownership_transfers(new_customer_id);

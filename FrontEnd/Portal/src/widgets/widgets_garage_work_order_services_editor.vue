@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { Plus, Trash2, ChevronDown, ChevronUp, Package } from 'lucide-vue-next';
+import api from '../utils/axios';
 import { garageWorkOrdersService } from '../services/garageWorkOrdersService';
 import { garageServiceTemplatesService } from '../services/garageServiceTemplatesService';
 import { garageProductsService } from '../services/garageProductsService';
@@ -17,17 +18,32 @@ const emit = defineEmits<{
   (e: 'updated'): void;
 }>();
 
-const expandedService = ref<number | null>(null);
-const addingService   = ref(false);
-const newServiceName  = ref('');
-const templateId      = ref<number | null>(null);
-const templates       = ref<ServiceTemplate[]>([]);
-const templatesLoaded = ref(false);
-const addingProduct   = ref<number | null>(null);
-const products        = ref<Product[]>([]);
-const productsLoaded  = ref(false);
-const newProd         = ref({ product_name: '', quantity: 1, unit: '', unit_price: 0 });
-const error           = ref('');
+const expandedService   = ref<number | null>(null);
+const addingService     = ref(false);
+const newServiceName    = ref('');
+const templateId        = ref<number | null>(null);
+const templates         = ref<ServiceTemplate[]>([]);
+const templatesLoaded   = ref(false);
+const addingProduct     = ref<number | null>(null);
+const products          = ref<Product[]>([]);
+const productsLoaded    = ref(false);
+const newProd           = ref({ product_name: '', quantity: 1, unit: '', unit_price: 0 });
+const error             = ref('');
+
+// Issue 8: employee + rate selector
+const employees         = ref<Array<{ id: number; first_name: string; last_name: string | null }>>([]);
+const employeesLoaded   = ref(false);
+const selectedEmployeeId = ref<number | null>(null);
+const estimatedHours    = ref<number>(0);
+
+async function loadEmployees() {
+  if (employeesLoaded.value) return;
+  try {
+    const res = await api.get('/garage/employees', { params: { status: 'active', limit: 100 } });
+    employees.value = res.data.data ?? res.data;
+    employeesLoaded.value = true;
+  } catch { employees.value = []; }
+}
 
 const fmt = (n: number) => (props.currency === 'USD' ? `$${n.toFixed(2)}` : `$${Math.round(n).toLocaleString()}`);
 
@@ -54,12 +70,16 @@ async function addService() {
   error.value = '';
   try {
     await garageWorkOrdersService.addService(props.orderId, {
-      service_name:       newServiceName.value.trim() || undefined,
-      service_template_id: templateId.value ?? undefined,
+      service_name:         newServiceName.value.trim() || undefined,
+      service_template_id:  templateId.value ?? undefined,
+      assigned_employee_id: selectedEmployeeId.value ?? undefined,
+      estimated_hours:      estimatedHours.value || undefined,
     });
-    newServiceName.value = '';
-    templateId.value     = null;
-    addingService.value  = false;
+    newServiceName.value   = '';
+    templateId.value       = null;
+    selectedEmployeeId.value = null;
+    estimatedHours.value   = 0;
+    addingService.value    = false;
     emit('updated');
   } catch (e: any) {
     error.value = e?.response?.data?.error || 'Error al agregar servicio';
@@ -135,7 +155,8 @@ const totalAll = computed(() => props.services.reduce((s, svc) => s + (svc.servi
     <div v-if="addingService" class="rounded-xl bg-white/5 border border-white/10 p-4 flex flex-col gap-3">
       <div>
         <label class="block text-xs text-white/50 mb-1">Plantilla de servicio</label>
-        <select v-model="templateId" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none" @change="if(templateId) { const t = templates.find(t=>t.id===templateId); if(t) newServiceName=t.name; }">
+        <select v-model="templateId" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none"
+          @change="() => { if(templateId) { const t = templates.find(t=>t.id===templateId); if(t) { newServiceName = t.name; if((t as any).estimated_hours) estimatedHours = (t as any).estimated_hours; } } }">
           <option :value="null">Sin plantilla (servicio libre)</option>
           <option v-for="t in templates" :key="t.id" :value="t.id">{{ t.name }}</option>
         </select>
@@ -143,6 +164,20 @@ const totalAll = computed(() => props.services.reduce((s, svc) => s + (svc.servi
       <div>
         <label class="block text-xs text-white/50 mb-1">Nombre del servicio *</label>
         <input v-model="newServiceName" type="text" placeholder="Ej: Cambio de aceite" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" />
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs text-white/50 mb-1">Horas estimadas</label>
+          <input v-model.number="estimatedHours" type="number" min="0" step="0.5" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" />
+        </div>
+        <div>
+          <label class="block text-xs text-white/50 mb-1">Asignar empleado</label>
+          <select v-model="selectedEmployeeId" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none"
+            @focus="loadEmployees()">
+            <option :value="null">Sin asignar</option>
+            <option v-for="e in employees" :key="e.id" :value="e.id">{{ e.first_name }} {{ e.last_name || '' }}</option>
+          </select>
+        </div>
       </div>
       <p v-if="error" class="text-xs text-red-400">{{ error }}</p>
       <div class="flex gap-2">
@@ -209,16 +244,29 @@ const totalAll = computed(() => props.services.reduce((s, svc) => s + (svc.servi
           >
             <Plus :size="12" /> Agregar repuesto
           </button>
-          <div v-else class="grid grid-cols-4 gap-2 mt-2">
-            <input v-model="newProd.product_name" type="text" placeholder="Nombre" list="prod-list" class="col-span-2 px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white text-xs outline-none" />
-            <datalist id="prod-list">
-              <option v-for="p in products" :key="p.id" :value="p.name"></option>
-            </datalist>
-            <input v-model.number="newProd.quantity" type="number" min="1" step="0.01" placeholder="Cant." class="px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white text-xs outline-none" />
-            <input v-model.number="newProd.unit_price" type="number" min="0" placeholder="Precio u." class="px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white text-xs outline-none" />
-            <div class="col-span-4 flex gap-2">
-              <button type="button" class="text-xs text-white/50 hover:text-white" @click="addingProduct=null; error=''">Cancelar</button>
-              <button type="button" class="text-xs px-3 py-1 rounded-lg bg-[var(--nexora-primary)] text-white hover:opacity-90" @click="addProduct(svc.id)">Agregar</button>
+          <div v-else class="flex flex-col gap-2 mt-2">
+            <div class="grid grid-cols-2 gap-2">
+              <div class="col-span-2">
+                <select
+                  class="w-full px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white text-xs outline-none"
+                  @change="(e) => { const p = products.find(x => x.id === parseInt((e.target as HTMLSelectElement).value)); if(p) { newProd.product_name = p.name; newProd.unit = p.unit || ''; newProd.unit_price = p.reference_price ?? 0; } }"
+                >
+                  <option value="">— Seleccionar del catálogo (opcional) —</option>
+                  <option v-for="p in products" :key="p.id" :value="p.id">{{ p.name }} · {{ fmt(p.reference_price ?? 0) }}/{{ p.unit || 'u.' }}</option>
+                </select>
+              </div>
+              <input v-model="newProd.product_name" type="text" placeholder="Nombre del producto *" class="col-span-2 px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white text-xs outline-none" />
+              <input v-model.number="newProd.quantity" type="number" min="1" step="0.01" placeholder="Cantidad" class="px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white text-xs outline-none" />
+              <div class="relative">
+                <input v-model.number="newProd.unit_price" type="number" min="0" placeholder="Precio unit." class="w-full px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white text-xs outline-none" />
+              </div>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-white/30">Subtotal: {{ fmt((newProd.quantity || 0) * (newProd.unit_price || 0)) }}</span>
+              <div class="flex gap-2">
+                <button type="button" class="text-xs text-white/50 hover:text-white" @click="addingProduct=null; error=''">Cancelar</button>
+                <button type="button" class="text-xs px-3 py-1 rounded-lg bg-[var(--nexora-primary)] text-white hover:opacity-90" @click="addProduct(svc.id)">Agregar</button>
+              </div>
             </div>
           </div>
         </div>

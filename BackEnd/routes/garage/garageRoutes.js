@@ -12,8 +12,9 @@ const productsCtrl         = require('../../controllers/garage/productsControlle
 const serviceTemplatesCtrl = require('../../controllers/garage/serviceTemplatesController');
 const appointmentsCtrl     = require('../../controllers/garage/appointmentsController');
 const workOrdersCtrl       = require('../../controllers/garage/workOrdersController');
-const workOrderServicesCtrl = require('../../controllers/garage/workOrderServicesController');
-const vehicleHistoryCtrl   = require('../../controllers/garage/vehicleHistoryController');
+const workOrderServicesCtrl  = require('../../controllers/garage/workOrderServicesController');
+const workOrderPaymentsCtrl  = require('../../controllers/garage/workOrderPaymentsController');
+const vehicleHistoryCtrl     = require('../../controllers/garage/vehicleHistoryController');
 
 // All garage routes require authentication
 router.use(authMiddleware);
@@ -167,5 +168,15 @@ router.delete('/work-orders/:id/services/:serviceId',                      workO
 router.patch('/work-orders/:id/services/:serviceId/status',                workOrderServicesCtrl.changeStatus);
 router.post('/work-orders/:id/services/:serviceId/products',               workOrderServicesCtrl.addProduct);
 router.delete('/work-orders/:id/services/:serviceId/products/:productLineId', workOrderServicesCtrl.removeProduct);
+
+// ─── FOTOS DE ORDEN ──────────────────────────────────────────
+router.get('/work-orders/:id/photos',               workOrdersCtrl.listPhotos);
+router.post('/work-orders/:id/photos',              injectGarageSchema, ...workOrdersCtrl.uploadPhoto);
+router.delete('/work-orders/:id/photos/:photoId',   workOrdersCtrl.deletePhoto);
+
+// ─── PAGOS DE ORDEN ───────────────────────────────────────────
+router.get('/work-orders/:id/payments',              workOrderPaymentsCtrl.list);
+router.post('/work-orders/:id/payments',             workOrderPaymentsCtrl.create);
+router.delete('/work-orders/:id/payments/:paymentId', workOrderPaymentsCtrl.remove);
 
 module.exports = router;

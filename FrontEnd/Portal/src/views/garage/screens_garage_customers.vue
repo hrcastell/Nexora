@@ -15,7 +15,12 @@ const page     = ref(1);
 const showForm = ref(false);
 const editing  = ref<Customer | null>(null);
 
-const apiBase = (import.meta.env.VITE_API_URL || 'http://localhost:3000/api').replace('/api', '');
+function apiBase() {
+  try { return new URL(import.meta.env.VITE_API_URL || 'http://localhost:3000/api').origin; }
+  catch { return 'http://localhost:3000'; }
+}
+function photoSrc(url: string) { return url.startsWith('http') ? url : `${apiBase()}${url}`; }
+function onImgError(e: Event) { (e.target as HTMLImageElement).style.display = 'none'; }
 
 async function load() {
   await store.load({ q: q.value || undefined, status: status.value, page: page.value, limit: 50 });
@@ -73,7 +78,7 @@ function onSaved() { showForm.value = false; load(); }
         @click="router.push(`/garage/customers/${c.id}`)"
       >
         <div class="w-10 h-10 rounded-full overflow-hidden bg-white/10 flex items-center justify-center shrink-0">
-          <img v-if="c.photo_url" :src="`${apiBase}${c.photo_url}`" class="w-full h-full object-cover" />
+          <img v-if="c.photo_url" :src="photoSrc(c.photo_url)" class="w-full h-full object-cover" @error="onImgError" />
           <User v-else :size="18" class="text-white/30" />
         </div>
         <div class="flex-1 min-w-0">

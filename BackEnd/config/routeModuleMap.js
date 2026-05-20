@@ -197,6 +197,16 @@ const ROUTE_MODULE_MAP = {
     'PATCH  /garage/work-orders/:id/services/:serviceId/status':         { module: 'garage_operations', transaction: 'garage_work_orders' },
     'POST   /garage/work-orders/:id/services/:serviceId/products':       { module: 'garage_operations', transaction: 'garage_work_orders' },
     'DELETE /garage/work-orders/:id/services/:serviceId/products/:productLineId': { module: 'garage_operations', transaction: 'garage_work_orders' },
+
+    // ── Garage Operations: Fotos de orden ──
+    'GET    /garage/work-orders/:id/photos':                { module: 'garage_operations', transaction: 'garage_work_orders' },
+    'POST   /garage/work-orders/:id/photos':                { module: 'garage_operations', transaction: 'garage_work_orders' },
+    'DELETE /garage/work-orders/:id/photos/:photoId':       { module: 'garage_operations', transaction: 'garage_work_orders' },
+
+    // ── Garage Operations: Pagos de orden ──
+    'GET    /garage/work-orders/:id/payments':              { module: 'garage_operations', transaction: 'garage_work_orders' },
+    'POST   /garage/work-orders/:id/payments':              { module: 'garage_operations', transaction: 'garage_work_orders' },
+    'DELETE /garage/work-orders/:id/payments/:paymentId':   { module: 'garage_operations', transaction: 'garage_work_orders' },
 };
 
 /**

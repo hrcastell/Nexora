@@ -88,7 +88,7 @@ const ACTION_LABELS: Record<string, string> = {
 // Computed
 const filteredProfiles = computed(() => {
   const base = profiles.value.filter(p => (
-    perms.isSuperAdmin.value || !['acceso_total', 'admin_empresa'].includes(p.code)
+    perms.isSuperAdmin.value || p.code !== 'acceso_total'
   ));
   const q = search.value.toLowerCase();
   if (!q) return base;
@@ -201,7 +201,14 @@ function toggleExpanded(code: string) {
 function toggleTxAction(tx: TransactionPermission, action: string) {
   if (!perms.canManageProfiles.value) return;
   const t = tx as unknown as Record<string, boolean>;
-  t[action] = !t[action];
+  const next = !t[action];
+  t[action] = next;
+
+  if (action === 'can_view' && !next) {
+    ACTIONS.forEach(a => { t[a] = false; });
+  } else if (action !== 'can_view' && next) {
+    t.can_view = true;
+  }
 }
 
 function toggleTxAll(tx: TransactionPermission, val: boolean) {

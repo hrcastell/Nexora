@@ -16,7 +16,21 @@ const showEdit       = ref(false);
 const showNewVehicle = ref(false);
 const activeTab      = ref<'info' | 'vehicles'>('info');
 
-const apiBase = (import.meta.env.VITE_API_URL || 'http://localhost:3000/api').replace('/api', '');
+const apiBase = (() => {
+  const url = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+  try {
+    const parsed = new URL(url);
+    return `${parsed.protocol}//${parsed.host}`;
+  } catch {
+    return url.replace(/\/api.*$/, '');
+  }
+})();
+
+function customerPhotoSrc(photoUrl: string | null | undefined): string {
+  if (!photoUrl) return '';
+  if (photoUrl.startsWith('blob:') || photoUrl.startsWith('http')) return photoUrl;
+  return `${apiBase}${photoUrl}`;
+}
 
 onMounted(async () => {
   const id = parseInt(route.params.id as string);
@@ -45,7 +59,7 @@ function fmtDate(d: string | null) {
     <template v-else-if="custStore.current">
       <div class="flex items-start gap-5 p-5 rounded-2xl border border-white/10" :style="{ background: 'var(--nexora-glass-bg)' }">
         <div class="w-20 h-20 rounded-full overflow-hidden bg-white/10 flex items-center justify-center shrink-0">
-          <img v-if="custStore.current.photo_url" :src="`${apiBase}${custStore.current.photo_url}`" class="w-full h-full object-cover" />
+          <img v-if="custStore.current.photo_url" :src="customerPhotoSrc(custStore.current.photo_url)" class="w-full h-full object-cover" @error="(e) => { (e.target as HTMLImageElement).style.display = 'none' }" />
           <User v-else :size="32" class="text-white/20" />
         </div>
         <div class="flex-1">

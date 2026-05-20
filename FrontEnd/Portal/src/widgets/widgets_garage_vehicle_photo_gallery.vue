@@ -25,13 +25,32 @@ const lightboxPhoto = ref<VehiclePhoto | null>(null);
 const activeStage   = ref<'entry' | 'delivery'>('entry');
 const fileInput     = ref<HTMLInputElement | null>(null);
 
-const apiBase = computed(() =>
-  (import.meta.env.VITE_API_URL || 'http://localhost:3000/api').replace('/api', '')
-);
+const apiBase = computed(() => {
+  const url = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+  try {
+    const parsed = new URL(url);
+    return `${parsed.protocol}//${parsed.host}`;
+  } catch {
+    return url.replace(/\/api.*$/, '');
+  }
+});
 
 function photoSrc(photo: VehiclePhoto) {
   if (photo.photo_url.startsWith('blob:')) return photo.photo_url;
+  if (photo.photo_url.startsWith('http')) return photo.photo_url;
   return `${apiBase.value}${photo.photo_url}`;
+}
+
+function onPhotoError(e: Event) {
+  const img = e.target as HTMLImageElement;
+  img.style.display = 'none';
+  const parent = img.parentElement;
+  if (parent && !parent.querySelector('.photo-error')) {
+    const msg = document.createElement('div');
+    msg.className = 'photo-error w-full h-full flex items-center justify-center text-white/20 text-xs';
+    msg.textContent = 'Sin imagen';
+    parent.appendChild(msg);
+  }
 }
 
 function openUpload(stage: 'entry' | 'delivery') {
@@ -93,7 +112,7 @@ function navLightbox(dir: 1 | -1) {
           class="relative aspect-square rounded-xl overflow-hidden cursor-pointer group border border-white/10 hover:border-white/30 transition-all"
           @click="openLightbox(photo)"
         >
-          <img :src="photoSrc(photo)" :alt="photo.caption || 'Foto'" class="w-full h-full object-cover" />
+          <img :src="photoSrc(photo)" :alt="photo.caption || 'Foto'" class="w-full h-full object-cover" @error="onPhotoError" />
           <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
             <button
               v-if="!disabled"
@@ -127,7 +146,7 @@ function navLightbox(dir: 1 | -1) {
         <button class="absolute top-4 right-4 text-white/70 hover:text-white" @click="closeLightbox"><X :size="24" /></button>
         <button class="absolute left-4 text-white/70 hover:text-white" @click="navLightbox(-1)"><ChevronLeft :size="32" /></button>
         <button class="absolute right-4 text-white/70 hover:text-white" @click="navLightbox(1)"><ChevronRight :size="32" /></button>
-        <img :src="photoSrc(lightboxPhoto)" class="max-w-4xl max-h-[80vh] object-contain rounded-xl" />
+        <img :src="photoSrc(lightboxPhoto)" class="max-w-4xl max-h-[80vh] object-contain rounded-xl" @error="onPhotoError" />
         <div v-if="lightboxPhoto.caption" class="absolute bottom-6 text-white/60 text-sm">{{ lightboxPhoto.caption }}</div>
       </div>
     </Teleport>

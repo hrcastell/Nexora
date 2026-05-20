@@ -180,6 +180,7 @@ exports.create = async (req, res) => {
  * PUT /garage/vehicles/:id
  */
 exports.update = async (req, res) => {
+    const client = await db.getClient();
     try {
         if (req.user?.read_only) return res.status(403).json({ error: 'Operación no permitida en modo solo lectura' });
 
@@ -187,12 +188,26 @@ exports.update = async (req, res) => {
         const {
             customer_id, vehicle_type_id, body_type_id, brand_id, model_id,
             version, plate, year, color_id, transmission_id, fuel_type_id,
-            engine_displacement, vin, engine_number, mileage, notes
+            engine_displacement, vin, engine_number, mileage, notes,
+            transfer_reason
         } = req.body;
 
         const normalizedPlate = plate ? normalizePlate(plate) : null;
 
-        const result = await db.query(
+        await client.query('BEGIN');
+
+        // Issue 4: detect ownership change and record transfer history
+        const current = await client.query(
+            `SELECT customer_id FROM ${schema}.vehicles WHERE id = $1`, [req.params.id]
+        );
+        if (current.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ error: 'Vehículo no encontrado' });
+        }
+        const previousCustomerId = current.rows[0].customer_id;
+        const isTransfer = customer_id && String(customer_id) !== String(previousCustomerId);
+
+        const result = await client.query(
             `UPDATE ${schema}.vehicles SET
              customer_id=$1, vehicle_type_id=$2, body_type_id=$3, brand_id=$4, model_id=$5,
              version=$6, plate=$7, year=$8, color_id=$9, transmission_id=$10, fuel_type_id=$11,
@@ -208,14 +223,33 @@ exports.update = async (req, res) => {
                 mileage || 0, notes || null, req.params.id
             ]
         );
-        if (result.rows.length === 0) return res.status(404).json({ error: 'Vehículo no encontrado' });
+
+        if (isTransfer) {
+            // Try to record transfer — if the table doesn't exist yet, log and continue
+            try {
+                await client.query(
+                    `INSERT INTO ${schema}.vehicle_ownership_transfers
+                     (vehicle_id, previous_customer_id, new_customer_id, transfer_reason, transferred_by)
+                     VALUES ($1, $2, $3, $4, $5)`,
+                    [req.params.id, previousCustomerId, customer_id,
+                     transfer_reason || null, req.user?.id || null]
+                );
+            } catch (transferErr) {
+                console.warn('vehiclesController.update: transfer table missing, skipping:', transferErr.message);
+            }
+        }
+
+        await client.query('COMMIT');
         res.json(result.rows[0]);
     } catch (err) {
+        await client.query('ROLLBACK');
         if (err.code === '23505') {
             return res.status(409).json({ error: 'Ya existe un vehículo con esa placa' });
         }
         console.error('vehiclesController.update error:', err.message);
         res.status(err.statusCode || 500).json({ error: err.message || 'Error al actualizar vehículo' });
+    } finally {
+        client.release();
     }
 };
 

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import { Plus, Search, ChevronRight } from 'lucide-vue-next';
+import { Plus, Search, ChevronRight, Car } from 'lucide-vue-next';
 import { useGarageWorkOrdersStore } from '../../stores/garageWorkOrders';
 import widgets_garage_work_order_form_modal from '../../widgets/widgets_garage_work_order_form_modal.vue';
 import widgets_garage_work_order_status_badge from '../../widgets/widgets_garage_work_order_status_badge.vue';
@@ -9,6 +9,11 @@ const router   = useRouter();
 const store    = useGarageWorkOrdersStore();
 const q        = ref('');
 const status   = ref('');
+
+function photoSrc(url: string) {
+  try { const base = new URL(import.meta.env.VITE_API_URL || 'http://localhost:3000/api').origin; return url.startsWith('http') ? url : `${base}${url}`; }
+  catch { return url; }
+}
 const page     = ref(1);
 const showForm = ref(false);
 
@@ -69,6 +74,10 @@ const PRIORITY_COLOR: Record<string, string> = {
         :style="{ background: 'var(--nexora-glass-bg)' }"
         @click="router.push(`/garage/work-orders/${wo.id}`)"
       >
+        <div class="w-14 h-14 rounded-xl overflow-hidden bg-white/5 flex items-center justify-center shrink-0">
+          <img v-if="(wo as any).first_photo_url" :src="photoSrc((wo as any).first_photo_url)" class="w-full h-full object-cover" @error="(e) => (e.target as HTMLImageElement).style.display='none'" />
+          <Car v-else :size="20" class="text-white/20" />
+        </div>
         <div class="flex-1 min-w-0">
           <div class="flex items-center gap-2 mb-1">
             <span class="text-sm font-semibold text-white font-mono">{{ wo.order_number }}</span>

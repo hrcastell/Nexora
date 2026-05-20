@@ -7,10 +7,12 @@
  * Fórmulas:
  *   service.labor_total    = actual_hours * hourly_rate
  *   service.products_total = SUM(wosp.total_price)
- *   service.service_total  = labor_total + products_total
+ *   service.margin_amount  = (labor_total + products_total) * margin_pct / 100
+ *   service.tax_amount     = (labor_total + products_total + margin_amount) * tax_pct / 100
+ *   service.service_total  = (labor_total + products_total) * (1 + margin_pct/100) * (1 + tax_pct/100)
  *   order.subtotal_labor   = SUM(wos.labor_total)
  *   order.subtotal_products= SUM(wos.products_total)
- *   order.total_amount     = subtotal_labor + subtotal_products
+ *   order.total_amount     = SUM(wos.service_total)
  */
 
 /**
@@ -35,11 +37,24 @@ async function recalculateTotals(workOrderId, schema, client) {
         [workOrderId]
     );
 
-    // 2. Recalcular labor_total y service_total por servicio
+    // 2. Recalcular labor_total, margin_amount, tax_amount y service_total por servicio
     await client.query(
         `UPDATE ${schema}.work_order_services
          SET labor_total   = ROUND(actual_hours * hourly_rate, 2),
-             service_total = ROUND((actual_hours * hourly_rate) + products_total, 2),
+             margin_amount = ROUND(
+                 (ROUND(actual_hours * hourly_rate, 2) + products_total)
+                 * COALESCE(margin_pct, 0) / 100
+             , 2),
+             tax_amount    = ROUND(
+                 (ROUND(actual_hours * hourly_rate, 2) + products_total)
+                 * (1 + COALESCE(margin_pct, 0) / 100)
+                 * COALESCE(tax_pct, 0) / 100
+             , 2),
+             service_total = ROUND(
+                 (ROUND(actual_hours * hourly_rate, 2) + products_total)
+                 * (1 + COALESCE(margin_pct, 0) / 100)
+                 * (1 + COALESCE(tax_pct, 0) / 100)
+             , 2),
              updated_at    = CURRENT_TIMESTAMP
          WHERE work_order_id = $1`,
         [workOrderId]
@@ -96,7 +111,20 @@ async function recalculateServiceTotals(workOrderServiceId, schema, client) {
     await client.query(
         `UPDATE ${schema}.work_order_services
          SET labor_total   = ROUND(actual_hours * hourly_rate, 2),
-             service_total = ROUND((actual_hours * hourly_rate) + products_total, 2),
+             margin_amount = ROUND(
+                 (ROUND(actual_hours * hourly_rate, 2) + products_total)
+                 * COALESCE(margin_pct, 0) / 100
+             , 2),
+             tax_amount    = ROUND(
+                 (ROUND(actual_hours * hourly_rate, 2) + products_total)
+                 * (1 + COALESCE(margin_pct, 0) / 100)
+                 * COALESCE(tax_pct, 0) / 100
+             , 2),
+             service_total = ROUND(
+                 (ROUND(actual_hours * hourly_rate, 2) + products_total)
+                 * (1 + COALESCE(margin_pct, 0) / 100)
+                 * (1 + COALESCE(tax_pct, 0) / 100)
+             , 2),
              updated_at    = CURRENT_TIMESTAMP
          WHERE id = $1`,
         [workOrderServiceId]

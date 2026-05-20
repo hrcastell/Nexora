@@ -116,8 +116,19 @@ exports.getMyMenu = async (req, res) => {
                     // Sin perfil asignado: no se muestra ninguna transacción
                     allTx = [];
                 }
-            } catch {
-                // Si el schema no tiene la tabla aún, degradamos a mostrar todo sin filtrar
+            } catch (error) {
+                // Fail closed: si no podemos leer permisos, nunca exponemos
+                // transacciones a usuarios no-super_admin.
+                console.error('Get my menu permissions error:', {
+                    userId,
+                    companyId,
+                    schema,
+                    message: error.message,
+                    code: error.code,
+                    table: error.table,
+                    constraint: error.constraint
+                });
+                allTx = [];
             }
         }
 

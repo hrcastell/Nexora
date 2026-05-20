@@ -69,7 +69,7 @@ exports.create = async (req, res) => {
     try {
         if (req.user?.read_only) return res.status(403).json({ error: 'Operación no permitida en modo solo lectura' });
         const { schema } = await resolveSchema(req);
-        const { name, description, estimated_hours = 0, suggested_role, suggested_specialty, base_labor_rate, currency = 'CLP' } = req.body;
+        const { name, description, estimated_hours = 0, suggested_role, suggested_specialty, base_labor_rate, currency = 'CLP', margin_pct = 0, tax_pct = 0 } = req.body;
 
         if (!name?.trim()) return res.status(400).json({ error: 'name es requerido' });
 
@@ -78,9 +78,9 @@ exports.create = async (req, res) => {
         if (existing.rows.length > 0) return res.status(409).json({ error: 'Ya existe un servicio con ese nombre', id: existing.rows[0].id });
 
         const result = await db.query(
-            `INSERT INTO ${schema}.service_templates (name, normalized_name, description, estimated_hours, suggested_role, suggested_specialty, base_labor_rate, currency)
-             VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *`,
-            [name.trim(), normalized, description || null, Number(estimated_hours), suggested_role || null, suggested_specialty || null, base_labor_rate ? Number(base_labor_rate) : null, currency]
+            `INSERT INTO ${schema}.service_templates (name, normalized_name, description, estimated_hours, suggested_role, suggested_specialty, base_labor_rate, currency, margin_pct, tax_pct)
+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
+            [name.trim(), normalized, description || null, Number(estimated_hours), suggested_role || null, suggested_specialty || null, base_labor_rate ? Number(base_labor_rate) : null, currency, Number(margin_pct), Number(tax_pct)]
         );
         res.status(201).json(result.rows[0]);
     } catch (err) {
@@ -96,7 +96,7 @@ exports.update = async (req, res) => {
     try {
         if (req.user?.read_only) return res.status(403).json({ error: 'Operación no permitida en modo solo lectura' });
         const { schema } = await resolveSchema(req);
-        const { name, description, estimated_hours, suggested_role, suggested_specialty, base_labor_rate, currency } = req.body;
+        const { name, description, estimated_hours, suggested_role, suggested_specialty, base_labor_rate, currency, margin_pct = 0, tax_pct = 0 } = req.body;
 
         if (!name?.trim()) return res.status(400).json({ error: 'name es requerido' });
         const normalized = normalizeCatalogText(name);
@@ -106,10 +106,12 @@ exports.update = async (req, res) => {
 
         const result = await db.query(
             `UPDATE ${schema}.service_templates SET name=$1, normalized_name=$2, description=$3, estimated_hours=$4,
-             suggested_role=$5, suggested_specialty=$6, base_labor_rate=$7, currency=$8, updated_at=CURRENT_TIMESTAMP
-             WHERE id=$9 RETURNING *`,
+             suggested_role=$5, suggested_specialty=$6, base_labor_rate=$7, currency=$8,
+             margin_pct=$9, tax_pct=$10, updated_at=CURRENT_TIMESTAMP
+             WHERE id=$11 RETURNING *`,
             [name.trim(), normalized, description || null, Number(estimated_hours || 0), suggested_role || null,
-             suggested_specialty || null, base_labor_rate ? Number(base_labor_rate) : null, currency || 'CLP', req.params.id]
+             suggested_specialty || null, base_labor_rate ? Number(base_labor_rate) : null, currency || 'CLP',
+             Number(margin_pct), Number(tax_pct), req.params.id]
         );
         if (result.rows.length === 0) return res.status(404).json({ error: 'Servicio no encontrado' });
         res.json(result.rows[0]);

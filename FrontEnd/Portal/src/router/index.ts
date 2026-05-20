@@ -195,6 +195,12 @@ const router = createRouter({
           meta: { requiresModule: 'garage_operations', requiresTransaction: 'garage_work_orders' }
         },
         {
+          path: 'garage/work-orders/:id/payments',
+          name: 'garage-work-order-payments',
+          component: () => import('../views/garage/screens_garage_work_order_payments.vue'),
+          meta: { requiresModule: 'garage_operations', requiresTransaction: 'garage_work_orders' }
+        },
+        {
           path: 'garage/employees',
           name: 'garage-employees',
           component: () => import('../views/garage/screens_garage_employees.vue'),

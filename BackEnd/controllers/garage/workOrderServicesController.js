@@ -80,6 +80,9 @@ exports.create = async (req, res) => {
         let finalName = service_name;
         let finalDesc = description || null;
         let finalHours = Number(estimated_hours);
+        let templateBaseLaborRate = 0;
+        let templateMarginPct = 0;
+        let templateTaxPct = 0;
 
         // Si hay plantilla, copiar datos
         if (service_template_id) {
@@ -90,13 +93,16 @@ exports.create = async (req, res) => {
                 finalName  = finalName  || tmpl.rows[0].name;
                 finalDesc  = finalDesc  || tmpl.rows[0].description;
                 finalHours = finalHours || tmpl.rows[0].estimated_hours;
+                templateBaseLaborRate = Number(tmpl.rows[0].base_labor_rate) || 0;
+                templateMarginPct     = Number(tmpl.rows[0].margin_pct)      || 0;
+                templateTaxPct        = Number(tmpl.rows[0].tax_pct)         || 0;
             }
         }
 
         if (!finalName?.trim()) return res.status(400).json({ error: 'service_name es requerido' });
 
-        // Snapshot de tarifa del empleado si se asigna
-        let hourlyRate = 0;
+        // Snapshot de tarifa del empleado si se asigna; fallback to template base_labor_rate
+        let hourlyRate = templateBaseLaborRate;
         if (assigned_employee_id) {
             const rateRes = await db.query(
                 `SELECT hourly_rate FROM ${schema}.employee_labor_rates
@@ -114,10 +120,11 @@ exports.create = async (req, res) => {
         const result = await client.query(
             `INSERT INTO ${schema}.work_order_services
              (work_order_id, service_template_id, assigned_employee_id, service_name, description,
-              estimated_hours, actual_hours, hourly_rate, status)
-             VALUES ($1,$2,$3,$4,$5,$6,0,$7,'pending') RETURNING *`,
+              estimated_hours, actual_hours, hourly_rate, margin_pct, tax_pct, status)
+             VALUES ($1,$2,$3,$4,$5,$6,0,$7,$8,$9,'pending') RETURNING *`,
             [req.params.id, service_template_id || null, assigned_employee_id || null,
-             finalName.trim(), finalDesc, finalHours, hourlyRate]
+             finalName.trim(), finalDesc, finalHours, hourlyRate,
+             templateMarginPct, templateTaxPct]
         );
 
         const serviceId = result.rows[0].id;

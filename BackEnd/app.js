@@ -40,8 +40,14 @@ app.get('/', (req, res) => {
   res.json({ message: 'Welcome to Nexora API', version: '1.0.0' });
 });
 
-// Static files — avatars
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Static files — avatars and garage uploads
+// Cross-Origin-Resource-Policy must be cross-origin so browsers can load
+// images from a different origin (e.g. nexoragarage.hrcastell.com served
+// by the frontend at a different subdomain).
+app.use('/uploads', (req, res, next) => {
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  next();
+}, express.static(path.join(__dirname, 'uploads')));
 
 // Module guard (log-only by default; set MODULE_GUARD=strict to block).
 // Mounted before routes so it inspects req.method + req.path for every /api/* call.

@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { Wrench, Package } from 'lucide-vue-next';
+import { Wrench, Package, ExternalLink } from 'lucide-vue-next';
+import { useRouter } from 'vue-router';
 import widgets_garage_work_order_status_badge from './widgets_garage_work_order_status_badge.vue';
 import type { WorkOrder } from '../types/garage';
 
@@ -8,8 +9,14 @@ defineProps<{
   currency?: string;
 }>();
 
+const router = useRouter();
+
 const fmt = (n: number) => `$${Math.round(n ?? 0).toLocaleString()}`;
 const fmtDate = (d: string) => d ? new Date(d).toLocaleDateString('es-CL', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+
+function goToOrder(id: number) {
+  router.push(`/garage/work-orders/${id}`);
+}
 </script>
 
 <template>
@@ -21,14 +28,16 @@ const fmtDate = (d: string) => d ? new Date(d).toLocaleDateString('es-CL', { day
     <div
       v-for="order in orders"
       :key="order.id"
-      class="rounded-xl border border-white/10 overflow-hidden"
+      class="rounded-xl border border-white/10 overflow-hidden cursor-pointer hover:border-white/25 transition-all"
       :style="{ background: 'var(--nexora-glass-bg)' }"
+      @click="goToOrder(order.id)"
     >
       <div class="flex items-start justify-between px-4 py-3 border-b border-white/5">
         <div>
           <div class="flex items-center gap-2 mb-1">
             <span class="text-sm font-semibold text-white">{{ order.order_number }}</span>
             <widgets_garage_work_order_status_badge :status="order.status" :small="true" />
+            <ExternalLink :size="12" class="text-white/30" />
           </div>
           <p class="text-xs text-white/40">
             Ingreso: {{ fmtDate(order.entry_date) }}
