@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
-import { CreditCard, Plus, Loader2, X, Save, ShieldAlert, RefreshCw, CheckCircle, AlertTriangle, XCircle, Clock, FileText } from 'lucide-vue-next';
+import { CreditCard, Plus, Loader2, Save, ShieldAlert, RefreshCw, CheckCircle, AlertTriangle, XCircle, Clock, FileText } from 'lucide-vue-next';
 import AppToast, { type ToastItem, type ToastType } from '../../components/AppToast.vue';
 import ConfirmActionModal from '../../components/admin/ConfirmActionModal.vue';
+import NxrSlidePanel from '../../components/NxrSlidePanel.vue';
 import api from '../../utils/axios';
 import { useVisualConfigStore } from '../../stores/visualConfig';
 import { useAuthStore } from '../../stores/auth';
@@ -22,7 +23,6 @@ const cardBorder  = computed(() => isLight.value ? 'rgba(0,0,0,0.08)' : 'rgba(25
 const rowHoverBg  = computed(() => isLight.value ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.04)');
 const inputBg     = computed(() => isLight.value ? '#ffffff' : 'rgba(255,255,255,0.05)');
 const inputBorder = computed(() => isLight.value ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.12)');
-const modalBg     = computed(() => isLight.value ? '#ffffff' : '#0d1829');
 
 const selectedCompanyId = ref<number | null>(null);
 const companyId  = computed(() => {
@@ -511,19 +511,13 @@ const freqLabel   = (f: string) => ({ monthly: 'Mensual', quarterly: 'Trimestral
     </template><!-- /v-else companyId -->
 
     <!-- Modal Genérico -->
-    <Teleport to="body">
-      <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-        <div class="w-full max-w-lg rounded-3xl border shadow-2xl" :style="{ backgroundColor: modalBg, borderColor: cardBorder }">
-          <div class="flex items-center justify-between border-b p-5" :style="{ borderColor: cardBorder }">
-            <h2 class="text-base font-semibold" :style="{ color: headerColor }">
-              {{ { agreement: 'Nuevo convenio de pago', invoice: 'Generar recibo', payment: 'Registrar pago' }[modalType] }}
-            </h2>
-            <button @click="showModal = false" class="rounded-xl p-1.5 hover:bg-white/10 transition">
-              <X class="h-5 w-5" :style="{ color: mutedColor }" />
-            </button>
-          </div>
-
-          <div class="p-5 space-y-4">
+    <NxrSlidePanel
+      :open="showModal"
+      :title="{ agreement: 'Nuevo convenio de pago', invoice: 'Generar recibo', payment: 'Registrar pago' }[modalType]"
+      size="md"
+      @close="showModal = false"
+    >
+      <div class="space-y-4">
             <div v-if="saveError" class="flex items-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
               <ShieldAlert class="h-4 w-4 shrink-0" /> {{ saveError }}
             </div>
@@ -687,19 +681,15 @@ const freqLabel   = (f: string) => ({ monthly: 'Mensual', quarterly: 'Trimestral
             </template>
           </div>
 
-          <div class="flex justify-end gap-3 border-t p-5" :style="{ borderColor: cardBorder }">
-            <button @click="showModal = false" class="rounded-2xl border px-4 py-2 text-sm hover:bg-white/5 transition"
-              :style="{ borderColor: cardBorder, color: mutedColor }">Cancelar</button>
-            <button @click="saveForm" :disabled="isSaving"
-              class="flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-medium text-white nxr-btn-primary disabled:opacity-60">
-              <Loader2 v-if="isSaving" class="h-4 w-4 animate-spin" />
-              <Save v-else class="h-4 w-4" />
-              Guardar
-            </button>
-          </div>
-        </div>
-      </div>
-    </Teleport>
+      <template #footer>
+        <button @click="showModal = false" class="nxr-btn nxr-btn-secondary">Cancelar</button>
+        <button @click="saveForm" :disabled="isSaving" class="nxr-btn nxr-btn-primary">
+          <Loader2 v-if="isSaving" class="h-4 w-4 animate-spin" />
+          <Save v-else class="h-4 w-4" />
+          Guardar
+        </button>
+      </template>
+    </NxrSlidePanel>
 
     <!-- Toast Notification -->
     <Teleport to="body">

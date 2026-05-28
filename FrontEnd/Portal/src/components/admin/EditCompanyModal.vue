@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref, reactive, computed, watch, onMounted } from 'vue';
 import api from '../../utils/axios';
-import { X, Loader2 } from 'lucide-vue-next';
+import { Loader2 } from 'lucide-vue-next';
 import { useVisualConfigStore } from '../../stores/visualConfig';
+import NxrSlidePanel from '../NxrSlidePanel.vue';
 
 interface Company {
   id: number;
@@ -46,18 +47,10 @@ const configStore = useVisualConfigStore();
 const isLightMode = computed(() => configStore.mode === 'light');
 const headerTextColor = computed(() => isLightMode.value ? '#0f172a' : '#ffffff');
 const mutedTextColor = computed(() => isLightMode.value ? '#475569' : '#94a3b8');
-const modalBg = computed(() => isLightMode.value ? 'rgba(255, 255, 255, 0.98)' : 'rgba(11, 19, 38, 0.98)');
-const modalBorder = computed(() => isLightMode.value ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.10)');
 const inputBg = computed(() => isLightMode.value ? 'rgba(255, 255, 255, 0.90)' : 'rgba(255, 255, 255, 0.05)');
 const inputBorder = computed(() => isLightMode.value ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.10)');
 const labelColor = computed(() => isLightMode.value ? '#374151' : '#9ca3af');
 const optionBg = computed(() => isLightMode.value ? '#ffffff' : '#0b1326');
-
-// Helper functions for template
-const getButtonBg = () => isLightMode.value ? 'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.05)';
-const getButtonHoverBg = () => isLightMode.value ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.08)';
-const getButtonBorder = () => isLightMode.value ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.10)';
-const getButtonHoverBorder = () => isLightMode.value ? 'rgba(0, 0, 0, 0.12)' : 'rgba(255, 255, 255, 0.15)';
 
 const form = reactive({
   name: '',
@@ -133,43 +126,14 @@ const handleSubmit = async () => {
 </script>
 
 <template>
-  <Teleport to="body">
-    <div v-if="isOpen" class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-      <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-      
-      <!-- Background overlay -->
-      <div class="fixed inset-0 bg-black/70 backdrop-blur-sm transition-opacity" aria-hidden="true" @click="handleClose"></div>
-
-      <!-- Modal panel -->
-      <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-      <div class="inline-block align-bottom rounded-2xl px-4 pt-5 pb-4 text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6" 
-           :style="{ 
-             backgroundColor: modalBg, 
-             borderColor: modalBorder 
-           }">
-        
-        <div class="absolute top-0 right-0 pt-4 pr-4">
-          <button @click="handleClose" type="button" class="rounded-md transition-colors" 
-                  :style="{ color: mutedTextColor }"
-                  @mouseover="(e) => (e.currentTarget as HTMLElement).style.color = headerTextColor"
-                  @mouseleave="(e) => (e.currentTarget as HTMLElement).style.color = mutedTextColor">
-            <span class="sr-only">Cerrar</span>
-            <X class="h-6 w-6" aria-hidden="true" />
-          </button>
-        </div>
-
-        <div class="sm:flex sm:items-start">
-          <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-            <h3 class="text-lg leading-6 font-medium" :style="{ color: headerTextColor }" id="modal-title">
-              Editar Empresa
-            </h3>
-            <div class="mt-2">
-              <p class="text-sm" :style="{ color: mutedTextColor }">
-                Actualiza los datos de la empresa. El schema de base de datos no puede modificarse.
-              </p>
-            </div>
-
-            <form @submit.prevent="handleSubmit" class="mt-5 space-y-4">
+  <NxrSlidePanel
+    :open="isOpen"
+    title="Editar Empresa"
+    eyebrow="Actualiza los datos de la empresa. El schema de base de datos no puede modificarse."
+    size="md"
+    @close="handleClose"
+  >
+    <form @submit.prevent="handleSubmit" class="space-y-4">
               
               <!-- Name -->
               <div>
@@ -270,45 +234,22 @@ const handleSubmit = async () => {
                 </select>
               </div>
 
-              <!-- Error Message -->
-              <div v-if="error" class="rounded-xl bg-rose-500/10 border border-rose-500/20 p-4">
-                <div class="flex">
-                  <div class="ml-3">
-                    <h3 class="text-sm font-medium text-rose-200">{{ error }}</h3>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Actions -->
-              <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
-                <button 
-                  type="submit" 
-                  :disabled="isLoading"
-                  class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 nxr-btn-primary text-base font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#0b1326] sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 transition-all"
-                >
-                  <Loader2 v-if="isLoading" class="animate-spin -ml-1 mr-2 h-4 w-4" />
-                  {{ isLoading ? 'Guardando...' : 'Guardar Cambios' }}
-                </button>
-                <button 
-                  type="button" 
-                  class="mt-3 w-full inline-flex justify-center rounded-xl border shadow-sm px-4 py-2 text-base font-medium transition sm:mt-0 sm:w-auto sm:text-sm" 
-                  :style="{ 
-                    backgroundColor: getButtonBg(), 
-                    borderColor: getButtonBorder(), 
-                    color: mutedTextColor 
-                  }"
-                  @mouseover="(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = getButtonHoverBg(); (e.currentTarget as HTMLElement).style.borderColor = getButtonHoverBorder(); }"
-                  @mouseleave="(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = getButtonBg(); (e.currentTarget as HTMLElement).style.borderColor = getButtonBorder(); }"
-                  @click="handleClose"
-                >
-                  Cancelar
-                </button>
-              </div>
-            </form>
+      <!-- Error Message -->
+      <div v-if="error" class="rounded-xl bg-rose-500/10 border border-rose-500/20 p-4">
+        <div class="flex">
+          <div class="ml-3">
+            <h3 class="text-sm font-medium text-rose-200">{{ error }}</h3>
           </div>
         </div>
       </div>
-      </div>
-    </div>
-  </Teleport>
+    </form>
+
+    <template #footer>
+      <button type="button" class="nxr-btn nxr-btn-secondary" @click="handleClose">Cancelar</button>
+      <button type="submit" :disabled="isLoading" class="nxr-btn nxr-btn-primary" @click="handleSubmit">
+        <Loader2 v-if="isLoading" class="animate-spin h-4 w-4" />
+        {{ isLoading ? 'Guardando...' : 'Guardar Cambios' }}
+      </button>
+    </template>
+  </NxrSlidePanel>
 </template>

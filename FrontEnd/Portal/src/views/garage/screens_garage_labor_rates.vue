@@ -3,6 +3,7 @@ import { ref, onMounted, watch } from 'vue';
 import { Plus, Edit2, ToggleLeft, ToggleRight, Users } from 'lucide-vue-next';
 import { useGarageEmployeesStore } from '../../stores/garageEmployees';
 import { useGarageLaborRatesStore } from '../../stores/garageLaborRates';
+import NxrSlidePanel from '../../components/NxrSlidePanel.vue';
 import type { LaborRate } from '../../types/garage';
 
 const empStore  = useGarageEmployeesStore();
@@ -132,10 +133,12 @@ const fmtDate = (d: string | null) => d ? new Date(d).toLocaleDateString('es-CL'
       </div>
     </div>
 
-    <Teleport to="body">
-      <div v-if="showForm" class="fixed inset-0 z-40 bg-black/60 flex items-center justify-center p-4" @click.self="showForm = false">
-        <div class="w-full max-w-md rounded-2xl border border-white/10 shadow-2xl p-6" :style="{ background: 'var(--nexora-glass-bg, #0b1326)' }">
-          <h3 class="text-sm font-semibold text-white mb-4">{{ editing ? 'Editar tarifa' : 'Nueva tarifa' }}</h3>
+    <NxrSlidePanel
+      :open="showForm"
+      :title="editing ? 'Editar tarifa' : 'Nueva tarifa'"
+      size="sm"
+      @close="showForm = false"
+    >
           <div class="grid grid-cols-2 gap-3">
             <div class="col-span-2">
               <label class="block text-xs text-white/50 mb-1">Empleado *</label>
@@ -169,13 +172,12 @@ const fmtDate = (d: string | null) => d ? new Date(d).toLocaleDateString('es-CL'
               <input v-model="form.valid_to" type="date" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" />
             </div>
           </div>
-          <p v-if="error" class="mt-2 text-xs text-red-400">{{ error }}</p>
-          <div class="flex justify-end gap-2 mt-4">
-            <button type="button" class="px-4 py-2 rounded-xl text-sm text-white/60 hover:text-white" @click="showForm = false">Cancelar</button>
-            <button type="button" class="px-5 py-2 rounded-xl text-sm font-semibold bg-[var(--nexora-primary)] text-white hover:opacity-90 disabled:opacity-50" :disabled="saving" @click="save">{{ saving ? 'Guardando...' : 'Guardar' }}</button>
-          </div>
-        </div>
-      </div>
-    </Teleport>
+      <p v-if="error" class="mt-2 text-xs text-red-400">{{ error }}</p>
+
+      <template #footer>
+        <button type="button" class="nxr-btn nxr-btn-secondary" @click="showForm = false">Cancelar</button>
+        <button type="button" class="nxr-btn nxr-btn-primary" :disabled="saving" @click="save">{{ saving ? 'Guardando...' : 'Guardar' }}</button>
+      </template>
+    </NxrSlidePanel>
   </div>
 </template>

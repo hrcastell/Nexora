@@ -2,6 +2,7 @@
 import { ref, onMounted, watch } from 'vue';
 import { Plus, Search, Edit2, ToggleLeft, ToggleRight } from 'lucide-vue-next';
 import { useGarageProductsStore } from '../../stores/garageProducts';
+import NxrSlidePanel from '../../components/NxrSlidePanel.vue';
 import type { Product } from '../../types/garage';
 
 const store    = useGarageProductsStore();
@@ -120,10 +121,12 @@ const PRODUCT_TYPE_LABEL: Record<string, string> = { consumable: 'Consumible', p
       </div>
     </div>
 
-    <Teleport to="body">
-      <div v-if="showForm" class="fixed inset-0 z-40 bg-black/60 flex items-center justify-center p-4" @click.self="showForm = false">
-        <div class="w-full max-w-md rounded-2xl border border-white/10 shadow-2xl p-6" :style="{ background: 'var(--nexora-glass-bg, #0b1326)' }">
-          <h3 class="text-sm font-semibold text-white mb-4">{{ editing ? 'Editar producto' : 'Nuevo producto' }}</h3>
+    <NxrSlidePanel
+      :open="showForm"
+      :title="editing ? 'Editar producto' : 'Nuevo producto'"
+      size="sm"
+      @close="showForm = false"
+    >
           <div class="grid grid-cols-2 gap-3">
             <div class="col-span-2">
               <label class="block text-xs text-white/50 mb-1">Nombre *</label>
@@ -155,13 +158,12 @@ const PRODUCT_TYPE_LABEL: Record<string, string> = { consumable: 'Consumible', p
               <textarea v-model="form.description" rows="2" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none resize-none"></textarea>
             </div>
           </div>
-          <p v-if="error" class="mt-2 text-xs text-red-400">{{ error }}</p>
-          <div class="flex justify-end gap-2 mt-4">
-            <button type="button" class="px-4 py-2 rounded-xl text-sm text-white/60 hover:text-white" @click="showForm = false">Cancelar</button>
-            <button type="button" class="px-5 py-2 rounded-xl text-sm font-semibold bg-[var(--nexora-primary)] text-white hover:opacity-90 disabled:opacity-50" :disabled="saving" @click="save">{{ saving ? 'Guardando...' : 'Guardar' }}</button>
-          </div>
-        </div>
-      </div>
-    </Teleport>
+      <p v-if="error" class="mt-2 text-xs text-red-400">{{ error }}</p>
+
+      <template #footer>
+        <button type="button" class="nxr-btn nxr-btn-secondary" @click="showForm = false">Cancelar</button>
+        <button type="button" class="nxr-btn nxr-btn-primary" :disabled="saving" @click="save">{{ saving ? 'Guardando...' : 'Guardar' }}</button>
+      </template>
+    </NxrSlidePanel>
   </div>
 </template>

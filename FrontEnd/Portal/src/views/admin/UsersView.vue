@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
-import { Users, Plus, Search, Loader2, Pencil, Trash2, X, Save, ShieldAlert, ShieldCheck, UserCheck, UserX, Upload, Eye, EyeOff } from 'lucide-vue-next';
+import { Users, Plus, Search, Loader2, Pencil, Trash2, Save, ShieldAlert, ShieldCheck, UserCheck, UserX, Upload, Eye, EyeOff } from 'lucide-vue-next';
 import api from '../../utils/axios';
 import { useVisualConfigStore } from '../../stores/visualConfig';
 import { useAuthStore } from '../../stores/auth';
@@ -8,6 +8,7 @@ import { usePermissions } from '../../composables/usePermissions';
 import CompanySelector from '../../components/admin/CompanySelector.vue';
 import ConfirmActionModal from '../../components/admin/ConfirmActionModal.vue';
 import InfoModal from '../../components/admin/InfoModal.vue';
+import NxrSlidePanel from '../../components/NxrSlidePanel.vue';
 import AppToast, { type ToastItem, type ToastType } from '../../components/AppToast.vue';
 import type { CompanyUser, Profile } from '../../types/auth';
 
@@ -23,7 +24,6 @@ const cardBorder  = computed(() => isLight.value ? 'rgba(0,0,0,0.08)' : 'rgba(25
 const rowHoverBg  = computed(() => isLight.value ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.04)');
 const inputBg     = computed(() => isLight.value ? '#ffffff' : 'rgba(255,255,255,0.05)');
 const inputBorder = computed(() => isLight.value ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.12)');
-const modalBg     = computed(() => isLight.value ? '#ffffff' : '#0d1829');
 
 const companyId = computed<number | null>(() => auth.currentCompany?.id ?? null);
 const users     = ref<CompanyUser[]>([]);
@@ -544,26 +544,13 @@ const initials = (u: CompanyUser) => `${u.first_name?.[0] ?? ''}${u.last_name?.[
     </div>
 
     <!-- Modal Crear/Editar Usuario -->
-    <Teleport to="body">
-      <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-        <div class="w-full max-w-2xl max-h-[92vh] flex flex-col rounded-3xl border shadow-2xl" :style="{ backgroundColor: modalBg, borderColor: cardBorder }">
-          <!-- Header -->
-          <div class="flex items-center justify-between border-b p-5 shrink-0" :style="{ borderColor: cardBorder }">
-            <div class="flex items-center gap-3">
-              <div class="flex h-9 w-9 items-center justify-center rounded-2xl nxr-nav-icon-active">
-                <Users class="h-4 w-4" />
-              </div>
-              <h2 class="text-base font-semibold" :style="{ color: headerColor }">
-                {{ isEditing ? 'Editar usuario' : 'Nuevo usuario' }}
-              </h2>
-            </div>
-            <button @click="showModal = false" class="rounded-xl p-1.5 hover:bg-white/10 transition">
-              <X class="h-5 w-5" :style="{ color: mutedColor }" />
-            </button>
-          </div>
-
-          <!-- Body (scrollable) -->
-          <div class="overflow-y-auto custom-scrollbar p-5 space-y-5 flex-1">
+    <NxrSlidePanel
+      :open="showModal"
+      :title="isEditing ? 'Editar usuario' : 'Nuevo usuario'"
+      size="lg"
+      @close="showModal = false"
+    >
+      <div class="space-y-5">
             <div v-if="saveError" class="flex items-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
               <ShieldAlert class="h-4 w-4 shrink-0" /> {{ saveError }}
             </div>
@@ -738,22 +725,17 @@ const initials = (u: CompanyUser) => `${u.first_name?.[0] ?? ''}${u.last_name?.[
                 </div>
               </div>
             </div>
-          </div>
-
-          <!-- Footer -->
-          <div class="flex justify-end gap-3 border-t p-5 shrink-0" :style="{ borderColor: cardBorder }">
-            <button @click="showModal = false" class="rounded-2xl border px-4 py-2 text-sm hover:bg-white/5 transition"
-              :style="{ borderColor: cardBorder, color: mutedColor }">Cancelar</button>
-            <button @click="saveUser" :disabled="isSaving"
-              class="flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-medium text-white nxr-btn-primary disabled:opacity-60">
-              <Loader2 v-if="isSaving" class="h-4 w-4 animate-spin" />
-              <Save v-else class="h-4 w-4" />
-              {{ isEditing ? 'Guardar cambios' : 'Crear usuario' }}
-            </button>
-          </div>
-        </div>
       </div>
-    </Teleport>
+
+      <template #footer>
+        <button @click="showModal = false" class="nxr-btn nxr-btn-secondary">Cancelar</button>
+        <button @click="saveUser" :disabled="isSaving" class="nxr-btn nxr-btn-primary">
+          <Loader2 v-if="isSaving" class="h-4 w-4 animate-spin" />
+          <Save v-else class="h-4 w-4" />
+          {{ isEditing ? 'Guardar cambios' : 'Crear usuario' }}
+        </button>
+      </template>
+    </NxrSlidePanel>
 
     <!-- Confirm Delete Modal -->
     <ConfirmActionModal
