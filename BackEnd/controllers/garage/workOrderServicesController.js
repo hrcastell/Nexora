@@ -121,7 +121,7 @@ exports.create = async (req, res) => {
             `INSERT INTO ${schema}.work_order_services
              (work_order_id, service_template_id, assigned_employee_id, service_name, description,
               estimated_hours, actual_hours, hourly_rate, margin_pct, tax_pct, status)
-             VALUES ($1,$2,$3,$4,$5,$6,0,$7,$8,$9,'pending') RETURNING *`,
+             VALUES ($1,$2,$3,$4,$5,$6,$6,$7,$8,$9,'pending') RETURNING *`,
             [req.params.id, service_template_id || null, assigned_employee_id || null,
              finalName.trim(), finalDesc, finalHours, hourlyRate,
              templateMarginPct, templateTaxPct]

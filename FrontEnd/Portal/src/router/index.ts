@@ -289,11 +289,16 @@ router.beforeEach(async (to, _from, next) => {
     return next('/dashboard')
   }
 
-  // Module/transaction guard (aditivo) — super_admin bypass; también bypass si
-  // el menú aún no cargó (evita falsos negativos durante el bootstrap).
-  if (!isSuperAdmin && hasCompany && menuStore.loaded) {
+  // Module/transaction guard (aditivo) — super_admin bypass.
+  // Si el menú no cargó y la ruta requiere validación de transacción, esperar a que cargue.
+  if (!isSuperAdmin && hasCompany) {
     const requiredModule = to.meta.requiresModule as string | undefined
     const requiredTransaction = to.meta.requiresTransaction as string | undefined
+
+    // Await menu load if transaction check is needed and menu not loaded
+    if (requiredTransaction && !menuStore.loaded) {
+      await menuStore.loadMenu()
+    }
 
     if (requiredModule && !menuStore.hasModule(requiredModule)) {
       return next('/dashboard')

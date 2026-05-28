@@ -2,7 +2,6 @@ const db = require('../config/db');
 
 const getSchema    = (req) => req.user.schema_name;
 const isSuperAdmin = (req) => req.user.is_super_admin === true;
-const isAdmin      = (req) => isSuperAdmin(req) || req.user.role === 'admin';
 const PROTECTED_PROFILE_CODES = new Set(['acceso_total']);
 
 // Helper: resolve schema_name from company id (for super_admin cross-company ops)
@@ -77,6 +76,7 @@ exports.getProfilesByCompany = async (req, res) => {
         const schema = await getSchemaForCompany(req.params.companyId);
         if (!schema) return res.status(404).json({ error: 'Empresa no encontrada' });
 
+        // super_admin puede ver TODOS los perfiles de cualquier empresa, sin filtros
         const result = await db.query(
             `SELECT p.*,
                     COUNT(DISTINCT ptp.transaction_code) AS module_count,
@@ -284,11 +284,11 @@ exports.getProfiles = async (req, res) => {
         const schema = getSchema(req);
         if (!schema) return res.status(400).json({ error: 'Contexto de empresa requerido' });
 
-        // Non-super_admin cannot see only the global full-access profile.
-        // Company admins must be able to see/manage admin_empresa permissions.
+        // Non-super_admin cannot see global profiles (acceso_total) nor their own profile (admin_empresa).
+        // Company admins can see/manage other company profiles (consulta, operacion, supervisor).
         const whereClause = isSuperAdmin(req)
             ? ``
-            : `WHERE p.code NOT IN ('acceso_total')`;
+            : `WHERE p.code NOT IN ('acceso_total', 'admin_empresa')`;
 
         // module_count: número de transacciones con al menos un permiso activo (sistema actual)
         const result = await db.query(
@@ -458,8 +458,6 @@ exports.getProfilePermissionsFull = async (req, res) => {
 exports.updateProfilePermissionsFull = async (req, res) => {
     const client = await db.getClient();
     try {
-        if (!isAdmin(req)) return res.status(403).json({ error: 'Acceso denegado' });
-
         const schema = getSchema(req);
         if (!schema) return res.status(400).json({ error: 'Contexto de empresa requerido' });
 
@@ -532,8 +530,6 @@ exports.updateProfilePermissionsFull = async (req, res) => {
 // POST /api/profiles — Crear perfil
 exports.createProfile = async (req, res) => {
     try {
-        if (!isAdmin(req)) return res.status(403).json({ error: 'Acceso denegado' });
-
         const schema = getSchema(req);
         if (!schema) return res.status(400).json({ error: 'Contexto de empresa requerido' });
 
@@ -564,8 +560,6 @@ exports.createProfile = async (req, res) => {
 // PUT /api/profiles/:id — Editar perfil
 exports.updateProfile = async (req, res) => {
     try {
-        if (!isAdmin(req)) return res.status(403).json({ error: 'Acceso denegado' });
-
         const schema = getSchema(req);
         if (!schema) return res.status(400).json({ error: 'Contexto de empresa requerido' });
 
@@ -604,8 +598,6 @@ exports.updateProfile = async (req, res) => {
 // DELETE /api/profiles/:id — Eliminar perfil
 exports.deleteProfile = async (req, res) => {
     try {
-        if (!isAdmin(req)) return res.status(403).json({ error: 'Acceso denegado' });
-
         const schema = getSchema(req);
         if (!schema) return res.status(400).json({ error: 'Contexto de empresa requerido' });
 

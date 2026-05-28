@@ -5,7 +5,6 @@ const fs     = require('fs');
 const { createNotification } = require('../utils/notifications');
 
 const isSuperAdmin = (req) => req.user.is_super_admin === true;
-const isAdmin      = (req) => isSuperAdmin(req) || req.user.role === 'admin';
 
 const PASSWORD_REGEX = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,}$/;
 
@@ -103,11 +102,7 @@ exports.getAllUsers = async (req, res) => {
 // GET /api/companies/:id/users — List users of a company with extended fields
 exports.getCompanyUsers = async (req, res) => {
     try {
-        if (!isAdmin(req)) {
-            return res.status(403).json({ error: 'Acceso denegado' });
-        }
-
-        const { id: companyId } = req.params;
+        const { id: companyId} = req.params;
 
         const companyResult = await db.query(
             'SELECT schema_name FROM public.companies WHERE id = $1', [companyId]
@@ -159,10 +154,6 @@ exports.getCompanyUsers = async (req, res) => {
 exports.inviteUser = async (req, res) => {
     const client = await db.getClient();
     try {
-        if (!isAdmin(req)) {
-            return res.status(403).json({ error: 'Acceso denegado' });
-        }
-
         const { id: companyId } = req.params;
         const {
             email, first_name, last_name, full_name, password,
@@ -314,10 +305,6 @@ exports.inviteUser = async (req, res) => {
 exports.updateCompanyUser = async (req, res) => {
     const client = await db.getClient();
     try {
-        if (!isAdmin(req)) {
-            return res.status(403).json({ error: 'Acceso denegado' });
-        }
-
         const { id: companyId, userId } = req.params;
         const {
             first_name, last_name, phone, country, state_region, city, commune,
@@ -451,8 +438,6 @@ exports.updateCompanyUser = async (req, res) => {
 // PATCH /api/companies/:id/users/:userId/status — Cambiar estado del usuario
 exports.changeUserStatus = async (req, res) => {
     try {
-        if (!isAdmin(req)) return res.status(403).json({ error: 'Acceso denegado' });
-
         const { userId } = req.params;
         const { status } = req.body;
 
@@ -483,8 +468,6 @@ exports.changeUserStatus = async (req, res) => {
 // POST /api/companies/:id/users/:userId/profiles — Asignar perfil a usuario
 exports.assignUserProfile = async (req, res) => {
     try {
-        if (!isAdmin(req)) return res.status(403).json({ error: 'Acceso denegado' });
-
         const { id: companyId, userId } = req.params;
         const { profile_id, is_primary } = req.body;
 
@@ -519,8 +502,6 @@ exports.assignUserProfile = async (req, res) => {
 // DELETE /api/companies/:id/users/:userId/profiles/:profileId — Quitar perfil de usuario
 exports.removeUserProfile = async (req, res) => {
     try {
-        if (!isAdmin(req)) return res.status(403).json({ error: 'Acceso denegado' });
-
         const { id: companyId, userId, profileId } = req.params;
 
         const companyRes = await db.query(
@@ -551,8 +532,8 @@ exports.uploadAvatar = async (req, res) => {
         const { userId } = req.body;
         const targetId = userId ? parseInt(userId) : req.user.id;
 
-        if (targetId !== req.user.id && !isAdmin(req)) {
-            return res.status(403).json({ error: 'Acceso denegado' });
+        if (targetId !== req.user.id && !isSuperAdmin(req)) {
+            return res.status(403).json({ error: 'Solo puedes subir tu propio avatar' });
         }
 
         const existing = await db.query('SELECT avatar_url FROM public.users WHERE id = $1', [targetId]);
@@ -608,10 +589,6 @@ exports.deleteUser = async (req, res) => {
 // DELETE /api/companies/:id/users/:userId — Desvincular usuario de empresa
 exports.removeCompanyUser = async (req, res) => {
     try {
-        if (!isAdmin(req)) {
-            return res.status(403).json({ error: 'Acceso denegado' });
-        }
-
         const { id: companyId, userId } = req.params;
 
         await assertNotSystemUser(userId);

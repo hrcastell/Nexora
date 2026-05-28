@@ -35,27 +35,28 @@ async function seedDefaultProfilePermissionsForModule(client, { companyId, modul
     const transactionCodes = txRes.rows.map(r => r.code);
     if (transactionCodes.length === 0) return;
 
-    const profilesRes = await client.query(
-        `SELECT id, code
-         FROM "${schema}".profiles
-         WHERE code = ANY($1::text[])`,
-        [Object.keys(DEFAULT_PROFILE_PERMISSION_FLAGS)]
+    // Buscar solo el perfil admin_empresa
+    const adminProfileRes = await client.query(
+        `SELECT id FROM "${schema}".profiles WHERE code = 'admin_empresa' LIMIT 1`
     );
 
-    for (const profile of profilesRes.rows) {
-        const flags = DEFAULT_PROFILE_PERMISSION_FLAGS[profile.code];
-        if (!flags) continue;
+    if (adminProfileRes.rows.length === 0) {
+        console.warn(`No admin_empresa profile found in ${schema} - skipping permission seed`);
+        return;
+    }
 
-        for (const transactionCode of transactionCodes) {
-            await client.query(
-                `INSERT INTO "${schema}".profile_transaction_permissions
-                 (profile_id, transaction_code, can_view, can_create, can_edit,
-                  can_delete, can_approve, can_export, can_admin)
-                 VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
-                 ON CONFLICT (profile_id, transaction_code) DO NOTHING`,
-                [profile.id, transactionCode, ...flags]
-            );
-        }
+    const adminProfileId = adminProfileRes.rows[0].id;
+
+    // Seedear permisos completos solo para admin_empresa
+    for (const transactionCode of transactionCodes) {
+        await client.query(
+            `INSERT INTO "${schema}".profile_transaction_permissions
+             (profile_id, transaction_code, can_view, can_create, can_edit,
+              can_delete, can_approve, can_export, can_admin)
+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+             ON CONFLICT (profile_id, transaction_code) DO NOTHING`,
+            [adminProfileId, transactionCode, true, true, true, true, true, true, true]
+        );
     }
 }
 

@@ -16,8 +16,8 @@ export function usePermissions() {
   const userStatus = computed(() => authStore.user?.status ?? 'activo');
   const commercialStatus = computed(() => authStore.currentCompany?.commercial_status ?? 'activa');
 
-  const canManageUsers    = computed(() => isAdmin.value && !isReadOnly.value);
-  const canManageProfiles = computed(() => isAdmin.value && !isReadOnly.value);
+  const canManageUsers    = computed(() => isSuperAdmin.value || (canDo('users', 'can_admin') && !isReadOnly.value));
+  const canManageProfiles = computed(() => isSuperAdmin.value || (canDo('profiles', 'can_admin') && !isReadOnly.value));
   const canManageModules  = computed(() => isSuperAdmin.value && !isReadOnly.value);
   const canManageCommercial = computed(() => isSuperAdmin.value);
 
@@ -35,14 +35,14 @@ export function usePermissions() {
   /**
    * canDo(transactionCode, action) — verifica un permiso granular por transacción.
    * - super_admin: siempre TRUE
-   * - Antes de que el menu cargue: TRUE (fallback permisivo para no bloquear UI)
+   * - Antes de que el menu cargue: FALSE (fallback fail-closed para seguridad)
    * - Transacción no encontrada en el índice: FALSE
    *
    * Uso: canDo('users', 'can_delete'), canDo('companies', 'can_create')
    */
   const canDo = (transactionCode: string, action: PermissionAction): boolean => {
     if (isSuperAdmin.value) return true;
-    if (!menuStore.loaded) return true;
+    if (!menuStore.loaded) return false;
     const perms = menuStore.permissionIndex.get(transactionCode);
     if (!perms) return false;
     return perms[action] === true;
