@@ -73,7 +73,7 @@ const configStore = useVisualConfigStore();
 const isLightMode = computed(() => configStore.mode === 'light');
 const headerTextColor = computed(() => isLightMode.value ? '#0f172a' : '#ffffff');
 const mutedTextColor = computed(() => isLightMode.value ? '#475569' : '#94a3b8');
-const cardBg = computed(() => isLightMode.value ? 'rgba(255, 255, 255, 0.95)' : 'rgba(9, 18, 36, 0.80)');
+const cardBg = computed(() => configStore.cardBg);
 const cardBorder = computed(() => isLightMode.value ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.10)');
 const searchBg = computed(() => isLightMode.value ? 'rgba(255, 255, 255, 0.95)' : 'rgba(11, 19, 38, 0.80)');
 const searchInputBorder = computed(() => isLightMode.value ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.10)');

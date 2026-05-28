@@ -2,7 +2,7 @@
 import { ref, computed, onMounted, watch } from 'vue';
 import type { Component } from 'vue';
 import {
-  Shield, Plus, Search, Loader2, Pencil, Trash2, X, Save,
+  Shield, Plus, Search, Loader2, Pencil, Trash2, Save,
   ShieldAlert, CheckSquare, Square, ChevronDown, ChevronRight,
   LayoutDashboard, Building2, Users, BarChart2, Mail,
   CreditCard, Settings, Palette, FileText, ClipboardList, Puzzle, Lock
@@ -12,11 +12,19 @@ import { useVisualConfigStore } from '../../stores/visualConfig';
 import { usePermissions } from '../../composables/usePermissions';
 import CompanySelector from '../../components/admin/CompanySelector.vue';
 import ConfirmActionModal from '../../components/admin/ConfirmActionModal.vue';
+import NxrSlidePanel from '../../components/NxrSlidePanel.vue';
 import AppToast, { type ToastItem, type ToastType } from '../../components/AppToast.vue';
 import type { Profile, ModuleGroup, TransactionPermission } from '../../types/auth';
 
 const cfg      = useVisualConfigStore();
 const perms    = usePermissions();
+
+// Granular permission checks for profiles management
+const canViewProfiles   = computed(() => perms.isSuperAdmin.value || perms.canDo('profiles', 'can_view'));
+const canCreateProfile  = computed(() => !perms.isReadOnly.value && perms.canDo('profiles', 'can_create'));
+const canEditProfile    = computed(() => !perms.isReadOnly.value && perms.canDo('profiles', 'can_edit'));
+const canDeleteProfile  = computed(() => !perms.isReadOnly.value && perms.canDo('profiles', 'can_delete'));
+const canAdminProfiles  = computed(() => !perms.isReadOnly.value && perms.canDo('profiles', 'can_admin'));
 
 // Company selector (super_admin only)
 const selectedCompanyId = ref<number | null>(null);
@@ -35,13 +43,12 @@ const permFullBaseUrl = computed(() =>
 const isLight     = computed(() => cfg.mode === 'light');
 const headerColor = computed(() => isLight.value ? '#0f172a' : '#ffffff');
 const mutedColor  = computed(() => isLight.value ? '#475569' : '#94a3b8');
-const cardBg      = computed(() => isLight.value ? 'rgba(255,255,255,0.95)' : 'rgba(9,18,36,0.85)');
+const cardBg      = computed(() => cfg.cardBg);
 const cardBorder  = computed(() => isLight.value ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.10)');
 const rowHoverBg  = computed(() => isLight.value ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.04)');
 const inputBg     = computed(() => isLight.value ? '#ffffff' : 'rgba(255,255,255,0.05)');
 const inputBorder = computed(() => isLight.value ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.12)');
 const panelBg     = computed(() => isLight.value ? 'rgba(248,250,252,0.98)' : 'rgba(8,16,31,0.6)');
-const modalBg     = computed(() => isLight.value ? '#ffffff' : '#0d1829');
 
 // Icon registry
 const ICON_REGISTRY: Record<string, Component> = {
@@ -87,9 +94,11 @@ const ACTION_LABELS: Record<string, string> = {
 
 // Computed
 const filteredProfiles = computed(() => {
-  const base = profiles.value.filter(p => (
-    perms.isSuperAdmin.value || !['acceso_total', 'admin_empresa'].includes(p.code)
-  ));
+  const base = profiles.value.filter(p => {
+    if (perms.isSuperAdmin.value) return true;
+    // Admin no ve acceso_total ni admin_empresa
+    return p.code !== 'acceso_total' && p.code !== 'admin_empresa';
+  });
   const q = search.value.toLowerCase();
   if (!q) return base;
   return base.filter(p =>
@@ -199,9 +208,16 @@ function toggleExpanded(code: string) {
 }
 
 function toggleTxAction(tx: TransactionPermission, action: string) {
-  if (!perms.canManageProfiles.value) return;
+  if (!canAdminProfiles.value) return;
   const t = tx as unknown as Record<string, boolean>;
-  t[action] = !t[action];
+  const next = !t[action];
+  t[action] = next;
+
+  if (action === 'can_view' && !next) {
+    ACTIONS.forEach(a => { t[a] = false; });
+  } else if (action !== 'can_view' && next) {
+    t.can_view = true;
+  }
 }
 
 function toggleTxAll(tx: TransactionPermission, val: boolean) {
@@ -215,7 +231,7 @@ function txAllSelected(tx: TransactionPermission): boolean {
 }
 
 function toggleModuleAll(mod: ModuleGroup, val: boolean) {
-  if (!perms.canManageProfiles.value) return;
+  if (!canAdminProfiles.value) return;
   mod.transactions.forEach(tx => toggleTxAll(tx, val));
 }
 
@@ -225,13 +241,14 @@ function moduleAllSelected(mod: ModuleGroup): boolean {
 }
 
 function canEditProfileMeta(p: Profile): boolean {
-  if (!perms.canManageProfiles.value) return false;
+  if (!canEditProfile.value) return false;
   if (perms.isSuperAdmin.value) return true;
-  return !p.is_system_profile;
+  // Admin puede editar perfiles de empresa (no globales ni su propio perfil)
+  return p.scope === 'empresa' && p.code !== 'admin_empresa';
 }
 
-function canDeleteProfile(p: Profile): boolean {
-  if (!perms.canManageProfiles.value) return false;
+function canDeleteProfileAction(p: Profile): boolean {
+  if (!canDeleteProfile.value) return false;
   if (p.is_system_profile) return false;
   return true;
 }
@@ -275,7 +292,7 @@ async function saveProfile() {
 }
 
 function openDeleteProfile(p: Profile) {
-  if (!canDeleteProfile(p)) return;
+  if (!canDeleteProfileAction(p)) return;
   profileToDelete.value = p;
   showConfirmDelete.value = true;
 }
@@ -327,7 +344,7 @@ const scopeColor = (s: string) => {
           v-model="selectedCompanyId"
           placeholder="Mi empresa (hernancius)"
           :show-all="true" />
-        <button v-if="perms.canManageProfiles.value" @click="openCreate"
+        <button v-if="canCreateProfile" @click="openCreate"
           class="flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-medium text-white nxr-btn-primary">
           <Plus class="h-4 w-4" /> Nuevo perfil
         </button>
@@ -391,7 +408,7 @@ const scopeColor = (s: string) => {
                 class="rounded-lg p-1 hover:bg-white/10 transition">
                 <Pencil class="h-3.5 w-3.5" :style="{ color: mutedColor }" />
               </button>
-              <button v-if="canDeleteProfile(p)" @click="openDeleteProfile(p)"
+              <button v-if="canDeleteProfileAction(p)" @click="openDeleteProfile(p)"
                 class="rounded-lg p-1 hover:bg-red-500/10 transition">
                 <Trash2 class="h-3.5 w-3.5 text-red-400" />
               </button>
@@ -410,7 +427,7 @@ const scopeColor = (s: string) => {
         </div>
 
         <!-- Usuario sin permiso de configurar: solo ve un aviso -->
-        <template v-else-if="!perms.canManageProfiles.value">
+        <template v-else-if="!canViewProfiles">
           <div class="flex flex-col items-center justify-center py-20 gap-4" :style="{ color: mutedColor }">
             <div class="flex h-14 w-14 items-center justify-center rounded-2xl"
               :style="{ backgroundColor: 'rgba(212,175,55,0.10)', color: '#D4AF37' }">
@@ -433,7 +450,7 @@ const scopeColor = (s: string) => {
                 {{ moduleGroups.length }} modulo{{ moduleGroups.length !== 1 ? 's' : '' }} habilitados
               </p>
             </div>
-            <button v-if="perms.canManageProfiles.value" @click="savePermissions" :disabled="isSavingPerms"
+            <button v-if="canAdminProfiles" @click="savePermissions" :disabled="isSavingPerms"
               class="flex items-center gap-2 rounded-2xl px-3 py-1.5 text-xs font-medium text-white nxr-btn-primary disabled:opacity-60">
               <Loader2 v-if="isSavingPerms" class="h-3 w-3 animate-spin" />
               <Save v-else class="h-3 w-3" />
@@ -490,7 +507,7 @@ const scopeColor = (s: string) => {
                   {{ enabledCount(mod) }}/{{ mod.transactions.length }}
                 </span>
                 <!-- Toggle todo el modulo -->
-                <button v-if="perms.canManageProfiles.value && mod.transactions.length > 0"
+                <button v-if="canAdminProfiles && mod.transactions.length > 0"
                   @click.stop="toggleModuleAll(mod, !moduleAllSelected(mod))"
                   class="shrink-0 rounded-lg p-1 hover:bg-white/10 transition"
                   :title="moduleAllSelected(mod) ? 'Quitar todos' : 'Seleccionar todos'"
@@ -534,7 +551,7 @@ const scopeColor = (s: string) => {
                           </div>
                         </td>
                         <td v-for="a in ACTIONS" :key="a" class="px-1.5 py-2.5 text-center">
-                          <button @click="toggleTxAction(tx, a)" :disabled="!perms.canManageProfiles.value"
+                          <button @click="toggleTxAction(tx, a)" :disabled="!canAdminProfiles"
                             class="inline-flex items-center justify-center h-5 w-5 rounded transition disabled:cursor-default"
                             :style="{ color: (tx as unknown as Record<string,boolean>)[a] ? '#D4AF37' : mutedColor }">
                             <CheckSquare v-if="(tx as unknown as Record<string,boolean>)[a]" class="h-4 w-4" />
@@ -542,7 +559,7 @@ const scopeColor = (s: string) => {
                           </button>
                         </td>
                         <td class="px-1.5 py-2.5 text-center">
-                          <button @click="toggleTxAll(tx, !txAllSelected(tx))" :disabled="!perms.canManageProfiles.value"
+                          <button @click="toggleTxAll(tx, !txAllSelected(tx))" :disabled="!canAdminProfiles"
                             class="inline-flex items-center justify-center h-5 w-5 rounded transition disabled:cursor-default"
                             :style="{ color: txAllSelected(tx) ? '#7c3aed' : mutedColor }">
                             <CheckSquare v-if="txAllSelected(tx)" class="h-4 w-4" />
@@ -563,18 +580,13 @@ const scopeColor = (s: string) => {
     </div>
 
     <!-- Modal Perfil -->
-    <Teleport to="body">
-      <div v-if="showProfileModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-        <div class="w-full max-w-md rounded-3xl border shadow-2xl" :style="{ backgroundColor: modalBg, borderColor: cardBorder }">
-          <div class="flex items-center justify-between border-b p-5" :style="{ borderColor: cardBorder }">
-            <h2 class="text-base font-semibold" :style="{ color: headerColor }">
-              {{ isEditing ? 'Editar perfil' : 'Nuevo perfil' }}
-            </h2>
-            <button @click="showProfileModal = false" class="rounded-xl p-1.5 hover:bg-white/10 transition">
-              <X class="h-5 w-5" :style="{ color: mutedColor }" />
-            </button>
-          </div>
-          <div class="space-y-4 p-5">
+    <NxrSlidePanel
+      :open="showProfileModal"
+      :title="isEditing ? 'Editar perfil' : 'Nuevo perfil'"
+      size="sm"
+      @close="showProfileModal = false"
+    >
+      <div class="space-y-4">
             <div v-if="saveError" class="flex items-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
               <ShieldAlert class="h-4 w-4 shrink-0" /> {{ saveError }}
             </div>
@@ -606,19 +618,16 @@ const scopeColor = (s: string) => {
               </select>
             </div>
           </div>
-          <div class="flex justify-end gap-3 border-t p-5" :style="{ borderColor: cardBorder }">
-            <button @click="showProfileModal = false" class="rounded-2xl border px-4 py-2 text-sm hover:bg-white/5 transition"
-              :style="{ borderColor: cardBorder, color: mutedColor }">Cancelar</button>
-            <button @click="saveProfile" :disabled="isSaving"
-              class="flex items-center gap-2 rounded-2xl px-4 py-2 text-sm font-medium text-white nxr-btn-primary disabled:opacity-60">
-              <Loader2 v-if="isSaving" class="h-4 w-4 animate-spin" />
-              <Save v-else class="h-4 w-4" />
-              {{ isEditing ? 'Guardar cambios' : 'Crear perfil' }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </Teleport>
+
+      <template #footer>
+        <button @click="showProfileModal = false" class="nxr-btn nxr-btn-secondary">Cancelar</button>
+        <button @click="saveProfile" :disabled="isSaving" class="nxr-btn nxr-btn-primary">
+          <Loader2 v-if="isSaving" class="h-4 w-4 animate-spin" />
+          <Save v-else class="h-4 w-4" />
+          {{ isEditing ? 'Guardar cambios' : 'Crear perfil' }}
+        </button>
+      </template>
+    </NxrSlidePanel>
 
     <!-- Confirm Delete Modal -->
     <ConfirmActionModal

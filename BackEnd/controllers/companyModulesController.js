@@ -1,7 +1,64 @@
 const db = require('../config/db');
+const { createNotification } = require('../utils/notifications');
 
 const isSuperAdmin = (req) => req.user?.is_super_admin === true;
 const isAdmin      = (req) => isSuperAdmin(req) || req.user?.role === 'admin';
+
+const DEFAULT_PROFILE_PERMISSION_FLAGS = {
+    acceso_total:  [true, true, true, true, true, true, true],
+    admin_empresa: [true, true, true, true, true, true, true],
+};
+
+/**
+ * Seed default profile_transaction_permissions when a module is enabled for a
+ * company. This keeps the two-layer model aligned:
+ *   1) public.company_modules enables the module for the company
+ *   2) {tenant}.profile_transaction_permissions makes it visible to profiles
+ *
+ * ON CONFLICT DO NOTHING is intentional: never overwrite permissions the user
+ * already customized for a profile.
+ */
+async function seedDefaultProfilePermissionsForModule(client, { companyId, moduleId }) {
+    const companyRes = await client.query(
+        'SELECT schema_name FROM public.companies WHERE id = $1',
+        [companyId]
+    );
+    const schema = companyRes.rows[0]?.schema_name;
+    if (!schema) return;
+
+    const txRes = await client.query(
+        `SELECT code
+         FROM public.module_transactions
+         WHERE module_id = $1 AND status = 'activo'`,
+        [moduleId]
+    );
+    const transactionCodes = txRes.rows.map(r => r.code);
+    if (transactionCodes.length === 0) return;
+
+    // Buscar solo el perfil admin_empresa
+    const adminProfileRes = await client.query(
+        `SELECT id FROM "${schema}".profiles WHERE code = 'admin_empresa' LIMIT 1`
+    );
+
+    if (adminProfileRes.rows.length === 0) {
+        console.warn(`No admin_empresa profile found in ${schema} - skipping permission seed`);
+        return;
+    }
+
+    const adminProfileId = adminProfileRes.rows[0].id;
+
+    // Seedear permisos completos solo para admin_empresa
+    for (const transactionCode of transactionCodes) {
+        await client.query(
+            `INSERT INTO "${schema}".profile_transaction_permissions
+             (profile_id, transaction_code, can_view, can_create, can_edit,
+              can_delete, can_approve, can_export, can_admin)
+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+             ON CONFLICT (profile_id, transaction_code) DO NOTHING`,
+            [adminProfileId, transactionCode, true, true, true, true, true, true, true]
+        );
+    }
+}
 
 /**
  * GET /api/companies/:id/modules
@@ -99,7 +156,23 @@ exports.upsertCompanyModule = async (req, res) => {
             companyId, moduleId, enabled, visible, is_core, orderVal, notes ?? null
         ]);
 
+        if (enabled) {
+            await seedDefaultProfilePermissionsForModule(client, { companyId, moduleId });
+        }
+
         await client.query('COMMIT');
+
+        const actionLabel = enabled ? 'habilitado' : 'deshabilitado';
+        createNotification({
+            userId:    req.user.id,
+            companyId: Number(companyId),
+            type:      enabled ? 'success' : 'warning',
+            category:  'modules',
+            title:     `Módulo ${actionLabel}`,
+            body:      `El módulo '${moduleCode}' fue ${actionLabel} en la empresa.`,
+            actionUrl: `/admin/modules`
+        });
+
         res.json(result.rows[0]);
     } catch (error) {
         await client.query('ROLLBACK');

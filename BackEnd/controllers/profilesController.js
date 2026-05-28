@@ -2,8 +2,7 @@ const db = require('../config/db');
 
 const getSchema    = (req) => req.user.schema_name;
 const isSuperAdmin = (req) => req.user.is_super_admin === true;
-const isAdmin      = (req) => isSuperAdmin(req) || req.user.role === 'admin';
-const PROTECTED_PROFILE_CODES = new Set(['acceso_total', 'admin_empresa']);
+const PROTECTED_PROFILE_CODES = new Set(['acceso_total']);
 
 // Helper: resolve schema_name from company id (for super_admin cross-company ops)
 async function getSchemaForCompany(companyId) {
@@ -23,6 +22,28 @@ async function getProfileByIdInSchema(schema, profileId) {
 
 function isProtectedProfileCode(code) {
     return PROTECTED_PROFILE_CODES.has(code);
+}
+
+function normalizePermissionFlags(permission = {}) {
+    const hasAdvancedPermission =
+        permission.can_create === true ||
+        permission.can_edit === true ||
+        permission.can_delete === true ||
+        permission.can_approve === true ||
+        permission.can_export === true ||
+        permission.can_admin === true;
+
+    const canView = permission.can_view === true || hasAdvancedPermission;
+
+    return {
+        can_view: canView,
+        can_create: canView && permission.can_create === true,
+        can_edit: canView && permission.can_edit === true,
+        can_delete: canView && permission.can_delete === true,
+        can_approve: canView && permission.can_approve === true,
+        can_export: canView && permission.can_export === true,
+        can_admin: canView && permission.can_admin === true,
+    };
 }
 
 async function getActorAllowedTransactionCodes(schema, userId) {
@@ -55,6 +76,7 @@ exports.getProfilesByCompany = async (req, res) => {
         const schema = await getSchemaForCompany(req.params.companyId);
         if (!schema) return res.status(404).json({ error: 'Empresa no encontrada' });
 
+        // super_admin puede ver TODOS los perfiles de cualquier empresa, sin filtros
         const result = await db.query(
             `SELECT p.*,
                     COUNT(DISTINCT ptp.transaction_code) AS module_count,
@@ -230,9 +252,11 @@ exports.updateProfilePermissionsFullByCompany = async (req, res) => {
         for (const p of permissions) {
             const {
                 transaction_code,
-                can_view = false, can_create = false, can_edit = false,
-                can_delete = false, can_approve = false, can_export = false, can_admin = false
             } = p;
+            const {
+                can_view, can_create, can_edit, can_delete,
+                can_approve, can_export, can_admin
+            } = normalizePermissionFlags(p);
             await client.query(`
                 INSERT INTO "${schema}".profile_transaction_permissions
                     (profile_id, transaction_code, can_view, can_create, can_edit, can_delete, can_approve, can_export, can_admin, updated_at)
@@ -260,7 +284,8 @@ exports.getProfiles = async (req, res) => {
         const schema = getSchema(req);
         if (!schema) return res.status(400).json({ error: 'Contexto de empresa requerido' });
 
-        // Non-super_admin cannot see protected profiles
+        // Non-super_admin cannot see global profiles (acceso_total) nor their own profile (admin_empresa).
+        // Company admins can see/manage other company profiles (consulta, operacion, supervisor).
         const whereClause = isSuperAdmin(req)
             ? ``
             : `WHERE p.code NOT IN ('acceso_total', 'admin_empresa')`;
@@ -433,8 +458,6 @@ exports.getProfilePermissionsFull = async (req, res) => {
 exports.updateProfilePermissionsFull = async (req, res) => {
     const client = await db.getClient();
     try {
-        if (!isAdmin(req)) return res.status(403).json({ error: 'Acceso denegado' });
-
         const schema = getSchema(req);
         if (!schema) return res.status(400).json({ error: 'Contexto de empresa requerido' });
 
@@ -467,10 +490,13 @@ exports.updateProfilePermissionsFull = async (req, res) => {
         for (const p of permissions) {
             const {
                 transaction_code,
-                can_view = false, can_create = false, can_edit = false,
-                can_delete = false, can_approve = false, can_export = false, can_admin = false
             } = p;
             if (!transaction_code || (allowedTxCodes && !allowedTxCodes.has(transaction_code))) continue;
+
+            const {
+                can_view, can_create, can_edit, can_delete,
+                can_approve, can_export, can_admin
+            } = normalizePermissionFlags(p);
 
             await client.query(`
                 INSERT INTO "${schema}".profile_transaction_permissions
@@ -504,8 +530,6 @@ exports.updateProfilePermissionsFull = async (req, res) => {
 // POST /api/profiles — Crear perfil
 exports.createProfile = async (req, res) => {
     try {
-        if (!isAdmin(req)) return res.status(403).json({ error: 'Acceso denegado' });
-
         const schema = getSchema(req);
         if (!schema) return res.status(400).json({ error: 'Contexto de empresa requerido' });
 
@@ -536,8 +560,6 @@ exports.createProfile = async (req, res) => {
 // PUT /api/profiles/:id — Editar perfil
 exports.updateProfile = async (req, res) => {
     try {
-        if (!isAdmin(req)) return res.status(403).json({ error: 'Acceso denegado' });
-
         const schema = getSchema(req);
         if (!schema) return res.status(400).json({ error: 'Contexto de empresa requerido' });
 
@@ -576,8 +598,6 @@ exports.updateProfile = async (req, res) => {
 // DELETE /api/profiles/:id — Eliminar perfil
 exports.deleteProfile = async (req, res) => {
     try {
-        if (!isAdmin(req)) return res.status(403).json({ error: 'Acceso denegado' });
-
         const schema = getSchema(req);
         if (!schema) return res.status(400).json({ error: 'Contexto de empresa requerido' });
 

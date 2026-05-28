@@ -116,8 +116,19 @@ exports.getMyMenu = async (req, res) => {
                     // Sin perfil asignado: no se muestra ninguna transacción
                     allTx = [];
                 }
-            } catch {
-                // Si el schema no tiene la tabla aún, degradamos a mostrar todo sin filtrar
+            } catch (error) {
+                // Fail closed: si no podemos leer permisos, nunca exponemos
+                // transacciones a usuarios no-super_admin.
+                console.error('Get my menu permissions error:', {
+                    userId,
+                    companyId,
+                    schema,
+                    message: error.message,
+                    code: error.code,
+                    table: error.table,
+                    constraint: error.constraint
+                });
+                allTx = [];
             }
         }
 
@@ -128,7 +139,7 @@ exports.getMyMenu = async (req, res) => {
 
             const flags = isSuperAdmin
                 ? { can_view: true, can_create: true, can_edit: true, can_delete: true, can_approve: true, can_export: true, can_admin: true }
-                : (permsMap.get(tx.code) ?? { can_view: true, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_export: false, can_admin: false });
+                : (permsMap.get(tx.code) ?? { can_view: false, can_create: false, can_edit: false, can_delete: false, can_approve: false, can_export: false, can_admin: false });
 
             txByModule[tx.module_id].push({ ...tx, ...flags });
         }

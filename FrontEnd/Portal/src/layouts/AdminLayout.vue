@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
 import type { Component } from 'vue';
 import { useAuthStore } from '../stores/auth';
 import { useVisualConfigStore, wallpaperBackground } from '../stores/visualConfig';
 import { useMenuStore } from '../stores/menu';
+import { useNotificationsStore } from '../stores/notifications';
 import { useRoute, useRouter } from 'vue-router';
+import WidgetsNotificationBell from '../widgets/widgets_notification_bell.vue';
+import WidgetsNotificationToast from '../widgets/widgets_notification_toast.vue';
 import {
   Building2,
   LayoutDashboard,
@@ -32,10 +35,19 @@ import {
 const authStore = useAuthStore();
 const configStore = useVisualConfigStore();
 const menuStore = useMenuStore();
+const notifStore = useNotificationsStore();
 const route = useRoute();
 const router = useRouter();
 const isMobileMenuOpen = ref(false);
 const isSidebarCollapsed = ref(false);
+
+onMounted(async () => {
+  await notifStore.fetchPreferences();
+  notifStore.startPolling(60_000);
+});
+onBeforeUnmount(() => {
+  notifStore.stopPolling();
+});
 
 // Track expanded state per module code
 const expandedModules = ref<Record<string, boolean>>({});
@@ -61,7 +73,7 @@ const navModules = computed(() => {
     .map(m => ({
       ...m,
       visibleTransactions: m.transactions.filter(
-        t => t.menu_visible && t.status === 'activo' && t.route
+        t => t.menu_visible && t.status === 'activo' && t.route && t.can_view === true
       )
     }))
     .filter(m => m.visibleTransactions.length > 0);
@@ -90,6 +102,7 @@ const toggleSidebar = () => {
 };
 
 const logout = () => {
+  notifStore.reset();
   authStore.logout();
   router.push('/login');
 };
@@ -99,7 +112,6 @@ const logout = () => {
   <div 
     class="h-screen overflow-hidden transition-colors duration-300 flex"
     :style="{ 
-      background: configStore.shellBg, 
       color: configStore.textColor,
       fontFamily: configStore.currentFont.family
     }"
@@ -143,8 +155,9 @@ const logout = () => {
         <p class="px-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Menú</p>
         <div class="mt-3 space-y-2">
 
-          <!-- Dashboard (always visible) -->
+          <!-- Dashboard global — solo visible para super_admin (métricas del sistema) -->
           <router-link
+            v-if="authStore.user?.is_super_admin"
             to="/dashboard"
             :class="[
               'flex w-full items-center gap-3 rounded-2xl border px-4 py-3 text-left transition',
@@ -267,15 +280,18 @@ const logout = () => {
                 Panel de administración
               </h1>
             </div>
-            <button
-              @click="toggleSidebar"
-              class="flex items-center gap-2 rounded-2xl border nxr-glass px-3 py-2 text-xs font-medium text-slate-300 transition hover:text-white shrink-0"
-              :title="isSidebarCollapsed ? 'Mostrar menú' : 'Ocultar menú'"
-            >
-              <ChevronLeft v-if="!isSidebarCollapsed" class="h-4 w-4" />
-              <ChevronRight v-else class="h-4 w-4" />
-              <span class="hidden lg:inline">{{ isSidebarCollapsed ? 'Mostrar menú' : 'Ocultar menú' }}</span>
-            </button>
+            <div class="flex items-center gap-3 shrink-0">
+              <WidgetsNotificationBell />
+              <button
+                @click="toggleSidebar"
+                class="flex items-center gap-2 rounded-2xl border nxr-glass px-3 py-2 text-xs font-medium text-slate-300 transition hover:text-white"
+                :title="isSidebarCollapsed ? 'Mostrar menú' : 'Ocultar menú'"
+              >
+                <ChevronLeft v-if="!isSidebarCollapsed" class="h-4 w-4" />
+                <ChevronRight v-else class="h-4 w-4" />
+                <span class="hidden lg:inline">{{ isSidebarCollapsed ? 'Mostrar menú' : 'Ocultar menú' }}</span>
+              </button>
+            </div>
           </div>
         </header>
 
@@ -283,6 +299,9 @@ const logout = () => {
         <div class="rounded-[32px] border nxr-surface p-5 shadow-2xl shadow-black/15 backdrop-blur-xl min-h-[calc(100%-140px)]">
           <router-view />
         </div>
+
+        <!-- Notification toasts (bottom-right) -->
+        <WidgetsNotificationToast />
       </div>
     </main>
   </div>

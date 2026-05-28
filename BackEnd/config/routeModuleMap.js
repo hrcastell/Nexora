@@ -103,6 +103,110 @@ const ROUTE_MODULE_MAP = {
     'GET    /solicitudes':                 { module: 'configuration', transaction: 'requests' },
     'PUT    /solicitudes/:id':             { module: 'configuration', transaction: 'requests' },
     // POST /solicitudes/public is public — no mapeo
+
+    // ── Garage Operations: Dashboard ──
+    'GET    /garage/dashboard':            { module: 'garage_operations', transaction: 'garage_dashboard' },
+
+    // ── Garage Operations: Catálogos ──
+    'GET    /garage/catalogs/:type':            { module: 'garage_operations', transaction: 'garage_dashboard' },
+    'POST   /garage/catalogs/:type':            { module: 'garage_operations', transaction: 'garage_dashboard' },
+    'PUT    /garage/catalogs/:type/:id':        { module: 'garage_operations', transaction: 'garage_dashboard' },
+    'PATCH  /garage/catalogs/:type/:id/status': { module: 'garage_operations', transaction: 'garage_dashboard' },
+
+    // ── Garage Operations: Clientes ──
+    'GET    /garage/customers':                  { module: 'garage_operations', transaction: 'garage_customers' },
+    'POST   /garage/customers':                  { module: 'garage_operations', transaction: 'garage_customers' },
+    'GET    /garage/customers/:id':              { module: 'garage_operations', transaction: 'garage_customers' },
+    'PUT    /garage/customers/:id':              { module: 'garage_operations', transaction: 'garage_customers' },
+    'PATCH  /garage/customers/:id/status':       { module: 'garage_operations', transaction: 'garage_customers' },
+    'POST   /garage/customers/:id/photo':        { module: 'garage_operations', transaction: 'garage_customers' },
+    'DELETE /garage/customers/:id/photo':        { module: 'garage_operations', transaction: 'garage_customers' },
+
+    // ── Garage Operations: Vehículos ──
+    'GET    /garage/vehicles':                           { module: 'garage_operations', transaction: 'garage_vehicles' },
+    'POST   /garage/vehicles':                           { module: 'garage_operations', transaction: 'garage_vehicles' },
+    'GET    /garage/vehicles/:id':                       { module: 'garage_operations', transaction: 'garage_vehicles' },
+    'PUT    /garage/vehicles/:id':                       { module: 'garage_operations', transaction: 'garage_vehicles' },
+    'PATCH  /garage/vehicles/:id/status':                { module: 'garage_operations', transaction: 'garage_vehicles' },
+    'GET    /garage/vehicles/:id/history':               { module: 'garage_operations', transaction: 'garage_vehicle_history' },
+    'GET    /garage/vehicles/:id/photos':                { module: 'garage_operations', transaction: 'garage_vehicles' },
+    'POST   /garage/vehicles/:id/photos':                { module: 'garage_operations', transaction: 'garage_vehicles' },
+    'DELETE /garage/vehicles/:id/photos/:photoId':       { module: 'garage_operations', transaction: 'garage_vehicles' },
+    'GET    /garage/customers/:id/vehicles':             { module: 'garage_operations', transaction: 'garage_vehicles' },
+
+    // ── Garage Operations: Empleados ──
+    'GET    /garage/employees':              { module: 'garage_operations', transaction: 'garage_employees' },
+    'POST   /garage/employees':              { module: 'garage_operations', transaction: 'garage_employees' },
+    'GET    /garage/employees/:id':          { module: 'garage_operations', transaction: 'garage_employees' },
+    'PUT    /garage/employees/:id':          { module: 'garage_operations', transaction: 'garage_employees' },
+    'PATCH  /garage/employees/:id/status':   { module: 'garage_operations', transaction: 'garage_employees' },
+    'POST   /garage/employees/:id/photo':    { module: 'garage_operations', transaction: 'garage_employees' },
+    'DELETE /garage/employees/:id/photo':    { module: 'garage_operations', transaction: 'garage_employees' },
+
+    // ── Garage Operations: Tarifas ──
+    'GET    /garage/labor-rates':                          { module: 'garage_operations', transaction: 'garage_labor_rates' },
+    'POST   /garage/labor-rates':                          { module: 'garage_operations', transaction: 'garage_labor_rates' },
+    'GET    /garage/labor-rates/:id':                      { module: 'garage_operations', transaction: 'garage_labor_rates' },
+    'PUT    /garage/labor-rates/:id':                      { module: 'garage_operations', transaction: 'garage_labor_rates' },
+    'PATCH  /garage/labor-rates/:id/status':               { module: 'garage_operations', transaction: 'garage_labor_rates' },
+    'GET    /garage/employees/:employeeId/labor-rates':    { module: 'garage_operations', transaction: 'garage_labor_rates' },
+
+    // ── Garage Operations: Productos ──
+    'GET    /garage/products':              { module: 'garage_operations', transaction: 'garage_products' },
+    'POST   /garage/products':              { module: 'garage_operations', transaction: 'garage_products' },
+    'GET    /garage/products/:id':          { module: 'garage_operations', transaction: 'garage_products' },
+    'PUT    /garage/products/:id':          { module: 'garage_operations', transaction: 'garage_products' },
+    'PATCH  /garage/products/:id/status':   { module: 'garage_operations', transaction: 'garage_products' },
+
+    // ── Garage Operations: Servicios configurables ──
+    'GET    /garage/service-templates':                            { module: 'garage_operations', transaction: 'garage_service_templates' },
+    'POST   /garage/service-templates':                            { module: 'garage_operations', transaction: 'garage_service_templates' },
+    'GET    /garage/service-templates/:id':                        { module: 'garage_operations', transaction: 'garage_service_templates' },
+    'PUT    /garage/service-templates/:id':                        { module: 'garage_operations', transaction: 'garage_service_templates' },
+    'PATCH  /garage/service-templates/:id/status':                 { module: 'garage_operations', transaction: 'garage_service_templates' },
+    'POST   /garage/service-templates/:id/products':               { module: 'garage_operations', transaction: 'garage_service_templates' },
+    'DELETE /garage/service-templates/:id/products/:productId':    { module: 'garage_operations', transaction: 'garage_service_templates' },
+
+    // ── Garage Operations: Citas ──
+    'GET    /garage/appointments':                               { module: 'garage_operations', transaction: 'garage_appointments' },
+    'POST   /garage/appointments':                               { module: 'garage_operations', transaction: 'garage_appointments' },
+    'GET    /garage/appointments/:id':                           { module: 'garage_operations', transaction: 'garage_appointments' },
+    'PUT    /garage/appointments/:id':                           { module: 'garage_operations', transaction: 'garage_appointments' },
+    'PATCH  /garage/appointments/:id/status':                    { module: 'garage_operations', transaction: 'garage_appointments' },
+    'POST   /garage/appointments/:id/confirm':                   { module: 'garage_operations', transaction: 'garage_appointments' },
+    'POST   /garage/appointments/:id/mark-arrived':              { module: 'garage_operations', transaction: 'garage_appointments' },
+    'POST   /garage/appointments/:id/cancel':                    { module: 'garage_operations', transaction: 'garage_appointments' },
+    'POST   /garage/appointments/:id/reschedule':                { module: 'garage_operations', transaction: 'garage_appointments' },
+    'POST   /garage/appointments/:id/convert-to-work-order':     { module: 'garage_operations', transaction: 'garage_appointments' },
+
+    // ── Garage Operations: Órdenes de trabajo ──
+    'GET    /garage/work-orders':                                        { module: 'garage_operations', transaction: 'garage_work_orders' },
+    'POST   /garage/work-orders':                                        { module: 'garage_operations', transaction: 'garage_work_orders' },
+    'GET    /garage/work-orders/:id':                                    { module: 'garage_operations', transaction: 'garage_work_orders' },
+    'PUT    /garage/work-orders/:id':                                    { module: 'garage_operations', transaction: 'garage_work_orders' },
+    'PATCH  /garage/work-orders/:id/status':                             { module: 'garage_operations', transaction: 'garage_work_orders' },
+    'PATCH  /garage/work-orders/:id/assign':                             { module: 'garage_operations', transaction: 'garage_work_orders' },
+    'POST   /garage/work-orders/:id/recalculate':                        { module: 'garage_operations', transaction: 'garage_work_orders' },
+    'POST   /garage/work-orders/:id/close':                              { module: 'garage_operations', transaction: 'garage_work_orders' },
+    'POST   /garage/work-orders/:id/cancel':                             { module: 'garage_operations', transaction: 'garage_work_orders' },
+    'GET    /garage/work-orders/:id/services':                           { module: 'garage_operations', transaction: 'garage_work_orders' },
+    'POST   /garage/work-orders/:id/services':                           { module: 'garage_operations', transaction: 'garage_work_orders' },
+    'GET    /garage/work-orders/:id/services/:serviceId':                { module: 'garage_operations', transaction: 'garage_work_orders' },
+    'PUT    /garage/work-orders/:id/services/:serviceId':                { module: 'garage_operations', transaction: 'garage_work_orders' },
+    'DELETE /garage/work-orders/:id/services/:serviceId':                { module: 'garage_operations', transaction: 'garage_work_orders' },
+    'PATCH  /garage/work-orders/:id/services/:serviceId/status':         { module: 'garage_operations', transaction: 'garage_work_orders' },
+    'POST   /garage/work-orders/:id/services/:serviceId/products':       { module: 'garage_operations', transaction: 'garage_work_orders' },
+    'DELETE /garage/work-orders/:id/services/:serviceId/products/:productLineId': { module: 'garage_operations', transaction: 'garage_work_orders' },
+
+    // ── Garage Operations: Fotos de orden ──
+    'GET    /garage/work-orders/:id/photos':                { module: 'garage_operations', transaction: 'garage_work_orders' },
+    'POST   /garage/work-orders/:id/photos':                { module: 'garage_operations', transaction: 'garage_work_orders' },
+    'DELETE /garage/work-orders/:id/photos/:photoId':       { module: 'garage_operations', transaction: 'garage_work_orders' },
+
+    // ── Garage Operations: Pagos de orden ──
+    'GET    /garage/work-orders/:id/payments':              { module: 'garage_operations', transaction: 'garage_work_orders' },
+    'POST   /garage/work-orders/:id/payments':              { module: 'garage_operations', transaction: 'garage_work_orders' },
+    'DELETE /garage/work-orders/:id/payments/:paymentId':   { module: 'garage_operations', transaction: 'garage_work_orders' },
 };
 
 /**

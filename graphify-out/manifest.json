@@ -1,0 +1,1032 @@
+{
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\package.json": {
+    "mtime": 1774483021.1552505,
+    "ast_hash": "ad6db606a9bbb37b7a1577755b662f96",
+    "semantic_hash": "ad6db606a9bbb37b7a1577755b662f96"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\app.js": {
+    "mtime": 1779300626.4709249,
+    "ast_hash": "d10de5a8e8e763b594cbe4fd81b75ebe",
+    "semantic_hash": "d10de5a8e8e763b594cbe4fd81b75ebe"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\package.json": {
+    "mtime": 1775685437.9474647,
+    "ast_hash": "690b482bd93c59761416a81d3a84519b",
+    "semantic_hash": "690b482bd93c59761416a81d3a84519b"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\server.js": {
+    "mtime": 1774527678.521089,
+    "ast_hash": "01554df6a09d8d48e7c176d6575f2760",
+    "semantic_hash": "01554df6a09d8d48e7c176d6575f2760"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\config\\db.js": {
+    "mtime": 1774528355.6450124,
+    "ast_hash": "c9dab599d7e41c9c15aac6bd2e36c8b4",
+    "semantic_hash": "c9dab599d7e41c9c15aac6bd2e36c8b4"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\config\\routeModuleMap.js": {
+    "mtime": 1779303703.1926143,
+    "ast_hash": "b619e07ec5a58741f383718b4752b906",
+    "semantic_hash": "b619e07ec5a58741f383718b4752b906"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\controllers\\authController.js": {
+    "mtime": 1776979020.4795213,
+    "ast_hash": "ef0b8c466e1642f1389d03a9877d70ba",
+    "semantic_hash": "ef0b8c466e1642f1389d03a9877d70ba"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\controllers\\catalogController.js": {
+    "mtime": 1776714967.5851235,
+    "ast_hash": "9411b2d61f6e6798c38367e81874a0d7",
+    "semantic_hash": "9411b2d61f6e6798c38367e81874a0d7"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\controllers\\commercialController.js": {
+    "mtime": 1776972541.2976403,
+    "ast_hash": "eefc1b4fd62508296bc2726d82c136e4",
+    "semantic_hash": "eefc1b4fd62508296bc2726d82c136e4"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\controllers\\companyConfigController.js": {
+    "mtime": 1776714925.4034898,
+    "ast_hash": "0dbc7bf04c1e558e7cb3d005a0b9ab58",
+    "semantic_hash": "0dbc7bf04c1e558e7cb3d005a0b9ab58"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\controllers\\companyController.js": {
+    "mtime": 1779311542.8434474,
+    "ast_hash": "08d661b2fc0611977ba6e80747ca443a",
+    "semantic_hash": "08d661b2fc0611977ba6e80747ca443a"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\controllers\\companyModulesController.js": {
+    "mtime": 1779311529.6123495,
+    "ast_hash": "568f81d779db1f600b805ad9aca303df",
+    "semantic_hash": "568f81d779db1f600b805ad9aca303df"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\controllers\\menuController.js": {
+    "mtime": 1779311503.1869464,
+    "ast_hash": "f3e9bae1187361a3d9c1d39597a12d03",
+    "semantic_hash": "f3e9bae1187361a3d9c1d39597a12d03"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\controllers\\modulesController.js": {
+    "mtime": 1778964241.0442202,
+    "ast_hash": "4a0c3187fafb7c5805d2860b9d7881e4",
+    "semantic_hash": "4a0c3187fafb7c5805d2860b9d7881e4"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\controllers\\notificationsController.js": {
+    "mtime": 1779110699.0748568,
+    "ast_hash": "5d2fac4b40a00313e7e653d820b19792",
+    "semantic_hash": "5d2fac4b40a00313e7e653d820b19792"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\controllers\\profilesController.js": {
+    "mtime": 1779314094.7625372,
+    "ast_hash": "6276396252485b8d16ab629e53e5dc9f",
+    "semantic_hash": "6276396252485b8d16ab629e53e5dc9f"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\controllers\\solicitudesController.js": {
+    "mtime": 1779110699.0758314,
+    "ast_hash": "75b73216b6f2a2c69d1c595e7e1f6481",
+    "semantic_hash": "75b73216b6f2a2c69d1c595e7e1f6481"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\controllers\\statsController.js": {
+    "mtime": 1775239995.9455943,
+    "ast_hash": "07b7d3766d1475558fb0b5b4a3beaf8b",
+    "semantic_hash": "07b7d3766d1475558fb0b5b4a3beaf8b"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\controllers\\subscriptionController.js": {
+    "mtime": 1775233433.5575728,
+    "ast_hash": "b904cfafcac8e4bd79c496c4a30badc8",
+    "semantic_hash": "b904cfafcac8e4bd79c496c4a30badc8"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\controllers\\subscriptionPlansController.js": {
+    "mtime": 1776968189.1032386,
+    "ast_hash": "6824b1dc7da1c1ac260cd4868f3b923b",
+    "semantic_hash": "6824b1dc7da1c1ac260cd4868f3b923b"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\controllers\\usersController.js": {
+    "mtime": 1779110699.0768294,
+    "ast_hash": "66719f13616ba57e09d5379fea20e2a9",
+    "semantic_hash": "66719f13616ba57e09d5379fea20e2a9"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\controllers\\garage\\appointmentsController.js": {
+    "mtime": 1779228480.1086855,
+    "ast_hash": "5e600bb38eb56d0c8b0bcf0d8b10373f",
+    "semantic_hash": "5e600bb38eb56d0c8b0bcf0d8b10373f"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\controllers\\garage\\catalogsController.js": {
+    "mtime": 1779228169.7436793,
+    "ast_hash": "cb7208f74ba3c6cfab037ffd4d3a97f3",
+    "semantic_hash": "cb7208f74ba3c6cfab037ffd4d3a97f3"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\controllers\\garage\\customersController.js": {
+    "mtime": 1779228207.8247433,
+    "ast_hash": "6c46c45ade987b1e6d270ea17bf851c4",
+    "semantic_hash": "6c46c45ade987b1e6d270ea17bf851c4"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\controllers\\garage\\employeesController.js": {
+    "mtime": 1779228298.855998,
+    "ast_hash": "18e360cca8ed0c80191e841a85116e62",
+    "semantic_hash": "18e360cca8ed0c80191e841a85116e62"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\controllers\\garage\\laborRatesController.js": {
+    "mtime": 1779228330.1122153,
+    "ast_hash": "b13d61de3322b4734fbff66d66571fa3",
+    "semantic_hash": "b13d61de3322b4734fbff66d66571fa3"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\controllers\\garage\\productsController.js": {
+    "mtime": 1779228357.2161014,
+    "ast_hash": "b47a02bfee63b05168d6e8e5a6152280",
+    "semantic_hash": "b47a02bfee63b05168d6e8e5a6152280"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\controllers\\garage\\serviceTemplatesController.js": {
+    "mtime": 1779303768.9159253,
+    "ast_hash": "0b42c7e9c259a4c077f8761ceeb5ea1f",
+    "semantic_hash": "0b42c7e9c259a4c077f8761ceeb5ea1f"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\controllers\\garage\\vehicleHistoryController.js": {
+    "mtime": 1779228630.7811122,
+    "ast_hash": "c86e00236b9cb547a81df0a3b29b11c6",
+    "semantic_hash": "c86e00236b9cb547a81df0a3b29b11c6"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\controllers\\garage\\vehiclesController.js": {
+    "mtime": 1779300743.5071294,
+    "ast_hash": "fec249351036f29c0eff72472f78afe4",
+    "semantic_hash": "fec249351036f29c0eff72472f78afe4"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\controllers\\garage\\workOrderPaymentsController.js": {
+    "mtime": 1779300891.1460574,
+    "ast_hash": "47e24a6f3979d21fa8e0da05077b2e94",
+    "semantic_hash": "47e24a6f3979d21fa8e0da05077b2e94"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\controllers\\garage\\workOrdersController.js": {
+    "mtime": 1779303678.9080338,
+    "ast_hash": "b711b610680941dc97ea1640dadc2106",
+    "semantic_hash": "b711b610680941dc97ea1640dadc2106"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\controllers\\garage\\workOrderServicesController.js": {
+    "mtime": 1779304015.191362,
+    "ast_hash": "d1ec35aacfe34e669a9de484af50055e",
+    "semantic_hash": "d1ec35aacfe34e669a9de484af50055e"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\middleware\\authMiddleware.js": {
+    "mtime": 1775761686.4055746,
+    "ast_hash": "ea493369dc637c8021f2471552d4fd18",
+    "semantic_hash": "ea493369dc637c8021f2471552d4fd18"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\middleware\\optionalAuth.js": {
+    "mtime": 1776715187.5901456,
+    "ast_hash": "c132c9f10f7b820e183ee9fef3b5a30d",
+    "semantic_hash": "c132c9f10f7b820e183ee9fef3b5a30d"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\middleware\\requireModule.js": {
+    "mtime": 1776715199.5615163,
+    "ast_hash": "24689a27581235d066d1a4f7a66c5e52",
+    "semantic_hash": "24689a27581235d066d1a4f7a66c5e52"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\routes\\authRoutes.js": {
+    "mtime": 1776953766.9268322,
+    "ast_hash": "d5bd9d6aca24eaca8f78923d16d72141",
+    "semantic_hash": "d5bd9d6aca24eaca8f78923d16d72141"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\routes\\catalogRoutes.js": {
+    "mtime": 1776715034.1791687,
+    "ast_hash": "36170e4393ae1ab8ce66c2e3872ea378",
+    "semantic_hash": "36170e4393ae1ab8ce66c2e3872ea378"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\routes\\commercialRoutes.js": {
+    "mtime": 1775761686.407093,
+    "ast_hash": "0f6965b08e6c0741b4fd818219c1e11d",
+    "semantic_hash": "0f6965b08e6c0741b4fd818219c1e11d"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\routes\\companyConfigRoutes.js": {
+    "mtime": 1775234891.7416432,
+    "ast_hash": "46173af5d3b37dfc8afac20cf8383cbf",
+    "semantic_hash": "46173af5d3b37dfc8afac20cf8383cbf"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\routes\\companyModulesRoutes.js": {
+    "mtime": 1776715057.233342,
+    "ast_hash": "eaedf90e7adb1be8a1aae5aef6f3b754",
+    "semantic_hash": "eaedf90e7adb1be8a1aae5aef6f3b754"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\routes\\companyProfilesRoutes.js": {
+    "mtime": 1776889983.5001755,
+    "ast_hash": "3eb2d97e883ec91141c60fed851939bb",
+    "semantic_hash": "3eb2d97e883ec91141c60fed851939bb"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\routes\\companyRoutes.js": {
+    "mtime": 1776871448.964481,
+    "ast_hash": "bbd0a827c2ef4ef510650a79fb4504ec",
+    "semantic_hash": "bbd0a827c2ef4ef510650a79fb4504ec"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\routes\\menuRoutes.js": {
+    "mtime": 1776715043.3077269,
+    "ast_hash": "67b2eefb1001f1372bba3e4e3e840e8e",
+    "semantic_hash": "67b2eefb1001f1372bba3e4e3e840e8e"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\routes\\modulesRoutes.js": {
+    "mtime": 1775685437.9504652,
+    "ast_hash": "cc3e8c5789ac8326c39d295a5e197c5d",
+    "semantic_hash": "cc3e8c5789ac8326c39d295a5e197c5d"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\routes\\notificationsRoutes.js": {
+    "mtime": 1779110699.0778286,
+    "ast_hash": "ac71e2853ed697c827c8a2c251795c9f",
+    "semantic_hash": "ac71e2853ed697c827c8a2c251795c9f"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\routes\\profilesRoutes.js": {
+    "mtime": 1776809069.2229044,
+    "ast_hash": "01b1a3aa1273c1ece462ca94c83ce65a",
+    "semantic_hash": "01b1a3aa1273c1ece462ca94c83ce65a"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\routes\\solicitudesRoutes.js": {
+    "mtime": 1774483895.3214064,
+    "ast_hash": "c2e9e1df6e6670173b356b98b4f53da7",
+    "semantic_hash": "c2e9e1df6e6670173b356b98b4f53da7"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\routes\\statsRoutes.js": {
+    "mtime": 1775240002.0114586,
+    "ast_hash": "a66c569ca3ee16aa5a927bb2db0baa49",
+    "semantic_hash": "a66c569ca3ee16aa5a927bb2db0baa49"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\routes\\subscriptionPlansRoutes.js": {
+    "mtime": 1776968193.8411736,
+    "ast_hash": "897f0ba5692abd15a98c706d19b757c3",
+    "semantic_hash": "897f0ba5692abd15a98c706d19b757c3"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\routes\\subscriptionRoutes.js": {
+    "mtime": 1775233444.5915442,
+    "ast_hash": "2a44386157285be036741d9356d901ee",
+    "semantic_hash": "2a44386157285be036741d9356d901ee"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\routes\\usersRoutes.js": {
+    "mtime": 1775685437.9524634,
+    "ast_hash": "3b7e92d62627c1f68bf209f22a505e10",
+    "semantic_hash": "3b7e92d62627c1f68bf209f22a505e10"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\routes\\garage\\garageRoutes.js": {
+    "mtime": 1779303691.939473,
+    "ast_hash": "6cdf96563ffefd7a4e61e05401021792",
+    "semantic_hash": "6cdf96563ffefd7a4e61e05401021792"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\templates\\tenant_schema.sql": {
+    "mtime": 1779310765.236772,
+    "ast_hash": "bed998e239a5ece287ac63a7251830a2",
+    "semantic_hash": "bed998e239a5ece287ac63a7251830a2"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\utils\\calculateWorkOrderTotals.js": {
+    "mtime": 1779303981.8642142,
+    "ast_hash": "0e7c9d2fde90c37ec25c9f879ba647bf",
+    "semantic_hash": "0e7c9d2fde90c37ec25c9f879ba647bf"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\utils\\jwt.js": {
+    "mtime": 1775685437.9566605,
+    "ast_hash": "f6b0bff1ec2b92986b20fa76732eeaa0",
+    "semantic_hash": "f6b0bff1ec2b92986b20fa76732eeaa0"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\utils\\normalizeText.js": {
+    "mtime": 1779228088.5786128,
+    "ast_hash": "39eeefb05d9fee91627a82f4a1a96f06",
+    "semantic_hash": "39eeefb05d9fee91627a82f4a1a96f06"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\utils\\notifications.js": {
+    "mtime": 1779110699.0788283,
+    "ast_hash": "12c89c1eb11d414dd78b5c1430eb3c58",
+    "semantic_hash": "12c89c1eb11d414dd78b5c1430eb3c58"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\utils\\tenantResolver.js": {
+    "mtime": 1779228074.5779805,
+    "ast_hash": "b42287f37c87d20cdd68cc9c830546e8",
+    "semantic_hash": "b42287f37c87d20cdd68cc9c830546e8"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\BackEnd\\utils\\upload.js": {
+    "mtime": 1779228128.3327217,
+    "ast_hash": "f2d10bb0405fc588d541f745536f38a3",
+    "semantic_hash": "f2d10bb0405fc588d541f745536f38a3"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\Database\\migracion.sql": {
+    "mtime": 1779284618.4452722,
+    "ast_hash": "730a2b11d15fdc1fcdb28f2ec05b7808",
+    "semantic_hash": "730a2b11d15fdc1fcdb28f2ec05b7808"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\Database\\00_core\\00_init_roles.sql": {
+    "mtime": 1774482788.3858373,
+    "ast_hash": "f2ad5a4be7d0e67777da3e77a30a65b5",
+    "semantic_hash": "f2ad5a4be7d0e67777da3e77a30a65b5"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\Database\\01_public_schema\\01_public_tables.sql": {
+    "mtime": 1774489059.3402379,
+    "ast_hash": "608d161703265742a689786c9699558d",
+    "semantic_hash": "608d161703265742a689786c9699558d"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\Database\\01_public_schema\\04_payments_history.sql": {
+    "mtime": 1775233413.5631452,
+    "ast_hash": "02fc89c0cb720ddab4034e7c3d266e79",
+    "semantic_hash": "02fc89c0cb720ddab4034e7c3d266e79"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\Database\\02_company_template\\02_tenant_tables.sql": {
+    "mtime": 1779231783.2811317,
+    "ast_hash": "61ef929baf797433f304e2c633440343",
+    "semantic_hash": "61ef929baf797433f304e2c633440343"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\Database\\03_seeds\\03_initial_seed.sql": {
+    "mtime": 1775236709.549268,
+    "ast_hash": "d6453d534c18e209d4cad3152f14e625",
+    "semantic_hash": "d6453d534c18e209d4cad3152f14e625"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\Database\\04_migrations\\01_prod_missing_tables.sql": {
+    "mtime": 1775241022.2033038,
+    "ast_hash": "43ba6ae5141d2f15fc0c926cf29c87ed",
+    "semantic_hash": "43ba6ae5141d2f15fc0c926cf29c87ed"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\Database\\04_migrations\\02_users_profiles_modules_commercial.sql": {
+    "mtime": 1775685437.95864,
+    "ast_hash": "77cb2d78fe6bea7f212dc22df5e534ef",
+    "semantic_hash": "77cb2d78fe6bea7f212dc22df5e534ef"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\Database\\04_migrations\\03_fix_permissions.sql": {
+    "mtime": 1776812182.505075,
+    "ast_hash": "56c2a0d04af814ef98368166136db33c",
+    "semantic_hash": "56c2a0d04af814ef98368166136db33c"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\Database\\04_migrations\\05_module_governance.sql": {
+    "mtime": 1776714908.8380675,
+    "ast_hash": "1f2a977a13cafd6c10a3cb058f51200b",
+    "semantic_hash": "1f2a977a13cafd6c10a3cb058f51200b"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\Database\\04_migrations\\06_profile_transaction_permissions.sql": {
+    "mtime": 1776812213.7521465,
+    "ast_hash": "2d48eabda3952ab04be0030c215524bc",
+    "semantic_hash": "2d48eabda3952ab04be0030c215524bc"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\Database\\04_migrations\\07_company_master_flag.sql": {
+    "mtime": 1776871344.0706801,
+    "ast_hash": "26962b4c98677674a40491432992d167",
+    "semantic_hash": "26962b4c98677674a40491432992d167"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\Database\\04_migrations\\08_users_visual_config.sql": {
+    "mtime": 1776953755.2031848,
+    "ast_hash": "80a229c7395e050d1a24cc8194878587",
+    "semantic_hash": "80a229c7395e050d1a24cc8194878587"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\Database\\04_migrations\\09_subscription_plans.sql": {
+    "mtime": 1776968159.1485882,
+    "ast_hash": "74857823517389de41cee76b360aa34d",
+    "semantic_hash": "74857823517389de41cee76b360aa34d"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\Database\\04_migrations\\10_core_base_cleanup.sql": {
+    "mtime": 1778964241.0471952,
+    "ast_hash": "5139910776bed91f7d4306dea1a82868",
+    "semantic_hash": "5139910776bed91f7d4306dea1a82868"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\Database\\04_migrations\\11_fix_modules_route.sql": {
+    "mtime": 1778964241.0482335,
+    "ast_hash": "fe9685b5fbbe26b0f35c584003aa1f7b",
+    "semantic_hash": "fe9685b5fbbe26b0f35c584003aa1f7b"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\Database\\04_migrations\\12_notifications.sql": {
+    "mtime": 1779110699.0803626,
+    "ast_hash": "7b5109ba188dcfcab03952c7191eec4a",
+    "semantic_hash": "7b5109ba188dcfcab03952c7191eec4a"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\Database\\04_migrations\\13_fix_company_modules_backfill.sql": {
+    "mtime": 1779130085.1953733,
+    "ast_hash": "020e20a2ca9d46e5b5d74338963600d9",
+    "semantic_hash": "020e20a2ca9d46e5b5d74338963600d9"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\Database\\04_migrations\\14_garage_operations_module.sql": {
+    "mtime": 1779231802.476354,
+    "ast_hash": "38d23648361f6c55b11c94b2a703f181",
+    "semantic_hash": "38d23648361f6c55b11c94b2a703f181"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\Database\\04_migrations\\15_vehicle_ownership_transfer.sql": {
+    "mtime": 1779300716.6145175,
+    "ast_hash": "d7b8fec1187b37f0afbffc542105c120",
+    "semantic_hash": "d7b8fec1187b37f0afbffc542105c120"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\Database\\04_migrations\\16_service_template_margin_tax.sql": {
+    "mtime": 1779300777.1205509,
+    "ast_hash": "384548e5a0e4a1fa8c678496a2763a96",
+    "semantic_hash": "384548e5a0e4a1fa8c678496a2763a96"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\Database\\04_migrations\\17_work_order_payments.sql": {
+    "mtime": 1779300863.6780262,
+    "ast_hash": "749939d9f210f52c84a6b9e93d2bfdb8",
+    "semantic_hash": "749939d9f210f52c84a6b9e93d2bfdb8"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\package.json": {
+    "mtime": 1774483229.1427386,
+    "ast_hash": "c006b47bce243ee22f4d179219a0e7b1",
+    "semantic_hash": "c006b47bce243ee22f4d179219a0e7b1"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\postcss.config.js": {
+    "mtime": 1774483151.4857864,
+    "ast_hash": "ef3ba2a81ba19f8ea5ddf625521e96f0",
+    "semantic_hash": "ef3ba2a81ba19f8ea5ddf625521e96f0"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\tailwind.config.js": {
+    "mtime": 1774483165.8832698,
+    "ast_hash": "75d8443416e6d610d4863109fd7393e8",
+    "semantic_hash": "75d8443416e6d610d4863109fd7393e8"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\tsconfig.app.json": {
+    "mtime": 1774483094.2691946,
+    "ast_hash": "077ff094006d4c4c5dddfa559d614922",
+    "semantic_hash": "077ff094006d4c4c5dddfa559d614922"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\tsconfig.json": {
+    "mtime": 1774483094.2556894,
+    "ast_hash": "a3d39fa780ebff65444de257f291ce6c",
+    "semantic_hash": "a3d39fa780ebff65444de257f291ce6c"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\tsconfig.node.json": {
+    "mtime": 1774483094.2691946,
+    "ast_hash": "dd18fcf093257b03923a348febf660af",
+    "semantic_hash": "dd18fcf093257b03923a348febf660af"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\vite.config.ts": {
+    "mtime": 1774483090.2059278,
+    "ast_hash": "bbf248e6d794b1025866590788fa4e02",
+    "semantic_hash": "bbf248e6d794b1025866590788fa4e02"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\App.vue": {
+    "mtime": 1778967032.2304764,
+    "ast_hash": "929cd4e0a62a2b3357da81c8a44c0fb4",
+    "semantic_hash": "929cd4e0a62a2b3357da81c8a44c0fb4"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\main.ts": {
+    "mtime": 1774483169.3331702,
+    "ast_hash": "ee1fafe45503b8c35f0b340a594a94a3",
+    "semantic_hash": "ee1fafe45503b8c35f0b340a594a94a3"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\vite-env.d.ts": {
+    "mtime": 1774492687.920403,
+    "ast_hash": "0352474ba2918efe13895edbc3780d94",
+    "semantic_hash": "0352474ba2918efe13895edbc3780d94"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\components\\AppModal.vue": {
+    "mtime": 1774532459.0962567,
+    "ast_hash": "7d2b17d89ffdcfdba785254ed6028f70",
+    "semantic_hash": "7d2b17d89ffdcfdba785254ed6028f70"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\components\\AppToast.vue": {
+    "mtime": 1774549334.2921133,
+    "ast_hash": "80d3a60930e578bce603bdd5032c6ef1",
+    "semantic_hash": "80d3a60930e578bce603bdd5032c6ef1"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\components\\admin\\CompanySelector.vue": {
+    "mtime": 1776968308.1427524,
+    "ast_hash": "cfc7a818d8850a3761678641f56a54bd",
+    "semantic_hash": "cfc7a818d8850a3761678641f56a54bd"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\components\\admin\\ConfirmActionModal.vue": {
+    "mtime": 1778707706.4991064,
+    "ast_hash": "01c9b8c0b612aa8dcf708eb4aec453dd",
+    "semantic_hash": "01c9b8c0b612aa8dcf708eb4aec453dd"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\components\\admin\\ConfirmDeleteModal.vue": {
+    "mtime": 1775761686.413608,
+    "ast_hash": "f6a2cd017407a5e40d67c0d3c428c663",
+    "semantic_hash": "f6a2cd017407a5e40d67c0d3c428c663"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\components\\admin\\CreateCompanyModal.vue": {
+    "mtime": 1776972232.399675,
+    "ast_hash": "d36ffd5d0d5b8ba8dff728021086908c",
+    "semantic_hash": "d36ffd5d0d5b8ba8dff728021086908c"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\components\\admin\\EditCompanyModal.vue": {
+    "mtime": 1776972226.5986066,
+    "ast_hash": "b6fa69b299f61ef7ac74a282e49305f9",
+    "semantic_hash": "b6fa69b299f61ef7ac74a282e49305f9"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\components\\admin\\InfoModal.vue": {
+    "mtime": 1778707753.134945,
+    "ast_hash": "139aad92f9d6027009e02ddbdad9d351",
+    "semantic_hash": "139aad92f9d6027009e02ddbdad9d351"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\composables\\usePermissions.ts": {
+    "mtime": 1778964241.052765,
+    "ast_hash": "33344bc7f2747cee4419e1dbb9595285",
+    "semantic_hash": "33344bc7f2747cee4419e1dbb9595285"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\layouts\\AdminLayout.vue": {
+    "mtime": 1779313418.6559308,
+    "ast_hash": "e75936b64238732b89d161f4080c71d1",
+    "semantic_hash": "e75936b64238732b89d161f4080c71d1"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\router\\index.ts": {
+    "mtime": 1779300984.0989928,
+    "ast_hash": "7a1a4d653ea13bc6e5347b3742719f81",
+    "semantic_hash": "7a1a4d653ea13bc6e5347b3742719f81"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\services\\garageAppointmentsService.ts": {
+    "mtime": 1779228882.427902,
+    "ast_hash": "57ebf34937fd784b0917a61d2d4985de",
+    "semantic_hash": "57ebf34937fd784b0917a61d2d4985de"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\services\\garageCatalogsService.ts": {
+    "mtime": 1779228811.141239,
+    "ast_hash": "a86f393c0bc8a1c1a213104b1a4f2945",
+    "semantic_hash": "a86f393c0bc8a1c1a213104b1a4f2945"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\services\\garageCustomersService.ts": {
+    "mtime": 1779228820.7906241,
+    "ast_hash": "243069a2803a569dac1b5d52573ae501",
+    "semantic_hash": "243069a2803a569dac1b5d52573ae501"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\services\\garageEmployeesService.ts": {
+    "mtime": 1779228840.866744,
+    "ast_hash": "ac14b422007bacc91ef3fe3c666d7bb7",
+    "semantic_hash": "ac14b422007bacc91ef3fe3c666d7bb7"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\services\\garageLaborRatesService.ts": {
+    "mtime": 1779228849.6696384,
+    "ast_hash": "2e564b2003b053fbe941d25c67e31491",
+    "semantic_hash": "2e564b2003b053fbe941d25c67e31491"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\services\\garageProductsService.ts": {
+    "mtime": 1779228857.6346478,
+    "ast_hash": "735864d989793f4ed0f8467900a8d10a",
+    "semantic_hash": "735864d989793f4ed0f8467900a8d10a"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\services\\garageServiceTemplatesService.ts": {
+    "mtime": 1779228867.5770848,
+    "ast_hash": "f1876603ebe9dab52b2961b5c542e5ec",
+    "semantic_hash": "f1876603ebe9dab52b2961b5c542e5ec"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\services\\garageVehicleHistoryService.ts": {
+    "mtime": 1779229144.9985478,
+    "ast_hash": "9500d740539f2e738a133038df034277",
+    "semantic_hash": "9500d740539f2e738a133038df034277"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\services\\garageVehiclesService.ts": {
+    "mtime": 1779228831.675882,
+    "ast_hash": "4860a9b05176b67684124627c1cce65a",
+    "semantic_hash": "4860a9b05176b67684124627c1cce65a"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\services\\garageWorkOrdersService.ts": {
+    "mtime": 1779229137.392523,
+    "ast_hash": "a84db706ef59b094af430a6486dd736a",
+    "semantic_hash": "a84db706ef59b094af430a6486dd736a"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\stores\\auth.ts": {
+    "mtime": 1779130879.5560415,
+    "ast_hash": "6788aca37f77375237d8457487098430",
+    "semantic_hash": "6788aca37f77375237d8457487098430"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\stores\\garageAppointments.ts": {
+    "mtime": 1779229262.8582385,
+    "ast_hash": "af3aac5057eb56495cc418025a2efa09",
+    "semantic_hash": "af3aac5057eb56495cc418025a2efa09"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\stores\\garageCatalogs.ts": {
+    "mtime": 1779229158.575075,
+    "ast_hash": "af783557b02700c0b04bfd47200c7c8f",
+    "semantic_hash": "af783557b02700c0b04bfd47200c7c8f"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\stores\\garageCustomers.ts": {
+    "mtime": 1779229174.7335627,
+    "ast_hash": "2e745c9f4903edabe7f01f1e5e3e7699",
+    "semantic_hash": "2e745c9f4903edabe7f01f1e5e3e7699"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\stores\\garageEmployees.ts": {
+    "mtime": 1779229205.7949302,
+    "ast_hash": "d7e09e9203335cc713bcc7266309418b",
+    "semantic_hash": "d7e09e9203335cc713bcc7266309418b"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\stores\\garageLaborRates.ts": {
+    "mtime": 1779229219.308619,
+    "ast_hash": "64314c4f83a0cbdc73400379f1cb7e70",
+    "semantic_hash": "64314c4f83a0cbdc73400379f1cb7e70"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\stores\\garageProducts.ts": {
+    "mtime": 1779229231.361696,
+    "ast_hash": "f79d1262441a856760bb7259ada4d66d",
+    "semantic_hash": "f79d1262441a856760bb7259ada4d66d"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\stores\\garageServiceTemplates.ts": {
+    "mtime": 1779229245.1841288,
+    "ast_hash": "c0ba2f7b1f278f14fc01c07aedde5630",
+    "semantic_hash": "c0ba2f7b1f278f14fc01c07aedde5630"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\stores\\garageVehicles.ts": {
+    "mtime": 1779229192.11098,
+    "ast_hash": "ab5a86e93de8b19eb53aeb1691f9ac47",
+    "semantic_hash": "ab5a86e93de8b19eb53aeb1691f9ac47"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\stores\\garageWorkOrders.ts": {
+    "mtime": 1779229291.412777,
+    "ast_hash": "d793849c2f14e79bcb40a1d2de1a604c",
+    "semantic_hash": "d793849c2f14e79bcb40a1d2de1a604c"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\stores\\menu.ts": {
+    "mtime": 1779313425.2805588,
+    "ast_hash": "31c7545365addbceaaf177cc5ed72f91",
+    "semantic_hash": "31c7545365addbceaaf177cc5ed72f91"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\stores\\notifications.ts": {
+    "mtime": 1779110699.0845447,
+    "ast_hash": "1b9773788087ed9e67f5c0f3b499f6e7",
+    "semantic_hash": "1b9773788087ed9e67f5c0f3b499f6e7"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\stores\\visualConfig.ts": {
+    "mtime": 1778966988.6387413,
+    "ast_hash": "537073ae3e7ad2368036d5d35a7a1b68",
+    "semantic_hash": "537073ae3e7ad2368036d5d35a7a1b68"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\types\\auth.ts": {
+    "mtime": 1776972184.8588233,
+    "ast_hash": "6ce67f96dfee6843c9e01333d101485b",
+    "semantic_hash": "6ce67f96dfee6843c9e01333d101485b"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\types\\garage.ts": {
+    "mtime": 1779228801.5538373,
+    "ast_hash": "31d8cb65bb9771f5d2aa050069a153b3",
+    "semantic_hash": "31d8cb65bb9771f5d2aa050069a153b3"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\utils\\axios.ts": {
+    "mtime": 1779110014.8312109,
+    "ast_hash": "a68a1ecd0dfb597cbf16cad2017974ef",
+    "semantic_hash": "a68a1ecd0dfb597cbf16cad2017974ef"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\views\\DashboardView.vue": {
+    "mtime": 1774908069.2390604,
+    "ast_hash": "73868d9e24afbcb98cbb6bd179e822f2",
+    "semantic_hash": "73868d9e24afbcb98cbb6bd179e822f2"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\views\\HomeView.vue": {
+    "mtime": 1774483169.3732114,
+    "ast_hash": "016c7846e0cf295e761092e49b9eb75a",
+    "semantic_hash": "016c7846e0cf295e761092e49b9eb75a"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\views\\LoginView.vue": {
+    "mtime": 1776714925.4226038,
+    "ast_hash": "4da442035c1279e7f522415a47c77118",
+    "semantic_hash": "4da442035c1279e7f522415a47c77118"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\views\\SelectCompanyView.vue": {
+    "mtime": 1778708178.8791742,
+    "ast_hash": "49750c7947eedbad4ef4cf347c02025b",
+    "semantic_hash": "49750c7947eedbad4ef4cf347c02025b"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\views\\VisualConfigView.vue": {
+    "mtime": 1774908318.65391,
+    "ast_hash": "829a951ae7d8dfc41ba2c597ad77a15b",
+    "semantic_hash": "829a951ae7d8dfc41ba2c597ad77a15b"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\views\\admin\\CommercialView.vue": {
+    "mtime": 1778966654.7943847,
+    "ast_hash": "9f9762f829127e568f982777565d361c",
+    "semantic_hash": "9f9762f829127e568f982777565d361c"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\views\\admin\\CompaniesListView.vue": {
+    "mtime": 1778966654.7963843,
+    "ast_hash": "70b41e52df794cc0acdfe96fa3f51f95",
+    "semantic_hash": "70b41e52df794cc0acdfe96fa3f51f95"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\views\\admin\\CompanyDetailsView.vue": {
+    "mtime": 1779314149.411945,
+    "ast_hash": "b083334599047d2d5eb4bdb31bbb4845",
+    "semantic_hash": "b083334599047d2d5eb4bdb31bbb4845"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\views\\admin\\ModulesManagerView.vue": {
+    "mtime": 1778966654.798913,
+    "ast_hash": "ec4ae5a3089dc59aac84d40b307fae80",
+    "semantic_hash": "ec4ae5a3089dc59aac84d40b307fae80"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\views\\admin\\ModulesView.vue": {
+    "mtime": 1778966654.8009133,
+    "ast_hash": "07752c8335f09ffb134b539a08f30fec",
+    "semantic_hash": "07752c8335f09ffb134b539a08f30fec"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\views\\admin\\ProfilesView.vue": {
+    "mtime": 1779314099.6537418,
+    "ast_hash": "509d6fe49cd309409b226ff47a449aed",
+    "semantic_hash": "509d6fe49cd309409b226ff47a449aed"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\views\\admin\\ReportsView.vue": {
+    "mtime": 1778966654.8039165,
+    "ast_hash": "c039657e66fbd8a359749379cd16f486",
+    "semantic_hash": "c039657e66fbd8a359749379cd16f486"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\views\\admin\\screens_notifications_center.vue": {
+    "mtime": 1779110699.086547,
+    "ast_hash": "30d141aa295e121f8c53d8a12c32e3b8",
+    "semantic_hash": "30d141aa295e121f8c53d8a12c32e3b8"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\views\\admin\\screens_notification_preferences.vue": {
+    "mtime": 1779119196.1024828,
+    "ast_hash": "b0a87eea79bde3a849567e71c302f942",
+    "semantic_hash": "b0a87eea79bde3a849567e71c302f942"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\views\\admin\\SolicitudesListView.vue": {
+    "mtime": 1775233389.970221,
+    "ast_hash": "a158acf809b6c66dd00c64080bac9c65",
+    "semantic_hash": "a158acf809b6c66dd00c64080bac9c65"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\views\\admin\\SubscriptionsView.vue": {
+    "mtime": 1778966654.8049169,
+    "ast_hash": "4530edb33d4abc32dc20f5b3c518a07f",
+    "semantic_hash": "4530edb33d4abc32dc20f5b3c518a07f"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\views\\admin\\UsersListView.vue": {
+    "mtime": 1778966654.8064415,
+    "ast_hash": "f0d74a89f6ff7004baa614e49f4c83b8",
+    "semantic_hash": "f0d74a89f6ff7004baa614e49f4c83b8"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\views\\admin\\UsersView.vue": {
+    "mtime": 1778966654.8074758,
+    "ast_hash": "29ef39b3fa722dbdb981bfdc1bd7be6f",
+    "semantic_hash": "29ef39b3fa722dbdb981bfdc1bd7be6f"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\views\\garage\\screens_garage_appointments.vue": {
+    "mtime": 1779285152.3868923,
+    "ast_hash": "f24b848889e6b8ea677eaa15228ea0c7",
+    "semantic_hash": "f24b848889e6b8ea677eaa15228ea0c7"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\views\\garage\\screens_garage_catalogs.vue": {
+    "mtime": 1779230344.861591,
+    "ast_hash": "5b6eeb376a8a5a019f6ba35607638d84",
+    "semantic_hash": "5b6eeb376a8a5a019f6ba35607638d84"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\views\\garage\\screens_garage_customers.vue": {
+    "mtime": 1779303522.8279142,
+    "ast_hash": "c79bdb02515e88e40ff184427abfb9ef",
+    "semantic_hash": "c79bdb02515e88e40ff184427abfb9ef"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\views\\garage\\screens_garage_customer_detail.vue": {
+    "mtime": 1779299960.4164321,
+    "ast_hash": "8975accc62743e04e8f5662eb40bb103",
+    "semantic_hash": "8975accc62743e04e8f5662eb40bb103"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\views\\garage\\screens_garage_dashboard.vue": {
+    "mtime": 1779229994.0900457,
+    "ast_hash": "63e2cd5af9ef17187d2faea91378bbff",
+    "semantic_hash": "63e2cd5af9ef17187d2faea91378bbff"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\views\\garage\\screens_garage_employees.vue": {
+    "mtime": 1779230302.5011387,
+    "ast_hash": "2b91b314e4cb984dfc7320c99370cf82",
+    "semantic_hash": "2b91b314e4cb984dfc7320c99370cf82"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\views\\garage\\screens_garage_labor_rates.vue": {
+    "mtime": 1779230488.097922,
+    "ast_hash": "f8a78c10de4fc28a1c6656588e91c7ae",
+    "semantic_hash": "f8a78c10de4fc28a1c6656588e91c7ae"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\views\\garage\\screens_garage_products.vue": {
+    "mtime": 1779230387.205755,
+    "ast_hash": "7aab9e710b060c90fccd9e15adff4119",
+    "semantic_hash": "7aab9e710b060c90fccd9e15adff4119"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\views\\garage\\screens_garage_service_templates.vue": {
+    "mtime": 1779303930.5692072,
+    "ast_hash": "56bf4b32cbd65b2e4dc0ae838a3860f4",
+    "semantic_hash": "56bf4b32cbd65b2e4dc0ae838a3860f4"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\views\\garage\\screens_garage_settings.vue": {
+    "mtime": 1779230504.8040175,
+    "ast_hash": "1aa4b1995bb89585e6d1c37629a5c078",
+    "semantic_hash": "1aa4b1995bb89585e6d1c37629a5c078"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\views\\garage\\screens_garage_vehicles.vue": {
+    "mtime": 1779230096.008858,
+    "ast_hash": "81af505ef07c68900699a3776e330dd8",
+    "semantic_hash": "81af505ef07c68900699a3776e330dd8"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\views\\garage\\screens_garage_vehicle_detail.vue": {
+    "mtime": 1779230142.326449,
+    "ast_hash": "d664682be4e45b29ccc197eee6087180",
+    "semantic_hash": "d664682be4e45b29ccc197eee6087180"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\views\\garage\\screens_garage_vehicle_search.vue": {
+    "mtime": 1779230526.902919,
+    "ast_hash": "56bf45e622c0741d46b431e9392594ee",
+    "semantic_hash": "56bf45e622c0741d46b431e9392594ee"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\views\\garage\\screens_garage_work_orders.vue": {
+    "mtime": 1779303596.200764,
+    "ast_hash": "802aa50c9905a601f56802f000446748",
+    "semantic_hash": "802aa50c9905a601f56802f000446748"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\views\\garage\\screens_garage_work_order_detail.vue": {
+    "mtime": 1779303733.870093,
+    "ast_hash": "678e28ce4f9ba39abbd3be2f9bb5e2f5",
+    "semantic_hash": "678e28ce4f9ba39abbd3be2f9bb5e2f5"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\views\\garage\\screens_garage_work_order_payments.vue": {
+    "mtime": 1779300960.6436367,
+    "ast_hash": "6083e02c994d35c7612c4e8dc6d6cd7e",
+    "semantic_hash": "6083e02c994d35c7612c4e8dc6d6cd7e"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\widgets\\widgets_garage_appointment_form_modal.vue": {
+    "mtime": 1779229663.7693262,
+    "ast_hash": "3ab389738d58074418797d6c3dcf158d",
+    "semantic_hash": "3ab389738d58074418797d6c3dcf158d"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\widgets\\widgets_garage_appointment_status_badge.vue": {
+    "mtime": 1779229910.1065185,
+    "ast_hash": "7b076124620f799936759bfabadbf4a8",
+    "semantic_hash": "7b076124620f799936759bfabadbf4a8"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\widgets\\widgets_garage_catalog_combobox.vue": {
+    "mtime": 1779229437.867465,
+    "ast_hash": "500121096f03d984cc50d79a8cf534eb",
+    "semantic_hash": "500121096f03d984cc50d79a8cf534eb"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\widgets\\widgets_garage_change_status_modal.vue": {
+    "mtime": 1779229941.7045166,
+    "ast_hash": "8a0a8699e4bff62f09dfdf78eebe21c8",
+    "semantic_hash": "8a0a8699e4bff62f09dfdf78eebe21c8"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\widgets\\widgets_garage_convert_appointment_modal.vue": {
+    "mtime": 1779229690.7791502,
+    "ast_hash": "1b6a08cfe20cf882cf19f13afdd7d740",
+    "semantic_hash": "1b6a08cfe20cf882cf19f13afdd7d740"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\widgets\\widgets_garage_customer_form_modal.vue": {
+    "mtime": 1779229480.5524516,
+    "ast_hash": "11733a31e6abfbaa71965618af454b29",
+    "semantic_hash": "11733a31e6abfbaa71965618af454b29"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\widgets\\widgets_garage_customer_vehicle_selector.vue": {
+    "mtime": 1779285452.3991177,
+    "ast_hash": "82a45ce03bdf10ce44650a511ae0d7e8",
+    "semantic_hash": "82a45ce03bdf10ce44650a511ae0d7e8"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\widgets\\widgets_garage_employee_form_modal.vue": {
+    "mtime": 1779229563.1415,
+    "ast_hash": "ef4329082a86907b86b59d04663bdb2d",
+    "semantic_hash": "ef4329082a86907b86b59d04663bdb2d"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\widgets\\widgets_garage_photo_uploader.vue": {
+    "mtime": 1779229379.6202745,
+    "ast_hash": "c062f763e5fff313f36688b4a2937d4d",
+    "semantic_hash": "c062f763e5fff313f36688b4a2937d4d"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\widgets\\widgets_garage_vehicle_form_modal.vue": {
+    "mtime": 1779300071.7528653,
+    "ast_hash": "68ed20b4b851d7af58c18f9355ff79ee",
+    "semantic_hash": "68ed20b4b851d7af58c18f9355ff79ee"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\widgets\\widgets_garage_vehicle_history_timeline.vue": {
+    "mtime": 1779299988.8983097,
+    "ast_hash": "17fb82c74af3573acb676d5b270ab0ef",
+    "semantic_hash": "17fb82c74af3573acb676d5b270ab0ef"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\widgets\\widgets_garage_vehicle_photo_gallery.vue": {
+    "mtime": 1779299949.3307343,
+    "ast_hash": "9aa8a2753368753b3ccf3943be045141",
+    "semantic_hash": "9aa8a2753368753b3ccf3943be045141"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\widgets\\widgets_garage_work_order_form_modal.vue": {
+    "mtime": 1779229725.218923,
+    "ast_hash": "b44ae00094d79c7c787ca72b19a90bfa",
+    "semantic_hash": "b44ae00094d79c7c787ca72b19a90bfa"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\widgets\\widgets_garage_work_order_services_editor.vue": {
+    "mtime": 1779303559.2627883,
+    "ast_hash": "b6d7e2a445a780ce35ce616233d2e97b",
+    "semantic_hash": "b6d7e2a445a780ce35ce616233d2e97b"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\widgets\\widgets_garage_work_order_status_badge.vue": {
+    "mtime": 1779229577.8052976,
+    "ast_hash": "f86ce01443815201e86f6574f9bab935",
+    "semantic_hash": "f86ce01443815201e86f6574f9bab935"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\widgets\\widgets_notification_bell.vue": {
+    "mtime": 1779131141.8367822,
+    "ast_hash": "65cb34b8f461a21e30d93e5d7c8291bf",
+    "semantic_hash": "65cb34b8f461a21e30d93e5d7c8291bf"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\widgets\\widgets_notification_toast.vue": {
+    "mtime": 1779110699.0880651,
+    "ast_hash": "2d74b4706e9079d9bfd4aeecf4bef399",
+    "semantic_hash": "2d74b4706e9079d9bfd4aeecf4bef399"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\CLAUDE.md": {
+    "mtime": 1776890006.5296333,
+    "ast_hash": "d06a9f1a764bf7ae9d7d9f78012791a3",
+    "semantic_hash": "d06a9f1a764bf7ae9d7d9f78012791a3"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\nexora_garage_core_1_plan.md": {
+    "mtime": 1779118415.7453816,
+    "ast_hash": "0f831641071763b66d052956703f3f26",
+    "semantic_hash": "0f831641071763b66d052956703f3f26"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\README.md": {
+    "mtime": 1774454608.713097,
+    "ast_hash": "3116661c814fccc7d7e04c60f5e420c0",
+    "semantic_hash": "3116661c814fccc7d7e04c60f5e420c0"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\README_PHASE_1.md": {
+    "mtime": 1774528369.0223567,
+    "ast_hash": "8eb268f67e43e3cd63d278b23aa487ee",
+    "semantic_hash": "8eb268f67e43e3cd63d278b23aa487ee"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\RULES_AND_SKILLS.md": {
+    "mtime": 1774488201.0139759,
+    "ast_hash": "1a697b160417522ab32845e27a433645",
+    "semantic_hash": "1a697b160417522ab32845e27a433645"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\.atl\\skill-registry.md": {
+    "mtime": 1779299735.0920737,
+    "ast_hash": "3263751862a71bb933c370ba11b00bec",
+    "semantic_hash": "3263751862a71bb933c370ba11b00bec"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\.windsurf\\workflows\\sdd-new.md": {
+    "mtime": 1779299709.6275494,
+    "ast_hash": "7ea15b02d37834e88563307c8fdb1a5d",
+    "semantic_hash": "7ea15b02d37834e88563307c8fdb1a5d"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\.windsurf\\workflows\\sdd-status.md": {
+    "mtime": 1779299712.5854397,
+    "ast_hash": "43460f50661cab4c5636a0b2b3ea9788",
+    "semantic_hash": "43460f50661cab4c5636a0b2b3ea9788"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\index.html": {
+    "mtime": 1774483093.2021875,
+    "ast_hash": "be3598c72b4ff7550b2538ea399f228e",
+    "semantic_hash": "be3598c72b4ff7550b2538ea399f228e"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\Plan\\nexora_prompt_maestro_v3.md": {
+    "mtime": 1774478811.3281753,
+    "ast_hash": "fe8b83466100a6e215777149b647b41c",
+    "semantic_hash": "fe8b83466100a6e215777149b647b41c"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\Plan\\plan-implementacion-config-visual-nexora.md": {
+    "mtime": 1774388646.0242856,
+    "ast_hash": "88eb5578e8a0fd80066e36f965abbdab",
+    "semantic_hash": "88eb5578e8a0fd80066e36f965abbdab"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\Plan\\plan_implementacion_dashboard_config_nexora.md": {
+    "mtime": 1774384951.5336995,
+    "ast_hash": "cc2155fdb26e7bc3bebc517d19e47cde",
+    "semantic_hash": "cc2155fdb26e7bc3bebc517d19e47cde"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\Plan\\plan_implementacion_elementos_dom_nexora.md": {
+    "mtime": 1774384006.539966,
+    "ast_hash": "cd3936ad676f97fc14dcc61477b2a6d2",
+    "semantic_hash": "cd3936ad676f97fc14dcc61477b2a6d2"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\Plan\\plan_implementacion_login_nexora.md": {
+    "mtime": 1774383526.3342712,
+    "ast_hash": "b45ca39a954dd8bf1dbeb0d104fd14dd",
+    "semantic_hash": "b45ca39a954dd8bf1dbeb0d104fd14dd"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\assets\\logo_icon.png": {
+    "mtime": 1753993987.681957,
+    "ast_hash": "b366e4f00b50a59296c28696f35142d7",
+    "semantic_hash": "b366e4f00b50a59296c28696f35142d7"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\assets\\logo_icon3.png": {
+    "mtime": 1754059732.7982907,
+    "ast_hash": "3dfd06e275731600b2f523953ef028f3",
+    "semantic_hash": "3dfd06e275731600b2f523953ef028f3"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\FrontEnd\\Portal\\src\\assets\\Logo_SF.png": {
+    "mtime": 1753993987.681957,
+    "ast_hash": "b366e4f00b50a59296c28696f35142d7",
+    "semantic_hash": "b366e4f00b50a59296c28696f35142d7"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\Plan\\logo_full.png": {
+    "mtime": 1744503101.4395356,
+    "ast_hash": "1b977daebb92477c89c34a81a510c5a9",
+    "semantic_hash": "1b977daebb92477c89c34a81a510c5a9"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\Plan\\logo_full1.png": {
+    "mtime": 1754005771.1962857,
+    "ast_hash": "1b317290620039d7fc3a90c618f4814f",
+    "semantic_hash": "1b317290620039d7fc3a90c618f4814f"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\Plan\\Logo_icon2.png": {
+    "mtime": 1753993997.9556105,
+    "ast_hash": "928bf53df01430d066c9e9a17d29b70f",
+    "semantic_hash": "928bf53df01430d066c9e9a17d29b70f"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\Plan\\nexora1.png": {
+    "mtime": 1753996444.8926845,
+    "ast_hash": "421c61e167cf7e342920c5c1bd6da3a1",
+    "semantic_hash": "421c61e167cf7e342920c5c1bd6da3a1"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\Plan\\nexora2.png": {
+    "mtime": 1754003800.9649458,
+    "ast_hash": "622524b2370e37727b0b1a9c3d1cfe3c",
+    "semantic_hash": "622524b2370e37727b0b1a9c3d1cfe3c"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\Plan\\nexora3.png": {
+    "mtime": 1754005806.6559303,
+    "ast_hash": "85b45d6e093293bb3ba3d266097211fc",
+    "semantic_hash": "85b45d6e093293bb3ba3d266097211fc"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\Plan\\Logo\\logo_icon.png": {
+    "mtime": 1753993987.681957,
+    "ast_hash": "b366e4f00b50a59296c28696f35142d7",
+    "semantic_hash": "b366e4f00b50a59296c28696f35142d7"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\Plan\\Logo\\logo_icon3.png": {
+    "mtime": 1754059732.7982907,
+    "ast_hash": "3dfd06e275731600b2f523953ef028f3",
+    "semantic_hash": "3dfd06e275731600b2f523953ef028f3"
+  },
+  "C:\\Users\\Hernan Ricardo\\Documents\\GitHub\\Nexora\\Nexora\\Plan\\Logo\\Logo_SF.png": {
+    "mtime": 1753993987.681957,
+    "ast_hash": "b366e4f00b50a59296c28696f35142d7",
+    "semantic_hash": "b366e4f00b50a59296c28696f35142d7"
+  }
+}

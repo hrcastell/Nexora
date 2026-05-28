@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const { createNotification } = require('../utils/notifications');
 
 exports.getAllSolicitudes = async (req, res) => {
     try {
@@ -36,7 +37,25 @@ exports.createSolicitud = async (req, res) => {
             [company_name, contact_name, email, phone, message]
         );
 
-        res.status(201).json(result.rows[0]);
+        const newSolicitud = result.rows[0];
+
+        // Notificar a todos los super_admin sobre la nueva solicitud
+        const superAdmins = await db.query(
+            'SELECT id FROM public.users WHERE is_super_admin = TRUE AND is_active = TRUE'
+        );
+        for (const admin of superAdmins.rows) {
+            createNotification({
+                userId:    admin.id,
+                companyId: null,
+                type:      'info',
+                category:  'requests',
+                title:     'Nueva solicitud recibida',
+                body:      `${contact_name} de ${company_name} (${email}) envió una nueva solicitud.`,
+                actionUrl: '/admin/requests'
+            });
+        }
+
+        res.status(201).json(newSolicitud);
 
     } catch (error) {
         console.error('Create solicitud error:', error);

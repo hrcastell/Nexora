@@ -147,34 +147,32 @@ const seedTenantRoles = async (schemaName, client) => {
     }
 };
 
-// Seed modules, profiles and permission matrix for a new tenant
+// Seed profiles and transaction permission matrix for a new tenant.
+// Modules are global now:
+// - public.module_catalog owns the module catalog
+// - public.company_modules owns company/module assignments
+// Do not seed tenant-local modules/profile_permissions here; those legacy
+// tables are intentionally not created by tenant_schema.sql.
+const GARAGE_TRANSACTION_CODES = [
+    'garage_dashboard',
+    'garage_customers',
+    'garage_vehicles',
+    'garage_appointments',
+    'garage_work_orders',
+    'garage_employees',
+    'garage_labor_rates',
+    'garage_products',
+    'garage_service_templates',
+    'garage_vehicle_history',
+    'garage_catalogs',
+    'garage_settings',
+];
+
+const buildTransactionFlags = (codes, flags) =>
+    Object.fromEntries(codes.map(code => [code, flags]));
+
 const seedTenantExtended = async (schemaName, client) => {
     const s = schemaName;
-
-    const BASE_MODULES = [
-        { code: 'dashboard',     name: 'Dashboard',         icon: 'LayoutDashboard', group_name: 'Core',      menu_order: 1 },
-        { code: 'companies',     name: 'Empresas',           icon: 'Building2',       group_name: 'Admin',     menu_order: 2 },
-        { code: 'users',         name: 'Usuarios',           icon: 'Users',           group_name: 'Seguridad', menu_order: 3 },
-        { code: 'profiles',      name: 'Perfiles',           icon: 'Shield',          group_name: 'Seguridad', menu_order: 4 },
-        { code: 'modules',       name: 'Módulos',            icon: 'Puzzle',          group_name: 'Seguridad', menu_order: 5 },
-        { code: 'commercial',    name: 'Control Comercial',  icon: 'CreditCard',      group_name: 'Comercial', menu_order: 6 },
-        { code: 'solicitudes',   name: 'Solicitudes',        icon: 'ClipboardList',   group_name: 'Operación', menu_order: 7 },
-        { code: 'subscriptions', name: 'Suscripciones',      icon: 'FileText',        group_name: 'Comercial', menu_order: 8 },
-        { code: 'config',        name: 'Configuración',      icon: 'Settings',        group_name: 'Admin',     menu_order: 9 },
-        { code: 'reports',       name: 'Reportes',           icon: 'BarChart2',       group_name: 'Análisis',  menu_order: 10 },
-    ];
-
-    const moduleIds = {};
-    for (const m of BASE_MODULES) {
-        const r = await client.query(
-            `INSERT INTO "${s}".modules (code, name, icon, group_name, menu_order, status, is_system_module)
-             VALUES ($1,$2,$3,$4,$5,'activo',TRUE)
-             ON CONFLICT (code) DO UPDATE SET name = EXCLUDED.name
-             RETURNING id`,
-            [m.code, m.name, m.icon, m.group_name, m.menu_order]
-        );
-        moduleIds[m.code] = r.rows[0].id;
-    }
 
     const BASE_PROFILES = [
         { code: 'acceso_total',  name: 'Acceso Total',          description: 'Acceso completo a todos los módulos', scope: 'global',  is_system: true },
@@ -196,54 +194,6 @@ const seedTenantExtended = async (schemaName, client) => {
         profileIds[p.code] = r.rows[0].id;
     }
 
-    // acceso_total: all modules, all permissions
-    for (const moduleId of Object.values(moduleIds)) {
-        await client.query(
-            `INSERT INTO "${s}".profile_permissions
-             (profile_id, module_id, can_view, can_create, can_edit, can_delete, can_approve, can_export, can_admin)
-             VALUES ($1,$2,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE)
-             ON CONFLICT (profile_id, module_id) DO NOTHING`,
-            [profileIds['acceso_total'], moduleId]
-        );
-    }
-
-    // admin_empresa: all except system modules admin
-    for (const [code, moduleId] of Object.entries(moduleIds)) {
-        const canAdmin = !['modules'].includes(code);
-        const canDelete = !['modules','profiles'].includes(code);
-        await client.query(
-            `INSERT INTO "${s}".profile_permissions
-             (profile_id, module_id, can_view, can_create, can_edit, can_delete, can_approve, can_export, can_admin)
-             VALUES ($1,$2,TRUE,TRUE,TRUE,$3,TRUE,TRUE,$4)
-             ON CONFLICT (profile_id, module_id) DO NOTHING`,
-            [profileIds['admin_empresa'], moduleId, canDelete, canAdmin]
-        );
-    }
-
-    // operacion: core operational modules only
-    for (const code of ['dashboard', 'solicitudes', 'reports']) {
-        if (!moduleIds[code]) continue;
-        await client.query(
-            `INSERT INTO "${s}".profile_permissions
-             (profile_id, module_id, can_view, can_create, can_edit, can_delete, can_approve, can_export, can_admin)
-             VALUES ($1,$2,TRUE,TRUE,TRUE,FALSE,FALSE,FALSE,FALSE)
-             ON CONFLICT (profile_id, module_id) DO NOTHING`,
-            [profileIds['operacion'], moduleIds[code]]
-        );
-    }
-
-    // consulta: view only
-    for (const code of ['dashboard', 'solicitudes', 'reports', 'companies']) {
-        if (!moduleIds[code]) continue;
-        await client.query(
-            `INSERT INTO "${s}".profile_permissions
-             (profile_id, module_id, can_view, can_create, can_edit, can_delete, can_approve, can_export, can_admin)
-             VALUES ($1,$2,TRUE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE)
-             ON CONFLICT (profile_id, module_id) DO NOTHING`,
-            [profileIds['consulta'], moduleIds[code]]
-        );
-    }
-
     // ── profile_transaction_permissions ──────────────────────────────────────
     // Modelo nuevo: permisos por transacción del catálogo global.
     // Códigos de transacción = public.module_transactions.code (migración 05).
@@ -260,6 +210,7 @@ const seedTenantExtended = async (schemaName, client) => {
             commercial:    [true,  true,  true,  true,  true,  true,  true],
             subscriptions: [true,  true,  true,  true,  true,  true,  true],
             visual_config: [true,  true,  true,  true,  true,  true,  true],
+            ...buildTransactionFlags(GARAGE_TRANSACTION_CODES, [true, true, true, true, true, true, true]),
         },
         admin_empresa: {
             dashboard:     [true,  true,  true,  false, true,  true,  false],
@@ -272,6 +223,7 @@ const seedTenantExtended = async (schemaName, client) => {
             commercial:    [true,  true,  true,  false, true,  true,  false],
             subscriptions: [true,  false, false, false, false, true,  false],
             visual_config: [true,  false, true,  false, false, false, false],
+            ...buildTransactionFlags(GARAGE_TRANSACTION_CODES, [true, true, true, true, true, true, true]),
         },
         supervisor: {
             dashboard:     [true,  false, false, false, false, true,  false],
@@ -338,8 +290,10 @@ exports.getAllCompanies = async (req, res) => {
 
 exports.createCompany = async (req, res) => {
     const client = await db.getClient();
+    let creationStep = 'initializing';
     
     try {
+        creationStep = 'authorizing user';
         if (!req.user.is_super_admin) {
             return res.status(403).json({ error: 'Access denied. Super Admin only.' });
         }
@@ -360,6 +314,7 @@ exports.createCompany = async (req, res) => {
             return res.status(400).json({ error: 'Schema name must be lowercase alphanumeric and underscores only' });
         }
 
+        creationStep = 'starting transaction';
         await client.query('BEGIN');
 
         let selectedPlan = null;
@@ -369,6 +324,7 @@ exports.createCompany = async (req, res) => {
                 return res.status(400).json({ error: 'El plan de suscripcion seleccionado no es valido.' });
             }
             if (requestedPlanId) {
+                creationStep = 'resolving subscription plan by id';
                 selectedPlan = await resolveSubscriptionPlan(client, { subscriptionPlanId: requestedPlanId });
                 if (!selectedPlan) {
                     await client.query('ROLLBACK');
@@ -376,6 +332,7 @@ exports.createCompany = async (req, res) => {
                 }
             }
         } else if (requestedPlanCode && requestedPlanCode !== 'none') {
+            creationStep = 'resolving subscription plan by code';
             selectedPlan = await resolveSubscriptionPlan(client, { planCode: requestedPlanCode });
             if (!selectedPlan) {
                 await client.query('ROLLBACK');
@@ -387,6 +344,7 @@ exports.createCompany = async (req, res) => {
         const finalSubscriptionPlanId = selectedPlan?.id || null;
 
         // 1. Create Company Record in Public Schema
+        creationStep = 'inserting public company';
         const insertCompanyQuery = `
             INSERT INTO public.companies (name, schema_name, rut, contact_email, contact_phone, address, country, plan_type, subscription_plan_id)
             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
@@ -407,6 +365,7 @@ exports.createCompany = async (req, res) => {
 
         // 1.5 Auto-create payment agreement from selected subscription plan
         if (selectedPlan) {
+            creationStep = 'creating payment agreement from plan';
             await createAgreementFromPlan(client, {
                 companyId: newCompany.id,
                 plan: selectedPlan,
@@ -415,28 +374,35 @@ exports.createCompany = async (req, res) => {
             });
         }
         // 2. Create Schema
+        creationStep = 'creating tenant schema';
         await client.query(`CREATE SCHEMA IF NOT EXISTS "${schema_name}"`);
 
         // 3. Run Tenant Template SQL
+        creationStep = 'running tenant schema template';
         const templatePath = path.join(__dirname, '../templates/tenant_schema.sql');
         await runSqlFile(templatePath, schema_name, client);
 
         // 3.5 Seed base roles, permissions and RBAC matrix for the new tenant
+        creationStep = 'seeding tenant roles';
         await seedTenantRoles(schema_name, client);
 
-        // 3.6 Seed modules, profiles and permission matrix
+        // 3.6 Seed profiles and transaction permission matrix
+        creationStep = 'seeding tenant profiles and transaction permissions';
         await seedTenantExtended(schema_name, client);
 
         // 3.6.1 Register core modules (dashboard + configuration) in public.company_modules
+        creationStep = 'registering core company modules';
         await registerCompanyCoreModules(newCompany.id, client);
 
         // 3.7 Initialize Tenant Config (Populate config_company)
+        creationStep = 'initializing tenant config_company';
         await client.query(`
             INSERT INTO "${schema_name}".config_company (company_name, country, rut, address, email, phone)
             VALUES ($1, $2, $3, $4, $5, $6)
         `, [name, country, rut, address, contact_email, contact_phone]);
 
         // 4. Link Super Admin to company
+        creationStep = 'linking super admin to company';
         await client.query(`
             INSERT INTO public.company_users (company_id, user_id, is_company_admin)
             VALUES ($1, $2, TRUE)
@@ -447,6 +413,7 @@ exports.createCompany = async (req, res) => {
         let createdAdminUserId = null;
 
         if (admin_user && admin_user.email && admin_user.password) {
+            creationStep = 'validating dedicated admin user';
             const PASSWORD_REGEX = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[^A-Za-z0-9]).{8,}$/;
             if (!PASSWORD_REGEX.test(admin_user.password)) {
                 await client.query('ROLLBACK');
@@ -461,6 +428,7 @@ exports.createCompany = async (req, res) => {
             const passwordHash = await bcrypt.hash(admin_user.password, 10);
 
             // Check if user already exists
+            creationStep = 'checking dedicated admin user';
             let existingUser = await client.query(
                 'SELECT id FROM public.users WHERE email = $1', [admin_user.email]
             );
@@ -468,6 +436,7 @@ exports.createCompany = async (req, res) => {
             if (existingUser.rows.length > 0) {
                 createdAdminUserId = existingUser.rows[0].id;
             } else {
+                creationStep = 'creating dedicated admin user';
                 const newUserResult = await client.query(
                     `INSERT INTO public.users
                      (email, password_hash, full_name, first_name, last_name,
@@ -480,6 +449,7 @@ exports.createCompany = async (req, res) => {
             }
 
             // Link admin user to company
+            creationStep = 'linking dedicated admin user to company';
             await client.query(
                 `INSERT INTO public.company_users (company_id, user_id, is_company_admin)
                  VALUES ($1, $2, TRUE)
@@ -488,6 +458,7 @@ exports.createCompany = async (req, res) => {
             );
 
             // Assign admin role in tenant schema
+            creationStep = 'assigning dedicated admin tenant role';
             const adminRole = await client.query(
                 `SELECT id FROM "${schema_name}".roles WHERE name = 'admin' LIMIT 1`
             );
@@ -500,6 +471,7 @@ exports.createCompany = async (req, res) => {
                 );
             }
 
+            creationStep = 'assigning dedicated admin tenant profile';
             const adminEmpresaProfile = await client.query(
                 `SELECT id FROM "${schema_name}".profiles WHERE code = 'admin_empresa' LIMIT 1`
             );
@@ -513,6 +485,7 @@ exports.createCompany = async (req, res) => {
             }
         }
 
+        creationStep = 'committing transaction';
         await client.query('COMMIT');
 
         res.status(201).json({
@@ -523,13 +496,35 @@ exports.createCompany = async (req, res) => {
 
     } catch (error) {
         await client.query('ROLLBACK');
-        console.error('Create company error:', error);
+        console.error('Create company error:', {
+            step: creationStep,
+            message: error.message,
+            code: error.code,
+            detail: error.detail,
+            table: error.table,
+            schema: error.schema,
+            constraint: error.constraint,
+            stack: error.stack
+        });
         
         if (error.code === '23505') { // Unique violation
             return res.status(400).json({ error: 'Schema name or other unique field already exists' });
         }
         
-        res.status(500).json({ error: 'Server error creating company' });
+        const response = { error: 'Server error creating company' };
+        if (req.user?.is_super_admin) {
+            response.debug = {
+                step: creationStep,
+                message: error.message,
+                code: error.code,
+                detail: error.detail,
+                table: error.table,
+                schema: error.schema,
+                constraint: error.constraint
+            };
+        }
+
+        res.status(500).json(response);
     } finally {
         client.release();
     }

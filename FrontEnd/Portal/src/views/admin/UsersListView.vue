@@ -18,7 +18,7 @@ const configStore = useVisualConfigStore();
 const isLightMode = computed(() => configStore.mode === 'light');
 const headerTextColor = computed(() => isLightMode.value ? '#0f172a' : '#ffffff');
 const mutedTextColor  = computed(() => isLightMode.value ? '#475569' : '#94a3b8');
-const cardBg          = computed(() => isLightMode.value ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.05)');
+const cardBg          = computed(() => configStore.cardBg);
 const cardBorder      = computed(() => isLightMode.value ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.10)');
 const tableHeaderBg   = computed(() => isLightMode.value ? 'rgba(0,0,0,0.02)' : 'rgba(255,255,255,0.03)');
 const tableHoverBg    = computed(() => isLightMode.value ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.03)');

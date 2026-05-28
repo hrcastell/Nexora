@@ -3,6 +3,8 @@ import { ref, onMounted, computed } from 'vue';
 import api from '../../utils/axios';
 import { ArrowLeft, Loader2, FileText, DollarSign, Building2, Receipt, Users, Settings, UserPlus, Trash2, Shield, ShieldCheck, Palette, Check, RotateCcw, Upload, Puzzle, ToggleLeft, ToggleRight } from 'lucide-vue-next';
 import { useVisualConfigStore } from '../../stores/visualConfig';
+import { useAuthStore } from '../../stores/auth';
+import { useMenuStore } from '../../stores/menu';
 import ConfirmActionModal from '../../components/admin/ConfirmActionModal.vue';
 import AppToast, { type ToastItem, type ToastType } from '../../components/AppToast.vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -10,6 +12,9 @@ import { useRoute, useRouter } from 'vue-router';
 const route = useRoute();
 const router = useRouter();
 const companyId = route.params.id;
+
+const authStore = useAuthStore();
+const menuStore = useMenuStore();
 
 interface Company {
   id: number;
@@ -62,6 +67,14 @@ interface CompanyUser {
   created_at: string;
   role_id?: number;
   role_name?: string;
+  job_title?: string;
+  access_level?: string;
+  profiles?: Array<{
+    id: number;
+    code: string;
+    name: string;
+    is_primary?: boolean;
+  }>;
 }
 
 interface TenantRole {
@@ -97,6 +110,8 @@ interface CompanyModule {
   is_enabled: boolean;
   is_required: boolean;
   is_core: boolean;
+  is_system: boolean;
+  menu_order: number | null;
   status: string;
 }
 
@@ -106,6 +121,7 @@ const commercialPayments = ref<CommercialPayment[]>([]);
 const companyUsers = ref<CompanyUser[]>([]);
 const companyConfig = ref<CompanyConfig | null>(null);
 const companyModules = ref<CompanyModule[]>([]);
+const assignedCompanyModules = computed(() => companyModules.value.filter(m => m.is_enabled));
 const isTogglingModule = ref<Record<number, boolean>>({});
 const isLoading = ref(true);
 const activeTab = ref('details'); // 'details' | 'payments' | 'users' | 'modules' | 'config'
@@ -139,7 +155,7 @@ const configStore = useVisualConfigStore();
 const isLightMode = computed(() => configStore.mode === 'light');
 const headerTextColor = computed(() => isLightMode.value ? '#0f172a' : '#ffffff');
 const mutedTextColor = computed(() => isLightMode.value ? '#475569' : '#94a3b8');
-const cardBg = computed(() => isLightMode.value ? 'rgba(255, 255, 255, 0.95)' : 'rgba(255, 255, 255, 0.05)');
+const cardBg = computed(() => configStore.cardBg);
 const cardBorder = computed(() => isLightMode.value ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.10)');
 const tableHeaderBg = computed(() => isLightMode.value ? 'rgba(0, 0, 0, 0.02)' : 'rgba(255, 255, 255, 0.03)');
 const tableHoverBg = computed(() => isLightMode.value ? 'rgba(0, 0, 0, 0.03)' : 'rgba(255, 255, 255, 0.03)');
@@ -243,16 +259,6 @@ const handleInviteUser = async () => {
   }
 };
 
-const changeUserRole = async (user: CompanyUser, roleId: number) => {
-  try {
-    await api.put(`/companies/${companyId}/users/${user.id}`, { role_id: roleId });
-    user.role_id = roleId;
-    user.role_name = availableRoles.value.find(r => r.id === roleId)?.name;
-  } catch (error) {
-    console.error('Error changing role:', error);
-  }
-};
-
 const getRoleBadgeClass = (roleName?: string) => {
   switch (roleName) {
     case 'super_admin': return 'bg-purple-500/10 text-purple-200 border-purple-500/20';
@@ -261,6 +267,19 @@ const getRoleBadgeClass = (roleName?: string) => {
     case 'viewer':      return 'bg-slate-500/10 text-slate-300 border-slate-500/20';
     default:            return 'bg-white/5 text-slate-400 border-white/10';
   }
+};
+
+const formatRoleLabel = (user: CompanyUser) => {
+  return user.role_name || (user.is_company_admin ? 'Admin' : 'Usuario');
+};
+
+const formatAccessLevel = (value?: string) => {
+  const labels: Record<string, string> = {
+    total: 'Acceso total',
+    por_modulo: 'Por módulo',
+    lectura: 'Solo lectura'
+  };
+  return value ? (labels[value] || value) : null;
 };
 
 const toggleUserAdmin = async (user: CompanyUser) => {
@@ -323,25 +342,46 @@ const saveConfig = async () => {
 };
 
 const toggleModule = async (mod: CompanyModule) => {
-  if (mod.is_required || mod.is_core) {
-    triggerToast('No permitido', 'Los módulos base no pueden deshabilitarse.', 'error');
+  if (mod.is_required || mod.is_core || mod.is_system) {
+    triggerToast('No permitido', 'Los módulos base o del sistema no pueden modificarse desde aquí.', 'error');
     return;
   }
   isTogglingModule.value[mod.module_id] = true;
   try {
-    const res = await api.put(`/companies/${companyId}/modules/${mod.code}`, {
-      is_enabled: !mod.is_enabled
-    });
+    const body: Record<string, unknown> = { is_enabled: !mod.is_enabled };
+    if (mod.menu_order !== null && mod.menu_order !== undefined) body.menu_order = mod.menu_order;
+    const res = await api.put(`/companies/${companyId}/modules/${mod.code}`, body);
     mod.is_enabled = res.data?.is_enabled ?? !mod.is_enabled;
     triggerToast(
       mod.is_enabled ? 'Módulo activado' : 'Módulo desactivado',
       `${mod.name} fue ${mod.is_enabled ? 'habilitado' : 'deshabilitado'} correctamente.`,
       'success'
     );
+    // Issue 3: Auto-refresh menu if the toggle affects the current user's company
+    if (String(authStore.currentCompany?.id) === String(companyId)) {
+      await menuStore.loadMenu();
+    }
   } catch (error: any) {
     triggerToast('Error', error.response?.data?.error || 'No se pudo actualizar el módulo.', 'error');
   } finally {
     isTogglingModule.value[mod.module_id] = false;
+  }
+};
+
+const saveModuleOrder = async (mod: CompanyModule) => {
+  if (!mod.menu_order || mod.menu_order < 1) return;
+  try {
+    await api.put(`/companies/${companyId}/modules/${mod.code}`, {
+      is_enabled: mod.is_enabled,
+      menu_order: mod.menu_order
+    });
+    // Refresh menu if this is the current user's company
+    if (String(authStore.currentCompany?.id) === String(companyId)) {
+      await menuStore.loadMenu();
+    }
+    triggerToast('Orden guardado', `El orden del módulo ${mod.name} fue actualizado.`, 'success');
+  } catch (error: any) {
+    triggerToast('Error', error.response?.data?.error || 'No se pudo guardar el orden.', 'error');
   }
 };
 
@@ -451,7 +491,7 @@ const getInvoiceStatusColor = (status: string) => {
         >
           <Puzzle class="h-4 w-4" />
           Módulos
-          <span class="rounded-full bg-white/10 px-1.5 py-0.5 text-xs">{{ companyModules.filter(m => m.is_enabled).length }}</span>
+          <span class="rounded-full bg-white/10 px-1.5 py-0.5 text-xs">{{ assignedCompanyModules.length }}</span>
         </button>
         <button
           @click="activeTab = 'config'"
@@ -619,7 +659,7 @@ const getInvoiceStatusColor = (status: string) => {
           <thead class="border-b" :style="{ backgroundColor: tableHeaderBg, borderColor: cardBorder }">
             <tr>
               <th class="py-3 pl-4 pr-3 text-left text-xs font-medium uppercase" :style="{ color: mutedTextColor }">Usuario</th>
-              <th class="px-3 py-3 text-left text-xs font-medium uppercase" :style="{ color: mutedTextColor }">Rol</th>
+              <th class="px-3 py-3 text-left text-xs font-medium uppercase" :style="{ color: mutedTextColor }">Rol / Perfiles</th>
               <th class="px-3 py-3 text-left text-xs font-medium uppercase" :style="{ color: mutedTextColor }">Estado</th>
               <th class="py-3 pl-3 pr-4 text-right text-xs font-medium uppercase" :style="{ color: mutedTextColor }">Acciones</th>
             </tr>
@@ -633,23 +673,27 @@ const getInvoiceStatusColor = (status: string) => {
                 <p class="text-xs" :style="{ color: mutedTextColor }">{{ user.email }}</p>
               </td>
               <td class="px-3 py-3">
-                <div class="flex items-center gap-2">
+                <div class="flex flex-col gap-1.5">
                   <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium border"
                         :class="getRoleBadgeClass(user.role_name)">
                     <ShieldCheck v-if="user.is_company_admin" class="h-3 w-3" />
                     <Shield v-else class="h-3 w-3" />
-                    {{ user.role_name || (user.is_company_admin ? 'Admin' : 'Usuario') }}
+                    {{ formatRoleLabel(user) }}
                   </span>
-                  <select
-                    v-if="availableRoles.length > 0"
-                    :value="user.role_id"
-                    @change="(e) => changeUserRole(user, Number((e.target as HTMLSelectElement).value))"
-                    class="text-xs rounded-lg border px-1.5 py-0.5 focus:outline-none cursor-pointer"
-                    :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: mutedTextColor }"
-                    title="Cambiar rol"
-                  >
-                    <option v-for="role in availableRoles" :key="role.id" :value="role.id">{{ role.name }}</option>
-                  </select>
+                  <div v-if="user.profiles?.length" class="flex flex-wrap gap-1">
+                    <span
+                      v-for="profile in user.profiles"
+                      :key="profile.id"
+                      class="inline-flex rounded-full border border-blue-500/20 bg-blue-500/10 px-2 py-0.5 text-xs text-blue-200"
+                    >
+                      {{ profile.name }}
+                    </span>
+                  </div>
+                  <p v-else class="text-xs" :style="{ color: mutedTextColor }">Sin perfil</p>
+                  <p v-if="user.job_title || user.access_level" class="text-xs" :style="{ color: mutedTextColor }">
+                    {{ user.job_title || 'Sin cargo' }}
+                    <span v-if="formatAccessLevel(user.access_level)"> · {{ formatAccessLevel(user.access_level) }}</span>
+                  </p>
                 </div>
               </td>
               <td class="px-3 py-3">
@@ -690,14 +734,14 @@ const getInvoiceStatusColor = (status: string) => {
           </p>
         </div>
 
-        <div v-if="companyModules.length === 0" class="p-8 text-center" :style="{ color: mutedTextColor }">
+        <div v-if="assignedCompanyModules.length === 0" class="p-8 text-center" :style="{ color: mutedTextColor }">
           <Puzzle class="h-10 w-10 mx-auto mb-2 opacity-25" />
           <p class="text-sm">No hay módulos asignados a esta empresa.</p>
         </div>
 
         <div v-else class="divide-y" :style="{ borderColor: cardBorder }">
           <div
-            v-for="mod in companyModules"
+            v-for="mod in assignedCompanyModules"
             :key="mod.module_id"
             class="flex items-center gap-4 px-5 py-4 transition-colors"
             @mouseover="(e) => (e.currentTarget as HTMLElement).style.backgroundColor = tableHoverBg"
@@ -725,12 +769,33 @@ const getInvoiceStatusColor = (status: string) => {
                 <span v-if="mod.is_required || mod.is_core" class="text-xs rounded-full px-2 py-0.5 border bg-amber-500/10 text-amber-300 border-amber-500/20">
                   Requerido
                 </span>
+                <span v-if="mod.is_system" class="text-xs rounded-full px-2 py-0.5 border bg-slate-500/10 text-slate-300 border-slate-500/20">
+                  Solo Super Admin
+                </span>
               </div>
               <p class="text-xs mt-0.5 truncate" :style="{ color: mutedTextColor }">{{ mod.description || mod.code }}</p>
             </div>
 
-            <!-- Toggle -->
+            <!-- Issue 2: Menu order input (only for non-system, non-core modules) -->
+            <div v-if="!mod.is_system && !mod.is_core" class="flex items-center gap-1 shrink-0">
+              <label class="text-xs" :style="{ color: mutedTextColor }">Orden</label>
+              <input
+                v-model.number="mod.menu_order"
+                type="number"
+                min="1"
+                max="99"
+                class="w-14 rounded-lg border px-2 py-1 text-xs text-center outline-none focus:border-white/40"
+                :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerTextColor }"
+                @change="saveModuleOrder(mod)"
+              />
+            </div>
+
+            <!-- Toggle — hidden for system modules -->
+            <span v-if="mod.is_system" class="shrink-0 text-xs px-3 py-1.5 rounded-2xl border bg-slate-500/10 text-slate-400 border-slate-500/20">
+              Sistema
+            </span>
             <button
+              v-else
               @click="toggleModule(mod)"
               :disabled="mod.is_required || mod.is_core || isTogglingModule[mod.module_id]"
               class="shrink-0 flex items-center gap-2 rounded-2xl border px-3 py-1.5 text-xs font-medium transition disabled:opacity-50 disabled:cursor-not-allowed"
@@ -965,5 +1030,4 @@ const getInvoiceStatusColor = (status: string) => {
     variant="danger"
     @confirmed="handleConfirmRemove"
     @cancelled="showConfirmRemove = false; userToRemove = null" />
-  />
 </template>

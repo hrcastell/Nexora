@@ -11,23 +11,36 @@
 .nxr-surface {
   background: var(--nexora-surface) !important;
   border-color: var(--nexora-border-color) !important;
+  border-radius: var(--nexora-corner-lg) !important;
+  backdrop-filter: blur(var(--nexora-glass-blur));
+  -webkit-backdrop-filter: blur(var(--nexora-glass-blur));
 }
 
 .nxr-glass {
   background: var(--nexora-glass-bg) !important;
   border-color: var(--nexora-border-color) !important;
+  border-radius: var(--nexora-corner) !important;
+  backdrop-filter: blur(var(--nexora-glass-blur));
+  -webkit-backdrop-filter: blur(var(--nexora-glass-blur));
 }
 
 .nxr-glass-strong {
   background: var(--nexora-glass-bg-strong) !important;
   border-color: var(--nexora-border-color) !important;
+  border-radius: var(--nexora-corner) !important;
+  backdrop-filter: blur(var(--nexora-glass-blur));
+  -webkit-backdrop-filter: blur(var(--nexora-glass-blur));
 }
+
+/* --- Utility: dynamic corner radius --- */
+.nxr-corner    { border-radius: var(--nexora-corner) !important; }
+.nxr-corner-lg { border-radius: var(--nexora-corner-lg) !important; }
 
 /* --- Navigation active state (uses primary color dynamically) --- */
 .nxr-nav-active {
   border-color: rgba(var(--nexora-primary-rgb), 0.25) !important;
   background: rgba(var(--nexora-primary-rgb), 0.1) !important;
-  color: white !important;
+  color: var(--nexora-text-color) !important;
 }
 
 .nxr-nav-icon-active {
@@ -51,7 +64,52 @@
 .nxr-btn-primary:hover {
   background: var(--nexora-btn-gradient-hover) !important;
   transform: translateY(-1px);
-  box-shadow: 0 8px 25px -5px rgba(124, 58, 237, 0.3);
+  box-shadow: 0 8px 25px -5px rgba(var(--nexora-custom-rgb), 0.3);
+}
+
+/* Disabled state */
+.nxr-btn-primary:disabled,
+.nxr-btn-primary[aria-disabled="true"] {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Active/pressed state */
+.nxr-btn-primary:active:not(:disabled) {
+  transform: translateY(0px);
+  box-shadow: 0 2px 8px -2px rgba(var(--nexora-custom-rgb), 0.25);
+}
+
+/* Secondary/cancel button */
+.nxr-btn-secondary {
+  background: var(--nexora-glass-bg-subtle) !important;
+  color: var(--nexora-text-color) !important;
+  border: 1px solid var(--nexora-border-color) !important;
+  transition: all 0.2s ease;
+}
+.nxr-btn-secondary:hover {
+  background: var(--nexora-glass-bg) !important;
+}
+.nxr-btn-secondary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Base button shape — square with rounded corners */
+.nxr-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: var(--nexora-corner);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
 }
 
 /* --- Nexora Card Style (like login/select company) --- */
@@ -74,7 +132,7 @@
   background: var(--nexora-dark-blue) !important;
   border: 1px solid var(--nexora-card-border) !important;
   border-radius: var(--nexora-corner) !important;
-  color: white !important;
+  color: var(--nexora-text-color) !important;
 }
 .nxr-input:focus {
   border-color: rgba(212, 175, 55, 0.45) !important;
@@ -109,6 +167,48 @@
 
 [data-nexora-mode="light"] {
   color-scheme: light;
+
+  /* ══════════════════════════════════════════════════════════════
+     GARAGE MODULE GLOBAL TEXT-WHITE FIX
+     ══════════════════════════════════════════════════════════════ */
+
+  /* Garage module global text-white override */
+  .text-white {
+    color: var(--nexora-text-color) !important;
+  }
+
+  /* Opacity variants (used for muted labels, placeholders) */
+  .text-white\/30,
+  .text-white\/40 {
+    color: var(--nexora-muted-text) !important;
+  }
+  .text-white\/50,
+  .text-white\/60 {
+    color: var(--nexora-soft-text) !important;
+  }
+  .text-white\/70 {
+    color: var(--nexora-text-color) !important;
+    opacity: 0.8;
+  }
+
+  /* Border opacity variants */
+  .border-white\/5,
+  .border-white\/10 {
+    border-color: rgba(0, 0, 0, 0.08) !important;
+  }
+  .border-white\/20 {
+    border-color: rgba(0, 0, 0, 0.15) !important;
+  }
+
+  /* Background fixes for expanded/hover states */
+  .bg-black\/10,
+  .bg-black\/20 {
+    background-color: rgba(0, 0, 0, 0.04) !important;
+  }
+  .hover\:bg-white\/10:hover,
+  .hover\:bg-white\/20:hover {
+    background-color: rgba(0, 0, 0, 0.06) !important;
+  }
 }
 
 /* Text color fixes for light mode - only apply to specific elements */
@@ -181,14 +281,10 @@
   backdrop-filter: blur(12px);
 }
 
-/* Sidebar: solid on mobile, transparent on desktop (shows wallpaper through) */
+/* Sidebar: uses --nexora-sidebar-bg on all viewports so transparency slider works.
+   The wallpaper still shows through because the var already has partial alpha. */
 .nxr-sidebar {
   background-color: var(--nexora-sidebar-bg);
-}
-@media (min-width: 768px) {
-  .nxr-sidebar {
-    background-color: transparent !important;
-  }
 }
 
 /* Hover state for nav items using accent color */

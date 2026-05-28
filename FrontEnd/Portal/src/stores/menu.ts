@@ -74,7 +74,7 @@ export const useMenuStore = defineStore('menu', () => {
     const map = new Map<string, { module: string; transaction: string }>();
     for (const m of modules.value) {
       for (const t of m.transactions) {
-        if (t.route) map.set(t.route, { module: m.code, transaction: t.code });
+        if (t.route && t.can_view === true) map.set(t.route, { module: m.code, transaction: t.code });
       }
     }
     return map;
@@ -92,8 +92,9 @@ export const useMenuStore = defineStore('menu', () => {
     const map = new Map<string, TransactionPerms>();
     for (const m of modules.value) {
       for (const t of m.transactions) {
+        if (t.can_view !== true) continue;
         map.set(t.code, {
-          can_view:   t.can_view   ?? true,
+          can_view:   true,
           can_create: t.can_create ?? false,
           can_edit:   t.can_edit   ?? false,
           can_delete: t.can_delete ?? false,

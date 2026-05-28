@@ -4,6 +4,7 @@ import api from '../utils/axios';
 import type { User, Company } from '../types/auth';
 import { useVisualConfigStore } from './visualConfig';
 import { useMenuStore } from './menu';
+import { resetAuthCheckPromise } from '../router';
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<User | null>(null);
@@ -52,6 +53,10 @@ export const useAuthStore = defineStore('auth', () => {
       localStorage.setItem('token', finalToken);
       localStorage.setItem('currentCompany', JSON.stringify(company));
       localStorage.setItem('nexora_read_only', read_only ? '1' : '0');
+
+      // Reset the router's auth-check promise so the next beforeEach
+      // re-validates with the new company-scoped token (which has company_id).
+      resetAuthCheckPromise();
       
       // Load dynamic menu (modules + transactions) for this company
       const menuStore = useMenuStore();
@@ -83,15 +88,23 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function checkAuth() {
     if (!token.value) return false;
-    
+
+    // Hydrate persisted state BEFORE the network call so that if the
+    // request fails (slow mobile, timeout, 5xx) the UI is already restored
+    // and the router guard doesn't see an empty currentCompany.
+    if (!currentCompany.value) {
+      const storedCompany = localStorage.getItem('currentCompany');
+      if (storedCompany) {
+        try { currentCompany.value = JSON.parse(storedCompany); } catch { /* ignore */ }
+      }
+    }
+    if (!readOnly.value) {
+      readOnly.value = localStorage.getItem('nexora_read_only') === '1';
+    }
+
     try {
       const response = await api.get('/auth/me');
       user.value = response.data.user;
-      
-      const storedCompany = localStorage.getItem('currentCompany');
-      if (storedCompany) {
-        currentCompany.value = JSON.parse(storedCompany);
-      }
 
       if (response.data.context) {
         readOnly.value = !!response.data.context.read_only;
@@ -101,8 +114,6 @@ export const useAuthStore = defineStore('auth', () => {
             commercial_status: response.data.context.commercial_status
           };
         }
-      } else {
-        readOnly.value = localStorage.getItem('nexora_read_only') === '1';
       }
 
       // Load user-specific visual config (localStorage first, then DB)
@@ -110,14 +121,19 @@ export const useAuthStore = defineStore('auth', () => {
       visualConfig.setUser(response.data.user.id);
       await visualConfig.loadFromApi();
 
-      // Load dynamic menu (modules + transactions) for this company
-      const menuStore = useMenuStore();
-      await menuStore.loadMenu();
+      // Only load the menu when there is a company context in the token.
+      // A pre-auth token (returned by /auth/login before selectCompany) has
+      // company_id = null, which causes menuController to return 400.
+      if (response.data.context?.company_id) {
+        const menuStore = useMenuStore();
+        await menuStore.loadMenu();
+      }
 
       return true;
     } catch (error: any) {
       // Only clear session on actual auth rejections (401/403).
-      // Do NOT logout on 500 or network errors — that would wipe a valid token.
+      // Network errors (timeout, 5xx, offline) must NOT wipe a valid token —
+      // that is the main cause of mobile-refresh logout.
       const status = error?.response?.status;
       if (status === 401 || status === 403) {
         logout();

@@ -78,11 +78,9 @@ import { computed } from 'vue';
 </script>
 
 <template>
-  <div 
+  <div
     :class="[
-      'pointer-events-auto w-full rounded-[24px] border p-4 shadow-xl backdrop-blur-xl toast-in',
-      'bg-white/95 dark:bg-[#0b1326]/95',
-      'shadow-black/10 dark:shadow-black/30',
+      'pointer-events-auto w-full rounded-[24px] border p-4 shadow-xl backdrop-blur-xl toast-in nxr-toast-card',
       theme.ring,
     ]"
   >
@@ -93,13 +91,13 @@ import { computed } from 'vue';
       <div class="min-w-0 flex-1">
         <div class="flex items-start justify-between gap-3">
           <div>
-            <p class="text-sm font-semibold text-slate-800 dark:text-white">{{ toast.title }}</p>
-            <p class="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-300">{{ toast.message }}</p>
+            <p class="text-sm font-semibold nxr-toast-title">{{ toast.title }}</p>
+            <p class="mt-1 text-sm leading-6 nxr-toast-message">{{ toast.message }}</p>
           </div>
           <button
             type="button"
             @click="close"
-            class="rounded-xl p-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-white/5 dark:hover:text-white"
+            class="rounded-xl p-1 transition nxr-toast-close"
           >
             <CloseIcon />
           </button>
@@ -115,4 +113,46 @@ import { computed } from 'vue';
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
 .toast-in { animation: toastIn .22s ease-out; }
+
+/* Toast card background and shadow */
+.nxr-toast-card {
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+[data-nexora-mode="dark"] .nxr-toast-card {
+  background: rgba(11, 19, 38, 0.95);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+}
+
+/* Toast title text */
+.nxr-toast-title {
+  color: rgb(30, 41, 59); /* slate-800 */
+}
+[data-nexora-mode="dark"] .nxr-toast-title {
+  color: white;
+}
+
+/* Toast message text */
+.nxr-toast-message {
+  color: rgb(71, 85, 105); /* slate-600 */
+}
+[data-nexora-mode="dark"] .nxr-toast-message {
+  color: rgb(203, 213, 225); /* slate-300 */
+}
+
+/* Toast close button */
+.nxr-toast-close {
+  color: rgb(100, 116, 139); /* slate-500 */
+}
+.nxr-toast-close:hover {
+  background: rgb(241, 245, 249); /* slate-100 */
+  color: rgb(51, 65, 85); /* slate-700 */
+}
+[data-nexora-mode="dark"] .nxr-toast-close {
+  color: rgb(148, 163, 184); /* slate-400 */
+}
+[data-nexora-mode="dark"] .nxr-toast-close:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+}
 </style>
