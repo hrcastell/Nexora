@@ -82,6 +82,14 @@ app.use('/api/garage',                     require('./routes/garage/garageRoutes
 // Ruta cross-company (super_admin opera en empresa específica)
 app.use('/api/companies/:id/garage',       require('./routes/garage/garageRoutes'));
 
+// ── Core 2: Financial Core ─────────────────────────────────────
+app.use('/api/financial',                  require('./routes/financial/financialRoutes'));
+app.use('/api/companies/:id/financial',    require('./routes/financial/financialRoutes'));
+
+// ── Core 3: Dental Core ──────────────────────────────────────
+app.use('/api/dental',                     require('./routes/dental/dentalRoutes'));
+app.use('/api/companies/:id/dental',       require('./routes/dental/dentalRoutes'));
+
 const authMiddleware  = require('./middleware/authMiddleware');
 const usersController = require('./controllers/usersController');
 const upload          = require('./utils/upload');
