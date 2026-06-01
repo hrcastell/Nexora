@@ -20,9 +20,15 @@ const defaultForm = (): DentalPatientFormData => ({
   document_type: 'DNI',
   document_number: '',
   phone: '',
+  mobile: '',
   email: '',
+  birth_date: '',
+  address: '',
+  city: '',
+  customer_notes: '',
   medical_background: '',
   allergies: '',
+  blood_type: '',
   current_medications: '',
   chronic_conditions: '',
   dental_observations: '',
@@ -190,9 +196,34 @@ onMounted(() => store.load());
             <input v-model="form.phone" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
           </div>
           <div class="flex flex-col gap-1.5">
-            <label class="text-xs text-white/50">Email</label>
-            <input v-model="form.email" type="email" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+            <label class="text-xs text-white/50">Celular</label>
+            <input v-model="form.mobile" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
           </div>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs text-white/50">Email</label>
+          <input v-model="form.email" type="email" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs text-white/50">Fecha de nacimiento</label>
+          <input v-model="form.birth_date" type="date" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs text-white/50">Dirección</label>
+          <input v-model="form.address" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs text-white/50">Ciudad</label>
+          <input v-model="form.city" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs text-white/50">Notas internas</label>
+          <textarea v-model="form.customer_notes" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none"></textarea>
         </div>
 
         <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Historial médico</p>
@@ -200,6 +231,21 @@ onMounted(() => store.load());
         <div class="flex flex-col gap-1.5">
           <label class="text-xs text-white/50">Antecedentes médicos</label>
           <textarea v-model="form.medical_background" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none"></textarea>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs text-white/50">Grupo sanguíneo</label>
+          <select v-model="form.blood_type" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none">
+            <option value="">Sin especificar</option>
+            <option value="A+">A+</option>
+            <option value="A-">A-</option>
+            <option value="B+">B+</option>
+            <option value="B-">B-</option>
+            <option value="AB+">AB+</option>
+            <option value="AB-">AB-</option>
+            <option value="O+">O+</option>
+            <option value="O-">O-</option>
+          </select>
         </div>
 
         <div class="flex flex-col gap-1.5">

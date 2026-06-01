@@ -25,9 +25,15 @@ const editForm = ref({
   first_name: '',
   last_name: '',
   phone: '',
+  mobile: '',
   email: '',
   document_type: '',
   document_number: '',
+  birth_date: '',
+  address: '',
+  city: '',
+  customer_notes: '',
+  blood_type: '',
   medical_background: '',
   allergies: '',
   current_medications: '',
@@ -53,16 +59,22 @@ function openEdit() {
     first_name: p.first_name,
     last_name: p.last_name,
     phone: p.phone ?? '',
+    mobile: p.mobile ?? '',
     email: p.email ?? '',
     document_type: p.document_type ?? 'DNI',
     document_number: p.document_number ?? '',
-    medical_background: p.dental_profile?.medical_background ?? '',
-    allergies: p.dental_profile?.allergies ?? '',
-    current_medications: p.dental_profile?.current_medications ?? '',
-    chronic_conditions: p.dental_profile?.chronic_conditions ?? '',
-    dental_observations: p.dental_profile?.dental_observations ?? '',
-    emergency_contact_name: p.dental_profile?.emergency_contact_name ?? '',
-    emergency_contact_phone: p.dental_profile?.emergency_contact_phone ?? '',
+    birth_date: p.birth_date ?? '',
+    address: p.address ?? '',
+    city: p.city ?? '',
+    customer_notes: p.notes ?? '',
+    blood_type: p.blood_type ?? '',
+    medical_background: p.medical_background ?? '',
+    allergies: p.allergies ?? '',
+    current_medications: p.current_medications ?? '',
+    chronic_conditions: p.chronic_conditions ?? '',
+    dental_observations: p.dental_observations ?? '',
+    emergency_contact_name: p.emergency_contact_name ?? '',
+    emergency_contact_phone: p.emergency_contact_phone ?? '',
   };
   saveError.value = null;
   showEditPanel.value = true;
@@ -207,18 +219,18 @@ onMounted(async () => {
           <p class="text-sm text-white">{{ patient.email ?? '—' }}</p>
           <p class="text-sm text-white">{{ patient.phone ?? patient.mobile ?? '—' }}</p>
         </div>
-        <div v-if="patient.dental_profile" class="flex flex-col gap-2 p-5 rounded-2xl border border-white/10" :style="{ background: 'var(--nexora-glass-bg)' }">
+        <div v-if="patient.dental_profile_id" class="flex flex-col gap-2 p-5 rounded-2xl border border-white/10" :style="{ background: 'var(--nexora-glass-bg)' }">
           <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Observaciones</p>
-          <p class="text-sm text-white/70">{{ patient.dental_profile.dental_observations || '—' }}</p>
+          <p class="text-sm text-white/70">{{ patient.dental_observations || '—' }}</p>
         </div>
-        <div v-if="patient.dental_profile?.allergies" class="flex flex-col gap-2 p-5 rounded-2xl border border-red-500/20 bg-red-500/5">
+        <div v-if="patient.allergies" class="flex flex-col gap-2 p-5 rounded-2xl border border-red-500/20 bg-red-500/5">
           <p class="text-xs text-red-400 uppercase tracking-wide font-semibold">Alergias</p>
-          <p class="text-sm text-white/80">{{ patient.dental_profile.allergies }}</p>
+          <p class="text-sm text-white/80">{{ patient.allergies }}</p>
         </div>
-        <div v-if="patient.dental_profile?.emergency_contact_name" class="flex flex-col gap-2 p-5 rounded-2xl border border-white/10" :style="{ background: 'var(--nexora-glass-bg)' }">
+        <div v-if="patient.emergency_contact_name" class="flex flex-col gap-2 p-5 rounded-2xl border border-white/10" :style="{ background: 'var(--nexora-glass-bg)' }">
           <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Contacto de emergencia</p>
-          <p class="text-sm text-white">{{ patient.dental_profile.emergency_contact_name }}</p>
-          <p class="text-sm text-white/60">{{ patient.dental_profile.emergency_contact_phone ?? '—' }}</p>
+          <p class="text-sm text-white">{{ patient.emergency_contact_name }}</p>
+          <p class="text-sm text-white/60">{{ patient.emergency_contact_phone ?? '—' }}</p>
         </div>
       </div>
 
@@ -233,13 +245,13 @@ onMounted(async () => {
             <div><p class="text-xs text-white/40">Email</p><p class="text-sm text-white">{{ patient.email ?? '—' }}</p></div>
           </div>
         </div>
-        <div v-if="patient.dental_profile" class="p-5 rounded-2xl border border-white/10 flex flex-col gap-3" :style="{ background: 'var(--nexora-glass-bg)' }">
+        <div v-if="patient.dental_profile_id" class="p-5 rounded-2xl border border-white/10 flex flex-col gap-3" :style="{ background: 'var(--nexora-glass-bg)' }">
           <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Historial médico</p>
           <div class="grid grid-cols-1 gap-3">
-            <div><p class="text-xs text-white/40">Antecedentes</p><p class="text-sm text-white/80">{{ patient.dental_profile.medical_background || '—' }}</p></div>
-            <div><p class="text-xs text-white/40">Alergias</p><p class="text-sm text-white/80">{{ patient.dental_profile.allergies || '—' }}</p></div>
-            <div><p class="text-xs text-white/40">Medicación actual</p><p class="text-sm text-white/80">{{ patient.dental_profile.current_medications || '—' }}</p></div>
-            <div><p class="text-xs text-white/40">Enfermedades crónicas</p><p class="text-sm text-white/80">{{ patient.dental_profile.chronic_conditions || '—' }}</p></div>
+            <div><p class="text-xs text-white/40">Antecedentes</p><p class="text-sm text-white/80">{{ patient.medical_background || '—' }}</p></div>
+            <div><p class="text-xs text-white/40">Alergias</p><p class="text-sm text-white/80">{{ patient.allergies || '—' }}</p></div>
+            <div><p class="text-xs text-white/40">Medicación actual</p><p class="text-sm text-white/80">{{ patient.current_medications || '—' }}</p></div>
+            <div><p class="text-xs text-white/40">Enfermedades crónicas</p><p class="text-sm text-white/80">{{ patient.chronic_conditions || '—' }}</p></div>
           </div>
         </div>
       </div>
@@ -356,11 +368,45 @@ onMounted(async () => {
             <input v-model="editForm.phone" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
           </div>
           <div class="flex flex-col gap-1.5">
-            <label class="text-xs text-white/50">Email</label>
-            <input v-model="editForm.email" type="email" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+            <label class="text-xs text-white/50">Celular</label>
+            <input v-model="editForm.mobile" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
           </div>
         </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs text-white/50">Email</label>
+          <input v-model="editForm.email" type="email" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs text-white/50">Fecha de nacimiento</label>
+          <input v-model="editForm.birth_date" type="date" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs text-white/50">Dirección</label>
+          <input v-model="editForm.address" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs text-white/50">Ciudad</label>
+          <input v-model="editForm.city" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs text-white/50">Notas internas</label>
+          <textarea v-model="editForm.customer_notes" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none"></textarea>
+        </div>
         <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Historial médico</p>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs text-white/50">Grupo sanguíneo</label>
+          <select v-model="editForm.blood_type" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none">
+            <option value="">Sin especificar</option>
+            <option value="A+">A+</option>
+            <option value="A-">A-</option>
+            <option value="B+">B+</option>
+            <option value="B-">B-</option>
+            <option value="AB+">AB+</option>
+            <option value="AB-">AB-</option>
+            <option value="O+">O+</option>
+            <option value="O-">O-</option>
+          </select>
+        </div>
         <div class="flex flex-col gap-1.5">
           <label class="text-xs text-white/50">Antecedentes médicos</label>
           <textarea v-model="editForm.medical_background" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none"></textarea>

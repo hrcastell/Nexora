@@ -2,10 +2,50 @@
 import { ref, computed, onMounted } from 'vue';
 import { Plus, CalendarDays, List, Calendar, CheckCircle2, XCircle, UserX, ArrowRightCircle } from 'lucide-vue-next';
 import { useDentalAppointmentsStore } from '../../stores/dentalAppointments';
+import { useDentalPatientsStore } from '../../stores/dentalPatients';
 import NxrSlidePanel from '../../components/NxrSlidePanel.vue';
 import type { DentalAppointment, DentalAppointmentFormData } from '../../types/dental';
 
 const store = useDentalAppointmentsStore();
+const patientsStore = useDentalPatientsStore();
+
+const patientSearch = ref('');
+const selectedPatient = ref<any>(null);
+const showPatientDrop = ref(false);
+
+let patientSearchTimer: ReturnType<typeof setTimeout> | null = null;
+
+function onPatientInput() {
+  selectedPatient.value = null;
+  form.value.customer_id = '';
+  if (patientSearchTimer) clearTimeout(patientSearchTimer);
+  if (!patientSearch.value.trim()) { showPatientDrop.value = false; return; }
+  patientSearchTimer = setTimeout(async () => {
+    await patientsStore.load({ search: patientSearch.value });
+    showPatientDrop.value = true;
+  }, 300);
+}
+
+function selectPatient(p: any) {
+  selectedPatient.value = p;
+  form.value.customer_id = p.id;
+  patientSearch.value = `${p.first_name} ${p.last_name}`;
+  showPatientDrop.value = false;
+}
+
+function focusPatientDrop() {
+  if (patientSearch.value && patientsStore.items.length) showPatientDrop.value = true;
+}
+
+function blurPatientDrop() {
+  setTimeout(() => { showPatientDrop.value = false; }, 200);
+}
+
+function clearPatient() {
+  selectedPatient.value = null;
+  form.value.customer_id = '';
+  patientSearch.value = '';
+}
 
 type ViewTab = 'today' | 'month' | 'all';
 const activeTab = ref<ViewTab>('today');
@@ -82,6 +122,9 @@ async function switchTab(tab: ViewTab) {
 function openCreate() {
   form.value = defaultForm();
   saveError.value = null;
+  patientSearch.value = '';
+  selectedPatient.value = null;
+  showPatientDrop.value = false;
   showPanel.value = true;
 }
 
@@ -114,7 +157,10 @@ async function doAction(action: 'confirm' | 'cancel' | 'no_show' | 'convert', ap
   }
 }
 
-onMounted(() => store.loadToday());
+onMounted(() => {
+  store.loadToday();
+  patientsStore.load();
+});
 </script>
 
 <template>
@@ -282,10 +328,38 @@ onMounted(() => store.loadToday());
     <!-- Create panel -->
     <NxrSlidePanel :open="showPanel" title="Nueva cita" eyebrow="Dental" @close="showPanel = false">
       <form class="flex flex-col gap-5" @submit.prevent="save">
-        <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">ID Paciente *</label>
-          <input v-model="form.customer_id" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" placeholder="Ingresá el ID del paciente" required />
-          <p class="text-xs text-white/30">Próximamente se habilitará el buscador de pacientes.</p>
+        <div class="flex flex-col gap-1.5 relative">
+          <label class="text-xs text-white/50">Paciente *</label>
+          <input
+            v-model="patientSearch"
+            type="text"
+            placeholder="Buscar por nombre o documento..."
+            autocomplete="off"
+            class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-white/30 outline-none focus:border-white/30"
+            @input="onPatientInput"
+            @focus="focusPatientDrop"
+            @blur="blurPatientDrop"
+          />
+          <div v-if="selectedPatient" class="flex items-center justify-between px-3 py-1.5 rounded-lg bg-[var(--nexora-primary)]/20 border border-[var(--nexora-primary)]/30 text-xs text-white">
+            <span>{{ selectedPatient.first_name }} {{ selectedPatient.last_name }}</span>
+            <button type="button" class="text-white/50 hover:text-white ml-2" @click="clearPatient">✕</button>
+          </div>
+          <div
+            v-if="showPatientDrop && patientsStore.items.length > 0"
+            class="absolute top-full left-0 right-0 z-50 mt-1 max-h-52 overflow-y-auto rounded-xl border border-white/20 shadow-xl"
+            :style="{ background: 'var(--nexora-glass-bg)' }"
+          >
+            <button
+              v-for="p in patientsStore.items"
+              :key="p.id"
+              type="button"
+              class="w-full text-left px-3 py-2.5 text-sm text-white hover:bg-white/10 transition-colors border-b border-white/5 last:border-0"
+              @mousedown.prevent="selectPatient(p)"
+            >
+              {{ p.first_name }} {{ p.last_name }}
+              <span v-if="p.document_number" class="text-xs text-white/40 ml-2">{{ p.document_type }} {{ p.document_number }}</span>
+            </button>
+          </div>
         </div>
         <div class="flex flex-col gap-1.5">
           <label class="text-xs text-white/50">Inicio *</label>

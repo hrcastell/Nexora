@@ -31,6 +31,9 @@ exports.list = async (req, res) => {
                     dpp.medical_background,
                     dpp.allergies,
                     dpp.blood_type,
+                    dpp.current_medications,
+                    dpp.chronic_conditions,
+                    dpp.dental_observations,
                     dpp.emergency_contact_name,
                     dpp.emergency_contact_phone,
                     dpp.notes AS dental_notes,
@@ -73,10 +76,18 @@ exports.create = async (req, res) => {
             document_type,
             document_number,
             phone,
+            mobile = null,
             email,
+            birth_date = null,
+            address = null,
+            city = null,
+            customer_notes = null,
             medical_background = null,
             allergies = null,
             blood_type = null,
+            current_medications = null,
+            chronic_conditions = null,
+            dental_observations = null,
             emergency_contact_name = null,
             emergency_contact_phone = null,
             notes = null
@@ -91,10 +102,11 @@ exports.create = async (req, res) => {
 
             const customerResult = await db.query(
                 `INSERT INTO ${schema}.customers
-                 (tenant_id, first_name, last_name, document_type, document_number, phone, email)
-                 VALUES ($1, $2, $3, $4, $5, $6, $7)
+                 (tenant_id, first_name, last_name, document_type, document_number, phone, mobile, email, birth_date, address, city, notes)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
                  RETURNING *`,
-                [companyId, first_name, last_name, document_type || null, document_number || null, phone || null, email || null]
+                [companyId, first_name, last_name, document_type || null, document_number || null,
+                 phone || null, mobile, email || null, birth_date, address, city, customer_notes]
             );
             resolvedCustomerId = customerResult.rows[0].id;
         } else {
@@ -107,32 +119,47 @@ exports.create = async (req, res) => {
             }
         }
 
-        const profileResult = await db.query(
+        await db.query(
             `INSERT INTO ${schema}.dental_patient_profiles
-             (tenant_id, customer_id, medical_background, allergies, blood_type, emergency_contact_name, emergency_contact_phone, notes)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+             (tenant_id, customer_id, medical_background, allergies, blood_type, current_medications, chronic_conditions, dental_observations, emergency_contact_name, emergency_contact_phone, notes)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
              ON CONFLICT (tenant_id, customer_id) DO UPDATE
                SET medical_background      = EXCLUDED.medical_background,
                    allergies               = EXCLUDED.allergies,
                    blood_type              = EXCLUDED.blood_type,
+                   current_medications     = EXCLUDED.current_medications,
+                   chronic_conditions      = EXCLUDED.chronic_conditions,
+                   dental_observations     = EXCLUDED.dental_observations,
                    emergency_contact_name  = EXCLUDED.emergency_contact_name,
                    emergency_contact_phone = EXCLUDED.emergency_contact_phone,
                    notes                   = EXCLUDED.notes,
-                   updated_at              = CURRENT_TIMESTAMP
-             RETURNING *`,
+                   updated_at              = CURRENT_TIMESTAMP`,
             [companyId, resolvedCustomerId, medical_background, allergies, blood_type,
+             current_medications, chronic_conditions, dental_observations,
              emergency_contact_name, emergency_contact_phone, notes]
         );
 
-        const customerResult2 = await db.query(
-            `SELECT * FROM ${schema}.customers WHERE id = $1`,
-            [resolvedCustomerId]
+        const combined = await db.query(
+            `SELECT c.*,
+                    dpp.id AS dental_profile_id,
+                    dpp.medical_background,
+                    dpp.allergies,
+                    dpp.blood_type,
+                    dpp.current_medications,
+                    dpp.chronic_conditions,
+                    dpp.dental_observations,
+                    dpp.emergency_contact_name,
+                    dpp.emergency_contact_phone,
+                    dpp.notes AS dental_notes,
+                    dpp.created_at AS dental_profile_created_at,
+                    dpp.updated_at AS dental_profile_updated_at
+             FROM ${schema}.customers c
+             LEFT JOIN ${schema}.dental_patient_profiles dpp ON dpp.customer_id = c.id AND dpp.tenant_id = $1
+             WHERE c.id = $2 AND c.tenant_id = $1`,
+            [companyId, resolvedCustomerId]
         );
 
-        res.status(201).json({
-            ...customerResult2.rows[0],
-            dental_profile: profileResult.rows[0]
-        });
+        res.status(201).json({ data: combined.rows[0] });
     } catch (err) {
         console.error('patientsController.create error:', err.message);
         res.status(err.statusCode || 500).json({ error: err.message || 'Error al crear paciente' });
@@ -152,6 +179,9 @@ exports.getById = async (req, res) => {
                     dpp.medical_background,
                     dpp.allergies,
                     dpp.blood_type,
+                    dpp.current_medications,
+                    dpp.chronic_conditions,
+                    dpp.dental_observations,
                     dpp.emergency_contact_name,
                     dpp.emergency_contact_phone,
                     dpp.notes AS dental_notes,
@@ -182,36 +212,119 @@ exports.update = async (req, res) => {
         if (req.user?.read_only) return res.status(403).json({ error: 'Operación no permitida en modo solo lectura' });
 
         const { schema, companyId } = await resolveSchema(req);
-        const { medical_background, allergies, blood_type, emergency_contact_name, emergency_contact_phone, notes } = req.body;
+        const {
+            first_name,
+            last_name,
+            document_type,
+            document_number,
+            phone,
+            mobile,
+            email,
+            birth_date,
+            address,
+            city,
+            customer_notes,
+            medical_background,
+            allergies,
+            blood_type,
+            current_medications,
+            chronic_conditions,
+            dental_observations,
+            emergency_contact_name,
+            emergency_contact_phone,
+            notes
+        } = req.body;
 
-        const result = await db.query(
-            `UPDATE ${schema}.dental_patient_profiles
-             SET medical_background      = COALESCE($1, medical_background),
-                 allergies               = COALESCE($2, allergies),
-                 blood_type              = COALESCE($3, blood_type),
-                 emergency_contact_name  = COALESCE($4, emergency_contact_name),
-                 emergency_contact_phone = COALESCE($5, emergency_contact_phone),
-                 notes                   = COALESCE($6, notes),
-                 updated_at              = CURRENT_TIMESTAMP
-             WHERE customer_id = $7 AND tenant_id = $8
-             RETURNING *`,
+        // Update customer base data
+        await db.query(
+            `UPDATE ${schema}.customers
+             SET first_name      = COALESCE($1, first_name),
+                 last_name       = COALESCE($2, last_name),
+                 document_type   = COALESCE($3, document_type),
+                 document_number = COALESCE($4, document_number),
+                 phone           = COALESCE($5, phone),
+                 mobile          = COALESCE($6, mobile),
+                 email           = COALESCE($7, email),
+                 birth_date      = COALESCE($8, birth_date),
+                 address         = COALESCE($9, address),
+                 city            = COALESCE($10, city),
+                 notes           = COALESCE($11, notes),
+                 updated_at      = CURRENT_TIMESTAMP
+             WHERE id = $12 AND tenant_id = $13`,
             [
-                medical_background !== undefined ? medical_background : null,
-                allergies !== undefined ? allergies : null,
-                blood_type !== undefined ? blood_type : null,
-                emergency_contact_name !== undefined ? emergency_contact_name : null,
-                emergency_contact_phone !== undefined ? emergency_contact_phone : null,
-                notes !== undefined ? notes : null,
+                first_name !== undefined ? first_name : null,
+                last_name !== undefined ? last_name : null,
+                document_type !== undefined ? document_type : null,
+                document_number !== undefined ? document_number : null,
+                phone !== undefined ? phone : null,
+                mobile !== undefined ? mobile : null,
+                email !== undefined ? email : null,
+                birth_date !== undefined ? birth_date : null,
+                address !== undefined ? address : null,
+                city !== undefined ? city : null,
+                customer_notes !== undefined ? customer_notes : null,
                 req.params.id,
                 companyId
             ]
         );
 
-        if (result.rows.length === 0) {
-            return res.status(404).json({ code: 'DENTAL_PATIENT_NOT_FOUND', error: 'Perfil dental no encontrado' });
+        // Upsert dental profile
+        await db.query(
+            `INSERT INTO ${schema}.dental_patient_profiles
+             (tenant_id, customer_id, medical_background, allergies, blood_type, current_medications, chronic_conditions, dental_observations, emergency_contact_name, emergency_contact_phone, notes)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+             ON CONFLICT (tenant_id, customer_id) DO UPDATE
+               SET medical_background      = COALESCE(EXCLUDED.medical_background, dental_patient_profiles.medical_background),
+                   allergies               = COALESCE(EXCLUDED.allergies, dental_patient_profiles.allergies),
+                   blood_type              = COALESCE(EXCLUDED.blood_type, dental_patient_profiles.blood_type),
+                   current_medications     = COALESCE(EXCLUDED.current_medications, dental_patient_profiles.current_medications),
+                   chronic_conditions      = COALESCE(EXCLUDED.chronic_conditions, dental_patient_profiles.chronic_conditions),
+                   dental_observations     = COALESCE(EXCLUDED.dental_observations, dental_patient_profiles.dental_observations),
+                   emergency_contact_name  = COALESCE(EXCLUDED.emergency_contact_name, dental_patient_profiles.emergency_contact_name),
+                   emergency_contact_phone = COALESCE(EXCLUDED.emergency_contact_phone, dental_patient_profiles.emergency_contact_phone),
+                   notes                   = COALESCE(EXCLUDED.notes, dental_patient_profiles.notes),
+                   updated_at              = CURRENT_TIMESTAMP`,
+            [
+                companyId,
+                req.params.id,
+                medical_background !== undefined ? medical_background : null,
+                allergies !== undefined ? allergies : null,
+                blood_type !== undefined ? blood_type : null,
+                current_medications !== undefined ? current_medications : null,
+                chronic_conditions !== undefined ? chronic_conditions : null,
+                dental_observations !== undefined ? dental_observations : null,
+                emergency_contact_name !== undefined ? emergency_contact_name : null,
+                emergency_contact_phone !== undefined ? emergency_contact_phone : null,
+                notes !== undefined ? notes : null
+            ]
+        );
+
+        // Return combined row like getById
+        const combined = await db.query(
+            `SELECT c.*,
+                    dpp.id AS dental_profile_id,
+                    dpp.medical_background,
+                    dpp.allergies,
+                    dpp.blood_type,
+                    dpp.current_medications,
+                    dpp.chronic_conditions,
+                    dpp.dental_observations,
+                    dpp.emergency_contact_name,
+                    dpp.emergency_contact_phone,
+                    dpp.notes AS dental_notes,
+                    dpp.created_at AS dental_profile_created_at,
+                    dpp.updated_at AS dental_profile_updated_at
+             FROM ${schema}.customers c
+             LEFT JOIN ${schema}.dental_patient_profiles dpp ON dpp.customer_id = c.id AND dpp.tenant_id = $1
+             WHERE c.id = $2 AND c.tenant_id = $1`,
+            [companyId, req.params.id]
+        );
+
+        if (combined.rows.length === 0) {
+            return res.status(404).json({ code: 'DENTAL_PATIENT_NOT_FOUND', error: 'Paciente no encontrado' });
         }
 
-        res.json({ data: result.rows[0] });
+        res.json({ data: combined.rows[0] });
     } catch (err) {
         console.error('patientsController.update error:', err.message);
         res.status(err.statusCode || 500).json({ error: err.message || 'Error al actualizar paciente' });

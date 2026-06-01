@@ -10,6 +10,9 @@ export interface Customer {
   mobile?: string;
   email?: string;
   birth_date?: string;
+  address?: string;
+  city?: string;
+  notes?: string;
   status?: string;
 }
 
@@ -30,9 +33,20 @@ export interface DentalPatientProfile {
   updated_at: string;
 }
 
-// Patient = Customer + Profile combined
+// Patient = Customer + Profile combined (API returns flat — profile fields are top-level)
 export interface DentalPatient extends Customer {
   dental_profile?: DentalPatientProfile;
+  // Flat profile fields returned directly by the API JOIN query
+  dental_profile_id?: number;
+  medical_background?: string;
+  allergies?: string;
+  blood_type?: string;
+  current_medications?: string;
+  chronic_conditions?: string;
+  dental_observations?: string;
+  emergency_contact_name?: string;
+  emergency_contact_phone?: string;
+  dental_notes?: string;
 }
 
 export interface DentalPatientFormData {
@@ -42,9 +56,15 @@ export interface DentalPatientFormData {
   document_type?: string;
   document_number?: string;
   phone?: string;
+  mobile?: string;
   email?: string;
+  birth_date?: string;
+  address?: string;
+  city?: string;
+  customer_notes?: string;
   medical_background?: string;
   allergies?: string;
+  blood_type?: string;
   current_medications?: string;
   chronic_conditions?: string;
   dental_observations?: string;
