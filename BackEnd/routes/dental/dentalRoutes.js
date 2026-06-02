@@ -24,6 +24,8 @@ router.post('/patients',                         patientsCtrl.create);
 router.get('/patients/:id',                      patientsCtrl.getById);
 router.patch('/patients/:id',                    patientsCtrl.update);
 router.get('/patients/:id/clinical-history',     patientsCtrl.getClinicalHistory);
+router.get('/patients/:id/medical-history',      patientsCtrl.getMedicalHistory);
+router.post('/patients/:id/medical-history',     patientsCtrl.createMedicalHistory);
 router.get('/patients/:id/consultations',        patientsCtrl.getConsultations);
 router.get('/patients/:id/payments',             patientsCtrl.getPayments);
 router.get('/patients/:id/debt',                 patientsCtrl.getDebt);

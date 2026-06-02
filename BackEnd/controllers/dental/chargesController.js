@@ -223,17 +223,21 @@ exports.registerPayment = async (req, res) => {
 
 /**
  * POST /dental/charges/:id/installments
- * Body: { installments: [{installment_number, amount, due_date}] }
+ * Body: { installments_count, first_due_date }
  */
 exports.createInstallments = async (req, res) => {
     try {
         if (req.user?.read_only) return res.status(403).json({ error: 'Operación no permitida en modo solo lectura' });
 
         const { schema, companyId } = await resolveSchema(req);
-        const { installments = [] } = req.body;
+        const { installments_count, first_due_date } = req.body;
 
-        if (installments.length === 0) {
-            return res.status(400).json({ error: 'installments no puede estar vacío' });
+        const count = parseInt(installments_count);
+        if (!count || count < 2 || count > 12) {
+            return res.status(400).json({ error: 'installments_count debe ser un número entre 2 y 12' });
+        }
+        if (!first_due_date) {
+            return res.status(400).json({ error: 'first_due_date es requerido' });
         }
 
         const chargeResult = await db.query(
@@ -245,12 +249,21 @@ exports.createInstallments = async (req, res) => {
         }
 
         const charge = chargeResult.rows[0];
-        const totalInstallments = installments.reduce((sum, i) => sum + parseFloat(i.amount), 0);
-        if (totalInstallments > parseFloat(charge.total_amount)) {
-            return res.status(400).json({
-                code: 'DENTAL_INSTALLMENTS_EXCEED_TOTAL',
-                error: `La suma de cuotas ($${totalInstallments}) supera el total del cobro ($${charge.total_amount})`
-            });
+        const pendingAmount = parseFloat(charge.pending_amount);
+
+        if (pendingAmount <= 0) {
+            return res.status(400).json({ error: 'El cobro no tiene saldo pendiente para cuotificar' });
+        }
+
+        // Compute per-installment amount (truncated to 2 decimal places)
+        const amountPer = Math.floor((pendingAmount / count) * 100) / 100;
+        const lastAmount = Math.round((pendingAmount - amountPer * (count - 1)) * 100) / 100;
+
+        // Generate due dates: first_due_date, then +1 month each
+        function addMonths(dateStr, months) {
+            const d = new Date(dateStr);
+            d.setMonth(d.getMonth() + months);
+            return d.toISOString().slice(0, 10);
         }
 
         // Delete existing unpaid installments
@@ -262,13 +275,15 @@ exports.createInstallments = async (req, res) => {
 
         // Insert new installments
         const insertedRows = [];
-        for (const inst of installments) {
+        for (let i = 0; i < count; i++) {
+            const amount = i === count - 1 ? lastAmount : amountPer;
+            const dueDate = addMonths(first_due_date, i);
             const row = await db.query(
                 `INSERT INTO ${schema}.dental_installments
                  (tenant_id, charge_id, customer_id, installment_number, amount, paid_amount, due_date, status)
                  VALUES ($1, $2, $3, $4, $5, 0, $6, 'pending')
                  RETURNING *`,
-                [companyId, charge.id, charge.customer_id, inst.installment_number, parseFloat(inst.amount), inst.due_date]
+                [companyId, charge.id, charge.customer_id, i + 1, amount, dueDate]
             );
             insertedRows.push(row.rows[0]);
         }

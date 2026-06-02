@@ -179,6 +179,8 @@ onMounted(() => store.load());
             <label class="text-xs text-white/50">Tipo documento</label>
             <select v-model="form.document_type" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none">
               <option value="DNI">DNI</option>
+              <option value="Cedula">Cédula</option>
+              <option value="RUT">RUT</option>
               <option value="PASAPORTE">Pasaporte</option>
               <option value="CUIL">CUIL</option>
               <option value="OTRO">Otro</option>

@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ArrowLeft, User, FileText, Stethoscope, CreditCard, CalendarDays, Pencil } from 'lucide-vue-next';
+import { ArrowLeft, User, FileText, Stethoscope, CreditCard, CalendarDays, Pencil, Phone, MessageCircle, Plus } from 'lucide-vue-next';
 import { useDentalPatientsStore } from '../../stores/dentalPatients';
 import NxrSlidePanel from '../../components/NxrSlidePanel.vue';
-import type { DentalClinicalHistoryEntry, DentalConsultation, DentalPayment, DentalCharge } from '../../types/dental';
+import type { DentalClinicalHistoryEntry, DentalConsultation, DentalPayment, DentalCharge, DentalMedicalHistory } from '../../types/dental';
 
 const route  = useRoute();
 const router = useRouter();
@@ -15,9 +15,25 @@ const showEditPanel     = ref(false);
 const saving            = ref(false);
 const saveError         = ref<string | null>(null);
 const clinicalHistory   = ref<DentalClinicalHistoryEntry[]>([]);
+const medicalHistory    = ref<DentalMedicalHistory[]>([]);
 const consultations     = ref<DentalConsultation[]>([]);
 const payments          = ref<DentalPayment[]>([]);
 const debt              = ref<DentalCharge[]>([]);
+
+// Medical history panel
+const showMedHistPanel  = ref(false);
+const savingMedHist     = ref(false);
+const medHistError      = ref<string | null>(null);
+const medHistForm       = ref({
+  entry_date: new Date().toISOString().slice(0, 10),
+  blood_type: '',
+  medical_background: '',
+  allergies: '',
+  current_medications: '',
+  chronic_conditions: '',
+  dental_observations: '',
+  notes: '',
+});
 
 const patient = computed(() => store.current);
 
@@ -50,6 +66,10 @@ function fmt(n: number) {
 function fmtDate(iso: string) {
   const d = new Date(iso);
   return d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+function cleanPhone(num: string | undefined | null): string {
+  return (num ?? '').replace(/\D/g, '');
 }
 
 function openEdit() {
@@ -96,8 +116,13 @@ async function saveEdit() {
 
 async function loadTabData(tab: typeof activeTab.value) {
   activeTab.value = tab;
-  if (tab === 'history' && clinicalHistory.value.length === 0) {
-    clinicalHistory.value = await store.getClinicalHistory(route.params.id as string);
+  if (tab === 'history') {
+    if (clinicalHistory.value.length === 0) {
+      clinicalHistory.value = await store.getClinicalHistory(route.params.id as string);
+    }
+    if (medicalHistory.value.length === 0) {
+      medicalHistory.value = await store.fetchMedicalHistory(route.params.id as string);
+    }
   }
   if (tab === 'consultations' && consultations.value.length === 0) {
     consultations.value = await store.getConsultations(route.params.id as string);
@@ -105,6 +130,31 @@ async function loadTabData(tab: typeof activeTab.value) {
   if (tab === 'payments' && payments.value.length === 0) {
     payments.value = await store.getPayments(route.params.id as string);
     debt.value = await store.getDebt(route.params.id as string);
+  }
+}
+
+async function saveMedHist() {
+  if (!patient.value) return;
+  savingMedHist.value = true;
+  medHistError.value = null;
+  try {
+    await store.addMedicalHistory(patient.value.id, { ...medHistForm.value });
+    medicalHistory.value = store.medicalHistory;
+    showMedHistPanel.value = false;
+    medHistForm.value = {
+      entry_date: new Date().toISOString().slice(0, 10),
+      blood_type: '',
+      medical_background: '',
+      allergies: '',
+      current_medications: '',
+      chronic_conditions: '',
+      dental_observations: '',
+      notes: '',
+    };
+  } catch (e: any) {
+    medHistError.value = e?.response?.data?.error || 'Error al guardar registro';
+  } finally {
+    savingMedHist.value = false;
   }
 }
 
@@ -241,24 +291,90 @@ onMounted(async () => {
           <div class="grid grid-cols-2 gap-3">
             <div><p class="text-xs text-white/40">Nombre</p><p class="text-sm text-white">{{ patient.first_name }} {{ patient.last_name }}</p></div>
             <div><p class="text-xs text-white/40">Documento</p><p class="text-sm text-white">{{ patient.document_type }} {{ patient.document_number ?? '—' }}</p></div>
-            <div><p class="text-xs text-white/40">Teléfono</p><p class="text-sm text-white">{{ patient.phone ?? patient.mobile ?? '—' }}</p></div>
+            <div>
+              <p class="text-xs text-white/40">Teléfono</p>
+              <div class="flex items-center gap-2">
+                <p class="text-sm text-white">{{ patient.phone || '—' }}</p>
+                <template v-if="patient.phone">
+                  <a :href="`tel:${patient.phone}`" class="p-1 rounded-lg hover:bg-white/10 transition" title="Llamar">
+                    <Phone class="h-3.5 w-3.5 text-white/50" />
+                  </a>
+                  <a :href="`https://wa.me/${cleanPhone(patient.phone)}`" target="_blank" class="p-1 rounded-lg hover:bg-white/10 transition" title="WhatsApp">
+                    <MessageCircle class="h-3.5 w-3.5 text-green-400" />
+                  </a>
+                </template>
+              </div>
+            </div>
+            <div>
+              <p class="text-xs text-white/40">Celular</p>
+              <div class="flex items-center gap-2">
+                <p class="text-sm text-white">{{ patient.mobile || '—' }}</p>
+                <template v-if="patient.mobile">
+                  <a :href="`tel:${patient.mobile}`" class="p-1 rounded-lg hover:bg-white/10 transition" title="Llamar">
+                    <Phone class="h-3.5 w-3.5 text-white/50" />
+                  </a>
+                  <a :href="`https://wa.me/${cleanPhone(patient.mobile)}`" target="_blank" class="p-1 rounded-lg hover:bg-white/10 transition" title="WhatsApp">
+                    <MessageCircle class="h-3.5 w-3.5 text-green-400" />
+                  </a>
+                </template>
+              </div>
+            </div>
             <div><p class="text-xs text-white/40">Email</p><p class="text-sm text-white">{{ patient.email ?? '—' }}</p></div>
-          </div>
-        </div>
-        <div v-if="patient.dental_profile_id" class="p-5 rounded-2xl border border-white/10 flex flex-col gap-3" :style="{ background: 'var(--nexora-glass-bg)' }">
-          <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Historial médico</p>
-          <div class="grid grid-cols-1 gap-3">
-            <div><p class="text-xs text-white/40">Antecedentes</p><p class="text-sm text-white/80">{{ patient.medical_background || '—' }}</p></div>
-            <div><p class="text-xs text-white/40">Alergias</p><p class="text-sm text-white/80">{{ patient.allergies || '—' }}</p></div>
-            <div><p class="text-xs text-white/40">Medicación actual</p><p class="text-sm text-white/80">{{ patient.current_medications || '—' }}</p></div>
-            <div><p class="text-xs text-white/40">Enfermedades crónicas</p><p class="text-sm text-white/80">{{ patient.chronic_conditions || '—' }}</p></div>
           </div>
         </div>
       </div>
 
       <!-- Tab: Clinical history -->
-      <div v-if="activeTab === 'history'" class="flex flex-col gap-2">
-        <div v-if="clinicalHistory.length === 0" class="text-center text-white/30 py-10 text-sm">
+      <div v-if="activeTab === 'history'" class="flex flex-col gap-4">
+
+        <!-- Medical profile current -->
+        <div v-if="patient.dental_profile_id" class="p-5 rounded-2xl border border-white/10 flex flex-col gap-3" :style="{ background: 'var(--nexora-glass-bg)' }">
+          <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Perfil médico actual</p>
+          <div class="grid grid-cols-2 gap-3">
+            <div><p class="text-xs text-white/40">Grupo sanguíneo</p><p class="text-sm text-white">{{ patient.blood_type || '—' }}</p></div>
+            <div><p class="text-xs text-white/40">Alergias</p><p class="text-sm text-white/80">{{ patient.allergies || '—' }}</p></div>
+            <div><p class="text-xs text-white/40">Antecedentes</p><p class="text-sm text-white/80">{{ patient.medical_background || '—' }}</p></div>
+            <div><p class="text-xs text-white/40">Medicación actual</p><p class="text-sm text-white/80">{{ patient.current_medications || '—' }}</p></div>
+            <div><p class="text-xs text-white/40">Enfermedades crónicas</p><p class="text-sm text-white/80">{{ patient.chronic_conditions || '—' }}</p></div>
+          </div>
+        </div>
+
+        <!-- Medical history timeline -->
+        <div class="flex items-center justify-between">
+          <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Registros médicos</p>
+          <button
+            class="flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs text-white/70 bg-white/10 hover:bg-white/20 transition"
+            @click="showMedHistPanel = true"
+          >
+            <Plus class="h-3.5 w-3.5" />
+            Agregar registro
+          </button>
+        </div>
+
+        <div v-if="medicalHistory.length === 0" class="text-center text-white/30 py-6 text-sm">
+          No hay registros médicos en el historial.
+        </div>
+        <div
+          v-for="entry in medicalHistory"
+          :key="entry.id"
+          class="flex flex-col gap-2 px-4 py-3 rounded-xl border border-white/10"
+          :style="{ background: 'var(--nexora-glass-bg)' }"
+        >
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-xs font-medium text-white">{{ fmtDate(entry.entry_date) }}</span>
+            <span v-if="entry.blood_type" class="text-xs px-2 py-0.5 rounded-full bg-white/10 text-white/60">{{ entry.blood_type }}</span>
+          </div>
+          <div v-if="entry.medical_background" class="text-xs text-white/60"><span class="text-white/40">Antecedentes: </span>{{ entry.medical_background }}</div>
+          <div v-if="entry.allergies" class="text-xs text-white/60"><span class="text-white/40">Alergias: </span>{{ entry.allergies }}</div>
+          <div v-if="entry.current_medications" class="text-xs text-white/60"><span class="text-white/40">Medicación: </span>{{ entry.current_medications }}</div>
+          <div v-if="entry.chronic_conditions" class="text-xs text-white/60"><span class="text-white/40">Crónicas: </span>{{ entry.chronic_conditions }}</div>
+          <div v-if="entry.dental_observations" class="text-xs text-white/60"><span class="text-white/40">Obs. dentales: </span>{{ entry.dental_observations }}</div>
+          <div v-if="entry.notes" class="text-xs text-white/60"><span class="text-white/40">Notas: </span>{{ entry.notes }}</div>
+        </div>
+
+        <!-- Clinical history entries -->
+        <p class="text-xs text-white/40 uppercase tracking-wide font-semibold mt-2">Historial clínico</p>
+        <div v-if="clinicalHistory.length === 0" class="text-center text-white/30 py-4 text-sm">
           No hay entradas en la historia clínica.
         </div>
         <div
@@ -349,6 +465,51 @@ onMounted(async () => {
       </div>
     </template>
 
+    <!-- Medical history panel -->
+    <NxrSlidePanel :open="showMedHistPanel" title="Agregar registro médico" eyebrow="Historia" @close="showMedHistPanel = false">
+      <form class="flex flex-col gap-4" @submit.prevent="saveMedHist">
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs text-white/50">Fecha *</label>
+          <input v-model="medHistForm.entry_date" type="date" required class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs text-white/50">Grupo sanguíneo</label>
+          <input v-model="medHistForm.blood_type" type="text" placeholder="Ej: A+" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs text-white/50">Antecedentes médicos</label>
+          <textarea v-model="medHistForm.medical_background" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none"></textarea>
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs text-white/50">Alergias</label>
+          <textarea v-model="medHistForm.allergies" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none"></textarea>
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs text-white/50">Medicación actual</label>
+          <textarea v-model="medHistForm.current_medications" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none"></textarea>
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs text-white/50">Enfermedades crónicas</label>
+          <textarea v-model="medHistForm.chronic_conditions" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none"></textarea>
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs text-white/50">Observaciones dentales</label>
+          <textarea v-model="medHistForm.dental_observations" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none"></textarea>
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs text-white/50">Notas</label>
+          <textarea v-model="medHistForm.notes" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none"></textarea>
+        </div>
+        <p v-if="medHistError" class="text-red-400 text-sm">{{ medHistError }}</p>
+        <div class="flex justify-end gap-2 pt-1">
+          <button type="button" class="rounded-xl bg-white/10 hover:bg-white/20 transition px-4 py-2 text-sm text-white/70" @click="showMedHistPanel = false">Cancelar</button>
+          <button type="submit" :disabled="savingMedHist" class="rounded-xl px-4 py-2 text-sm text-white font-medium transition disabled:opacity-50" :style="{ background: 'var(--nexora-primary)' }">
+            {{ savingMedHist ? 'Guardando...' : 'Guardar' }}
+          </button>
+        </div>
+      </form>
+    </NxrSlidePanel>
+
     <!-- Edit panel -->
     <NxrSlidePanel :open="showEditPanel" title="Editar paciente" eyebrow="Dental" @close="showEditPanel = false">
       <form class="flex flex-col gap-5" @submit.prevent="saveEdit">
@@ -361,6 +522,23 @@ onMounted(async () => {
           <div class="flex flex-col gap-1.5">
             <label class="text-xs text-white/50">Apellido *</label>
             <input v-model="editForm.last_name" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" required />
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs text-white/50">Tipo documento</label>
+            <select v-model="editForm.document_type" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none">
+              <option value="DNI">DNI</option>
+              <option value="Cedula">Cédula</option>
+              <option value="RUT">RUT</option>
+              <option value="PASAPORTE">Pasaporte</option>
+              <option value="CUIL">CUIL</option>
+              <option value="OTRO">Otro</option>
+            </select>
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs text-white/50">Número de documento</label>
+            <input v-model="editForm.document_number" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
           </div>
         </div>
         <div class="grid grid-cols-2 gap-4">

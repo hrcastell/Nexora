@@ -1,11 +1,12 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { dentalPatientsService } from '../services/dentalPatientsService';
-import type { DentalPatient, DentalPatientFormData, DentalClinicalHistoryEntry, DentalConsultation, DentalPayment, DentalCharge } from '../types/dental';
+import type { DentalPatient, DentalPatientFormData, DentalClinicalHistoryEntry, DentalConsultation, DentalPayment, DentalCharge, DentalMedicalHistory } from '../types/dental';
 
 export const useDentalPatientsStore = defineStore('dentalPatients', () => {
-  const items   = ref<DentalPatient[]>([]);
-  const current = ref<DentalPatient | null>(null);
+  const items          = ref<DentalPatient[]>([]);
+  const current        = ref<DentalPatient | null>(null);
+  const medicalHistory = ref<DentalMedicalHistory[]>([]);
   const loading = ref(false);
   const error   = ref<string | null>(null);
 
@@ -79,11 +80,24 @@ export const useDentalPatientsStore = defineStore('dentalPatients', () => {
     return unwrapData<DentalCharge[]>(res.data);
   }
 
+  async function fetchMedicalHistory(patientId: number | string) {
+    const res = await dentalPatientsService.getMedicalHistory(patientId);
+    medicalHistory.value = (res.data as any)?.data ?? res.data;
+    return medicalHistory.value;
+  }
+
+  async function addMedicalHistory(patientId: number | string, data: Partial<DentalMedicalHistory>) {
+    const res = await dentalPatientsService.createMedicalHistory(patientId, data);
+    const entry = (res.data as any)?.data ?? res.data;
+    medicalHistory.value.unshift(entry as DentalMedicalHistory);
+    return entry as DentalMedicalHistory;
+  }
+
   function reset() {
     items.value = [];
     current.value = null;
     error.value = null;
   }
 
-  return { items, current, loading, error, load, loadOne, create, update, getClinicalHistory, getConsultations, getPayments, getDebt, reset };
+  return { items, current, medicalHistory, loading, error, load, loadOne, create, update, getClinicalHistory, getConsultations, getPayments, getDebt, fetchMedicalHistory, addMedicalHistory, reset };
 });

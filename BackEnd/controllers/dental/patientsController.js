@@ -426,3 +426,58 @@ exports.getDebt = async (req, res) => {
         res.status(err.statusCode || 500).json({ error: err.message || 'Error al obtener deuda del paciente' });
     }
 };
+
+/**
+ * GET /dental/patients/:id/medical-history
+ */
+exports.getMedicalHistory = async (req, res) => {
+    try {
+        const { schema, companyId } = await resolveSchema(req);
+
+        const result = await db.query(
+            `SELECT * FROM ${schema}.dental_medical_history
+             WHERE customer_id = $1 AND tenant_id = $2
+             ORDER BY entry_date DESC, created_at DESC`,
+            [req.params.id, companyId]
+        );
+
+        res.json({ data: result.rows });
+    } catch (err) {
+        console.error('patientsController.getMedicalHistory error:', err.message);
+        res.status(err.statusCode || 500).json({ error: err.message || 'Error al obtener historial médico' });
+    }
+};
+
+/**
+ * POST /dental/patients/:id/medical-history
+ */
+exports.createMedicalHistory = async (req, res) => {
+    try {
+        if (req.user?.read_only) return res.status(403).json({ error: 'Operación no permitida en modo solo lectura' });
+
+        const { schema, companyId, userId } = await resolveSchema(req);
+        const {
+            entry_date = null,
+            blood_type = null,
+            medical_background = null,
+            allergies = null,
+            current_medications = null,
+            chronic_conditions = null,
+            dental_observations = null,
+            notes = null
+        } = req.body;
+
+        const result = await db.query(
+            `INSERT INTO ${schema}.dental_medical_history
+             (tenant_id, customer_id, entry_date, blood_type, medical_background, allergies, current_medications, chronic_conditions, dental_observations, notes, created_by)
+             VALUES ($1, $2, COALESCE($3, CURRENT_DATE), $4, $5, $6, $7, $8, $9, $10, $11)
+             RETURNING *`,
+            [companyId, req.params.id, entry_date, blood_type, medical_background, allergies, current_medications, chronic_conditions, dental_observations, notes, userId || null]
+        );
+
+        res.status(201).json({ data: result.rows[0] });
+    } catch (err) {
+        console.error('patientsController.createMedicalHistory error:', err.message);
+        res.status(err.statusCode || 500).json({ error: err.message || 'Error al crear registro médico' });
+    }
+};

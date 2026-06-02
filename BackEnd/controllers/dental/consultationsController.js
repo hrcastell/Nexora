@@ -104,7 +104,26 @@ exports.create = async (req, res) => {
             [companyId, customer_id, appointment_id, service_id, reason, diagnosis, clinical_notes, indications, parseFloat(total_amount) || 0]
         );
 
-        res.status(201).json(result.rows[0]);
+        const consultation = result.rows[0];
+
+        // Auto-copy treatments from the service if service_id was provided
+        if (service_id) {
+            const svcTreatments = await db.query(
+                `SELECT treatment_id, quantity, notes FROM ${schema}.dental_service_treatments
+                 WHERE service_id = $1 AND tenant_id = $2`,
+                [service_id, companyId]
+            );
+            for (const t of svcTreatments.rows) {
+                await db.query(
+                    `INSERT INTO ${schema}.dental_consultation_treatments
+                     (consultation_id, treatment_id, quantity, notes)
+                     VALUES ($1, $2, $3, $4)`,
+                    [consultation.id, t.treatment_id, t.quantity, t.notes || null]
+                );
+            }
+        }
+
+        res.status(201).json(consultation);
     } catch (err) {
         console.error('consultationsController.create error:', err.message);
         res.status(err.statusCode || 500).json({ error: err.message || 'Error al crear consulta' });
@@ -174,6 +193,29 @@ exports.update = async (req, res) => {
         const { schema, companyId } = await resolveSchema(req);
         const { service_id, reason, diagnosis, clinical_notes, indications, total_amount, administrative_status } = req.body;
 
+        // Fetch current consultation to detect service_id change
+        const existing = await db.query(
+            `SELECT service_id FROM ${schema}.dental_consultations WHERE id = $1 AND tenant_id = $2`,
+            [req.params.id, companyId]
+        );
+        if (existing.rows.length === 0) {
+            return res.status(404).json({ code: 'DENTAL_CONSULTATION_NOT_FOUND', error: 'Consulta no encontrada' });
+        }
+
+        const serviceChanged = service_id !== undefined && service_id !== existing.rows[0].service_id;
+
+        // If service changed, resolve new total_amount from service final_price
+        let resolvedTotalAmount = total_amount !== undefined ? parseFloat(total_amount) : null;
+        if (serviceChanged && resolvedTotalAmount === null) {
+            const svcResult = await db.query(
+                `SELECT final_price FROM ${schema}.dental_services WHERE id = $1 AND tenant_id = $2`,
+                [service_id, companyId]
+            );
+            if (svcResult.rows.length > 0) {
+                resolvedTotalAmount = parseFloat(svcResult.rows[0].final_price);
+            }
+        }
+
         const result = await db.query(
             `UPDATE ${schema}.dental_consultations
              SET service_id            = COALESCE($1, service_id),
@@ -192,7 +234,7 @@ exports.update = async (req, res) => {
                 diagnosis !== undefined ? diagnosis : null,
                 clinical_notes !== undefined ? clinical_notes : null,
                 indications !== undefined ? indications : null,
-                total_amount !== undefined ? parseFloat(total_amount) : null,
+                resolvedTotalAmount,
                 administrative_status !== undefined ? administrative_status : null,
                 req.params.id,
                 companyId
@@ -201,6 +243,27 @@ exports.update = async (req, res) => {
 
         if (result.rows.length === 0) {
             return res.status(404).json({ code: 'DENTAL_CONSULTATION_NOT_FOUND', error: 'Consulta no encontrada' });
+        }
+
+        // If service changed, replace consultation treatments
+        if (serviceChanged) {
+            await db.query(
+                `DELETE FROM ${schema}.dental_consultation_treatments WHERE consultation_id = $1`,
+                [req.params.id]
+            );
+            const svcTreatments = await db.query(
+                `SELECT treatment_id, quantity, notes FROM ${schema}.dental_service_treatments
+                 WHERE service_id = $1 AND tenant_id = $2`,
+                [service_id, companyId]
+            );
+            for (const t of svcTreatments.rows) {
+                await db.query(
+                    `INSERT INTO ${schema}.dental_consultation_treatments
+                     (consultation_id, treatment_id, quantity, notes)
+                     VALUES ($1, $2, $3, $4)`,
+                    [req.params.id, t.treatment_id, t.quantity, t.notes || null]
+                );
+            }
         }
 
         res.json(result.rows[0]);

@@ -300,6 +300,23 @@ export interface DentalInstallment {
   updated_at: string;
 }
 
+// ─── MEDICAL HISTORY ──────────────────────────────────────────
+
+export interface DentalMedicalHistory {
+  id: number;
+  customer_id: number;
+  entry_date: string;
+  blood_type?: string;
+  medical_background?: string;
+  allergies?: string;
+  current_medications?: string;
+  chronic_conditions?: string;
+  dental_observations?: string;
+  notes?: string;
+  created_by?: number;
+  created_at: string;
+}
+
 // ─── DASHBOARD ────────────────────────────────────────────────
 
 export interface DentalDashboardSummary {

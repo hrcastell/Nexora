@@ -1,5 +1,5 @@
 import api from '../utils/axios';
-import type { DentalPatient, DentalPatientFormData, DentalClinicalHistoryEntry, DentalConsultation, DentalPayment, DentalCharge } from '../types/dental';
+import type { DentalPatient, DentalPatientFormData, DentalClinicalHistoryEntry, DentalConsultation, DentalPayment, DentalCharge, DentalMedicalHistory } from '../types/dental';
 
 export const dentalPatientsService = {
   list(params?: { search?: string; limit?: number; offset?: number }) {
@@ -32,5 +32,13 @@ export const dentalPatientsService = {
 
   getDebt(id: number | string) {
     return api.get<DentalCharge[]>(`/dental/patients/${id}/debt`);
+  },
+
+  getMedicalHistory(patientId: number | string) {
+    return api.get<{ data: DentalMedicalHistory[] }>(`/dental/patients/${patientId}/medical-history`);
+  },
+
+  createMedicalHistory(patientId: number | string, data: Partial<DentalMedicalHistory>) {
+    return api.post<{ data: DentalMedicalHistory }>(`/dental/patients/${patientId}/medical-history`, data);
   },
 };

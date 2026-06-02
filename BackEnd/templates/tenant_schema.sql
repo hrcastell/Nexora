@@ -944,6 +944,22 @@ CREATE TABLE IF NOT EXISTS {schema_name}.dental_notifications (
     CONSTRAINT chk_dental_notification_status  CHECK (status IN ('pending', 'sent', 'failed', 'cancelled'))
 );
 
+CREATE TABLE IF NOT EXISTS {schema_name}.dental_medical_history (
+    id                   SERIAL PRIMARY KEY,
+    tenant_id            INTEGER NOT NULL,
+    customer_id          INTEGER NOT NULL,
+    entry_date           DATE NOT NULL DEFAULT CURRENT_DATE,
+    blood_type           VARCHAR(10),
+    medical_background   TEXT,
+    allergies            TEXT,
+    current_medications  TEXT,
+    chronic_conditions   TEXT,
+    dental_observations  TEXT,
+    notes                TEXT,
+    created_by           INTEGER,
+    created_at           TIMESTAMP DEFAULT NOW()
+);
+
 CREATE INDEX IF NOT EXISTS idx_dental_profiles_tenant_customer       ON {schema_name}.dental_patient_profiles(tenant_id, customer_id);
 CREATE INDEX IF NOT EXISTS idx_dental_treatments_tenant              ON {schema_name}.dental_treatments(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_dental_services_tenant                ON {schema_name}.dental_services(tenant_id);

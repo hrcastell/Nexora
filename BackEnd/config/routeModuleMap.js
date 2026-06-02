@@ -253,6 +253,8 @@ const ROUTE_MODULE_MAP = {
     'GET    /dental/patients/:id':                                { module: 'dental_core', transaction: 'dental_patients' },
     'PATCH  /dental/patients/:id':                                { module: 'dental_core', transaction: 'dental_patients' },
     'GET    /dental/patients/:id/clinical-history':               { module: 'dental_core', transaction: 'dental_patients' },
+    'GET    /dental/patients/:id/medical-history':                { module: 'dental_core', transaction: 'dental_patients' },
+    'POST   /dental/patients/:id/medical-history':                { module: 'dental_core', transaction: 'dental_patients' },
     'GET    /dental/patients/:id/consultations':                  { module: 'dental_core', transaction: 'dental_patients' },
     'GET    /dental/patients/:id/payments':                       { module: 'dental_core', transaction: 'dental_patients' },
     'GET    /dental/patients/:id/debt':                           { module: 'dental_core', transaction: 'dental_patients' },
