@@ -956,3 +956,18 @@ CREATE INDEX IF NOT EXISTS idx_dental_charges_tenant_status          ON {schema_
 CREATE INDEX IF NOT EXISTS idx_dental_payments_tenant_date           ON {schema_name}.dental_payments(tenant_id, payment_date);
 CREATE INDEX IF NOT EXISTS idx_dental_installments_tenant_status_due ON {schema_name}.dental_installments(tenant_id, status, due_date);
 CREATE INDEX IF NOT EXISTS idx_dental_history_tenant_customer        ON {schema_name}.dental_clinical_history_entries(tenant_id, customer_id);
+
+-- Dental consultation photos (before/after)
+CREATE TABLE IF NOT EXISTS {schema_name}.dental_consultation_photos (
+    id              SERIAL PRIMARY KEY,
+    tenant_id       INTEGER      NOT NULL,
+    consultation_id INTEGER      NOT NULL REFERENCES {schema_name}.dental_consultations(id) ON DELETE CASCADE,
+    photo_url       TEXT         NOT NULL,
+    stage           VARCHAR(20)  NOT NULL DEFAULT 'before',
+    caption         TEXT,
+    sort_order      INTEGER      DEFAULT 0,
+    uploaded_by     INTEGER,
+    created_at      TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT chk_dental_photo_stage CHECK (stage IN ('before', 'after'))
+);
+CREATE INDEX IF NOT EXISTS idx_dental_consultation_photos_consultation ON {schema_name}.dental_consultation_photos(consultation_id);

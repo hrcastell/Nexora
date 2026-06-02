@@ -311,6 +311,12 @@ const router = createRouter({
           meta: { requiresModule: 'dental_core', requiresTransaction: 'dental_consultations' }
         },
         {
+          path: 'dental/consultations/:id',
+          name: 'dental-consultation-detail',
+          component: () => import('../views/dental/screens_dental_consultation_detail.vue'),
+          meta: { requiresModule: 'dental_core', requiresTransaction: 'dental_consultations' }
+        },
+        {
           path: 'dental/finance',
           name: 'dental-finance',
           component: () => import('../views/dental/screens_dental_finance.vue'),

@@ -66,7 +66,9 @@ export const useDentalConsultationsStore = defineStore('dentalConsultations', ()
 
   async function complete(id: number | string) {
     const res = await dentalConsultationsService.complete(id);
-    const updated = unwrapData<DentalConsultation>(res.data);
+    // Backend returns { data: consultation, charge_created: ... }
+    const payload = res.data as any;
+    const updated = payload?.data ? payload.data : unwrapData<DentalConsultation>(payload);
     const idx = items.value.findIndex(c => c.id === id);
     if (idx !== -1) Object.assign(items.value[idx], updated);
     if (current.value?.id === id) Object.assign(current.value, updated);
@@ -82,9 +84,23 @@ export const useDentalConsultationsStore = defineStore('dentalConsultations', ()
     return updated;
   }
 
-  async function createCharge(id: number | string) {
-    const res = await dentalConsultationsService.createCharge(id);
+  async function createCharge(id: number | string, totalAmount: number) {
+    const res = await dentalConsultationsService.createCharge(id, totalAmount);
     return unwrapData<any>(res.data);
+  }
+
+  async function listPhotos(id: number | string) {
+    const res = await dentalConsultationsService.listPhotos(id);
+    return unwrapData<any[]>(res.data);
+  }
+
+  async function uploadPhoto(id: number | string, file: File, stage: 'before' | 'after', caption?: string) {
+    const res = await dentalConsultationsService.uploadPhoto(id, file, stage, caption);
+    return unwrapData<any>(res.data);
+  }
+
+  async function deletePhoto(id: number | string, photoId: number | string) {
+    await dentalConsultationsService.deletePhoto(id, photoId);
   }
 
   function reset() {
@@ -93,5 +109,5 @@ export const useDentalConsultationsStore = defineStore('dentalConsultations', ()
     error.value = null;
   }
 
-  return { items, current, loading, error, load, loadOne, create, update, addClinicalHistoryEntry, complete, cancel, createCharge, reset };
+  return { items, current, loading, error, load, loadOne, create, update, addClinicalHistoryEntry, complete, cancel, createCharge, listPhotos, uploadPhoto, deletePhoto, reset };
 });

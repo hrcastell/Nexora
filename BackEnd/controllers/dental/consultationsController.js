@@ -1,5 +1,10 @@
+const path = require('path');
+const fs   = require('fs');
 const db = require('../../config/db');
 const { resolveSchema } = require('../../utils/tenantResolver');
+const { makeDentalUpload } = require('../../utils/upload');
+
+const photoUpload = makeDentalUpload('photos');
 
 /**
  * GET /dental/consultations
@@ -57,7 +62,13 @@ exports.list = async (req, res) => {
             countParams
         );
 
-        res.json({ data: result.rows, total: parseInt(countResult.rows[0].count) });
+        const rows = result.rows.map(({ patient_name, service_name, ...rest }) => ({
+            ...rest,
+            customer: { full_name: patient_name },
+            service:  service_name ? { name: service_name } : null
+        }));
+
+        res.json({ data: rows, total: parseInt(countResult.rows[0].count) });
     } catch (err) {
         console.error('consultationsController.list error:', err.message);
         res.status(err.statusCode || 500).json({ error: err.message || 'Error al listar consultas' });
@@ -326,6 +337,22 @@ exports.complete = async (req, res) => {
             }
         }
 
+        // Auto-insert clinical history entry on completion
+        await db.query(
+            `INSERT INTO ${schema}.dental_clinical_history_entries
+             (tenant_id, customer_id, consultation_id, type, title, description, diagnosis, clinical_notes, indications, entry_date)
+             VALUES ($1, $2, $3, 'evolution', $4, NULL, $5, $6, $7, NOW())`,
+            [
+                companyId,
+                cons.customer_id,
+                cons.id,
+                `Consulta completada${cons.reason ? ': ' + cons.reason : ''}`,
+                cons.diagnosis || null,
+                cons.clinical_notes || null,
+                cons.indications || null
+            ]
+        );
+
         res.json({ data: result.rows[0], charge_created: chargeCreated });
     } catch (err) {
         console.error('consultationsController.complete error:', err.message);
@@ -407,5 +434,118 @@ exports.createCharge = async (req, res) => {
     } catch (err) {
         console.error('consultationsController.createCharge error:', err.message);
         res.status(err.statusCode || 500).json({ error: err.message || 'Error al crear cobro para consulta' });
+    }
+};
+
+/**
+ * Expose multer middleware for photo upload routes
+ */
+exports.photoUpload = photoUpload;
+
+/**
+ * GET /dental/consultations/:id/photos
+ */
+exports.listPhotos = async (req, res) => {
+    try {
+        const { schema, companyId } = await resolveSchema(req);
+
+        const cons = await db.query(
+            `SELECT id FROM ${schema}.dental_consultations WHERE id = $1 AND tenant_id = $2`,
+            [req.params.id, companyId]
+        );
+        if (cons.rows.length === 0) {
+            return res.status(404).json({ code: 'DENTAL_CONSULTATION_NOT_FOUND', error: 'Consulta no encontrada' });
+        }
+
+        const result = await db.query(
+            `SELECT * FROM ${schema}.dental_consultation_photos
+             WHERE consultation_id = $1
+             ORDER BY stage ASC, sort_order ASC, created_at ASC`,
+            [req.params.id]
+        );
+
+        res.json({ data: result.rows });
+    } catch (err) {
+        console.error('consultationsController.listPhotos error:', err.message);
+        res.status(err.statusCode || 500).json({ error: err.message || 'Error al listar fotos' });
+    }
+};
+
+/**
+ * POST /dental/consultations/:id/photos
+ * Multipart: field "photo", body: stage (before|after), caption?
+ */
+exports.uploadPhoto = async (req, res) => {
+    try {
+        if (req.user?.read_only) return res.status(403).json({ error: 'Operación no permitida en modo solo lectura' });
+
+        const { schema, companyId } = await resolveSchema(req);
+
+        const cons = await db.query(
+            `SELECT id FROM ${schema}.dental_consultations WHERE id = $1 AND tenant_id = $2`,
+            [req.params.id, companyId]
+        );
+        if (cons.rows.length === 0) {
+            return res.status(404).json({ code: 'DENTAL_CONSULTATION_NOT_FOUND', error: 'Consulta no encontrada' });
+        }
+
+        if (!req.file) return res.status(400).json({ error: 'No se recibió ningún archivo' });
+
+        const stage   = req.body.stage === 'after' ? 'after' : 'before';
+        const caption = req.body.caption || null;
+
+        // Build a URL-accessible path relative to uploads root
+        const photoUrl = `/uploads/dental/photos/${req.user.schema_name}/${req.file.filename}`;
+
+        const result = await db.query(
+            `INSERT INTO ${schema}.dental_consultation_photos
+             (tenant_id, consultation_id, photo_url, stage, caption, uploaded_by)
+             VALUES ($1, $2, $3, $4, $5, $6)
+             RETURNING *`,
+            [companyId, req.params.id, photoUrl, stage, caption, req.user.id]
+        );
+
+        res.status(201).json(result.rows[0]);
+    } catch (err) {
+        console.error('consultationsController.uploadPhoto error:', err.message);
+        res.status(err.statusCode || 500).json({ error: err.message || 'Error al subir foto' });
+    }
+};
+
+/**
+ * DELETE /dental/consultations/:id/photos/:photoId
+ */
+exports.deletePhoto = async (req, res) => {
+    try {
+        if (req.user?.read_only) return res.status(403).json({ error: 'Operación no permitida en modo solo lectura' });
+
+        const { schema, companyId } = await resolveSchema(req);
+
+        const photo = await db.query(
+            `SELECT p.* FROM ${schema}.dental_consultation_photos p
+             INNER JOIN ${schema}.dental_consultations c ON c.id = p.consultation_id
+             WHERE p.id = $1 AND p.consultation_id = $2 AND c.tenant_id = $3`,
+            [req.params.photoId, req.params.id, companyId]
+        );
+
+        if (photo.rows.length === 0) {
+            return res.status(404).json({ code: 'DENTAL_PHOTO_NOT_FOUND', error: 'Foto no encontrada' });
+        }
+
+        // Delete the file from disk
+        const filePath = path.join(__dirname, '..', '..', photo.rows[0].photo_url);
+        if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+        }
+
+        await db.query(
+            `DELETE FROM ${schema}.dental_consultation_photos WHERE id = $1`,
+            [req.params.photoId]
+        );
+
+        res.json({ message: 'Foto eliminada' });
+    } catch (err) {
+        console.error('consultationsController.deletePhoto error:', err.message);
+        res.status(err.statusCode || 500).json({ error: err.message || 'Error al eliminar foto' });
     }
 };

@@ -64,6 +64,9 @@ router.post('/consultations/:id/treatments',           consultationsCtrl.addTrea
 router.post('/consultations/:id/complete',             consultationsCtrl.complete);
 router.post('/consultations/:id/cancel',               consultationsCtrl.cancel);
 router.post('/consultations/:id/create-charge',        consultationsCtrl.createCharge);
+router.get('/consultations/:id/photos',                consultationsCtrl.listPhotos);
+router.post('/consultations/:id/photos',               consultationsCtrl.photoUpload.single('photo'), consultationsCtrl.uploadPhoto);
+router.delete('/consultations/:id/photos/:photoId',    consultationsCtrl.deletePhoto);
 
 // ─── FINANCE: CHARGES ─────────────────────────────────────────
 router.get('/charges',                   chargesCtrl.list);

@@ -41,16 +41,24 @@ exports.create = async (req, res) => {
         if (req.user?.read_only) return res.status(403).json({ error: 'Operación no permitida en modo solo lectura' });
 
         const { schema, companyId } = await resolveSchema(req);
-        const { name, description = null, default_duration_minutes = null, is_active = true } = req.body;
+        const {
+            name,
+            description = null,
+            category = null,
+            estimated_duration_minutes = null,
+            requires_follow_up = false,
+            requires_multiple_sessions = false,
+            is_active = true
+        } = req.body;
 
         if (!name) return res.status(400).json({ error: 'name es requerido' });
 
         const result = await db.query(
             `INSERT INTO ${schema}.dental_treatments
-             (tenant_id, name, description, default_duration_minutes, is_active)
-             VALUES ($1, $2, $3, $4, $5)
+             (tenant_id, name, description, category, estimated_duration_minutes, requires_follow_up, requires_multiple_sessions, is_active)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
              RETURNING *`,
-            [companyId, name, description, default_duration_minutes, is_active]
+            [companyId, name, description, category, estimated_duration_minutes, requires_follow_up, requires_multiple_sessions, is_active]
         );
 
         res.status(201).json(result.rows[0]);
@@ -68,21 +76,35 @@ exports.update = async (req, res) => {
         if (req.user?.read_only) return res.status(403).json({ error: 'Operación no permitida en modo solo lectura' });
 
         const { schema, companyId } = await resolveSchema(req);
-        const { name, description, default_duration_minutes, is_active } = req.body;
+        const {
+            name,
+            description,
+            category,
+            estimated_duration_minutes,
+            requires_follow_up,
+            requires_multiple_sessions,
+            is_active
+        } = req.body;
 
         const result = await db.query(
             `UPDATE ${schema}.dental_treatments
-             SET name                     = COALESCE($1, name),
-                 description              = COALESCE($2, description),
-                 default_duration_minutes = COALESCE($3, default_duration_minutes),
-                 is_active                = COALESCE($4, is_active),
-                 updated_at               = CURRENT_TIMESTAMP
-             WHERE id = $5 AND tenant_id = $6
+             SET name                       = COALESCE($1, name),
+                 description                = COALESCE($2, description),
+                 category                   = COALESCE($3, category),
+                 estimated_duration_minutes = COALESCE($4, estimated_duration_minutes),
+                 requires_follow_up         = COALESCE($5, requires_follow_up),
+                 requires_multiple_sessions = COALESCE($6, requires_multiple_sessions),
+                 is_active                  = COALESCE($7, is_active),
+                 updated_at                 = CURRENT_TIMESTAMP
+             WHERE id = $8 AND tenant_id = $9
              RETURNING *`,
             [
                 name || null,
                 description !== undefined ? description : null,
-                default_duration_minutes !== undefined ? default_duration_minutes : null,
+                category !== undefined ? category : null,
+                estimated_duration_minutes !== undefined ? estimated_duration_minutes : null,
+                requires_follow_up !== undefined ? requires_follow_up : null,
+                requires_multiple_sessions !== undefined ? requires_multiple_sessions : null,
                 is_active !== undefined ? is_active : null,
                 req.params.id,
                 companyId

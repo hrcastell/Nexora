@@ -34,7 +34,23 @@ export const dentalConsultationsService = {
     return api.post<DentalConsultation>(`/dental/consultations/${id}/cancel`, {});
   },
 
-  createCharge(id: number | string) {
-    return api.post(`/dental/consultations/${id}/create-charge`, {});
+  createCharge(id: number | string, totalAmount: number) {
+    return api.post(`/dental/consultations/${id}/create-charge`, { total_amount: totalAmount });
+  },
+
+  listPhotos(id: number | string) {
+    return api.get(`/dental/consultations/${id}/photos`);
+  },
+
+  uploadPhoto(id: number | string, file: File, stage: 'before' | 'after', caption?: string) {
+    const fd = new FormData();
+    fd.append('photo', file);
+    fd.append('stage', stage);
+    if (caption) fd.append('caption', caption);
+    return api.post(`/dental/consultations/${id}/photos`, fd, { headers: { 'Content-Type': 'multipart/form-data' } });
+  },
+
+  deletePhoto(id: number | string, photoId: number | string) {
+    return api.delete(`/dental/consultations/${id}/photos/${photoId}`);
   },
 };

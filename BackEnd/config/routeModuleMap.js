@@ -293,6 +293,9 @@ const ROUTE_MODULE_MAP = {
     'POST   /dental/consultations/:id/complete':                  { module: 'dental_core', transaction: 'dental_consultations' },
     'POST   /dental/consultations/:id/cancel':                    { module: 'dental_core', transaction: 'dental_consultations' },
     'POST   /dental/consultations/:id/create-charge':             { module: 'dental_core', transaction: 'dental_consultations' },
+    'GET    /dental/consultations/:id/photos':                    { module: 'dental_core', transaction: 'dental_consultations' },
+    'POST   /dental/consultations/:id/photos':                    { module: 'dental_core', transaction: 'dental_consultations' },
+    'DELETE /dental/consultations/:id/photos/:photoId':           { module: 'dental_core', transaction: 'dental_consultations' },
 
     // ── Dental Core: Cobros ──
     'GET    /dental/charges':                                     { module: 'dental_core', transaction: 'dental_charges' },

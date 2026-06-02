@@ -1,13 +1,27 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { Plus, Stethoscope, CheckCircle2, XCircle, CreditCard } from 'lucide-vue-next';
+import { useRouter } from 'vue-router';
+import { Plus, Stethoscope } from 'lucide-vue-next';
 import { useDentalConsultationsStore } from '../../stores/dentalConsultations';
 import { useDentalPatientsStore } from '../../stores/dentalPatients';
+import { useDentalServicesStore } from '../../stores/dentalServices';
 import NxrSlidePanel from '../../components/NxrSlidePanel.vue';
-import type { DentalConsultation, DentalConsultationFormData } from '../../types/dental';
+import type { DentalConsultationFormData } from '../../types/dental';
+
+const router = useRouter();
 
 const store = useDentalConsultationsStore();
 const patientsStore = useDentalPatientsStore();
+const servicesStore = useDentalServicesStore();
+
+const selectedService = ref<any>(null);
+
+function onServiceSelect(serviceId: string | number) {
+  const svc = servicesStore.items.find(s => String(s.id) === String(serviceId));
+  selectedService.value = svc || null;
+  if (svc) form.value.total_amount = svc.final_price;
+}
+
 
 const patientSearch = ref('');
 const selectedPatient = ref<any>(null);
@@ -47,13 +61,9 @@ function clearPatient() {
   patientSearch.value = '';
 }
 
-const showPanel  = ref(false);
-const showDetail = ref(false);
-const saving     = ref(false);
-const saveError  = ref<string | null>(null);
-const actionError = ref<string | null>(null);
-const selected   = ref<DentalConsultation | null>(null);
-const loadingDetail = ref(false);
+const showPanel = ref(false);
+const saving    = ref(false);
+const saveError = ref<string | null>(null);
 
 const statusFilter      = ref('');
 const adminStatusFilter = ref('');
@@ -124,6 +134,7 @@ function openCreate() {
   saveError.value = null;
   patientSearch.value = '';
   selectedPatient.value = null;
+  selectedService.value = null;
   showPatientDrop.value = false;
   showPanel.value = true;
 }
@@ -141,53 +152,15 @@ async function save() {
   }
 }
 
-async function openDetail(c: DentalConsultation) {
-  selected.value = c;
-  showDetail.value = true;
-  loadingDetail.value = true;
-  try {
-    const full = await store.loadOne(c.id);
-    selected.value = full;
-  } finally {
-    loadingDetail.value = false;
-  }
+function openDetail(id: number | string) {
+  router.push(`/dental/consultations/${id}`);
 }
 
-async function doComplete(c: DentalConsultation) {
-  actionError.value = null;
-  try {
-    const updated = await store.complete(c.id);
-    if (selected.value?.id === c.id) selected.value = updated;
-  } catch (e: any) {
-    actionError.value = e?.response?.data?.error || 'Error al completar consulta';
-  }
-}
-
-async function doCancel(c: DentalConsultation) {
-  if (!confirm(`¿Cancelar la consulta?`)) return;
-  actionError.value = null;
-  try {
-    const updated = await store.cancel(c.id);
-    if (selected.value?.id === c.id) selected.value = updated;
-  } catch (e: any) {
-    actionError.value = e?.response?.data?.error || 'Error al cancelar consulta';
-  }
-}
-
-async function doCreateCharge(c: DentalConsultation) {
-  actionError.value = null;
-  try {
-    await store.createCharge(c.id);
-    // Reload to reflect charge creation
-    await store.load();
-  } catch (e: any) {
-    actionError.value = e?.response?.data?.error || 'Error al crear cargo';
-  }
-}
 
 onMounted(() => {
   store.load();
   patientsStore.load();
+  servicesStore.load();
 });
 </script>
 
@@ -223,8 +196,6 @@ onMounted(() => {
       <span class="text-xs text-white/30">{{ store.items.length }} consultas</span>
     </div>
 
-    <p v-if="actionError" class="text-xs text-red-400">{{ actionError }}</p>
-
     <!-- Loading -->
     <div v-if="store.loading" class="flex flex-col gap-2">
       <div v-for="i in 6" :key="i" class="h-16 rounded-xl bg-white/5 animate-pulse"></div>
@@ -259,7 +230,7 @@ onMounted(() => {
         :key="c.id"
         class="flex items-center gap-3 px-4 py-3 rounded-xl border border-white/10 hover:border-white/20 transition-all cursor-pointer"
         :style="{ background: 'var(--nexora-glass-bg)' }"
-        @click="openDetail(c)"
+        @click="openDetail(c.id)"
       >
         <!-- Mobile -->
         <div class="flex-1 min-w-0 md:hidden">
@@ -321,6 +292,27 @@ onMounted(() => {
           </div>
         </div>
         <div class="flex flex-col gap-1.5">
+          <label class="text-xs text-white/50">Servicio</label>
+          <select
+            v-model="form.service_id"
+            class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30"
+            @change="onServiceSelect(form.service_id as string)"
+          >
+            <option value="">Sin servicio</option>
+            <option v-for="s in servicesStore.items" :key="s.id" :value="s.id">{{ s.name }}</option>
+          </select>
+          <div v-if="selectedService" class="flex flex-col gap-1 px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-xs text-white/60">
+            <div class="flex justify-between">
+              <span>Precio total</span>
+              <span class="font-semibold text-white">${{ Math.round(selectedService.final_price ?? 0).toLocaleString('es-AR') }}</span>
+            </div>
+            <div v-if="(selectedService.treatments?.length ?? 0) > 0">
+              <p class="text-white/40 mb-1">Tratamientos incluidos:</p>
+              <p v-for="t in selectedService.treatments" :key="t.treatment_id" class="pl-2">· {{ t.treatment_name }}</p>
+            </div>
+          </div>
+        </div>
+        <div class="flex flex-col gap-1.5">
           <label class="text-xs text-white/50">Motivo</label>
           <input v-model="form.reason" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
         </div>
@@ -350,88 +342,5 @@ onMounted(() => {
       </template>
     </NxrSlidePanel>
 
-    <!-- Detail panel -->
-    <NxrSlidePanel :open="showDetail" :title="selected ? `Consulta — ${fmtDate(selected.consultation_date)}` : 'Consulta'" eyebrow="Dental" @close="showDetail = false">
-      <div v-if="loadingDetail" class="flex flex-col gap-3">
-        <div v-for="i in 4" :key="i" class="h-10 bg-white/5 animate-pulse rounded-xl"></div>
-      </div>
-      <div v-else-if="selected" class="flex flex-col gap-4">
-        <div class="flex items-center gap-2 flex-wrap">
-          <span class="px-2 py-0.5 rounded-full text-xs" :class="STATUS_CLASS[selected.status]">{{ STATUS_LABEL[selected.status] }}</span>
-          <span class="px-2 py-0.5 rounded-full text-xs" :class="ADMIN_STATUS_CLASS[selected.administrative_status]">{{ ADMIN_STATUS_LABEL[selected.administrative_status] }}</span>
-          <span class="text-sm font-bold text-white ml-auto">{{ fmt(selected.total_amount) }}</span>
-        </div>
-
-        <div class="flex flex-col gap-2 p-4 rounded-xl border border-white/10" :style="{ background: 'var(--nexora-glass-bg)' }">
-          <p class="text-xs text-white/40">Paciente</p>
-          <p class="text-sm text-white">{{ selected.customer?.first_name }} {{ selected.customer?.last_name }}</p>
-        </div>
-
-        <div v-if="selected.reason" class="flex flex-col gap-1">
-          <p class="text-xs text-white/40">Motivo</p>
-          <p class="text-sm text-white/80">{{ selected.reason }}</p>
-        </div>
-
-        <div v-if="selected.diagnosis" class="flex flex-col gap-1">
-          <p class="text-xs text-white/40">Diagnóstico</p>
-          <p class="text-sm text-white/80">{{ selected.diagnosis }}</p>
-        </div>
-
-        <div v-if="selected.clinical_notes" class="flex flex-col gap-1">
-          <p class="text-xs text-white/40">Notas clínicas</p>
-          <p class="text-sm text-white/80">{{ selected.clinical_notes }}</p>
-        </div>
-
-        <div v-if="selected.indications" class="flex flex-col gap-1">
-          <p class="text-xs text-white/40">Indicaciones</p>
-          <p class="text-sm text-white/80">{{ selected.indications }}</p>
-        </div>
-
-        <div v-if="(selected.treatments?.length ?? 0) > 0" class="flex flex-col gap-2">
-          <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Tratamientos</p>
-          <div v-for="t in selected.treatments" :key="t.id" class="text-xs text-white/70 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10">
-            {{ t.name }}
-          </div>
-        </div>
-
-        <div v-if="(selected.charges?.length ?? 0) > 0" class="flex flex-col gap-2">
-          <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Cargos</p>
-          <div v-for="charge in selected.charges" :key="charge.id" class="flex justify-between px-3 py-2 rounded-xl border border-white/10" :style="{ background: 'var(--nexora-glass-bg)' }">
-            <p class="text-xs text-white/60">{{ charge.description ?? 'Cargo' }}</p>
-            <p class="text-xs font-semibold text-white">{{ fmt(charge.pending_amount) }} pendiente</p>
-          </div>
-        </div>
-
-        <p v-if="actionError" class="text-xs text-red-400">{{ actionError }}</p>
-
-        <!-- Actions -->
-        <div class="flex flex-wrap gap-2">
-          <button
-            v-if="['draft','scheduled','in_progress'].includes(selected.status)"
-            class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-green-500/20 text-green-400 hover:bg-green-500/30 transition-all"
-            @click="doComplete(selected)"
-          >
-            <CheckCircle2 :size="13" /> Completar
-          </button>
-          <button
-            v-if="selected.administrative_status === 'unpaid'"
-            class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 transition-all"
-            @click="doCreateCharge(selected)"
-          >
-            <CreditCard :size="13" /> Generar cargo
-          </button>
-          <button
-            v-if="['draft','scheduled'].includes(selected.status)"
-            class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-red-500/20 text-red-400 hover:bg-red-500/30 transition-all"
-            @click="doCancel(selected)"
-          >
-            <XCircle :size="13" /> Cancelar
-          </button>
-        </div>
-      </div>
-      <template #footer>
-        <button type="button" class="flex-1 px-4 py-2 rounded-xl text-sm text-white/60 border border-white/10 hover:bg-white/5" @click="showDetail = false">Cerrar</button>
-      </template>
-    </NxrSlidePanel>
   </div>
 </template>

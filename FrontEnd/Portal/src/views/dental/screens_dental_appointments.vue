@@ -3,11 +3,13 @@ import { ref, computed, onMounted } from 'vue';
 import { Plus, CalendarDays, List, Calendar, CheckCircle2, XCircle, UserX, ArrowRightCircle } from 'lucide-vue-next';
 import { useDentalAppointmentsStore } from '../../stores/dentalAppointments';
 import { useDentalPatientsStore } from '../../stores/dentalPatients';
+import { useDentalServicesStore } from '../../stores/dentalServices';
 import NxrSlidePanel from '../../components/NxrSlidePanel.vue';
 import type { DentalAppointment, DentalAppointmentFormData } from '../../types/dental';
 
 const store = useDentalAppointmentsStore();
 const patientsStore = useDentalPatientsStore();
+const servicesStore = useDentalServicesStore();
 
 const patientSearch = ref('');
 const selectedPatient = ref<any>(null);
@@ -160,6 +162,7 @@ async function doAction(action: 'confirm' | 'cancel' | 'no_show' | 'convert', ap
 onMounted(() => {
   store.loadToday();
   patientsStore.load();
+  servicesStore.load();
 });
 </script>
 
@@ -368,6 +371,13 @@ onMounted(() => {
         <div class="flex flex-col gap-1.5">
           <label class="text-xs text-white/50">Fin *</label>
           <input v-model="form.scheduled_end" type="datetime-local" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" required />
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs text-white/50">Servicio</label>
+          <select v-model="form.service_id" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30">
+            <option value="">Sin servicio</option>
+            <option v-for="s in servicesStore.items" :key="s.id" :value="s.id">{{ s.name }}</option>
+          </select>
         </div>
         <div class="flex flex-col gap-1.5">
           <label class="text-xs text-white/50">Motivo</label>

@@ -285,8 +285,9 @@ onMounted(async () => {
         <div
           v-for="c in consultations"
           :key="c.id"
-          class="flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-white/10"
+          class="flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-white/10 cursor-pointer hover:border-white/20 transition-all"
           :style="{ background: 'var(--nexora-glass-bg)' }"
+          @click="router.push(`/dental/consultations/${c.id}`)"
         >
           <div class="flex-1 min-w-0">
             <p class="text-sm text-white">{{ fmtDate(c.consultation_date) }}</p>

@@ -8,10 +8,10 @@ function computeFinalPrice(price_mode, supplies_cost, labor_cost, tax_rate, prof
     if (price_mode === 'manual') {
         return parseFloat(manual_price) || 0;
     }
-    // calculated
+    // calculated — tax_rate and profit_margin arrive as percentages (e.g. 21 = 21%)
     const base = (parseFloat(supplies_cost) || 0) + (parseFloat(labor_cost) || 0);
-    const taxFactor = 1 + (parseFloat(tax_rate) || 0);
-    const profitFactor = 1 + (parseFloat(profit_margin) || 0);
+    const taxFactor = 1 + (parseFloat(tax_rate) || 0) / 100;
+    const profitFactor = 1 + (parseFloat(profit_margin) || 0) / 100;
     return Math.round(base * taxFactor * profitFactor);
 }
 
@@ -78,7 +78,7 @@ exports.create = async (req, res) => {
             tax_rate = 0,
             profit_margin = 0,
             manual_price = 0,
-            duration_minutes = null,
+            estimated_duration_minutes = null,
             is_active = true
         } = req.body;
 
@@ -93,7 +93,7 @@ exports.create = async (req, res) => {
 
         const result = await db.query(
             `INSERT INTO ${schema}.dental_services
-             (tenant_id, name, description, price_mode, supplies_cost, labor_cost, tax_rate, profit_margin, manual_price, final_price, duration_minutes, is_active)
+             (tenant_id, name, description, price_mode, supplies_cost, labor_cost, tax_rate, profit_margin, manual_price, final_price, estimated_duration_minutes, is_active)
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
              RETURNING *`,
             [companyId, name, description, price_mode,
@@ -103,7 +103,7 @@ exports.create = async (req, res) => {
              parseFloat(profit_margin) || 0,
              parseFloat(manual_price) || 0,
              final_price,
-             duration_minutes,
+             estimated_duration_minutes,
              is_active]
         );
 
@@ -180,7 +180,7 @@ exports.update = async (req, res) => {
             tax_rate,
             profit_margin,
             manual_price,
-            duration_minutes,
+            estimated_duration_minutes,
             is_active
         } = req.body;
 
@@ -204,7 +204,7 @@ exports.update = async (req, res) => {
                  profit_margin    = $7,
                  manual_price     = $8,
                  final_price      = $9,
-                 duration_minutes = COALESCE($10, duration_minutes),
+                 estimated_duration_minutes = COALESCE($10, estimated_duration_minutes),
                  is_active        = COALESCE($11, is_active),
                  updated_at       = CURRENT_TIMESTAMP
              WHERE id = $12 AND tenant_id = $13
@@ -219,7 +219,7 @@ exports.update = async (req, res) => {
                 parseFloat(newProfitMargin) || 0,
                 parseFloat(newManualPrice) || 0,
                 newFinalPrice,
-                duration_minutes !== undefined ? duration_minutes : null,
+                estimated_duration_minutes !== undefined ? estimated_duration_minutes : null,
                 is_active !== undefined ? is_active : null,
                 req.params.id,
                 companyId

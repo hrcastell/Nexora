@@ -225,6 +225,22 @@ export interface DentalClinicalHistoryEntry {
   created_at: string;
 }
 
+// ─── CONSULTATION PHOTO ───────────────────────────────────────
+
+export type PhotoStage = 'before' | 'after';
+
+export interface DentalConsultationPhoto {
+  id: number | string;
+  tenant_id: string;
+  consultation_id: number | string;
+  photo_url: string;
+  stage: PhotoStage;
+  caption?: string;
+  sort_order: number;
+  uploaded_by?: number | string;
+  created_at: string;
+}
+
 // ─── CHARGE ───────────────────────────────────────────────────
 
 export type ChargeStatus = 'pending' | 'partially_paid' | 'paid' | 'overdue' | 'cancelled' | 'refunded';
