@@ -5,16 +5,16 @@ const { resolveSchema } = require('../../utils/tenantResolver');
  * Recalculates and updates total_amount on dental_consultations
  * summing only active consultation services.
  */
-async function recalcConsultationTotal(schema, consultationId) {
+async function recalcConsultationTotal(schema, consultationId, companyId) {
     await db.query(
         `UPDATE ${schema}.dental_consultations
          SET total_amount = (
              SELECT COALESCE(SUM(subtotal), 0)
              FROM ${schema}.dental_consultation_services
-             WHERE consultation_id = $1 AND status = 'active'
+             WHERE consultation_id = $1 AND status = 'active' AND tenant_id = $2
          ), updated_at = NOW()
-         WHERE id = $1`,
-        [consultationId]
+         WHERE id = $1 AND tenant_id = $2`,
+        [consultationId, companyId]
     );
 }
 
@@ -58,7 +58,7 @@ exports.list = async (req, res) => {
         res.json({ data: result.rows });
     } catch (err) {
         console.error('consultationServicesController.list error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al listar servicios de consulta' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al listar servicios de consulta') });
     }
 };
 
@@ -80,7 +80,7 @@ exports.getTotal = async (req, res) => {
         res.json({ total: parseFloat(result.rows[0].total) });
     } catch (err) {
         console.error('consultationServicesController.getTotal error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al obtener total de servicios' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al obtener total de servicios') });
     }
 };
 
@@ -139,12 +139,12 @@ exports.add = async (req, res) => {
             [companyId, req.params.id, service_id, service_name_snapshot, unit_price, quantity, subtotal, tooth_reference, clinical_notes]
         );
 
-        await recalcConsultationTotal(schema, req.params.id);
+        await recalcConsultationTotal(schema, req.params.id, companyId);
 
         res.status(201).json(insertResult.rows[0]);
     } catch (err) {
         console.error('consultationServicesController.add error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al agregar servicio a consulta' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al agregar servicio a consulta') });
     }
 };
 
@@ -195,12 +195,12 @@ exports.update = async (req, res) => {
             [unit_price, quantity, subtotal, tooth_reference, clinical_notes, req.params.sid, req.params.id, companyId]
         );
 
-        await recalcConsultationTotal(schema, req.params.id);
+        await recalcConsultationTotal(schema, req.params.id, companyId);
 
         res.json(updateResult.rows[0]);
     } catch (err) {
         console.error('consultationServicesController.update error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al actualizar servicio de consulta' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al actualizar servicio de consulta') });
     }
 };
 
@@ -244,11 +244,11 @@ exports.void = async (req, res) => {
             [req.params.sid, req.params.id, companyId]
         );
 
-        await recalcConsultationTotal(schema, req.params.id);
+        await recalcConsultationTotal(schema, req.params.id, companyId);
 
         res.json({ message: 'Servicio anulado' });
     } catch (err) {
         console.error('consultationServicesController.void error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al anular servicio de consulta' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al anular servicio de consulta') });
     }
 };

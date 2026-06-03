@@ -39,7 +39,7 @@ exports.list = async (req, res) => {
         res.json({ data: result.rows });
     } catch (err) {
         console.error('consultationSessionsController.list error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al listar sesiones' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al listar sesiones') });
     }
 };
 
@@ -73,8 +73,8 @@ exports.create = async (req, res) => {
         const maxResult = await db.query(
             `SELECT COALESCE(MAX(session_number), 0) + 1 AS next_number
              FROM ${schema}.dental_consultation_sessions
-             WHERE consultation_id = $1`,
-            [req.params.id]
+             WHERE consultation_id = $1 AND tenant_id = $2`,
+            [req.params.id, companyId]
         );
         const session_number = parseInt(maxResult.rows[0].next_number);
 
@@ -89,7 +89,7 @@ exports.create = async (req, res) => {
         res.status(201).json(insertResult.rows[0]);
     } catch (err) {
         console.error('consultationSessionsController.create error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al crear sesión' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al crear sesión') });
     }
 };
 
@@ -112,7 +112,7 @@ exports.getById = async (req, res) => {
         res.json(result.rows[0]);
     } catch (err) {
         console.error('consultationSessionsController.getById error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al obtener sesión' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al obtener sesión') });
     }
 };
 
@@ -163,7 +163,7 @@ exports.update = async (req, res) => {
         res.json(updateResult.rows[0]);
     } catch (err) {
         console.error('consultationSessionsController.update error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al actualizar sesión' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al actualizar sesión') });
     }
 };
 
@@ -205,6 +205,6 @@ exports.complete = async (req, res) => {
         res.json(updateResult.rows[0]);
     } catch (err) {
         console.error('consultationSessionsController.complete error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al completar sesión' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al completar sesión') });
     }
 };

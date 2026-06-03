@@ -29,7 +29,7 @@ exports.list = async (req, res) => {
         res.json({ data: result.rows });
     } catch (err) {
         console.error('treatmentsController.list error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al listar tratamientos' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al listar tratamientos') });
     }
 };
 
@@ -64,7 +64,7 @@ exports.create = async (req, res) => {
         res.status(201).json(result.rows[0]);
     } catch (err) {
         console.error('treatmentsController.create error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al crear tratamiento' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al crear tratamiento') });
     }
 };
 
@@ -118,7 +118,7 @@ exports.update = async (req, res) => {
         res.json(result.rows[0]);
     } catch (err) {
         console.error('treatmentsController.update error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al actualizar tratamiento' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al actualizar tratamiento') });
     }
 };
 
@@ -134,9 +134,9 @@ exports.remove = async (req, res) => {
         // Check if treatment is used in any service
         const inUse = await db.query(
             `SELECT 1 FROM ${schema}.dental_service_treatments
-             WHERE treatment_id = $1
+             WHERE treatment_id = $1 AND tenant_id = $2
              LIMIT 1`,
-            [req.params.id]
+            [req.params.id, companyId]
         );
 
         if (inUse.rows.length > 0) {
@@ -160,6 +160,6 @@ exports.remove = async (req, res) => {
         res.json({ message: 'Tratamiento eliminado' });
     } catch (err) {
         console.error('treatmentsController.remove error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al eliminar tratamiento' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al eliminar tratamiento') });
     }
 };

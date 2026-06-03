@@ -65,7 +65,7 @@ exports.getSummary = async (req, res) => {
         res.json({ data: statsResult.rows[0] });
     } catch (err) {
         console.error('dashboardController.getSummary error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al obtener resumen del dashboard' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al obtener resumen del dashboard') });
     }
 };
 
@@ -93,7 +93,7 @@ exports.getToday = async (req, res) => {
         res.json({ data: result.rows });
     } catch (err) {
         console.error('dashboardController.getToday error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al obtener citas de hoy' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al obtener citas de hoy') });
     }
 };
 
@@ -131,6 +131,6 @@ exports.getFinance = async (req, res) => {
         res.json({ data: result.rows[0] });
     } catch (err) {
         console.error('dashboardController.getFinance error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al obtener resumen financiero' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al obtener resumen financiero') });
     }
 };

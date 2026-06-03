@@ -40,8 +40,10 @@ exports.list = async (req, res) => {
         }
 
         const where = `WHERE ${conditions.join(' AND ')}`;
-        const offset = (parseInt(page) - 1) * parseInt(limit);
-        params.push(parseInt(limit), offset);
+        const pageNum = Math.max(1, parseInt(page) || 1);
+        const limitNum = Math.min(200, Math.max(1, parseInt(limit) || 50));
+        const offset = (pageNum - 1) * limitNum;
+        params.push(limitNum, offset);
 
         const result = await db.query(
             `SELECT dc.*,
@@ -71,7 +73,7 @@ exports.list = async (req, res) => {
         res.json({ data: rows, total: parseInt(countResult.rows[0].count) });
     } catch (err) {
         console.error('consultationsController.list error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al listar consultas' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al listar consultas') });
     }
 };
 
@@ -150,7 +152,7 @@ exports.create = async (req, res) => {
         res.status(201).json(consultation);
     } catch (err) {
         console.error('consultationsController.create error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al crear consulta' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al crear consulta') });
     }
 };
 
@@ -183,8 +185,8 @@ exports.getById = async (req, res) => {
                     dt.name AS treatment_name
              FROM ${schema}.dental_consultation_treatments dct
              LEFT JOIN ${schema}.dental_treatments dt ON dt.id = dct.treatment_id
-             WHERE dct.consultation_id = $1`,
-            [req.params.id]
+             WHERE dct.consultation_id = $1 AND dct.tenant_id = $2`,
+            [req.params.id, companyId]
         );
 
         // Charges
@@ -224,7 +226,7 @@ exports.getById = async (req, res) => {
         });
     } catch (err) {
         console.error('consultationsController.getById error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al obtener consulta' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al obtener consulta') });
     }
 };
 
@@ -311,8 +313,8 @@ exports.update = async (req, res) => {
         // If service changed, replace consultation treatments
         if (serviceChanged) {
             await db.query(
-                `DELETE FROM ${schema}.dental_consultation_treatments WHERE consultation_id = $1`,
-                [req.params.id]
+                `DELETE FROM ${schema}.dental_consultation_treatments WHERE consultation_id = $1 AND tenant_id = $2`,
+                [req.params.id, companyId]
             );
             const svcTreatments = await db.query(
                 `SELECT treatment_id, quantity, notes FROM ${schema}.dental_service_treatments
@@ -332,7 +334,7 @@ exports.update = async (req, res) => {
         res.json(result.rows[0]);
     } catch (err) {
         console.error('consultationsController.update error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al actualizar consulta' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al actualizar consulta') });
     }
 };
 
@@ -370,7 +372,7 @@ exports.addClinicalHistory = async (req, res) => {
         res.status(201).json(result.rows[0]);
     } catch (err) {
         console.error('consultationsController.addClinicalHistory error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al agregar entrada de historial clínico' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al agregar entrada de historial clínico') });
     }
 };
 
@@ -413,7 +415,7 @@ exports.addTreatments = async (req, res) => {
         res.status(201).json({ data: insertedRows });
     } catch (err) {
         console.error('consultationsController.addTreatments error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al agregar tratamientos a consulta' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al agregar tratamientos a consulta') });
     }
 };
 
@@ -500,7 +502,7 @@ exports.complete = async (req, res) => {
         res.json({ data: result.rows[0], charge_created: chargeCreated });
     } catch (err) {
         console.error('consultationsController.complete error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al completar consulta' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al completar consulta') });
     }
 };
 
@@ -539,7 +541,7 @@ exports.cancel = async (req, res) => {
         res.json(result.rows[0]);
     } catch (err) {
         console.error('consultationsController.cancel error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al cancelar consulta' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al cancelar consulta') });
     }
 };
 
@@ -590,7 +592,7 @@ exports.createCharge = async (req, res) => {
         res.status(201).json(result.rows[0]);
     } catch (err) {
         console.error('consultationsController.createCharge error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al crear cobro para consulta' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al crear cobro para consulta') });
     }
 };
 
@@ -616,15 +618,15 @@ exports.listPhotos = async (req, res) => {
 
         const result = await db.query(
             `SELECT * FROM ${schema}.dental_consultation_photos
-             WHERE consultation_id = $1
+             WHERE consultation_id = $1 AND tenant_id = $2
              ORDER BY stage ASC, sort_order ASC, created_at ASC`,
-            [req.params.id]
+            [req.params.id, companyId]
         );
 
         res.json({ data: result.rows });
     } catch (err) {
         console.error('consultationsController.listPhotos error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al listar fotos' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al listar fotos') });
     }
 };
 
@@ -665,7 +667,7 @@ exports.uploadPhoto = async (req, res) => {
         res.status(201).json(result.rows[0]);
     } catch (err) {
         console.error('consultationsController.uploadPhoto error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al subir foto' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al subir foto') });
     }
 };
 
@@ -716,8 +718,8 @@ exports.changeStatus = async (req, res) => {
         if (newStatus === 'completed') {
             const svcCheck = await db.query(
                 `SELECT COUNT(*) AS cnt FROM ${schema}.dental_consultation_services
-                 WHERE consultation_id = $1 AND status = 'active'`,
-                [req.params.id]
+                 WHERE consultation_id = $1 AND status = 'active' AND tenant_id = $2`,
+                [req.params.id, companyId]
             );
             if (parseInt(svcCheck.rows[0].cnt) === 0) {
                 return res.status(400).json({
@@ -746,7 +748,7 @@ exports.changeStatus = async (req, res) => {
         res.json(result.rows[0]);
     } catch (err) {
         console.error('consultationsController.changeStatus error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al cambiar estado de consulta' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al cambiar estado de consulta') });
     }
 };
 
@@ -770,20 +772,29 @@ exports.deletePhoto = async (req, res) => {
             return res.status(404).json({ code: 'DENTAL_PHOTO_NOT_FOUND', error: 'Foto no encontrada' });
         }
 
-        // Delete the file from disk
-        const filePath = path.join(__dirname, '..', '..', photo.rows[0].photo_url);
+        // Delete the file from disk — validate path stays within uploads root (path traversal guard)
+        const UPLOADS_BASE = path.resolve(__dirname, '..', '..', 'uploads');
+        const rawUrl = photo.rows[0].photo_url || '';
+        const safeRelative = rawUrl.replace(/\\/g, '/').replace(/^\/+/, '');
+        const filePath = path.resolve(UPLOADS_BASE, safeRelative);
+        if (!filePath.startsWith(UPLOADS_BASE + path.sep) && filePath !== UPLOADS_BASE) {
+            return res.status(400).json({ error: 'Invalid file path' });
+        }
         if (fs.existsSync(filePath)) {
             fs.unlinkSync(filePath);
         }
 
-        await db.query(
-            `DELETE FROM ${schema}.dental_consultation_photos WHERE id = $1`,
-            [req.params.photoId]
+        const deleteResult = await db.query(
+            `DELETE FROM ${schema}.dental_consultation_photos WHERE id = $1 AND tenant_id = $2`,
+            [req.params.photoId, companyId]
         );
+        if (deleteResult.rowCount === 0) {
+            return res.status(404).json({ code: 'DENTAL_PHOTO_NOT_FOUND', error: 'Foto no encontrada' });
+        }
 
         res.json({ message: 'Foto eliminada' });
     } catch (err) {
         console.error('consultationsController.deletePhoto error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al eliminar foto' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al eliminar foto') });
     }
 };

@@ -2,7 +2,7 @@ const db = require('../config/db');
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-const VALID_CATEGORIES = ['system', 'users', 'subscriptions', 'requests', 'billing', 'modules'];
+const VALID_CATEGORIES = ['system', 'users', 'subscriptions', 'requests', 'billing', 'modules', 'dental'];
 
 /**
  * Construye la cláusula WHERE y el array de parámetros base para filtrar
@@ -108,14 +108,15 @@ exports.getUnreadCount = async (req, res) => {
 exports.markRead = async (req, res) => {
     try {
         const { id } = req.params;
-        const userId = req.user.id;
+        const userId    = req.user.id;
+        const companyId = req.user.company_id || null;
 
         const result = await db.query(
             `UPDATE public.notifications
              SET is_read = TRUE
-             WHERE id = $1 AND user_id = $2
+             WHERE id = $1 AND user_id = $2 AND ($3::int IS NULL OR company_id = $3)
              RETURNING id`,
-            [id, userId]
+            [id, userId, companyId]
         );
 
         if (result.rows.length === 0) {
@@ -161,14 +162,15 @@ exports.markAllRead = async (req, res) => {
 exports.dismiss = async (req, res) => {
     try {
         const { id } = req.params;
-        const userId = req.user.id;
+        const userId    = req.user.id;
+        const companyId = req.user.company_id || null;
 
         const result = await db.query(
             `UPDATE public.notifications
              SET is_dismissed = TRUE
-             WHERE id = $1 AND user_id = $2
+             WHERE id = $1 AND user_id = $2 AND ($3::int IS NULL OR company_id = $3)
              RETURNING id`,
-            [id, userId]
+            [id, userId, companyId]
         );
 
         if (result.rows.length === 0) {
@@ -197,7 +199,7 @@ exports.getPreferences = async (req, res) => {
                 user_id: userId,
                 categories: {
                     system: true, users: true, subscriptions: true,
-                    requests: true, billing: true, modules: true
+                    requests: true, billing: true, modules: true, dental: true
                 },
                 show_toast: true,
                 updated_at: null
@@ -234,7 +236,7 @@ exports.savePreferences = async (req, res) => {
 
         const result = await db.query(
             `INSERT INTO public.notification_preferences (user_id, categories, show_toast, updated_at)
-             VALUES ($1, COALESCE($2, '{"system":true,"users":true,"subscriptions":true,"requests":true,"billing":true,"modules":true}'), COALESCE($3, TRUE), NOW())
+             VALUES ($1, COALESCE($2, '{"system":true,"users":true,"subscriptions":true,"requests":true,"billing":true,"modules":true,"dental":true}'), COALESCE($3, TRUE), NOW())
              ON CONFLICT (user_id) DO UPDATE SET
                 categories = COALESCE($2::jsonb, public.notification_preferences.categories),
                 show_toast = COALESCE($3, public.notification_preferences.show_toast),

@@ -22,8 +22,10 @@ exports.list = async (req, res) => {
         }
 
         const where = `WHERE ${conditions.join(' AND ')}`;
-        const offset = (parseInt(page) - 1) * parseInt(limit);
-        params.push(parseInt(limit), offset);
+        const pageNum = Math.max(1, parseInt(page) || 1);
+        const limitNum = Math.min(200, Math.max(1, parseInt(limit) || 50));
+        const offset = (pageNum - 1) * limitNum;
+        params.push(limitNum, offset);
 
         const result = await db.query(
             `SELECT c.*,
@@ -55,7 +57,7 @@ exports.list = async (req, res) => {
         res.json({ data: result.rows, total: parseInt(countResult.rows[0].count) });
     } catch (err) {
         console.error('patientsController.list error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al listar pacientes' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al listar pacientes') });
     }
 };
 
@@ -162,7 +164,7 @@ exports.create = async (req, res) => {
         res.status(201).json({ data: combined.rows[0] });
     } catch (err) {
         console.error('patientsController.create error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al crear paciente' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al crear paciente') });
     }
 };
 
@@ -200,7 +202,7 @@ exports.getById = async (req, res) => {
         res.json({ data: result.rows[0] });
     } catch (err) {
         console.error('patientsController.getById error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al obtener paciente' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al obtener paciente') });
     }
 };
 
@@ -234,6 +236,15 @@ exports.update = async (req, res) => {
             emergency_contact_phone,
             notes
         } = req.body;
+
+        // Verify customer exists and belongs to tenant before updating
+        const customerCheck = await db.query(
+            `SELECT id FROM ${schema}.customers WHERE id = $1 AND tenant_id = $2`,
+            [req.params.id, companyId]
+        );
+        if (customerCheck.rows.length === 0) {
+            return res.status(404).json({ code: 'DENTAL_PATIENT_NOT_FOUND', error: 'Paciente no encontrado' });
+        }
 
         // Update customer base data
         await db.query(
@@ -327,7 +338,7 @@ exports.update = async (req, res) => {
         res.json({ data: combined.rows[0] });
     } catch (err) {
         console.error('patientsController.update error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al actualizar paciente' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al actualizar paciente') });
     }
 };
 
@@ -348,7 +359,7 @@ exports.getClinicalHistory = async (req, res) => {
         res.json({ data: result.rows });
     } catch (err) {
         console.error('patientsController.getClinicalHistory error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al obtener historial clínico' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al obtener historial clínico') });
     }
 };
 
@@ -372,7 +383,7 @@ exports.getConsultations = async (req, res) => {
         res.json({ data: result.rows });
     } catch (err) {
         console.error('patientsController.getConsultations error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al obtener consultas del paciente' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al obtener consultas del paciente') });
     }
 };
 
@@ -398,7 +409,7 @@ exports.getPayments = async (req, res) => {
         res.json({ data: result.rows });
     } catch (err) {
         console.error('patientsController.getPayments error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al obtener pagos del paciente' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al obtener pagos del paciente') });
     }
 };
 
@@ -423,7 +434,7 @@ exports.getDebt = async (req, res) => {
         res.json({ data: result.rows[0] });
     } catch (err) {
         console.error('patientsController.getDebt error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al obtener deuda del paciente' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al obtener deuda del paciente') });
     }
 };
 
@@ -444,7 +455,7 @@ exports.getMedicalHistory = async (req, res) => {
         res.json({ data: result.rows });
     } catch (err) {
         console.error('patientsController.getMedicalHistory error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al obtener historial médico' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al obtener historial médico') });
     }
 };
 
@@ -456,6 +467,16 @@ exports.createMedicalHistory = async (req, res) => {
         if (req.user?.read_only) return res.status(403).json({ error: 'Operación no permitida en modo solo lectura' });
 
         const { schema, companyId, userId } = await resolveSchema(req);
+
+        // Verify customer belongs to tenant before inserting
+        const customerCheck = await db.query(
+            `SELECT id FROM ${schema}.customers WHERE id = $1 AND tenant_id = $2`,
+            [req.params.id, companyId]
+        );
+        if (customerCheck.rows.length === 0) {
+            return res.status(404).json({ code: 'DENTAL_PATIENT_NOT_FOUND', error: 'Paciente no encontrado' });
+        }
+
         const {
             entry_date = null,
             blood_type = null,
@@ -478,6 +499,6 @@ exports.createMedicalHistory = async (req, res) => {
         res.status(201).json({ data: result.rows[0] });
     } catch (err) {
         console.error('patientsController.createMedicalHistory error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al crear registro médico' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al crear registro médico') });
     }
 };
