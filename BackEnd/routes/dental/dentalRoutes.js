@@ -9,6 +9,8 @@ const servicesCtrl     = require('../../controllers/dental/servicesController');
 const appointmentsCtrl = require('../../controllers/dental/appointmentsController');
 const consultationsCtrl = require('../../controllers/dental/consultationsController');
 const chargesCtrl      = require('../../controllers/dental/chargesController');
+const consultationServicesCtrl = require('../../controllers/dental/consultationServicesController');
+const consultationSessionsCtrl = require('../../controllers/dental/consultationSessionsController');
 
 // All dental routes require authentication
 router.use(authMiddleware);
@@ -70,10 +72,28 @@ router.get('/consultations/:id/photos',                consultationsCtrl.listPho
 router.post('/consultations/:id/photos',               consultationsCtrl.photoUpload.single('photo'), consultationsCtrl.uploadPhoto);
 router.delete('/consultations/:id/photos/:photoId',    consultationsCtrl.deletePhoto);
 
+// ─── CONSULTATION SERVICES (multi-service per consultation) ──────────────
+router.get('/consultations/:id/services',              consultationServicesCtrl.list);
+router.get('/consultations/:id/services/total',        consultationServicesCtrl.getTotal);
+router.post('/consultations/:id/services',             consultationServicesCtrl.add);
+router.patch('/consultations/:id/services/:sid',       consultationServicesCtrl.update);
+router.delete('/consultations/:id/services/:sid',      consultationServicesCtrl.void);
+
+// ─── CONSULTATION SESSIONS ────────────────────────────────────────────────
+router.get('/consultations/:id/sessions',                          consultationSessionsCtrl.list);
+router.post('/consultations/:id/sessions',                         consultationSessionsCtrl.create);
+router.get('/consultations/:id/sessions/:sid',                     consultationSessionsCtrl.getById);
+router.patch('/consultations/:id/sessions/:sid',                   consultationSessionsCtrl.update);
+router.post('/consultations/:id/sessions/:sid/complete',           consultationSessionsCtrl.complete);
+
+// ─── CONSULTATION STATUS ──────────────────────────────────────────────────
+router.post('/consultations/:id/status', consultationsCtrl.changeStatus);
+
 // ─── FINANCE: CHARGES ─────────────────────────────────────────
 router.get('/charges',                   chargesCtrl.list);
 router.post('/charges',                  chargesCtrl.create);
 router.get('/charges/:id',               chargesCtrl.getById);
+router.delete('/charges/:id',            chargesCtrl.deleteCharge);
 router.post('/charges/:id/payments',     chargesCtrl.registerPayment);
 router.post('/charges/:id/installments', chargesCtrl.createInstallments);
 
@@ -82,7 +102,8 @@ router.get('/installments/overdue',  chargesCtrl.getOverdueInstallments);
 router.post('/installments/:id/pay', chargesCtrl.payInstallment);
 
 // ─── FINANCE: PAYMENTS ────────────────────────────────────────
-router.get('/payments', chargesCtrl.listPayments);
+router.get('/payments',        chargesCtrl.listPayments);
+router.delete('/payments/:id', chargesCtrl.deletePayment);
 
 // ─── FINANCE: SUMMARY ─────────────────────────────────────────
 router.get('/finance/summary', chargesCtrl.getFinanceSummary);

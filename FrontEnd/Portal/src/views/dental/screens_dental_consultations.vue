@@ -6,6 +6,8 @@ import { useDentalConsultationsStore } from '../../stores/dentalConsultations';
 import { useDentalPatientsStore } from '../../stores/dentalPatients';
 import { useDentalServicesStore } from '../../stores/dentalServices';
 import NxrSlidePanel from '../../components/NxrSlidePanel.vue';
+import AppToast from '../../components/AppToast.vue';
+import { useToast } from '../../composables/useToast';
 import type { DentalConsultationFormData } from '../../types/dental';
 
 const router = useRouter();
@@ -13,6 +15,7 @@ const router = useRouter();
 const store = useDentalConsultationsStore();
 const patientsStore = useDentalPatientsStore();
 const servicesStore = useDentalServicesStore();
+const { toasts, triggerToast, removeToast } = useToast();
 
 const selectedService = ref<any>(null);
 
@@ -75,26 +78,37 @@ const defaultForm = (): DentalConsultationFormData => ({
   clinical_notes: '',
   indications: '',
   total_amount: 0,
+  requires_follow_up: false,
+  requires_multiple_sessions: false,
+  estimated_sessions: undefined,
+  next_session_date: undefined,
+  follow_up_notes: undefined,
 });
 
 const form = ref<DentalConsultationFormData>(defaultForm());
 
 const STATUS_LABEL: Record<string, string> = {
-  draft:       'Borrador',
-  scheduled:   'Programada',
-  in_progress: 'En curso',
-  completed:   'Completada',
-  cancelled:   'Cancelada',
-  no_show:     'No asistió',
+  draft:        'Borrador',
+  created:      'Creada',
+  scheduled:    'Programada',
+  in_progress:  'En curso',
+  in_treatment: 'En tratamiento',
+  completed:    'Completada',
+  cancelled:    'Cancelada',
+  no_show:      'No asistió',
+  voided:       'Anulada',
 };
 
 const STATUS_CLASS: Record<string, string> = {
-  draft:       'bg-white/10 text-white/40',
-  scheduled:   'bg-blue-500/20 text-blue-400',
-  in_progress: 'bg-cyan-500/20 text-cyan-400',
-  completed:   'bg-green-500/20 text-green-400',
-  cancelled:   'bg-red-500/20 text-red-400',
-  no_show:     'bg-orange-500/20 text-orange-400',
+  draft:        'bg-white/10 text-white/40',
+  created:      'bg-purple-500/20 text-purple-400',
+  scheduled:    'bg-blue-500/20 text-blue-400',
+  in_progress:  'bg-cyan-500/20 text-cyan-400',
+  in_treatment: 'bg-indigo-500/20 text-indigo-400',
+  completed:    'bg-green-500/20 text-green-400',
+  cancelled:    'bg-red-500/20 text-red-400',
+  no_show:      'bg-orange-500/20 text-orange-400',
+  voided:       'bg-red-900/30 text-red-300',
 };
 
 const ADMIN_STATUS_LABEL: Record<string, string> = {
@@ -144,9 +158,11 @@ async function save() {
   saveError.value = null;
   try {
     await store.create(form.value);
+    triggerToast('Éxito', 'Consulta creada', 'success');
     showPanel.value = false;
   } catch (e: any) {
     saveError.value = e?.response?.data?.error || 'Error al guardar consulta';
+    triggerToast('Error', e?.response?.data?.error || 'Error al guardar consulta', 'error');
   } finally {
     saving.value = false;
   }
@@ -181,10 +197,13 @@ onMounted(() => {
       <select v-model="statusFilter" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none" @change="applyFilters">
         <option value="">Todos los estados</option>
         <option value="draft">Borrador</option>
+        <option value="created">Creada</option>
         <option value="scheduled">Programada</option>
         <option value="in_progress">En curso</option>
+        <option value="in_treatment">En tratamiento</option>
         <option value="completed">Completada</option>
         <option value="cancelled">Cancelada</option>
+        <option value="voided">Anulada</option>
       </select>
       <select v-model="adminStatusFilter" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none" @change="applyFilters">
         <option value="">Todos los pagos</option>
@@ -328,9 +347,35 @@ onMounted(() => {
           <label class="text-xs text-white/50">Indicaciones</label>
           <textarea v-model="form.indications" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none"></textarea>
         </div>
-        <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Monto total</label>
-          <input v-model.number="form.total_amount" type="number" min="0" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+        <!-- Seguimiento -->
+        <div class="flex flex-col gap-3 pt-2 border-t border-white/10">
+          <p class="text-xs text-white/50 uppercase tracking-wide font-semibold">Seguimiento</p>
+          <label class="flex items-center gap-2.5 cursor-pointer">
+            <input v-model="form.requires_follow_up" type="checkbox" class="rounded" />
+            <span class="text-sm text-white/70">Requiere seguimiento</span>
+          </label>
+          <label class="flex items-center gap-2.5 cursor-pointer">
+            <input v-model="form.requires_multiple_sessions" type="checkbox" class="rounded" />
+            <span class="text-sm text-white/70">Requiere múltiples sesiones</span>
+          </label>
+          <template v-if="form.requires_multiple_sessions">
+            <div class="grid grid-cols-2 gap-3">
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs text-white/50">Cantidad estimada de sesiones</label>
+                <input v-model.number="form.estimated_sessions" type="number" min="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" placeholder="Ej: 3" />
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <label class="text-xs text-white/50">Próxima sesión</label>
+                <input v-model="form.next_session_date" type="date" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+              </div>
+            </div>
+          </template>
+          <template v-if="form.requires_follow_up">
+            <div class="flex flex-col gap-1.5">
+              <label class="text-xs text-white/50">Observación de seguimiento</label>
+              <textarea v-model="form.follow_up_notes" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none" placeholder="Indicá qué debe controlarse en el próximo contacto..."></textarea>
+            </div>
+          </template>
         </div>
         <p v-if="saveError" class="text-xs text-red-400">{{ saveError }}</p>
       </form>
@@ -342,5 +387,9 @@ onMounted(() => {
       </template>
     </NxrSlidePanel>
 
+    <!-- Toast container -->
+    <div class="fixed top-4 right-4 z-[9999] flex flex-col gap-2 w-80 pointer-events-none">
+      <AppToast v-for="t in toasts" :key="t.id" :toast="t" @close="removeToast" />
+    </div>
   </div>
 </template>

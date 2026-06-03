@@ -103,11 +103,20 @@ export const useDentalConsultationsStore = defineStore('dentalConsultations', ()
     await dentalConsultationsService.deletePhoto(id, photoId);
   }
 
+  async function changeStatus(id: number | string, status: string, reason?: string) {
+    const res = await dentalConsultationsService.changeStatus(id, status, reason);
+    const updated = unwrapData<DentalConsultation>(res.data);
+    const idx = items.value.findIndex(c => c.id === id);
+    if (idx !== -1) Object.assign(items.value[idx], updated);
+    if (current.value?.id === id) Object.assign(current.value, updated);
+    return updated;
+  }
+
   function reset() {
     items.value = [];
     current.value = null;
     error.value = null;
   }
 
-  return { items, current, loading, error, load, loadOne, create, update, addClinicalHistoryEntry, complete, cancel, createCharge, listPhotos, uploadPhoto, deletePhoto, reset };
+  return { items, current, loading, error, load, loadOne, create, update, addClinicalHistoryEntry, complete, cancel, changeStatus, createCharge, listPhotos, uploadPhoto, deletePhoto, reset };
 });

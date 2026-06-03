@@ -4,11 +4,14 @@ import { useRoute, useRouter } from 'vue-router';
 import { ArrowLeft, User, FileText, Stethoscope, CreditCard, CalendarDays, Pencil, Phone, MessageCircle, Plus } from 'lucide-vue-next';
 import { useDentalPatientsStore } from '../../stores/dentalPatients';
 import NxrSlidePanel from '../../components/NxrSlidePanel.vue';
+import AppToast from '../../components/AppToast.vue';
+import { useToast } from '../../composables/useToast';
 import type { DentalClinicalHistoryEntry, DentalConsultation, DentalPayment, DentalCharge, DentalMedicalHistory } from '../../types/dental';
 
 const route  = useRoute();
 const router = useRouter();
 const store  = useDentalPatientsStore();
+const { toasts, triggerToast, removeToast } = useToast();
 
 const activeTab         = ref<'summary' | 'personal' | 'history' | 'consultations' | 'payments' | 'appointments'>('summary');
 const showEditPanel     = ref(false);
@@ -106,9 +109,11 @@ async function saveEdit() {
   saveError.value = null;
   try {
     await store.update(patient.value.id, editForm.value);
+    triggerToast('Éxito', 'Datos del paciente actualizados', 'success');
     showEditPanel.value = false;
   } catch (e: any) {
     saveError.value = e?.response?.data?.error || 'Error al guardar cambios';
+    triggerToast('Error', e?.response?.data?.error || 'Error al guardar cambios', 'error');
   } finally {
     saving.value = false;
   }
@@ -140,6 +145,7 @@ async function saveMedHist() {
   try {
     await store.addMedicalHistory(patient.value.id, { ...medHistForm.value });
     medicalHistory.value = store.medicalHistory;
+    triggerToast('Éxito', 'Registro médico agregado', 'success');
     showMedHistPanel.value = false;
     medHistForm.value = {
       entry_date: new Date().toISOString().slice(0, 10),
@@ -153,6 +159,7 @@ async function saveMedHist() {
     };
   } catch (e: any) {
     medHistError.value = e?.response?.data?.error || 'Error al guardar registro';
+    triggerToast('Error', e?.response?.data?.error || 'Error al guardar registro', 'error');
   } finally {
     savingMedHist.value = false;
   }
@@ -626,5 +633,10 @@ onMounted(async () => {
         </button>
       </template>
     </NxrSlidePanel>
+
+    <!-- Toast container -->
+    <div class="fixed top-4 right-4 z-[9999] flex flex-col gap-2 w-80 pointer-events-none">
+      <AppToast v-for="t in toasts" :key="t.id" :toast="t" @close="removeToast" />
+    </div>
   </div>
 </template>

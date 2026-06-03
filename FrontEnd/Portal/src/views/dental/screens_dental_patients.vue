@@ -4,10 +4,13 @@ import { useRouter } from 'vue-router';
 import { Plus, Search, UserRound, ChevronRight } from 'lucide-vue-next';
 import { useDentalPatientsStore } from '../../stores/dentalPatients';
 import NxrSlidePanel from '../../components/NxrSlidePanel.vue';
+import AppToast from '../../components/AppToast.vue';
+import { useToast } from '../../composables/useToast';
 import type { DentalPatientFormData } from '../../types/dental';
 
 const router = useRouter();
 const store  = useDentalPatientsStore();
+const { toasts, triggerToast, removeToast } = useToast();
 
 const showPanel = ref(false);
 const saving    = ref(false);
@@ -58,9 +61,11 @@ async function save() {
   saveError.value = null;
   try {
     await store.create(form.value);
+    triggerToast('Éxito', 'Paciente creado', 'success');
     showPanel.value = false;
   } catch (e: any) {
     saveError.value = e?.response?.data?.error || 'Error al guardar paciente';
+    triggerToast('Error', e?.response?.data?.error || 'Error al guardar paciente', 'error');
   } finally {
     saving.value = false;
   }
@@ -292,5 +297,10 @@ onMounted(() => store.load());
         </button>
       </template>
     </NxrSlidePanel>
+
+    <!-- Toast container -->
+    <div class="fixed top-4 right-4 z-[9999] flex flex-col gap-2 w-80 pointer-events-none">
+      <AppToast v-for="t in toasts" :key="t.id" :toast="t" @close="removeToast" />
+    </div>
   </div>
 </template>

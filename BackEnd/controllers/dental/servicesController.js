@@ -302,13 +302,13 @@ exports.assignTreatments = async (req, res) => {
         );
 
         if (treatments.length > 0) {
-            const values = treatments.map((t, i) => `($1, $${i * 2 + 2}, $${i * 2 + 3})`).join(', ');
-            const params = [req.params.id];
+            const values = treatments.map((t, i) => `($1, $2, $${i * 2 + 3}, $${i * 2 + 4})`).join(', ');
+            const params = [req.params.id, companyId];
             for (const t of treatments) {
                 params.push(t.treatment_id, t.quantity || 1);
             }
             await db.query(
-                `INSERT INTO ${schema}.dental_service_treatments (service_id, treatment_id, quantity) VALUES ${values}`,
+                `INSERT INTO ${schema}.dental_service_treatments (service_id, tenant_id, treatment_id, quantity) VALUES ${values}`,
                 params
             );
         }

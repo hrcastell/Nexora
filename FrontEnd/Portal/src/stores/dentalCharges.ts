@@ -15,7 +15,7 @@ export const useDentalChargesStore = defineStore('dentalCharges', () => {
     daily_total: number;
     monthly_total: number;
     total_pending: number;
-    overdue_count: number;
+    overdue_charges_count: number;
   } | null>(null);
 
   function unwrapData<T>(payload: T | { data: T }): T {

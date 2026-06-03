@@ -1,155 +1,249 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ArrowLeft, CheckCircle2, XCircle, CreditCard, Edit2, Plus, RefreshCw } from 'lucide-vue-next'
+import {
+  ArrowLeft, CheckCircle2, CreditCard, Edit2, Plus, Trash2,
+  Stethoscope, Calendar, ClipboardList, DollarSign, Camera, BookOpen, AlertCircle
+} from 'lucide-vue-next'
 import { useDentalConsultationsStore } from '../../stores/dentalConsultations'
 import { useDentalPatientsStore } from '../../stores/dentalPatients'
+import { useDentalConsultationServicesStore } from '../../stores/dentalConsultationServices'
+import { useDentalConsultationSessionsStore } from '../../stores/dentalConsultationSessions'
+import { useDentalServicesStore } from '../../stores/dentalServices'
 import { dentalChargesService } from '../../services/dentalChargesService'
 import NxrSlidePanel from '../../components/NxrSlidePanel.vue'
+import AppToast from '../../components/AppToast.vue'
+import ConfirmActionModal from '../../components/admin/ConfirmActionModal.vue'
 import WidgetsDentalPhotoGallery from '../../components/widgets_dental_photo_gallery.vue'
-import type { DentalCharge, DentalInstallment, DentalMedicalHistory } from '../../types/dental'
+import { useToast } from '../../composables/useToast'
+import type {
+  DentalCharge, DentalInstallment, DentalMedicalHistory,
+  DentalConsultationService, DentalConsultationSession,
+  DentalConsultationServiceFormData, DentalConsultationSessionFormData
+} from '../../types/dental'
 
-// ── Route / Store ─────────────────────────────────────────────────────────────
+// ── Route / Router ────────────────────────────────────────────────────────────
 const route  = useRoute()
 const router = useRouter()
-const store  = useDentalConsultationsStore()
-const patientStore = useDentalPatientsStore()
 const id     = route.params.id as string
+const { toasts, triggerToast, removeToast } = useToast()
+
+// ── Stores ────────────────────────────────────────────────────────────────────
+const store                    = useDentalConsultationsStore()
+const patientStore             = useDentalPatientsStore()
+const consultationServicesStore = useDentalConsultationServicesStore()
+const sessionsStore            = useDentalConsultationSessionsStore()
+const servicesStore            = useDentalServicesStore()
+
+const consultation = computed(() => store.current)
+
+// ── Tabs ──────────────────────────────────────────────────────────────────────
+type TabKey = 'summary' | 'treatments' | 'sessions' | 'photos' | 'history' | 'payments'
+const activeTab = ref<TabKey>('summary')
+
+const tabs: { key: TabKey; label: string; icon: any }[] = [
+  { key: 'summary',    label: 'Resumen',     icon: ClipboardList },
+  { key: 'treatments', label: 'Tratamiento', icon: Stethoscope   },
+  { key: 'sessions',   label: 'Sesiones',    icon: Calendar       },
+  { key: 'photos',     label: 'Fotos',       icon: Camera         },
+  { key: 'history',    label: 'Historia',    icon: BookOpen       },
+  { key: 'payments',   label: 'Pagos',       icon: DollarSign     },
+]
+
+function selectTab(key: TabKey) {
+  activeTab.value = key
+  if (key === 'payments') loadCharge()
+  if (key === 'history')  loadMedicalHistory()
+}
 
 // ── Status maps ───────────────────────────────────────────────────────────────
 const STATUS_LABEL: Record<string, string> = {
-  draft:       'Borrador',
-  scheduled:   'Programada',
-  in_progress: 'En curso',
-  completed:   'Completada',
-  cancelled:   'Cancelada',
-  no_show:     'No asistió',
+  draft:        'Borrador',
+  created:      'Creada',
+  in_progress:  'En curso',
+  in_treatment: 'En tratamiento',
+  completed:    'Completada',
+  cancelled:    'Cancelada',
+  no_show:      'No asistió',
+  voided:       'Anulada',
 }
 const STATUS_CLASS: Record<string, string> = {
-  draft:       'bg-white/10 text-white/40',
-  scheduled:   'bg-blue-500/20 text-blue-400',
-  in_progress: 'bg-cyan-500/20 text-cyan-400',
-  completed:   'bg-green-500/20 text-green-400',
-  cancelled:   'bg-red-500/20 text-red-400',
-  no_show:     'bg-orange-500/20 text-orange-400',
+  draft:        'bg-white/10 text-white/40',
+  created:      'bg-purple-500/20 text-purple-400',
+  in_progress:  'bg-cyan-500/20 text-cyan-400',
+  in_treatment: 'bg-indigo-500/20 text-indigo-400',
+  completed:    'bg-green-500/20 text-green-400',
+  cancelled:    'bg-red-500/20 text-red-400',
+  no_show:      'bg-orange-500/20 text-orange-400',
+  voided:       'bg-red-900/30 text-red-300',
 }
 const ADMIN_STATUS_LABEL: Record<string, string> = {
-  unpaid:          'Sin pagar',
-  partially_paid:  'Pago parcial',
-  paid:            'Pagado',
-  overdue:         'Vencido',
-  cancelled:       'Cancelado',
+  unpaid:         'Sin pagar',
+  partially_paid: 'Pago parcial',
+  paid:           'Pagado',
+  overdue:        'Vencido',
+  cancelled:      'Cancelado',
 }
 const ADMIN_STATUS_CLASS: Record<string, string> = {
-  unpaid:          'bg-yellow-500/20 text-yellow-400',
-  partially_paid:  'bg-blue-500/20 text-blue-400',
-  paid:            'bg-green-500/20 text-green-400',
-  overdue:         'bg-red-500/20 text-red-400',
-  cancelled:       'bg-white/10 text-white/40',
+  unpaid:         'bg-yellow-500/20 text-yellow-400',
+  partially_paid: 'bg-blue-500/20 text-blue-400',
+  paid:           'bg-green-500/20 text-green-400',
+  overdue:        'bg-red-500/20 text-red-400',
+  cancelled:      'bg-white/10 text-white/40',
+}
+const PAYMENT_METHOD_LABEL: Record<string, string> = {
+  cash:           'Efectivo',
+  card:           'Tarjeta',
+  bank_transfer:  'Transferencia',
+  mobile_payment: 'Pago móvil',
+  insurance:      'Seguro',
+  other:          'Otro',
 }
 
-// ── UI state ──────────────────────────────────────────────────────────────────
-const activeTab    = ref<'info' | 'treatments' | 'photos' | 'payments' | 'history'>('info')
-const editOpen     = ref(false)
-const actionError  = ref<string | null>(null)
+// ── Allowed transitions ───────────────────────────────────────────────────────
+const ALLOWED_TRANSITIONS: Record<string, string[]> = {
+  draft:        ['created', 'cancelled'],
+  created:      ['in_progress', 'cancelled'],
+  in_progress:  ['in_treatment', 'completed', 'cancelled'],
+  in_treatment: ['completed', 'in_progress'],
+  completed:    ['voided'],
+  cancelled:    [],
+  no_show:      [],
+  voided:       [],
+}
+
+// ── State ─────────────────────────────────────────────────────────────────────
+const confirmModal = ref<{ open: boolean; title: string; message: string; onConfirm: () => void }>({
+  open: false, title: '', message: '', onConfirm: () => {}
+})
+function askConfirm(title: string, message: string, onConfirm: () => void) {
+  confirmModal.value = { open: true, title, message, onConfirm }
+}
+
 const actionLoading = ref(false)
 
-// Edit form fields
+// Edit info
+const editOpen = ref(false)
 const editForm = ref({ reason: '', diagnosis: '', clinical_notes: '', indications: '' })
 
-// Service change panel (Task 2)
-const showServicePanel = ref(false)
-const servicesList     = ref<any[]>([])
-const newServiceId     = ref<string | number>('')
-const savingService    = ref(false)
+// Status change
+const changingStatus   = ref(false)
+const statusReason     = ref('')
+const showStatusPanel  = ref(false)
+const targetStatus     = ref('')
 
-// Payments tab state (Task 5)
-const chargeDetail     = ref<DentalCharge | null>(null)
-const loadingCharge    = ref(false)
-const showInstallPanel = ref(false)
-const installForm      = ref({ installments_count: 3, first_due_date: new Date().toISOString().slice(0, 10) })
-const savingInstall    = ref(false)
-const installError     = ref<string | null>(null)
-const showPayPanel     = ref(false)
-const payForm          = ref({ amount: 0, payment_method: 'cash', notes: '' })
-const savingPay        = ref(false)
-const payError         = ref<string | null>(null)
-const showInstPayPanel = ref(false)
-const instPayForm      = ref({ installment_id: 0, amount: 0, payment_method: 'cash' })
-const savingInstPay    = ref(false)
-const instPayError     = ref<string | null>(null)
+// Add service
+const showAddServicePanel  = ref(false)
+const addServiceForm       = ref<DentalConsultationServiceFormData>({
+  service_id: null, service_name_snapshot: '', unit_price: 0,
+  quantity: 1, tooth_reference: '', clinical_notes: ''
+})
+const savingService        = ref(false)
+const addServiceError      = ref<string | null>(null)
+const selectedServiceForAdd = ref<any>(null)
 
-// Medical history in History tab (Task 6)
+// Session
+const showSessionPanel = ref(false)
+const sessionForm      = ref<DentalConsultationSessionFormData>({
+  session_date: new Date().toISOString().slice(0, 16),
+  notes: '', evolution: '', next_session_date: ''
+})
+const savingSession  = ref(false)
+const sessionError   = ref<string | null>(null)
+
+// Follow-up
+const followUpForm = ref({
+  requires_follow_up: false,
+  requires_multiple_sessions: false,
+  estimated_sessions: undefined as number | undefined,
+  next_session_date: '',
+  follow_up_notes: ''
+})
+const savingFollowUp = ref(false)
+
+// Payments
+const chargeDetail      = ref<DentalCharge | null>(null)
+const loadingCharge     = ref(false)
+const showInstallPanel  = ref(false)
+const installForm       = ref({ installments_count: 3, first_due_date: new Date().toISOString().slice(0, 10) })
+const savingInstall     = ref(false)
+const installError      = ref<string | null>(null)
+const showPayPanel      = ref(false)
+const payForm           = ref({ amount: 0, payment_method: 'cash', notes: '' })
+const savingPay         = ref(false)
+const payError          = ref<string | null>(null)
+const showInstPayPanel  = ref(false)
+const instPayForm       = ref({ installment_id: 0, amount: 0, payment_method: 'cash' })
+const savingInstPay     = ref(false)
+const instPayError      = ref<string | null>(null)
+
+// Medical history
 const medicalHistory   = ref<DentalMedicalHistory[]>([])
 const showMedHistPanel = ref(false)
 const savingMedHist    = ref(false)
 const medHistError     = ref<string | null>(null)
 const medHistForm      = ref({
   entry_date: new Date().toISOString().slice(0, 10),
-  blood_type: '',
-  medical_background: '',
-  allergies: '',
-  current_medications: '',
-  chronic_conditions: '',
-  dental_observations: '',
-  notes: '',
+  blood_type: '', medical_background: '', allergies: '',
+  current_medications: '', chronic_conditions: '', dental_observations: '', notes: ''
 })
 
-// ── Computed helpers ──────────────────────────────────────────────────────────
-const consultation = computed(() => store.current)
-
+// ── Computed ──────────────────────────────────────────────────────────────────
 const patientName = computed(() =>
   (consultation.value?.customer as any)?.full_name ||
   (consultation.value?.customer
     ? `${consultation.value.customer.first_name} ${consultation.value.customer.last_name}`
-    : (consultation.value as any)?.patient_name) ||
-  '—'
+    : null) ||
+  (consultation.value as any)?.patient_name || '—'
 )
 
-const canComplete = computed(() =>
-  ['draft', 'scheduled', 'in_progress'].includes(consultation.value?.status ?? '')
+const allowedTransitions = computed(() =>
+  ALLOWED_TRANSITIONS[consultation.value?.status ?? ''] ?? []
 )
+
+const hasClosedPayments = computed(() =>
+  chargeDetail.value ? parseFloat(chargeDetail.value.paid_amount as any) > 0 : false
+)
+
 const canCreateCharge = computed(() =>
   consultation.value?.administrative_status === 'unpaid' &&
-  Number(consultation.value?.total_amount ?? 0) > 0
-)
-const canCancel = computed(() =>
-  ['draft', 'scheduled'].includes(consultation.value?.status ?? '')
+  consultationServicesStore.total > 0 &&
+  !chargeDetail.value
 )
 
-const showActionBar = computed(() => canComplete.value || canCreateCharge.value || canCancel.value)
+const activeServices = computed(() =>
+  (consultationServicesStore.items as DentalConsultationService[]).filter(s => s.status !== 'voided')
+)
+const voidedServices = computed(() =>
+  (consultationServicesStore.items as DentalConsultationService[]).filter(s => s.status === 'voided')
+)
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-function fmtDate(raw?: string | null): string {
+function fmtDate(raw?: string | null) {
   if (!raw) return '—'
   return new Date(raw).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })
 }
 
-function fmtCurrency(amount?: number | string | null): string {
+function fmtDateTime(raw?: string | null) {
+  if (!raw) return '—'
+  return new Date(raw).toLocaleString('es-AR', {
+    day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
+  })
+}
+
+function fmtCurrency(amount?: number | string | null) {
   const n = Number(amount ?? 0)
   return n.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', minimumFractionDigits: 2 })
 }
 
 // ── Actions ───────────────────────────────────────────────────────────────────
-async function runAction(fn: () => Promise<unknown>) {
-  actionError.value = null
-  actionLoading.value = true
-  try {
-    await fn()
-  } catch (e: any) {
-    actionError.value = e?.response?.data?.error || 'Error al ejecutar la acción'
-  } finally {
-    actionLoading.value = false
-  }
-}
-
 function openEdit() {
-  const c = consultation.value
+  const c = consultation.value as any
   editForm.value = {
-    reason:         (c as any)?.reason         ?? '',
-    diagnosis:      (c as any)?.diagnosis      ?? '',
-    clinical_notes: (c as any)?.clinical_notes ?? '',
-    indications:    (c as any)?.indications    ?? '',
+    reason: c?.reason ?? '',
+    diagnosis: c?.diagnosis ?? '',
+    clinical_notes: c?.clinical_notes ?? '',
+    indications: c?.indications ?? ''
   }
   editOpen.value = true
 }
@@ -157,25 +251,124 @@ function openEdit() {
 async function saveEdit() {
   try {
     await store.update(id, { ...editForm.value })
+    triggerToast('Éxito', 'Consulta actualizada', 'success')
     editOpen.value = false
   } catch (e: any) {
-    actionError.value = e?.response?.data?.error || 'Error al guardar cambios'
+    triggerToast('Error', e?.response?.data?.error || 'Error al guardar', 'error')
   }
 }
 
-// ── Payments helpers ──────────────────────────────────────────────────────────
+function openStatusChange(status: string) {
+  targetStatus.value = status
+  statusReason.value = ''
+  showStatusPanel.value = true
+}
+
+async function confirmStatusChange() {
+  changingStatus.value = true
+  try {
+    await store.changeStatus(id, targetStatus.value, statusReason.value || undefined)
+    triggerToast('Éxito', 'Estado actualizado', 'success')
+    showStatusPanel.value = false
+  } catch (e: any) {
+    triggerToast('Error', e?.response?.data?.error || 'Error al cambiar estado', 'error')
+  } finally {
+    changingStatus.value = false
+  }
+}
+
+function onServiceSelect(serviceId: string | number) {
+  const svc = servicesStore.items.find(s => String(s.id) === String(serviceId))
+  selectedServiceForAdd.value = svc || null
+  if (svc) {
+    addServiceForm.value.service_name_snapshot = svc.name
+    addServiceForm.value.unit_price = parseFloat(svc.final_price as any) || 0
+  }
+}
+
+async function addService() {
+  if (!addServiceForm.value.unit_price || addServiceForm.value.unit_price <= 0) {
+    addServiceError.value = 'El precio unitario debe ser mayor a 0'
+    return
+  }
+  savingService.value = true
+  addServiceError.value = null
+  try {
+    await consultationServicesStore.add(id, addServiceForm.value)
+    triggerToast('Éxito', 'Servicio agregado', 'success')
+    showAddServicePanel.value = false
+    addServiceForm.value = { service_id: null, service_name_snapshot: '', unit_price: 0, quantity: 1, tooth_reference: '', clinical_notes: '' }
+    selectedServiceForAdd.value = null
+  } catch (e: any) {
+    addServiceError.value = e?.response?.data?.error || 'Error al agregar servicio'
+  } finally {
+    savingService.value = false
+  }
+}
+
+async function voidService(s: DentalConsultationService) {
+  askConfirm('Anular servicio', `¿Anular "${s.service_name_snapshot}"?`, async () => {
+    try {
+      await consultationServicesStore.voidService(id, s.id)
+      triggerToast('Éxito', 'Servicio anulado', 'success')
+    } catch (e: any) {
+      triggerToast('Error', e?.response?.data?.error || 'Error al anular servicio', 'error')
+    }
+  })
+}
+
+async function saveFollowUp() {
+  savingFollowUp.value = true
+  try {
+    await store.update(id, {
+      requires_follow_up: followUpForm.value.requires_follow_up,
+      requires_multiple_sessions: followUpForm.value.requires_multiple_sessions,
+      estimated_sessions: followUpForm.value.estimated_sessions,
+      next_session_date: followUpForm.value.next_session_date || undefined,
+      follow_up_notes: followUpForm.value.follow_up_notes || undefined,
+    } as any)
+    triggerToast('Éxito', 'Seguimiento actualizado', 'success')
+  } catch (e: any) {
+    triggerToast('Error', e?.response?.data?.error || 'Error al guardar seguimiento', 'error')
+  } finally {
+    savingFollowUp.value = false
+  }
+}
+
+async function createSession() {
+  savingSession.value = true
+  sessionError.value = null
+  try {
+    await sessionsStore.create(id, sessionForm.value)
+    triggerToast('Éxito', 'Sesión creada', 'success')
+    showSessionPanel.value = false
+    sessionForm.value = { session_date: new Date().toISOString().slice(0, 16), notes: '', evolution: '', next_session_date: '' }
+  } catch (e: any) {
+    sessionError.value = e?.response?.data?.error || 'Error al crear sesión'
+  } finally {
+    savingSession.value = false
+  }
+}
+
+async function completeSession(s: DentalConsultationSession) {
+  askConfirm('Completar sesión', `¿Marcar sesión ${s.session_number} como completada?`, async () => {
+    try {
+      await sessionsStore.complete(id, s.id)
+      triggerToast('Éxito', 'Sesión completada', 'success')
+    } catch (e: any) {
+      triggerToast('Error', e?.response?.data?.error || 'Error', 'error')
+    }
+  })
+}
+
 async function loadCharge() {
   const charges = (consultation.value as any)?.charges
-  if (!charges?.length) return
+  if (!charges?.length) { chargeDetail.value = null; return }
   loadingCharge.value = true
   try {
     const res = await dentalChargesService.getById(charges[0].id)
     chargeDetail.value = (res.data as any)?.data ?? res.data
-  } catch (e) {
-    // ignore
-  } finally {
-    loadingCharge.value = false
-  }
+  } catch { } finally { loadingCharge.value = false }
 }
 
 async function saveInstallments() {
@@ -185,15 +378,14 @@ async function saveInstallments() {
   try {
     await dentalChargesService.createInstallmentPlan(chargeDetail.value.id, {
       installments_count: Number(installForm.value.installments_count),
-      first_due_date: installForm.value.first_due_date,
+      first_due_date: installForm.value.first_due_date
     })
+    triggerToast('Éxito', 'Plan de cuotas creado', 'success')
     showInstallPanel.value = false
     await loadCharge()
   } catch (e: any) {
     installError.value = e?.response?.data?.error || 'Error al crear cuotas'
-  } finally {
-    savingInstall.value = false
-  }
+  } finally { savingInstall.value = false }
 }
 
 async function saveDirectPayment() {
@@ -205,20 +397,24 @@ async function saveDirectPayment() {
       amount: Number(payForm.value.amount),
       payment_method: payForm.value.payment_method,
       payment_date: new Date().toISOString(),
-      notes: payForm.value.notes || undefined,
+      notes: payForm.value.notes || undefined
     })
+    triggerToast('Éxito', 'Pago registrado', 'success')
     showPayPanel.value = false
     payForm.value = { amount: 0, payment_method: 'cash', notes: '' }
+    await store.loadOne(id)
     await loadCharge()
   } catch (e: any) {
     payError.value = e?.response?.data?.error || 'Error al registrar pago'
-  } finally {
-    savingPay.value = false
-  }
+  } finally { savingPay.value = false }
 }
 
 function openInstPayPanel(inst: DentalInstallment) {
-  instPayForm.value = { installment_id: Number(inst.id), amount: Number(inst.amount) - Number(inst.paid_amount), payment_method: 'cash' }
+  instPayForm.value = {
+    installment_id: Number(inst.id),
+    amount: Number(inst.amount) - Number(inst.paid_amount),
+    payment_method: 'cash'
+  }
   instPayError.value = null
   showInstPayPanel.value = true
 }
@@ -230,45 +426,17 @@ async function saveInstallmentPayment() {
     await dentalChargesService.payInstallment(instPayForm.value.installment_id, {
       amount: Number(instPayForm.value.amount),
       payment_method: instPayForm.value.payment_method,
-      payment_date: new Date().toISOString(),
+      payment_date: new Date().toISOString()
     })
+    triggerToast('Éxito', 'Cuota pagada', 'success')
     showInstPayPanel.value = false
+    await store.loadOne(id)
     await loadCharge()
   } catch (e: any) {
     instPayError.value = e?.response?.data?.error || 'Error al pagar cuota'
-  } finally {
-    savingInstPay.value = false
-  }
+  } finally { savingInstPay.value = false }
 }
 
-// ── Service change helpers (Task 2) ───────────────────────────────────────────
-async function openServicePanel() {
-  showServicePanel.value = true
-  newServiceId.value = (consultation.value as any)?.service_id ?? ''
-  if (!servicesList.value.length) {
-    try {
-      const { dentalServicesService } = await import('../../services/dentalServicesService')
-      const res = await dentalServicesService.list()
-      servicesList.value = (res.data as any)?.data ?? res.data
-    } catch { servicesList.value = [] }
-  }
-}
-
-async function saveServiceChange() {
-  if (!newServiceId.value) return
-  savingService.value = true
-  try {
-    await store.update(id, { service_id: newServiceId.value } as any)
-    await store.loadOne(id)
-    showServicePanel.value = false
-  } catch (e: any) {
-    actionError.value = e?.response?.data?.error || 'Error al cambiar servicio'
-  } finally {
-    savingService.value = false
-  }
-}
-
-// ── Medical history helpers (Task 6) ─────────────────────────────────────────
 async function loadMedicalHistory() {
   const customerId = (consultation.value as any)?.customer_id ?? (consultation.value as any)?.customer?.id
   if (!customerId) return
@@ -283,588 +451,1138 @@ async function saveMedHist() {
   try {
     await patientStore.addMedicalHistory(customerId, { ...medHistForm.value })
     medicalHistory.value = patientStore.medicalHistory
+    triggerToast('Éxito', 'Registro médico agregado', 'success')
     showMedHistPanel.value = false
     medHistForm.value = {
-      entry_date: new Date().toISOString().slice(0, 10),
-      blood_type: '', medical_background: '', allergies: '',
-      current_medications: '', chronic_conditions: '', dental_observations: '', notes: '',
+      entry_date: new Date().toISOString().slice(0, 10), blood_type: '',
+      medical_background: '', allergies: '', current_medications: '',
+      chronic_conditions: '', dental_observations: '', notes: ''
     }
   } catch (e: any) {
     medHistError.value = e?.response?.data?.error || 'Error al guardar registro'
-  } finally {
-    savingMedHist.value = false
-  }
+  } finally { savingMedHist.value = false }
 }
 
-function fmtDate2(iso: string) {
-  if (!iso) return '—'
-  return new Date(iso).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+async function generateCharge() {
+  actionLoading.value = true
+  try {
+    await store.createCharge(id, consultationServicesStore.total)
+    await store.loadOne(id)
+    await loadCharge()
+    triggerToast('Éxito', 'Cargo generado', 'success')
+  } catch (e: any) {
+    triggerToast('Error', e?.response?.data?.error || 'Error al generar cargo', 'error')
+  } finally { actionLoading.value = false }
 }
 
-// ── Mount ─────────────────────────────────────────────────────────────────────
+// ── Lifecycle ─────────────────────────────────────────────────────────────────
 onMounted(async () => {
   await store.loadOne(id)
+  await Promise.all([
+    consultationServicesStore.load(id),
+    sessionsStore.load(id),
+    servicesStore.load(),
+  ])
+  const c = consultation.value as any
+  if (c) {
+    followUpForm.value = {
+      requires_follow_up: c.requires_follow_up ?? false,
+      requires_multiple_sessions: c.requires_multiple_sessions ?? false,
+      estimated_sessions: c.estimated_sessions ?? undefined,
+      next_session_date: c.next_session_date ?? '',
+      follow_up_notes: c.follow_up_notes ?? '',
+    }
+  }
 })
 </script>
 
 <template>
-  <div class="min-h-screen pb-32" :style="{ background: 'var(--nexora-glass-bg)' }">
+  <div class="min-h-screen text-white" :style="{ background: 'var(--nexora-glass-bg)' }">
 
-    <!-- Loading / Error states (full page) -->
-    <template v-if="store.loading && !consultation">
-      <div class="flex items-center justify-center min-h-screen">
-        <div class="space-y-3 text-center">
-          <div class="h-8 w-48 rounded-lg bg-white/10 animate-pulse mx-auto" />
-          <div class="h-4 w-32 rounded bg-white/10 animate-pulse mx-auto" />
-        </div>
-      </div>
-    </template>
+    <!-- ── Header ──────────────────────────────────────────────────────────── -->
+    <div class="sticky top-0 z-20 border-b border-white/10 bg-black/40 backdrop-blur-md">
+      <div class="mx-auto max-w-6xl px-4 py-4">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 
-    <template v-else-if="store.error && !consultation">
-      <div class="flex items-center justify-center min-h-screen px-4">
-        <p class="text-red-400 text-center">{{ store.error }}</p>
-      </div>
-    </template>
-
-    <template v-else-if="consultation">
-
-      <!-- ── Header ──────────────────────────────────────────────────────────── -->
-      <header class="sticky top-0 z-20 border-b border-white/10 bg-black/30 backdrop-blur-xl px-4 py-4">
-        <div class="max-w-4xl mx-auto flex flex-col sm:flex-row sm:items-center gap-3">
-          <!-- Left: back + title + badges -->
-          <div class="flex-1 min-w-0 flex items-start sm:items-center gap-3">
+          <!-- Left: back + title -->
+          <div class="flex items-center gap-3">
             <button
-              class="shrink-0 rounded-xl p-2 hover:bg-white/10 transition mt-0.5 sm:mt-0"
-              @click="router.push('/dental/consultations')"
-              aria-label="Volver"
+              class="flex items-center gap-1 rounded-lg px-2 py-1 text-sm text-white/50 transition hover:bg-white/10 hover:text-white"
+              @click="router.back()"
             >
-              <ArrowLeft class="h-5 w-5 text-white/70" />
+              <ArrowLeft class="h-4 w-4" />
+              Volver
             </button>
-            <div class="min-w-0">
-              <h1 class="text-lg font-semibold text-white truncate">
-                Consulta — {{ fmtDate(consultation.consultation_date) }}
+            <div>
+              <h1 class="text-lg font-semibold leading-tight">
+                Consulta &mdash; {{ fmtDate((consultation as any)?.consultation_date) }}
               </h1>
-              <div class="mt-1 flex flex-wrap items-center gap-1.5">
-                <span
-                  class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
-                  :class="STATUS_CLASS[consultation.status] ?? 'bg-white/10 text-white/40'"
-                >
-                  {{ STATUS_LABEL[consultation.status] ?? consultation.status }}
-                </span>
-                <span
-                  v-if="consultation.administrative_status"
-                  class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
-                  :class="ADMIN_STATUS_CLASS[consultation.administrative_status] ?? 'bg-white/10 text-white/40'"
-                >
-                  {{ ADMIN_STATUS_LABEL[consultation.administrative_status] ?? consultation.administrative_status }}
-                </span>
-              </div>
+              <p class="text-xs text-white/40">{{ patientName }}</p>
             </div>
           </div>
-          <!-- Right: total amount -->
-          <div class="pl-10 sm:pl-0 shrink-0">
-            <p class="text-xs text-white/40">Total</p>
-            <p class="text-xl font-bold text-white">{{ fmtCurrency(consultation.total_amount) }}</p>
-          </div>
-        </div>
-      </header>
 
-      <!-- ── Tabs ────────────────────────────────────────────────────────────── -->
-      <div class="sticky top-[73px] z-10 border-b border-white/10 bg-black/20 backdrop-blur-xl">
-        <div class="max-w-4xl mx-auto px-4 flex gap-1 overflow-x-auto scrollbar-none">
-          <button
-            v-for="tab in ([
-              { key: 'info',       label: 'Info' },
-              { key: 'treatments', label: 'Tratamientos' },
-              { key: 'photos',     label: 'Fotos' },
-              { key: 'payments',   label: 'Pagos' },
-              { key: 'history',    label: 'Historial' },
-            ] as const)"
-            :key="tab.key"
-            class="shrink-0 px-4 py-3 text-sm font-medium border-b-2 transition"
-            :class="activeTab === tab.key
-              ? 'border-[var(--nexora-primary)] text-white'
-              : 'border-transparent text-white/50 hover:text-white/80'"
-            @click="activeTab = tab.key; if (tab.key === 'payments') loadCharge(); if (tab.key === 'history') loadMedicalHistory()"
-          >
-            {{ tab.label }}
-          </button>
+          <!-- Right: badges + total + status change -->
+          <div class="flex flex-wrap items-center gap-2">
+            <!-- Clinical status badge -->
+            <span
+              v-if="consultation?.status"
+              class="rounded-full px-3 py-1 text-xs font-medium"
+              :class="STATUS_CLASS[consultation.status] ?? 'bg-white/10 text-white/40'"
+            >
+              {{ STATUS_LABEL[consultation.status] ?? consultation.status }}
+            </span>
+
+            <!-- Payment status badge -->
+            <span
+              v-if="consultation?.administrative_status"
+              class="rounded-full px-3 py-1 text-xs font-medium"
+              :class="ADMIN_STATUS_CLASS[consultation.administrative_status] ?? 'bg-white/10 text-white/40'"
+            >
+              {{ ADMIN_STATUS_LABEL[consultation.administrative_status] ?? consultation.administrative_status }}
+            </span>
+
+            <!-- Total -->
+            <span class="rounded-full bg-white/5 px-3 py-1 text-xs font-semibold text-white/70">
+              {{ fmtCurrency(consultationServicesStore.total) }}
+            </span>
+
+            <!-- Status transition dropdown -->
+            <select
+              v-if="allowedTransitions.length"
+              class="rounded-xl border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white outline-none focus:border-white/30"
+              value=""
+              @change="openStatusChange(($event.target as HTMLSelectElement).value); ($event.target as HTMLSelectElement).value = ''"
+            >
+              <option value="" disabled>Cambiar estado</option>
+              <option v-for="st in allowedTransitions" :key="st" :value="st">
+                {{ STATUS_LABEL[st] ?? st }}
+              </option>
+            </select>
+          </div>
         </div>
       </div>
+    </div>
 
-      <!-- ── Tab content ─────────────────────────────────────────────────────── -->
-      <main class="max-w-4xl mx-auto px-4 py-6 space-y-4">
-
-        <!-- Info tab -->
-        <template v-if="activeTab === 'info'">
-          <div class="rounded-xl border border-white/10 bg-white/5 p-5 space-y-5">
-            <!-- Patient -->
-            <div>
-              <p class="text-xs text-white/40 mb-0.5">Paciente</p>
-              <p class="text-white font-medium">{{ patientName }}</p>
-            </div>
-
-            <!-- Fields grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div v-for="field in ([
-                { key: 'reason',         label: 'Motivo' },
-                { key: 'diagnosis',      label: 'Diagnóstico' },
-                { key: 'clinical_notes', label: 'Notas clínicas' },
-                { key: 'indications',    label: 'Indicaciones' },
-              ] as const)" :key="field.key">
-                <p class="text-xs text-white/40 mb-0.5">{{ field.label }}</p>
-                <p class="text-white/80 text-sm whitespace-pre-wrap">
-                  {{ (consultation as any)[field.key] || '—' }}
-                </p>
-              </div>
-            </div>
-
-            <!-- Edit button -->
-            <div class="flex justify-end pt-1">
-              <button
-                class="flex items-center gap-2 rounded-xl bg-white/10 hover:bg-white/20 transition px-4 py-2 text-sm text-white/70"
-                @click="openEdit"
-              >
-                <Edit2 class="h-4 w-4" />
-                Editar
-              </button>
-            </div>
-          </div>
-        </template>
-
-        <!-- Treatments tab -->
-        <template v-else-if="activeTab === 'treatments'">
-          <div class="rounded-xl border border-white/10 bg-white/5 p-5 space-y-4">
-            <!-- Service name header -->
-            <div class="flex items-center justify-between">
-              <div>
-                <p class="text-xs text-white/40 mb-0.5">Servicio</p>
-                <p class="text-sm text-white font-medium">{{ (consultation as any).service_name || (consultation as any).service?.name || '—' }}</p>
-              </div>
-              <button
-                class="flex items-center gap-1.5 rounded-xl bg-white/10 hover:bg-white/20 transition px-3 py-1.5 text-xs text-white/70"
-                @click="openServicePanel"
-              >
-                <RefreshCw class="h-3.5 w-3.5" />
-                Cambiar servicio
-              </button>
-            </div>
-            <!-- Treatments list -->
-            <div
-              v-if="!(consultation as any).treatments?.length"
-              class="py-6 text-center text-white/30 text-sm"
-            >
-              No hay tratamientos asociados a esta consulta
-            </div>
-            <ul v-else class="divide-y divide-white/10">
-              <li
-                v-for="(t, i) in (consultation as any).treatments"
-                :key="i"
-                class="py-3 flex items-center justify-between text-sm"
-              >
-                <span class="text-white/80">{{ t.treatment_name || t.name || '—' }}</span>
-                <span class="text-xs text-white/40">x{{ t.quantity ?? 1 }}</span>
-              </li>
-            </ul>
-          </div>
-        </template>
-
-        <!-- Photos tab -->
-        <template v-else-if="activeTab === 'photos'">
-          <WidgetsDentalPhotoGallery :consultationId="id" />
-        </template>
-
-        <!-- Payments tab (Task 5) -->
-        <template v-else-if="activeTab === 'payments'">
-          <div class="space-y-4">
-            <div v-if="loadingCharge" class="py-8 text-center text-white/30 text-sm">Cargando...</div>
-            <template v-else-if="chargeDetail">
-              <!-- Charge summary -->
-              <div class="rounded-xl border border-white/10 bg-white/5 p-5 space-y-3">
-                <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Resumen del cargo</p>
-                <div class="grid grid-cols-3 gap-3 text-sm">
-                  <div><p class="text-xs text-white/40">Total</p><p class="text-white font-medium">{{ fmtCurrency(chargeDetail.total_amount) }}</p></div>
-                  <div><p class="text-xs text-white/40">Pagado</p><p class="text-green-400 font-medium">{{ fmtCurrency(chargeDetail.paid_amount) }}</p></div>
-                  <div><p class="text-xs text-white/40">Pendiente</p><p class="text-yellow-400 font-medium">{{ fmtCurrency(chargeDetail.pending_amount) }}</p></div>
-                </div>
-                <span class="inline-flex px-2 py-0.5 rounded-full text-xs" :class="{
-                  'bg-yellow-500/20 text-yellow-400': chargeDetail.status === 'pending',
-                  'bg-blue-500/20 text-blue-400': chargeDetail.status === 'partially_paid',
-                  'bg-green-500/20 text-green-400': chargeDetail.status === 'paid',
-                  'bg-red-500/20 text-red-400': chargeDetail.status === 'overdue',
-                  'bg-white/10 text-white/40': !['pending','partially_paid','paid','overdue'].includes(chargeDetail.status),
-                }">{{ { pending:'Pendiente', partially_paid:'Pago parcial', paid:'Pagado', overdue:'Vencido', cancelled:'Cancelado', refunded:'Reembolsado' }[chargeDetail.status] ?? chargeDetail.status }}</span>
-              </div>
-
-              <!-- Installments section -->
-              <div class="rounded-xl border border-white/10 bg-white/5 p-5 space-y-3">
-                <div class="flex items-center justify-between">
-                  <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Cuotas</p>
-                  <button
-                    v-if="!(chargeDetail as any).installments?.length"
-                    class="flex items-center gap-1.5 rounded-xl bg-white/10 hover:bg-white/20 transition px-3 py-1.5 text-xs text-white/70"
-                    @click="showInstallPanel = true"
-                  >
-                    <Plus class="h-3.5 w-3.5" />
-                    Crear cuotas
-                  </button>
-                </div>
-                <div v-if="!(chargeDetail as any).installments?.length" class="text-center text-white/30 text-sm py-4">
-                  Sin cuotas. Podés crear un plan de cuotas o registrar un pago directo.
-                </div>
-                <ul v-else class="divide-y divide-white/10">
-                  <li
-                    v-for="inst in (chargeDetail as any).installments"
-                    :key="inst.id"
-                    class="py-3 flex items-center justify-between text-sm gap-3"
-                  >
-                    <div class="flex-1">
-                      <p class="text-white/80">Cuota {{ inst.installment_number }} — {{ fmtDate(inst.due_date) }}</p>
-                      <p class="text-xs text-white/40">{{ fmtCurrency(inst.amount) }} · Pagado: {{ fmtCurrency(inst.paid_amount) }}</p>
-                    </div>
-                    <span class="text-xs px-2 py-0.5 rounded-full" :class="{
-                      'bg-yellow-500/20 text-yellow-400': inst.status === 'pending',
-                      'bg-blue-500/20 text-blue-400': inst.status === 'partially_paid',
-                      'bg-green-500/20 text-green-400': inst.status === 'paid',
-                      'bg-red-500/20 text-red-400': inst.status === 'overdue',
-                    }">{{ ({ pending:'Pendiente', partially_paid:'Parcial', paid:'Pagado', overdue:'Vencido' } as Record<string,string>)[inst.status] ?? inst.status }}</span>
-                    <button
-                      v-if="inst.status !== 'paid' && inst.status !== 'cancelled'"
-                      class="rounded-xl bg-white/10 hover:bg-white/20 transition px-3 py-1.5 text-xs text-white/70"
-                      @click="openInstPayPanel(inst)"
-                    >
-                      Pagar
-                    </button>
-                  </li>
-                </ul>
-              </div>
-
-              <!-- Direct payment (no installments) -->
-              <div v-if="!(chargeDetail as any).installments?.length && chargeDetail.status !== 'paid'" class="rounded-xl border border-white/10 bg-white/5 p-5">
-                <div class="flex items-center justify-between">
-                  <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Pago directo</p>
-                  <button
-                    class="flex items-center gap-1.5 rounded-xl bg-white/10 hover:bg-white/20 transition px-3 py-1.5 text-xs text-white/70"
-                    @click="payForm.amount = Number(chargeDetail?.pending_amount ?? 0); showPayPanel = true"
-                  >
-                    <Plus class="h-3.5 w-3.5" />
-                    Registrar pago
-                  </button>
-                </div>
-              </div>
-
-              <!-- Payment history -->
-              <div v-if="(chargeDetail as any).payments?.length" class="rounded-xl border border-white/10 bg-white/5 p-5 space-y-2">
-                <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Pagos registrados</p>
-                <ul class="divide-y divide-white/10">
-                  <li
-                    v-for="(pmt, i) in (chargeDetail as any).payments"
-                    :key="i"
-                    class="py-2.5 flex items-center justify-between text-sm"
-                  >
-                    <div>
-                      <p class="text-white/80">{{ fmtDate(pmt.payment_date) }}</p>
-                      <p class="text-xs text-white/40">{{ ({ cash:'Efectivo', card:'Tarjeta', bank_transfer:'Transferencia', mobile_payment:'Pago móvil', insurance:'Seguro', other:'Otro' } as Record<string,string>)[pmt.payment_method] ?? pmt.payment_method }}</p>
-                    </div>
-                    <p class="text-green-400 font-medium">{{ fmtCurrency(pmt.amount) }}</p>
-                  </li>
-                </ul>
-              </div>
-            </template>
-            <template v-else>
-              <div class="rounded-xl border border-white/10 bg-white/5 p-5 text-center text-white/30 text-sm py-10">
-                <p>No hay cargo generado para esta consulta.</p>
-                <button
-                  v-if="canCreateCharge"
-                  class="mt-3 flex items-center gap-2 rounded-xl bg-blue-500/20 hover:bg-blue-500/30 transition px-4 py-2.5 text-sm text-blue-400 mx-auto"
-                  :disabled="actionLoading"
-                  @click="runAction(() => store.createCharge(id, Number(consultation!.total_amount)))"
-                >
-                  <CreditCard class="h-4 w-4" />
-                  Generar cargo
-                </button>
-              </div>
-            </template>
-          </div>
-        </template>
-
-        <!-- History tab (Task 6) -->
-        <template v-else-if="activeTab === 'history'">
-          <div class="rounded-xl border border-white/10 bg-white/5 p-5 space-y-4">
-            <!-- Link to patient detail -->
-            <div>
-              <a
-                v-if="(consultation as any).customer?.id || (consultation as any).customer_id"
-                :href="`/dental/patients/${(consultation as any).customer?.id ?? (consultation as any).customer_id}`"
-                class="inline-flex items-center gap-2 rounded-xl bg-[var(--nexora-primary)]/20 hover:bg-[var(--nexora-primary)]/30 transition px-4 py-2 text-sm text-white/80"
-              >
-                Ver historial completo del paciente
-              </a>
-            </div>
-
-            <!-- Medical history entries -->
-            <div class="flex items-center justify-between">
-              <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Registros médicos</p>
-              <button
-                class="flex items-center gap-1.5 rounded-xl bg-white/10 hover:bg-white/20 transition px-3 py-1.5 text-xs text-white/70"
-                @click="showMedHistPanel = true"
-              >
-                <Plus class="h-3.5 w-3.5" />
-                Agregar registro médico
-              </button>
-            </div>
-            <div v-if="medicalHistory.length === 0" class="text-center text-white/30 text-sm py-4">
-              No hay registros médicos.
-            </div>
-            <div
-              v-for="entry in medicalHistory"
-              :key="entry.id"
-              class="flex flex-col gap-1.5 px-4 py-3 rounded-xl border border-white/10"
-            >
-              <div class="flex items-center justify-between gap-2">
-                <span class="text-xs font-medium text-white">{{ fmtDate2(entry.entry_date) }}</span>
-                <span v-if="entry.blood_type" class="text-xs px-2 py-0.5 rounded-full bg-white/10 text-white/60">{{ entry.blood_type }}</span>
-              </div>
-              <div v-if="entry.allergies" class="text-xs text-white/60"><span class="text-white/40">Alergias: </span>{{ entry.allergies }}</div>
-              <div v-if="entry.medical_background" class="text-xs text-white/60"><span class="text-white/40">Antecedentes: </span>{{ entry.medical_background }}</div>
-              <div v-if="entry.dental_observations" class="text-xs text-white/60"><span class="text-white/40">Obs. dentales: </span>{{ entry.dental_observations }}</div>
-              <div v-if="entry.notes" class="text-xs text-white/60"><span class="text-white/40">Notas: </span>{{ entry.notes }}</div>
-            </div>
-          </div>
-        </template>
-
-      </main>
-    </template>
-
-    <!-- ── Action bar ────────────────────────────────────────────────────────── -->
-    <div
-      v-if="consultation && showActionBar"
-      class="fixed bottom-0 inset-x-0 z-30 border-t border-white/10 bg-black/40 backdrop-blur-xl px-4 py-4"
-    >
-      <div class="max-w-4xl mx-auto space-y-2">
-        <p v-if="actionError" class="text-red-400 text-sm text-center">{{ actionError }}</p>
-        <div class="flex flex-wrap gap-2 justify-center sm:justify-end">
+    <!-- ── Tabs ────────────────────────────────────────────────────────────── -->
+    <div class="sticky top-[73px] z-10 border-b border-white/10 bg-black/30 backdrop-blur-md">
+      <div class="mx-auto max-w-6xl overflow-x-auto px-4">
+        <div class="flex gap-1 py-2">
           <button
-            v-if="canCancel"
-            class="flex items-center gap-2 rounded-xl bg-red-500/20 hover:bg-red-500/30 transition px-4 py-2.5 text-sm text-red-400 disabled:opacity-50"
-            :disabled="actionLoading"
-            @click="runAction(() => store.cancel(id))"
+            v-for="tab in tabs"
+            :key="tab.key"
+            class="flex shrink-0 items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition"
+            :class="activeTab === tab.key
+              ? 'bg-[var(--nexora-primary)] text-white'
+              : 'text-white/50 hover:bg-white/5 hover:text-white'"
+            @click="selectTab(tab.key)"
           >
-            <XCircle class="h-4 w-4" />
-            Cancelar
-          </button>
-          <button
-            v-if="canCreateCharge"
-            class="flex items-center gap-2 rounded-xl bg-blue-500/20 hover:bg-blue-500/30 transition px-4 py-2.5 text-sm text-blue-400 disabled:opacity-50"
-            :disabled="actionLoading"
-            @click="runAction(() => store.createCharge(id, Number(consultation!.total_amount)))"
-          >
-            <CreditCard class="h-4 w-4" />
-            Generar cargo
-          </button>
-          <button
-            v-if="canComplete"
-            class="flex items-center gap-2 rounded-xl bg-green-500/20 hover:bg-green-500/30 transition px-4 py-2.5 text-sm text-green-400 disabled:opacity-50"
-            :disabled="actionLoading"
-            @click="runAction(() => store.complete(id))"
-          >
-            <CheckCircle2 class="h-4 w-4" />
-            Completar
+            <component :is="tab.icon" class="h-4 w-4" />
+            {{ tab.label }}
           </button>
         </div>
       </div>
     </div>
 
-    <!-- ── Edit slide panel ──────────────────────────────────────────────────── -->
-    <NxrSlidePanel
-      :open="editOpen"
-      title="Editar consulta"
-      eyebrow="Información clínica"
-      size="md"
-      @close="editOpen = false"
-    >
-      <form class="flex flex-col gap-5 p-6" @submit.prevent="saveEdit">
-        <div v-for="field in ([
-          { key: 'reason',         label: 'Motivo' },
-          { key: 'diagnosis',      label: 'Diagnóstico' },
-          { key: 'clinical_notes', label: 'Notas clínicas' },
-          { key: 'indications',    label: 'Indicaciones' },
-        ] as const)" :key="field.key" class="space-y-1.5">
-          <label class="block text-xs text-white/50">{{ field.label }}</label>
+    <!-- ── Tab content ─────────────────────────────────────────────────────── -->
+    <div class="mx-auto max-w-6xl px-4 py-6">
+
+      <!-- ═══════════ TAB: RESUMEN ═══════════ -->
+      <div v-if="activeTab === 'summary'" class="space-y-5">
+
+        <!-- Patient + status card -->
+        <div class="rounded-xl border border-white/10 bg-white/5 p-5">
+          <div class="mb-4 flex items-center justify-between">
+            <h2 class="text-sm font-semibold text-white/70">Información de la consulta</h2>
+            <button
+              class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition"
+              :style="{ background: 'var(--nexora-primary)' }"
+              @click="openEdit"
+            >
+              <Edit2 class="h-3.5 w-3.5" />
+              Editar información
+            </button>
+          </div>
+
+          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div>
+              <p class="mb-0.5 text-xs text-white/40">Paciente</p>
+              <router-link
+                :to="`/dental/patients/${(consultation as any)?.customer_id ?? (consultation as any)?.customer?.id}`"
+                class="text-sm font-medium text-[var(--nexora-primary)] hover:underline"
+              >
+                {{ patientName }}
+              </router-link>
+            </div>
+            <div>
+              <p class="mb-0.5 text-xs text-white/40">Fecha de consulta</p>
+              <p class="text-sm">{{ fmtDate((consultation as any)?.consultation_date) }}</p>
+            </div>
+            <div>
+              <p class="mb-0.5 text-xs text-white/40">Estado clínico</p>
+              <span
+                class="rounded-full px-2 py-0.5 text-xs font-medium"
+                :class="STATUS_CLASS[consultation?.status ?? ''] ?? 'bg-white/10 text-white/40'"
+              >
+                {{ STATUS_LABEL[consultation?.status ?? ''] ?? '—' }}
+              </span>
+            </div>
+            <div>
+              <p class="mb-0.5 text-xs text-white/40">Estado de pago</p>
+              <span
+                class="rounded-full px-2 py-0.5 text-xs font-medium"
+                :class="ADMIN_STATUS_CLASS[consultation?.administrative_status ?? ''] ?? 'bg-white/10 text-white/40'"
+              >
+                {{ ADMIN_STATUS_LABEL[consultation?.administrative_status ?? ''] ?? '—' }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Clinical fields -->
+          <div v-if="(consultation as any)?.reason || (consultation as any)?.diagnosis" class="mt-4 grid gap-3 border-t border-white/10 pt-4 sm:grid-cols-2">
+            <div v-if="(consultation as any)?.reason">
+              <p class="mb-0.5 text-xs text-white/40">Motivo de consulta</p>
+              <p class="text-sm leading-relaxed text-white/80">{{ (consultation as any).reason }}</p>
+            </div>
+            <div v-if="(consultation as any)?.diagnosis">
+              <p class="mb-0.5 text-xs text-white/40">Diagnóstico</p>
+              <p class="text-sm leading-relaxed text-white/80">{{ (consultation as any).diagnosis }}</p>
+            </div>
+            <div v-if="(consultation as any)?.clinical_notes" class="sm:col-span-2">
+              <p class="mb-0.5 text-xs text-white/40">Notas clínicas</p>
+              <p class="text-sm leading-relaxed text-white/80">{{ (consultation as any).clinical_notes }}</p>
+            </div>
+            <div v-if="(consultation as any)?.indications" class="sm:col-span-2">
+              <p class="mb-0.5 text-xs text-white/40">Indicaciones</p>
+              <p class="text-sm leading-relaxed text-white/80">{{ (consultation as any).indications }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Financial summary -->
+        <div class="grid gap-4 sm:grid-cols-3">
+          <div class="rounded-xl border border-white/10 bg-white/5 p-4">
+            <p class="mb-1 text-xs text-white/40">Total servicios</p>
+            <p class="text-2xl font-bold">{{ fmtCurrency(consultationServicesStore.total) }}</p>
+          </div>
+          <div class="rounded-xl border border-white/10 bg-white/5 p-4">
+            <p class="mb-1 text-xs text-white/40">Total pagado</p>
+            <p class="text-2xl font-bold text-green-400">{{ fmtCurrency(chargeDetail?.paid_amount ?? 0) }}</p>
+          </div>
+          <div class="rounded-xl border border-white/10 bg-white/5 p-4">
+            <p class="mb-1 text-xs text-white/40">Saldo pendiente</p>
+            <p class="text-2xl font-bold text-yellow-400">
+              {{ fmtCurrency(consultationServicesStore.total - Number(chargeDetail?.paid_amount ?? 0)) }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Follow-up indicators -->
+        <div
+          v-if="(consultation as any)?.requires_follow_up || (consultation as any)?.requires_multiple_sessions"
+          class="flex flex-wrap gap-2"
+        >
+          <span
+            v-if="(consultation as any)?.requires_follow_up"
+            class="flex items-center gap-1.5 rounded-full bg-indigo-500/20 px-3 py-1.5 text-xs font-medium text-indigo-300"
+          >
+            <CheckCircle2 class="h-3.5 w-3.5" /> Requiere seguimiento
+          </span>
+          <span
+            v-if="(consultation as any)?.requires_multiple_sessions"
+            class="flex items-center gap-1.5 rounded-full bg-cyan-500/20 px-3 py-1.5 text-xs font-medium text-cyan-300"
+          >
+            <Calendar class="h-3.5 w-3.5" />
+            Múltiples sesiones
+            <template v-if="(consultation as any)?.estimated_sessions">
+              ({{ (consultation as any).estimated_sessions }} est.)
+            </template>
+          </span>
+          <span
+            v-if="(consultation as any)?.next_session_date"
+            class="flex items-center gap-1.5 rounded-full bg-purple-500/20 px-3 py-1.5 text-xs font-medium text-purple-300"
+          >
+            <Calendar class="h-3.5 w-3.5" />
+            Próxima sesión: {{ fmtDate((consultation as any).next_session_date) }}
+          </span>
+        </div>
+
+        <!-- Services summary -->
+        <div class="rounded-xl border border-white/10 bg-white/5 p-5">
+          <h2 class="mb-4 text-sm font-semibold text-white/70">Servicios aplicados</h2>
+          <div v-if="!consultationServicesStore.items.length" class="py-6 text-center text-sm text-white/30">
+            Sin servicios registrados
+          </div>
+          <div v-else class="space-y-2">
+            <div
+              v-for="svc in consultationServicesStore.items"
+              :key="svc.id"
+              class="flex items-center justify-between rounded-lg border border-white/5 bg-white/5 px-4 py-2.5"
+              :class="{ 'opacity-40': svc.status === 'voided' }"
+            >
+              <div class="flex items-center gap-3">
+                <span class="text-sm">{{ svc.service_name_snapshot }}</span>
+                <span v-if="svc.tooth_reference" class="rounded bg-white/10 px-1.5 py-0.5 text-xs text-white/50">
+                  Diente {{ svc.tooth_reference }}
+                </span>
+                <span v-if="svc.status === 'voided'" class="rounded-full bg-red-900/30 px-2 py-0.5 text-xs text-red-300">
+                  Anulado
+                </span>
+              </div>
+              <span class="text-sm font-medium">
+                {{ fmtCurrency(Number(svc.unit_price) * Number(svc.quantity)) }}
+              </span>
+            </div>
+            <div class="flex justify-end border-t border-white/10 pt-2">
+              <span class="text-sm font-semibold">Total: {{ fmtCurrency(consultationServicesStore.total) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════ TAB: TRATAMIENTO ═══════════ -->
+      <div v-else-if="activeTab === 'treatments'" class="space-y-6">
+
+        <!-- Services section -->
+        <div class="rounded-xl border border-white/10 bg-white/5 p-5">
+          <div class="mb-4 flex items-center justify-between">
+            <h2 class="text-sm font-semibold text-white/70">Servicios aplicados</h2>
+            <button
+              class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition hover:opacity-90"
+              :style="{ background: 'var(--nexora-primary)' }"
+              @click="showAddServicePanel = true"
+            >
+              <Plus class="h-3.5 w-3.5" />
+              Agregar servicio
+            </button>
+          </div>
+
+          <div v-if="!consultationServicesStore.items.length" class="py-8 text-center text-sm text-white/30">
+            Sin servicios registrados
+          </div>
+
+          <div v-else>
+            <!-- Table header -->
+            <div class="mb-2 hidden grid-cols-6 gap-3 px-2 text-xs text-white/30 sm:grid">
+              <span class="col-span-2">Servicio</span>
+              <span>Diente</span>
+              <span class="text-right">Cant.</span>
+              <span class="text-right">Precio unit.</span>
+              <span class="text-right">Subtotal</span>
+            </div>
+
+            <!-- Active services -->
+            <div class="space-y-1.5">
+              <div
+                v-for="svc in activeServices"
+                :key="svc.id"
+                class="grid grid-cols-2 gap-3 rounded-lg border border-white/5 bg-white/5 px-3 py-2.5 sm:grid-cols-6"
+              >
+                <span class="col-span-2 text-sm sm:col-span-2">{{ svc.service_name_snapshot }}</span>
+                <span class="text-sm text-white/50 sm:col-span-1">{{ svc.tooth_reference || '—' }}</span>
+                <span class="text-right text-sm sm:col-span-1">{{ svc.quantity }}</span>
+                <span class="text-right text-sm sm:col-span-1">{{ fmtCurrency(svc.unit_price) }}</span>
+                <div class="flex items-center justify-end gap-2 sm:col-span-1">
+                  <span class="text-sm font-medium">{{ fmtCurrency(Number(svc.unit_price) * Number(svc.quantity)) }}</span>
+                  <button
+                    v-if="!hasClosedPayments"
+                    class="rounded p-1 text-white/30 transition hover:bg-red-500/20 hover:text-red-400"
+                    title="Anular servicio"
+                    @click="voidService(svc)"
+                  >
+                    <Trash2 class="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Voided services -->
+            <div v-if="voidedServices.length" class="mt-3 space-y-1.5 opacity-40">
+              <p class="px-2 text-xs text-white/30">Anulados</p>
+              <div
+                v-for="svc in voidedServices"
+                :key="svc.id"
+                class="grid grid-cols-2 gap-3 rounded-lg border border-white/5 bg-white/5 px-3 py-2.5 line-through sm:grid-cols-6"
+              >
+                <span class="col-span-2 text-sm sm:col-span-2">{{ svc.service_name_snapshot }}</span>
+                <span class="text-sm sm:col-span-1">{{ svc.tooth_reference || '—' }}</span>
+                <span class="text-right text-sm sm:col-span-1">{{ svc.quantity }}</span>
+                <span class="text-right text-sm sm:col-span-1">{{ fmtCurrency(svc.unit_price) }}</span>
+                <span class="text-right text-sm sm:col-span-1">{{ fmtCurrency(Number(svc.unit_price) * Number(svc.quantity)) }}</span>
+              </div>
+            </div>
+
+            <!-- Total -->
+            <div class="mt-3 flex justify-end border-t border-white/10 pt-3">
+              <span class="text-base font-semibold">Total: {{ fmtCurrency(consultationServicesStore.total) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Follow-up section -->
+        <div class="rounded-xl border border-white/10 bg-white/5 p-5">
+          <h2 class="mb-4 text-sm font-semibold text-white/70">Seguimiento del tratamiento</h2>
+
+          <div class="space-y-4">
+            <label class="flex cursor-pointer items-center gap-3">
+              <input
+                v-model="followUpForm.requires_follow_up"
+                type="checkbox"
+                class="h-4 w-4 rounded border-white/20 accent-[var(--nexora-primary)]"
+              />
+              <span class="text-sm">Requiere seguimiento</span>
+            </label>
+
+            <label class="flex cursor-pointer items-center gap-3">
+              <input
+                v-model="followUpForm.requires_multiple_sessions"
+                type="checkbox"
+                class="h-4 w-4 rounded border-white/20 accent-[var(--nexora-primary)]"
+              />
+              <span class="text-sm">Requiere múltiples sesiones</span>
+            </label>
+
+            <div v-if="followUpForm.requires_multiple_sessions" class="grid gap-4 border-t border-white/10 pt-4 sm:grid-cols-2">
+              <div>
+                <label class="mb-1.5 block text-xs text-white/50">Sesiones estimadas</label>
+                <input
+                  v-model.number="followUpForm.estimated_sessions"
+                  type="number"
+                  min="1"
+                  class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+                />
+              </div>
+              <div>
+                <label class="mb-1.5 block text-xs text-white/50">Fecha próxima sesión</label>
+                <input
+                  v-model="followUpForm.next_session_date"
+                  type="date"
+                  class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+                />
+              </div>
+            </div>
+
+            <div v-if="followUpForm.requires_follow_up" :class="{ 'border-t border-white/10 pt-4': !followUpForm.requires_multiple_sessions }">
+              <label class="mb-1.5 block text-xs text-white/50">Notas de seguimiento</label>
+              <textarea
+                v-model="followUpForm.follow_up_notes"
+                rows="3"
+                class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+                placeholder="Indicaciones para el seguimiento..."
+              />
+            </div>
+
+            <div class="flex justify-end pt-2">
+              <button
+                class="rounded-xl px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50"
+                :style="{ background: 'var(--nexora-primary)' }"
+                :disabled="savingFollowUp"
+                @click="saveFollowUp"
+              >
+                {{ savingFollowUp ? 'Guardando...' : 'Guardar seguimiento' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════ TAB: SESIONES ═══════════ -->
+      <div v-else-if="activeTab === 'sessions'" class="space-y-4">
+
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-semibold text-white/70">Sesiones de tratamiento</h2>
+          <button
+            v-if="(consultation as any)?.requires_multiple_sessions"
+            class="flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
+            :style="{ background: 'var(--nexora-primary)' }"
+            @click="showSessionPanel = true"
+          >
+            <Plus class="h-4 w-4" />
+            Nueva sesión
+          </button>
+        </div>
+
+        <!-- No multiple sessions configured -->
+        <div
+          v-if="!(consultation as any)?.requires_multiple_sessions"
+          class="rounded-xl border border-white/10 bg-white/5 p-10 text-center"
+        >
+          <AlertCircle class="mx-auto mb-3 h-8 w-8 text-white/20" />
+          <p class="text-sm text-white/40">Esta consulta no tiene sesiones múltiples configuradas.</p>
+          <p class="mt-1 text-xs text-white/30">Activá la opción en la pestaña Tratamiento.</p>
+        </div>
+
+        <!-- Empty sessions -->
+        <div
+          v-else-if="!sessionsStore.items.length"
+          class="rounded-xl border border-white/10 bg-white/5 p-10 text-center"
+        >
+          <Calendar class="mx-auto mb-3 h-8 w-8 text-white/20" />
+          <p class="text-sm text-white/40">No hay sesiones registradas aún.</p>
+        </div>
+
+        <!-- Sessions list -->
+        <div v-else class="space-y-3">
+          <div
+            v-for="session in sessionsStore.items"
+            :key="session.id"
+            class="rounded-xl border border-white/10 bg-white/5 p-4"
+          >
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1">
+                <div class="mb-2 flex flex-wrap items-center gap-2">
+                  <span class="text-sm font-semibold">Sesión #{{ session.session_number }}</span>
+                  <span
+                    class="rounded-full px-2 py-0.5 text-xs font-medium"
+                    :class="STATUS_CLASS[session.status ?? ''] ?? 'bg-white/10 text-white/40'"
+                  >
+                    {{ STATUS_LABEL[session.status ?? ''] ?? session.status }}
+                  </span>
+                  <span class="text-xs text-white/40">{{ fmtDateTime(session.session_date) }}</span>
+                </div>
+                <p v-if="session.notes" class="line-clamp-2 text-sm text-white/60">{{ session.notes }}</p>
+                <p v-if="session.next_session_date" class="mt-1 text-xs text-white/40">
+                  Próxima: {{ fmtDate(session.next_session_date) }}
+                </p>
+              </div>
+              <button
+                v-if="!['completed', 'cancelled'].includes(session.status ?? '')"
+                class="shrink-0 flex items-center gap-1 rounded-lg bg-green-500/20 px-3 py-1.5 text-xs font-medium text-green-400 transition hover:bg-green-500/30"
+                @click="completeSession(session)"
+              >
+                <CheckCircle2 class="h-3.5 w-3.5" />
+                Completar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════ TAB: FOTOS ═══════════ -->
+      <div v-else-if="activeTab === 'photos'">
+        <WidgetsDentalPhotoGallery :consultationId="id" />
+      </div>
+
+      <!-- ═══════════ TAB: HISTORIA ═══════════ -->
+      <div v-else-if="activeTab === 'history'" class="space-y-4">
+
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-semibold text-white/70">Historia clínica del paciente</h2>
+          <div class="flex items-center gap-2">
+            <router-link
+              :to="`/dental/patients/${(consultation as any)?.customer_id ?? (consultation as any)?.customer?.id}`"
+              class="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/70 transition hover:bg-white/10"
+            >
+              Ver historial completo
+            </router-link>
+            <button
+              class="flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
+              :style="{ background: 'var(--nexora-primary)' }"
+              @click="showMedHistPanel = true"
+            >
+              <Plus class="h-4 w-4" />
+              Agregar registro
+            </button>
+          </div>
+        </div>
+
+        <div v-if="!medicalHistory.length" class="rounded-xl border border-white/10 bg-white/5 p-10 text-center">
+          <BookOpen class="mx-auto mb-3 h-8 w-8 text-white/20" />
+          <p class="text-sm text-white/40">Sin registros médicos cargados.</p>
+        </div>
+
+        <div v-else class="space-y-3">
+          <div
+            v-for="entry in medicalHistory"
+            :key="entry.id"
+            class="rounded-xl border border-white/10 bg-white/5 p-4"
+          >
+            <div class="mb-3 flex items-center justify-between">
+              <span class="text-xs text-white/40">{{ fmtDate(entry.entry_date) }}</span>
+              <span v-if="entry.blood_type" class="rounded bg-red-900/30 px-2 py-0.5 text-xs font-medium text-red-300">
+                {{ entry.blood_type }}
+              </span>
+            </div>
+            <div class="grid gap-3 sm:grid-cols-2">
+              <div v-if="entry.allergies">
+                <p class="mb-0.5 text-xs text-white/40">Alergias</p>
+                <p class="text-sm text-white/80">{{ entry.allergies }}</p>
+              </div>
+              <div v-if="entry.current_medications">
+                <p class="mb-0.5 text-xs text-white/40">Medicamentos actuales</p>
+                <p class="text-sm text-white/80">{{ entry.current_medications }}</p>
+              </div>
+              <div v-if="entry.chronic_conditions">
+                <p class="mb-0.5 text-xs text-white/40">Condiciones crónicas</p>
+                <p class="text-sm text-white/80">{{ entry.chronic_conditions }}</p>
+              </div>
+              <div v-if="entry.medical_background">
+                <p class="mb-0.5 text-xs text-white/40">Antecedentes</p>
+                <p class="text-sm text-white/80">{{ entry.medical_background }}</p>
+              </div>
+              <div v-if="entry.dental_observations" class="sm:col-span-2">
+                <p class="mb-0.5 text-xs text-white/40">Observaciones dentales</p>
+                <p class="text-sm text-white/80">{{ entry.dental_observations }}</p>
+              </div>
+              <div v-if="entry.notes" class="sm:col-span-2">
+                <p class="mb-0.5 text-xs text-white/40">Notas</p>
+                <p class="text-sm text-white/80">{{ entry.notes }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════ TAB: PAGOS ═══════════ -->
+      <div v-else-if="activeTab === 'payments'" class="space-y-5">
+
+        <!-- Loading -->
+        <div v-if="loadingCharge" class="py-12 text-center text-sm text-white/40">
+          Cargando información de pagos...
+        </div>
+
+        <!-- No charge -->
+        <div v-else-if="!chargeDetail" class="rounded-xl border border-white/10 bg-white/5 p-10 text-center">
+          <CreditCard class="mx-auto mb-4 h-10 w-10 text-white/20" />
+          <p class="mb-1 text-sm text-white/50">No hay cargo generado para esta consulta</p>
+          <p v-if="!consultationServicesStore.total" class="mb-4 text-xs text-white/30">
+            Agregá al menos un servicio en la pestaña Tratamiento para habilitar el cargo.
+          </p>
+          <p v-else-if="!canCreateCharge" class="mb-4 text-xs text-white/30">
+            El cargo ya existe o el estado de pago no lo permite.
+          </p>
+          <button
+            v-if="canCreateCharge"
+            class="mx-auto flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50"
+            :style="{ background: 'var(--nexora-primary)' }"
+            :disabled="actionLoading"
+            @click="generateCharge"
+          >
+            <CreditCard class="h-4 w-4" />
+            {{ actionLoading ? 'Generando...' : 'Generar cargo' }}
+          </button>
+        </div>
+
+        <!-- Charge detail -->
+        <template v-else>
+
+          <!-- Summary card -->
+          <div class="rounded-xl border border-white/10 bg-white/5 p-5">
+            <div class="mb-4 flex items-center justify-between">
+              <h2 class="text-sm font-semibold text-white/70">Resumen del cargo</h2>
+              <span
+                class="rounded-full px-3 py-1 text-xs font-medium"
+                :class="ADMIN_STATUS_CLASS[chargeDetail.administrative_status ?? ''] ?? 'bg-white/10 text-white/40'"
+              >
+                {{ ADMIN_STATUS_LABEL[chargeDetail.administrative_status ?? ''] ?? chargeDetail.administrative_status }}
+              </span>
+            </div>
+            <div class="grid gap-4 sm:grid-cols-3">
+              <div>
+                <p class="mb-0.5 text-xs text-white/40">Total</p>
+                <p class="text-xl font-bold">{{ fmtCurrency(chargeDetail.total_amount) }}</p>
+              </div>
+              <div>
+                <p class="mb-0.5 text-xs text-white/40">Pagado</p>
+                <p class="text-xl font-bold text-green-400">{{ fmtCurrency(chargeDetail.paid_amount) }}</p>
+              </div>
+              <div>
+                <p class="mb-0.5 text-xs text-white/40">Pendiente</p>
+                <p class="text-xl font-bold text-yellow-400">
+                  {{ fmtCurrency(Number(chargeDetail.total_amount) - Number(chargeDetail.paid_amount)) }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions row -->
+          <div class="flex flex-wrap gap-2">
+            <button
+              v-if="!(chargeDetail.installments as any)?.length"
+              class="flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/70 transition hover:bg-white/10"
+              @click="showInstallPanel = true"
+            >
+              <Calendar class="h-4 w-4" />
+              Plan de cuotas
+            </button>
+            <button
+              v-if="chargeDetail.administrative_status !== 'paid'"
+              class="flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
+              :style="{ background: 'var(--nexora-primary)' }"
+              @click="payForm.amount = Number(chargeDetail.total_amount) - Number(chargeDetail.paid_amount); showPayPanel = true"
+            >
+              <DollarSign class="h-4 w-4" />
+              Registrar pago
+            </button>
+          </div>
+
+          <!-- Installments -->
+          <div v-if="(chargeDetail.installments as any)?.length" class="rounded-xl border border-white/10 bg-white/5 p-5">
+            <h3 class="mb-4 text-sm font-semibold text-white/70">Plan de cuotas</h3>
+            <div class="space-y-2">
+              <div
+                v-for="inst in (chargeDetail.installments as any)"
+                :key="inst.id"
+                class="flex items-center justify-between rounded-lg border border-white/5 bg-white/5 px-4 py-3"
+              >
+                <div class="flex items-center gap-3">
+                  <span class="text-sm font-medium">Cuota {{ inst.installment_number }}</span>
+                  <span class="text-xs text-white/40">Vence: {{ fmtDate(inst.due_date) }}</span>
+                  <span
+                    class="rounded-full px-2 py-0.5 text-xs font-medium"
+                    :class="ADMIN_STATUS_CLASS[inst.status ?? ''] ?? 'bg-white/10 text-white/40'"
+                  >
+                    {{ ADMIN_STATUS_LABEL[inst.status ?? ''] ?? inst.status }}
+                  </span>
+                </div>
+                <div class="flex items-center gap-3">
+                  <div class="text-right">
+                    <p class="text-sm font-medium">{{ fmtCurrency(inst.amount) }}</p>
+                    <p v-if="Number(inst.paid_amount) > 0" class="text-xs text-green-400">
+                      Pagado: {{ fmtCurrency(inst.paid_amount) }}
+                    </p>
+                  </div>
+                  <button
+                    v-if="inst.status !== 'paid' && inst.status !== 'cancelled'"
+                    class="rounded-lg bg-green-500/20 px-3 py-1.5 text-xs font-medium text-green-400 transition hover:bg-green-500/30"
+                    @click="openInstPayPanel(inst)"
+                  >
+                    Pagar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment history -->
+          <div v-if="(chargeDetail.payments as any)?.length" class="rounded-xl border border-white/10 bg-white/5 p-5">
+            <h3 class="mb-4 text-sm font-semibold text-white/70">Historial de pagos</h3>
+            <div class="space-y-2">
+              <div
+                v-for="pmt in (chargeDetail.payments as any)"
+                :key="pmt.id"
+                class="flex items-center justify-between rounded-lg border border-white/5 bg-white/5 px-4 py-3"
+              >
+                <div>
+                  <p class="text-sm">{{ PAYMENT_METHOD_LABEL[pmt.payment_method] ?? pmt.payment_method }}</p>
+                  <p class="text-xs text-white/40">{{ fmtDateTime(pmt.payment_date) }}</p>
+                  <p v-if="pmt.notes" class="mt-0.5 text-xs text-white/40">{{ pmt.notes }}</p>
+                </div>
+                <span class="text-sm font-semibold text-green-400">{{ fmtCurrency(pmt.amount) }}</span>
+              </div>
+            </div>
+          </div>
+
+        </template>
+      </div>
+
+    </div>
+
+    <!-- ═══════════ PANELS ═══════════ -->
+
+    <!-- 1. Edit clinical info -->
+    <NxrSlidePanel :open="editOpen" title="Editar información clínica" @close="editOpen = false">
+      <div class="space-y-4">
+        <div>
+          <label class="mb-1.5 block text-xs text-white/50">Motivo de consulta</label>
           <textarea
-            v-model="editForm[field.key]"
+            v-model="editForm.reason"
             rows="3"
-            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-[var(--nexora-primary)] resize-none"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
           />
         </div>
+        <div>
+          <label class="mb-1.5 block text-xs text-white/50">Diagnóstico</label>
+          <textarea
+            v-model="editForm.diagnosis"
+            rows="3"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+          />
+        </div>
+        <div>
+          <label class="mb-1.5 block text-xs text-white/50">Notas clínicas</label>
+          <textarea
+            v-model="editForm.clinical_notes"
+            rows="3"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+          />
+        </div>
+        <div>
+          <label class="mb-1.5 block text-xs text-white/50">Indicaciones</label>
+          <textarea
+            v-model="editForm.indications"
+            rows="3"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+          />
+        </div>
+        <button
+          class="w-full rounded-xl py-2.5 text-sm font-medium text-white transition hover:opacity-90"
+          :style="{ background: 'var(--nexora-primary)' }"
+          @click="saveEdit"
+        >
+          Guardar cambios
+        </button>
+      </div>
+    </NxrSlidePanel>
 
-        <div class="flex justify-end gap-2 pt-2">
-          <button
-            type="button"
-            class="rounded-xl bg-white/10 hover:bg-white/20 transition px-4 py-2.5 text-sm text-white/70"
-            @click="editOpen = false"
+    <!-- 2. Change status -->
+    <NxrSlidePanel :open="showStatusPanel" title="Cambiar estado de la consulta" @close="showStatusPanel = false">
+      <div class="space-y-4">
+        <div>
+          <label class="mb-1.5 block text-xs text-white/50">Nuevo estado</label>
+          <select
+            v-model="targetStatus"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
           >
-            Cancelar
-          </button>
-          <button
-            type="submit"
-            class="rounded-xl px-4 py-2.5 text-sm text-white font-medium transition"
-            :style="{ background: 'var(--nexora-primary)' }"
+            <option v-for="st in allowedTransitions" :key="st" :value="st">
+              {{ STATUS_LABEL[st] ?? st }}
+            </option>
+          </select>
+        </div>
+        <div>
+          <label class="mb-1.5 block text-xs text-white/50">
+            Motivo
+            <span v-if="targetStatus === 'voided'" class="text-red-400">*</span>
+          </label>
+          <textarea
+            v-model="statusReason"
+            rows="3"
+            :placeholder="targetStatus === 'voided' ? 'Motivo de anulación (requerido)' : 'Motivo opcional...'"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+          />
+        </div>
+        <button
+          class="w-full rounded-xl py-2.5 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50"
+          :style="{ background: 'var(--nexora-primary)' }"
+          :disabled="changingStatus || (targetStatus === 'voided' && !statusReason.trim())"
+          @click="confirmStatusChange"
+        >
+          {{ changingStatus ? 'Cambiando...' : 'Confirmar cambio' }}
+        </button>
+      </div>
+    </NxrSlidePanel>
+
+    <!-- 3. Add service -->
+    <NxrSlidePanel :open="showAddServicePanel" title="Agregar servicio" @close="showAddServicePanel = false">
+      <div class="space-y-4">
+        <div>
+          <label class="mb-1.5 block text-xs text-white/50">Servicio</label>
+          <select
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+            @change="onServiceSelect(($event.target as HTMLSelectElement).value); addServiceForm.service_id = ($event.target as HTMLSelectElement).value as any"
           >
-            Guardar
-          </button>
-        </div>
-      </form>
-    </NxrSlidePanel>
-
-    <!-- Service change panel (Task 2) -->
-    <NxrSlidePanel :open="showServicePanel" title="Cambiar servicio" eyebrow="Tratamientos" @close="showServicePanel = false">
-      <form class="flex flex-col gap-4 p-6" @submit.prevent="saveServiceChange">
-        <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Servicio</label>
-          <select v-model="newServiceId" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none" required>
-            <option value="" disabled>Seleccionar servicio...</option>
-            <option v-for="svc in servicesList" :key="svc.id" :value="svc.id">{{ svc.name }}</option>
+            <option value="">Seleccioná un servicio...</option>
+            <option v-for="svc in servicesStore.items" :key="svc.id" :value="svc.id">
+              {{ svc.name }}
+            </option>
           </select>
         </div>
-        <div class="flex justify-end gap-2 pt-2">
-          <button type="button" class="rounded-xl bg-white/10 hover:bg-white/20 transition px-4 py-2.5 text-sm text-white/70" @click="showServicePanel = false">Cancelar</button>
-          <button type="submit" :disabled="savingService" class="rounded-xl px-4 py-2.5 text-sm text-white font-medium transition disabled:opacity-50" :style="{ background: 'var(--nexora-primary)' }">
-            {{ savingService ? 'Guardando...' : 'Guardar' }}
-          </button>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="mb-1.5 block text-xs text-white/50">Precio unitario</label>
+            <input
+              v-model.number="addServiceForm.unit_price"
+              type="number"
+              min="0"
+              step="0.01"
+              class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+            />
+          </div>
+          <div>
+            <label class="mb-1.5 block text-xs text-white/50">Cantidad</label>
+            <input
+              v-model.number="addServiceForm.quantity"
+              type="number"
+              min="1"
+              class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+            />
+          </div>
         </div>
-      </form>
+        <div>
+          <label class="mb-1.5 block text-xs text-white/50">Referencia de diente</label>
+          <input
+            v-model="addServiceForm.tooth_reference"
+            type="text"
+            placeholder="Ej: 21, 22..."
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+          />
+        </div>
+        <div>
+          <label class="mb-1.5 block text-xs text-white/50">Notas clínicas</label>
+          <textarea
+            v-model="addServiceForm.clinical_notes"
+            rows="2"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+          />
+        </div>
+        <p v-if="addServiceError" class="text-xs text-red-400">{{ addServiceError }}</p>
+        <button
+          class="w-full rounded-xl py-2.5 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50"
+          :style="{ background: 'var(--nexora-primary)' }"
+          :disabled="savingService"
+          @click="addService"
+        >
+          {{ savingService ? 'Agregando...' : 'Agregar servicio' }}
+        </button>
+      </div>
     </NxrSlidePanel>
 
-    <!-- Create installments panel (Task 5) -->
-    <NxrSlidePanel :open="showInstallPanel" title="Crear plan de cuotas" eyebrow="Pagos" @close="showInstallPanel = false">
-      <form class="flex flex-col gap-4 p-6" @submit.prevent="saveInstallments">
-        <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Cantidad de cuotas (2-12)</label>
-          <input v-model.number="installForm.installments_count" type="number" min="2" max="12" required class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+    <!-- 4. New session -->
+    <NxrSlidePanel :open="showSessionPanel" title="Nueva sesión" @close="showSessionPanel = false">
+      <div class="space-y-4">
+        <div>
+          <label class="mb-1.5 block text-xs text-white/50">Fecha y hora de sesión</label>
+          <input
+            v-model="sessionForm.session_date"
+            type="datetime-local"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+          />
         </div>
-        <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Primer vencimiento</label>
-          <input v-model="installForm.first_due_date" type="date" required class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+        <div>
+          <label class="mb-1.5 block text-xs text-white/50">Notas</label>
+          <textarea
+            v-model="sessionForm.notes"
+            rows="3"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+          />
         </div>
-        <div v-if="chargeDetail" class="rounded-xl bg-white/5 border border-white/10 p-3 text-sm">
-          <p class="text-xs text-white/40 mb-1">Vista previa (aprox.)</p>
-          <p class="text-white/80">{{ installForm.installments_count }} cuotas de {{ fmtCurrency(Math.floor(Number(chargeDetail.pending_amount) / installForm.installments_count * 100) / 100) }}</p>
+        <div>
+          <label class="mb-1.5 block text-xs text-white/50">Evolución</label>
+          <textarea
+            v-model="sessionForm.evolution"
+            rows="3"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+          />
         </div>
-        <p v-if="installError" class="text-red-400 text-sm">{{ installError }}</p>
-        <div class="flex justify-end gap-2 pt-2">
-          <button type="button" class="rounded-xl bg-white/10 hover:bg-white/20 transition px-4 py-2.5 text-sm text-white/70" @click="showInstallPanel = false">Cancelar</button>
-          <button type="submit" :disabled="savingInstall" class="rounded-xl px-4 py-2.5 text-sm text-white font-medium transition disabled:opacity-50" :style="{ background: 'var(--nexora-primary)' }">
-            {{ savingInstall ? 'Creando...' : 'Crear cuotas' }}
-          </button>
+        <div>
+          <label class="mb-1.5 block text-xs text-white/50">Fecha próxima sesión</label>
+          <input
+            v-model="sessionForm.next_session_date"
+            type="date"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+          />
         </div>
-      </form>
+        <p v-if="sessionError" class="text-xs text-red-400">{{ sessionError }}</p>
+        <button
+          class="w-full rounded-xl py-2.5 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50"
+          :style="{ background: 'var(--nexora-primary)' }"
+          :disabled="savingSession"
+          @click="createSession"
+        >
+          {{ savingSession ? 'Guardando...' : 'Crear sesión' }}
+        </button>
+      </div>
     </NxrSlidePanel>
 
-    <!-- Direct payment panel (Task 5) -->
-    <NxrSlidePanel :open="showPayPanel" title="Registrar pago" eyebrow="Pagos" @close="showPayPanel = false">
-      <form class="flex flex-col gap-4 p-6" @submit.prevent="saveDirectPayment">
-        <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Monto</label>
-          <input v-model.number="payForm.amount" type="number" step="0.01" min="0.01" required class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+    <!-- 5. Installment plan -->
+    <NxrSlidePanel :open="showInstallPanel" title="Plan de cuotas" @close="showInstallPanel = false">
+      <div class="space-y-4">
+        <div>
+          <label class="mb-1.5 block text-xs text-white/50">Cantidad de cuotas</label>
+          <input
+            v-model.number="installForm.installments_count"
+            type="number"
+            min="2"
+            max="48"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+          />
         </div>
-        <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Método de pago</label>
-          <select v-model="payForm.payment_method" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none">
-            <option value="cash">Efectivo</option>
-            <option value="card">Tarjeta</option>
-            <option value="bank_transfer">Transferencia</option>
-            <option value="mobile_payment">Pago móvil</option>
-            <option value="insurance">Seguro</option>
-            <option value="other">Otro</option>
+        <div>
+          <label class="mb-1.5 block text-xs text-white/50">Fecha del primer vencimiento</label>
+          <input
+            v-model="installForm.first_due_date"
+            type="date"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+          />
+        </div>
+        <div v-if="chargeDetail" class="rounded-xl bg-white/5 p-3 text-center">
+          <p class="text-xs text-white/40">Monto por cuota aprox.</p>
+          <p class="text-lg font-bold">
+            {{ fmtCurrency(Number(chargeDetail.total_amount) / installForm.installments_count) }}
+          </p>
+        </div>
+        <p v-if="installError" class="text-xs text-red-400">{{ installError }}</p>
+        <button
+          class="w-full rounded-xl py-2.5 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50"
+          :style="{ background: 'var(--nexora-primary)' }"
+          :disabled="savingInstall"
+          @click="saveInstallments"
+        >
+          {{ savingInstall ? 'Creando...' : 'Crear plan de cuotas' }}
+        </button>
+      </div>
+    </NxrSlidePanel>
+
+    <!-- 6. Direct payment -->
+    <NxrSlidePanel :open="showPayPanel" title="Registrar pago" @close="showPayPanel = false">
+      <div class="space-y-4">
+        <div>
+          <label class="mb-1.5 block text-xs text-white/50">Monto</label>
+          <input
+            v-model.number="payForm.amount"
+            type="number"
+            min="0"
+            step="0.01"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+          />
+        </div>
+        <div>
+          <label class="mb-1.5 block text-xs text-white/50">Método de pago</label>
+          <select
+            v-model="payForm.payment_method"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+          >
+            <option v-for="(label, key) in PAYMENT_METHOD_LABEL" :key="key" :value="key">{{ label }}</option>
           </select>
         </div>
-        <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Notas</label>
-          <input v-model="payForm.notes" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+        <div>
+          <label class="mb-1.5 block text-xs text-white/50">Notas</label>
+          <input
+            v-model="payForm.notes"
+            type="text"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+          />
         </div>
-        <p v-if="payError" class="text-red-400 text-sm">{{ payError }}</p>
-        <div class="flex justify-end gap-2 pt-2">
-          <button type="button" class="rounded-xl bg-white/10 hover:bg-white/20 transition px-4 py-2.5 text-sm text-white/70" @click="showPayPanel = false">Cancelar</button>
-          <button type="submit" :disabled="savingPay" class="rounded-xl px-4 py-2.5 text-sm text-white font-medium transition disabled:opacity-50" :style="{ background: 'var(--nexora-primary)' }">
-            {{ savingPay ? 'Registrando...' : 'Registrar' }}
-          </button>
-        </div>
-      </form>
+        <p v-if="payError" class="text-xs text-red-400">{{ payError }}</p>
+        <button
+          class="w-full rounded-xl py-2.5 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50"
+          :style="{ background: 'var(--nexora-primary)' }"
+          :disabled="savingPay || !payForm.amount"
+          @click="saveDirectPayment"
+        >
+          {{ savingPay ? 'Registrando...' : 'Registrar pago' }}
+        </button>
+      </div>
     </NxrSlidePanel>
 
-    <!-- Installment payment panel (Task 5) -->
-    <NxrSlidePanel :open="showInstPayPanel" title="Pagar cuota" eyebrow="Pagos" @close="showInstPayPanel = false">
-      <form class="flex flex-col gap-4 p-6" @submit.prevent="saveInstallmentPayment">
-        <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Monto</label>
-          <input v-model.number="instPayForm.amount" type="number" step="0.01" min="0.01" required class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+    <!-- 7. Installment payment -->
+    <NxrSlidePanel :open="showInstPayPanel" title="Pagar cuota" @close="showInstPayPanel = false">
+      <div class="space-y-4">
+        <div>
+          <label class="mb-1.5 block text-xs text-white/50">Monto a pagar</label>
+          <input
+            v-model.number="instPayForm.amount"
+            type="number"
+            min="0"
+            step="0.01"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+          />
         </div>
-        <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Método de pago</label>
-          <select v-model="instPayForm.payment_method" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none">
-            <option value="cash">Efectivo</option>
-            <option value="card">Tarjeta</option>
-            <option value="bank_transfer">Transferencia</option>
-            <option value="mobile_payment">Pago móvil</option>
-            <option value="insurance">Seguro</option>
-            <option value="other">Otro</option>
+        <div>
+          <label class="mb-1.5 block text-xs text-white/50">Método de pago</label>
+          <select
+            v-model="instPayForm.payment_method"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+          >
+            <option v-for="(label, key) in PAYMENT_METHOD_LABEL" :key="key" :value="key">{{ label }}</option>
           </select>
         </div>
-        <p v-if="instPayError" class="text-red-400 text-sm">{{ instPayError }}</p>
-        <div class="flex justify-end gap-2 pt-2">
-          <button type="button" class="rounded-xl bg-white/10 hover:bg-white/20 transition px-4 py-2.5 text-sm text-white/70" @click="showInstPayPanel = false">Cancelar</button>
-          <button type="submit" :disabled="savingInstPay" class="rounded-xl px-4 py-2.5 text-sm text-white font-medium transition disabled:opacity-50" :style="{ background: 'var(--nexora-primary)' }">
-            {{ savingInstPay ? 'Pagando...' : 'Pagar' }}
-          </button>
-        </div>
-      </form>
+        <p v-if="instPayError" class="text-xs text-red-400">{{ instPayError }}</p>
+        <button
+          class="w-full rounded-xl py-2.5 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50"
+          :style="{ background: 'var(--nexora-primary)' }"
+          :disabled="savingInstPay || !instPayForm.amount"
+          @click="saveInstallmentPayment"
+        >
+          {{ savingInstPay ? 'Procesando...' : 'Pagar cuota' }}
+        </button>
+      </div>
     </NxrSlidePanel>
 
-    <!-- Medical history panel (Task 6) -->
-    <NxrSlidePanel :open="showMedHistPanel" title="Agregar registro médico" eyebrow="Historia" @close="showMedHistPanel = false">
-      <form class="flex flex-col gap-4 p-6" @submit.prevent="saveMedHist">
-        <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Fecha *</label>
-          <input v-model="medHistForm.entry_date" type="date" required class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+    <!-- 8. Medical history -->
+    <NxrSlidePanel :open="showMedHistPanel" title="Agregar registro médico" @close="showMedHistPanel = false">
+      <div class="space-y-4">
+        <div>
+          <label class="mb-1.5 block text-xs text-white/50">Fecha del registro</label>
+          <input
+            v-model="medHistForm.entry_date"
+            type="date"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+          />
         </div>
-        <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Grupo sanguíneo</label>
-          <input v-model="medHistForm.blood_type" type="text" placeholder="Ej: A+" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+        <div>
+          <label class="mb-1.5 block text-xs text-white/50">Grupo sanguíneo</label>
+          <input
+            v-model="medHistForm.blood_type"
+            type="text"
+            placeholder="Ej: A+, O-, AB+"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+          />
         </div>
-        <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Antecedentes médicos</label>
-          <textarea v-model="medHistForm.medical_background" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none"></textarea>
+        <div>
+          <label class="mb-1.5 block text-xs text-white/50">Antecedentes médicos</label>
+          <textarea
+            v-model="medHistForm.medical_background"
+            rows="2"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+          />
         </div>
-        <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Alergias</label>
-          <textarea v-model="medHistForm.allergies" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none"></textarea>
+        <div>
+          <label class="mb-1.5 block text-xs text-white/50">Alergias</label>
+          <textarea
+            v-model="medHistForm.allergies"
+            rows="2"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+          />
         </div>
-        <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Medicación actual</label>
-          <textarea v-model="medHistForm.current_medications" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none"></textarea>
+        <div>
+          <label class="mb-1.5 block text-xs text-white/50">Medicamentos actuales</label>
+          <textarea
+            v-model="medHistForm.current_medications"
+            rows="2"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+          />
         </div>
-        <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Enfermedades crónicas</label>
-          <textarea v-model="medHistForm.chronic_conditions" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none"></textarea>
+        <div>
+          <label class="mb-1.5 block text-xs text-white/50">Condiciones crónicas</label>
+          <textarea
+            v-model="medHistForm.chronic_conditions"
+            rows="2"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+          />
         </div>
-        <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Observaciones dentales</label>
-          <textarea v-model="medHistForm.dental_observations" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none"></textarea>
+        <div>
+          <label class="mb-1.5 block text-xs text-white/50">Observaciones dentales</label>
+          <textarea
+            v-model="medHistForm.dental_observations"
+            rows="2"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+          />
         </div>
-        <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Notas</label>
-          <textarea v-model="medHistForm.notes" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none"></textarea>
+        <div>
+          <label class="mb-1.5 block text-xs text-white/50">Notas adicionales</label>
+          <textarea
+            v-model="medHistForm.notes"
+            rows="2"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+          />
         </div>
-        <p v-if="medHistError" class="text-red-400 text-sm">{{ medHistError }}</p>
-        <div class="flex justify-end gap-2 pt-1">
-          <button type="button" class="rounded-xl bg-white/10 hover:bg-white/20 transition px-4 py-2 text-sm text-white/70" @click="showMedHistPanel = false">Cancelar</button>
-          <button type="submit" :disabled="savingMedHist" class="rounded-xl px-4 py-2 text-sm text-white font-medium transition disabled:opacity-50" :style="{ background: 'var(--nexora-primary)' }">
-            {{ savingMedHist ? 'Guardando...' : 'Guardar' }}
-          </button>
-        </div>
-      </form>
+        <p v-if="medHistError" class="text-xs text-red-400">{{ medHistError }}</p>
+        <button
+          class="w-full rounded-xl py-2.5 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50"
+          :style="{ background: 'var(--nexora-primary)' }"
+          :disabled="savingMedHist"
+          @click="saveMedHist"
+        >
+          {{ savingMedHist ? 'Guardando...' : 'Guardar registro' }}
+        </button>
+      </div>
     </NxrSlidePanel>
+
+    <!-- ═══════════ TOASTS + CONFIRM ═══════════ -->
+    <div class="fixed top-4 right-4 z-[9999] flex flex-col gap-2 w-80 pointer-events-none">
+      <AppToast v-for="t in toasts" :key="t.id" :toast="t" @close="removeToast" />
+    </div>
+
+    <ConfirmActionModal
+      :isOpen="confirmModal.open"
+      :title="confirmModal.title"
+      :message="confirmModal.message"
+      variant="danger"
+      confirmText="Confirmar"
+      cancelText="Cancelar"
+      @confirmed="() => { confirmModal.open = false; confirmModal.onConfirm(); }"
+      @cancelled="confirmModal.open = false"
+    />
 
   </div>
 </template>

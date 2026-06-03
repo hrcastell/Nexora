@@ -5,11 +5,22 @@ import { useDentalAppointmentsStore } from '../../stores/dentalAppointments';
 import { useDentalPatientsStore } from '../../stores/dentalPatients';
 import { useDentalServicesStore } from '../../stores/dentalServices';
 import NxrSlidePanel from '../../components/NxrSlidePanel.vue';
+import AppToast from '../../components/AppToast.vue';
+import ConfirmActionModal from '../../components/admin/ConfirmActionModal.vue';
+import { useToast } from '../../composables/useToast';
 import type { DentalAppointment, DentalAppointmentFormData } from '../../types/dental';
 
 const store = useDentalAppointmentsStore();
 const patientsStore = useDentalPatientsStore();
 const servicesStore = useDentalServicesStore();
+const { toasts, triggerToast, removeToast } = useToast();
+
+const confirmModal = ref<{ open: boolean; title: string; message: string; onConfirm: () => void }>({
+  open: false, title: '', message: '', onConfirm: () => {}
+});
+function askConfirm(title: string, message: string, onConfirm: () => void) {
+  confirmModal.value = { open: true, title, message, onConfirm };
+}
 
 const patientSearch = ref('');
 const selectedPatient = ref<any>(null);
@@ -135,6 +146,7 @@ async function save() {
   saveError.value = null;
   try {
     await store.create(form.value);
+    triggerToast('Éxito', 'Cita creada', 'success');
     showPanel.value = false;
     if (activeTab.value === 'today') await store.loadToday();
   } catch (e: any) {
@@ -146,16 +158,37 @@ async function save() {
 
 async function doAction(action: 'confirm' | 'cancel' | 'no_show' | 'convert', apt: DentalAppointment) {
   actionError.value = null;
+
+  if (action === 'cancel') {
+    askConfirm(
+      'Cancelar cita',
+      `¿Cancelar la cita de ${apt.customer?.first_name} ${apt.customer?.last_name}?`,
+      async () => {
+        try {
+          await store.cancel(apt.id);
+          triggerToast('Éxito', 'Cita cancelada', 'success');
+        } catch (e: any) {
+          triggerToast('Error', e?.response?.data?.error || 'Error al cancelar cita', 'error');
+        }
+      }
+    );
+    return;
+  }
+
   try {
-    if (action === 'confirm') await store.confirm(apt.id);
-    else if (action === 'cancel') {
-      if (!confirm(`¿Cancelar la cita de ${apt.customer?.first_name} ${apt.customer?.last_name}?`)) return;
-      await store.cancel(apt.id);
+    if (action === 'confirm') {
+      await store.confirm(apt.id);
+      triggerToast('Éxito', 'Cita confirmada', 'success');
+    } else if (action === 'no_show') {
+      await store.noShow(apt.id);
+      triggerToast('Éxito', 'Marcado como no presentado', 'success');
+    } else if (action === 'convert') {
+      await store.convertToConsultation(apt.id);
+      triggerToast('Éxito', 'Convertida a consulta', 'success');
     }
-    else if (action === 'no_show') await store.noShow(apt.id);
-    else if (action === 'convert') await store.convertToConsultation(apt.id);
   } catch (e: any) {
     actionError.value = e?.response?.data?.error || 'Error al ejecutar acción';
+    triggerToast('Error', e?.response?.data?.error || 'Error al ejecutar acción', 'error');
   }
 }
 
@@ -396,5 +429,21 @@ onMounted(() => {
         </button>
       </template>
     </NxrSlidePanel>
+
+    <!-- Toast container -->
+    <div class="fixed top-4 right-4 z-[9999] flex flex-col gap-2 w-80 pointer-events-none">
+      <AppToast v-for="t in toasts" :key="t.id" :toast="t" @close="removeToast" />
+    </div>
+
+    <ConfirmActionModal
+      :isOpen="confirmModal.open"
+      :title="confirmModal.title"
+      :message="confirmModal.message"
+      variant="danger"
+      confirmText="Confirmar"
+      cancelText="Cancelar"
+      @confirmed="() => { confirmModal.open = false; confirmModal.onConfirm(); }"
+      @cancelled="confirmModal.open = false"
+    />
   </div>
 </template>
