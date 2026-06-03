@@ -114,6 +114,12 @@ function fmtDate(iso: string) {
   return d.toLocaleDateString('es-AR', { weekday: 'short', day: '2-digit', month: '2-digit' });
 }
 
+function patientDisplayName(apt: DentalAppointment) {
+  return (apt.customer as any)?.full_name
+    ?? [apt.customer?.first_name, apt.customer?.last_name].filter(Boolean).join(' ')
+    ?? 'Paciente';
+}
+
 // Group month items by day
 const monthGrouped = computed(() => {
   const map = new Map<string, DentalAppointment[]>();
@@ -124,6 +130,58 @@ const monthGrouped = computed(() => {
   }
   return map;
 });
+
+function dateKey(date: Date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+function localDateKey(iso: string) {
+  return dateKey(new Date(iso));
+}
+
+const appointmentsByDate = computed(() => {
+  const map = new Map<string, DentalAppointment[]>();
+  for (const apt of store.items) {
+    const key = localDateKey(apt.scheduled_start);
+    if (!map.has(key)) map.set(key, []);
+    map.get(key)!.push(apt);
+  }
+  return map;
+});
+
+const calendarDays = computed(() => {
+  const first = new Date(currentYear.value, currentMonth.value - 1, 1);
+  const start = new Date(first);
+  start.setDate(first.getDate() - first.getDay());
+
+  return Array.from({ length: 42 }, (_, index) => {
+    const date = new Date(start);
+    date.setDate(start.getDate() + index);
+    const key = dateKey(date);
+    return {
+      key,
+      day: date.getDate(),
+      inMonth: date.getMonth() + 1 === currentMonth.value,
+      isToday: key === dateKey(new Date()),
+      appointments: appointmentsByDate.value.get(key) ?? [],
+    };
+  });
+});
+
+async function goPreviousMonth() {
+  if (currentMonth.value > 1) currentMonth.value--;
+  else { currentMonth.value = 12; currentYear.value--; }
+  await store.loadMonth(currentYear.value, currentMonth.value);
+}
+
+async function goNextMonth() {
+  if (currentMonth.value < 12) currentMonth.value++;
+  else { currentMonth.value = 1; currentYear.value++; }
+  await store.loadMonth(currentYear.value, currentMonth.value);
+}
 
 async function switchTab(tab: ViewTab) {
   activeTab.value = tab;
@@ -141,6 +199,12 @@ function openCreate() {
   showPanel.value = true;
 }
 
+async function refreshActiveTab() {
+  if (activeTab.value === 'today') await store.loadToday();
+  else if (activeTab.value === 'month') await store.loadMonth(currentYear.value, currentMonth.value);
+  else await store.load();
+}
+
 async function save() {
   saving.value = true;
   saveError.value = null;
@@ -148,7 +212,7 @@ async function save() {
     await store.create(form.value);
     triggerToast('Éxito', 'Cita creada', 'success');
     showPanel.value = false;
-    if (activeTab.value === 'today') await store.loadToday();
+    await refreshActiveTab();
   } catch (e: any) {
     saveError.value = e?.response?.data?.error || 'Error al guardar cita';
   } finally {
@@ -162,11 +226,12 @@ async function doAction(action: 'confirm' | 'cancel' | 'no_show' | 'convert', ap
   if (action === 'cancel') {
     askConfirm(
       'Cancelar cita',
-      `¿Cancelar la cita de ${apt.customer?.first_name} ${apt.customer?.last_name}?`,
+      `¿Cancelar la cita de ${patientDisplayName(apt)}?`,
       async () => {
         try {
           await store.cancel(apt.id);
           triggerToast('Éxito', 'Cita cancelada', 'success');
+          await refreshActiveTab();
         } catch (e: any) {
           triggerToast('Error', e?.response?.data?.error || 'Error al cancelar cita', 'error');
         }
@@ -179,12 +244,15 @@ async function doAction(action: 'confirm' | 'cancel' | 'no_show' | 'convert', ap
     if (action === 'confirm') {
       await store.confirm(apt.id);
       triggerToast('Éxito', 'Cita confirmada', 'success');
+      await refreshActiveTab();
     } else if (action === 'no_show') {
       await store.noShow(apt.id);
       triggerToast('Éxito', 'Marcado como no presentado', 'success');
+      await refreshActiveTab();
     } else if (action === 'convert') {
       await store.convertToConsultation(apt.id);
       triggerToast('Éxito', 'Convertida a consulta', 'success');
+      await refreshActiveTab();
     }
   } catch (e: any) {
     actionError.value = e?.response?.data?.error || 'Error al ejecutar acción';
@@ -216,7 +284,7 @@ onMounted(() => {
       <button
         v-for="tab in [
           { key: 'today', label: 'Hoy',   icon: CalendarDays },
-          { key: 'month', label: 'Mes',   icon: Calendar },
+          { key: 'month', label: 'Calendario',   icon: Calendar },
           { key: 'all',   label: 'Todas', icon: List },
         ]"
         :key="tab.key"
@@ -231,9 +299,9 @@ onMounted(() => {
 
       <!-- Month nav -->
       <template v-if="activeTab === 'month'">
-        <button class="ml-2 px-2 py-1 rounded-lg border border-white/10 text-xs text-white/50 hover:text-white" @click="currentMonth > 1 ? currentMonth-- : (currentMonth = 12, currentYear--); store.loadMonth(currentYear, currentMonth)">‹</button>
+        <button class="ml-2 px-2 py-1 rounded-lg border border-white/10 text-xs text-white/50 hover:text-white" @click="goPreviousMonth">‹</button>
         <span class="text-xs text-white/60">{{ MONTHS[currentMonth - 1] }} {{ currentYear }}</span>
-        <button class="px-2 py-1 rounded-lg border border-white/10 text-xs text-white/50 hover:text-white" @click="currentMonth < 12 ? currentMonth++ : (currentMonth = 1, currentYear++); store.loadMonth(currentYear, currentMonth)">›</button>
+        <button class="px-2 py-1 rounded-lg border border-white/10 text-xs text-white/50 hover:text-white" @click="goNextMonth">›</button>
       </template>
     </div>
 
@@ -296,7 +364,38 @@ onMounted(() => {
       <div v-if="store.items.length === 0" class="text-center text-white/30 py-16 text-sm">
         No hay citas en {{ MONTHS[currentMonth - 1] }} {{ currentYear }}.
       </div>
-      <div v-else class="flex flex-col gap-4">
+      <div v-else class="flex flex-col gap-5">
+        <div class="grid grid-cols-7 gap-2 rounded-2xl border border-white/10 p-3" :style="{ background: 'var(--nexora-glass-bg)' }">
+          <div v-for="dayName in ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']" :key="dayName" class="px-2 py-1 text-center text-[11px] font-semibold uppercase tracking-wide text-white/35">
+            {{ dayName }}
+          </div>
+          <div
+            v-for="day in calendarDays"
+            :key="day.key"
+            class="min-h-28 rounded-xl border p-2 transition-colors"
+            :class="[
+              day.inMonth ? 'border-white/10 bg-white/[0.03]' : 'border-white/5 bg-black/10 opacity-45',
+              day.isToday ? 'ring-1 ring-[var(--nexora-primary)]' : ''
+            ]"
+          >
+            <div class="mb-2 flex items-center justify-between">
+              <span class="text-xs font-semibold" :class="day.isToday ? 'text-[var(--nexora-primary)]' : 'text-white/60'">{{ day.day }}</span>
+              <span v-if="day.appointments.length" class="rounded-full bg-[var(--nexora-primary)]/20 px-1.5 py-0.5 text-[10px] text-white/70">{{ day.appointments.length }}</span>
+            </div>
+            <div class="flex flex-col gap-1">
+              <div
+                v-for="apt in day.appointments.slice(0, 3)"
+                :key="apt.id"
+                class="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-[11px] text-white/75"
+              >
+                <p class="font-semibold">{{ fmtTime(apt.scheduled_start) }}</p>
+                <p class="truncate text-white/50">{{ patientDisplayName(apt) }}</p>
+              </div>
+              <p v-if="day.appointments.length > 3" class="text-[10px] text-white/35">+{{ day.appointments.length - 3 }} más</p>
+            </div>
+          </div>
+        </div>
+
         <div v-for="[day, apts] in monthGrouped" :key="day">
           <p class="text-xs text-white/40 uppercase tracking-wide font-semibold mb-2">{{ day }}</p>
           <div class="flex flex-col gap-1.5">

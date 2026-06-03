@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS public.notifications (
     user_id         INTEGER REFERENCES public.users(id) ON DELETE CASCADE,
     company_id      INTEGER REFERENCES public.companies(id) ON DELETE CASCADE,
     type            TEXT NOT NULL CHECK (type IN ('info','success','warning','error')),
-    category        TEXT NOT NULL CHECK (category IN ('system','users','subscriptions','requests','billing','modules')),
+    category        TEXT NOT NULL CHECK (category IN ('system','users','subscriptions','requests','billing','modules','dental')),
     title           TEXT NOT NULL,
     body            TEXT,
     action_url      TEXT,
@@ -29,7 +29,7 @@ CREATE INDEX IF NOT EXISTS idx_notifications_company_created
 -- ── 2. Tabla de preferencias por usuario ─────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.notification_preferences (
     user_id     INTEGER PRIMARY KEY REFERENCES public.users(id) ON DELETE CASCADE,
-    categories  JSONB DEFAULT '{"system":true,"users":true,"subscriptions":true,"requests":true,"billing":true,"modules":true}',
+    categories  JSONB DEFAULT '{"system":true,"users":true,"subscriptions":true,"requests":true,"billing":true,"modules":true,"dental":true}',
     show_toast  BOOLEAN DEFAULT TRUE,
     updated_at  TIMESTAMPTZ DEFAULT NOW()
 );

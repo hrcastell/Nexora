@@ -20,6 +20,7 @@ const form = reactive({
     requests:      true,
     billing:       true,
     modules:       true,
+    dental:        true,
   }
 });
 
@@ -32,6 +33,7 @@ const CATEGORY_LABELS: Record<CategoryKey, { label: string; description: string 
   requests:      { label: 'Solicitudes',    description: 'Nuevas solicitudes de empresas' },
   billing:       { label: 'Facturación',    description: 'Cobros, pagos y facturas' },
   modules:       { label: 'Módulos',        description: 'Activación y desactivación de módulos' },
+  dental:        { label: 'Dental',         description: 'Citas, agenda y eventos clínicos del core dental' },
 };
 
 const categoryKeys = Object.keys(CATEGORY_LABELS) as CategoryKey[];
@@ -46,6 +48,7 @@ onMounted(async () => {
     form.categories.requests     = notifStore.preferences.categories.requests     ?? true;
     form.categories.billing      = notifStore.preferences.categories.billing      ?? true;
     form.categories.modules      = notifStore.preferences.categories.modules      ?? true;
+    form.categories.dental       = notifStore.preferences.categories.dental       ?? true;
   }
 });
 
