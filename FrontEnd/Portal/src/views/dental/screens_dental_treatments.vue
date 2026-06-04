@@ -3,9 +3,20 @@ import { ref, onMounted } from 'vue';
 import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight, Stethoscope } from 'lucide-vue-next';
 import { useDentalTreatmentsStore } from '../../stores/dentalTreatments';
 import NxrSlidePanel from '../../components/NxrSlidePanel.vue';
+import AppToast from '../../components/AppToast.vue';
+import ConfirmActionModal from '../../components/admin/ConfirmActionModal.vue';
+import { useToast } from '../../composables/useToast';
 import type { DentalTreatment, DentalTreatmentFormData } from '../../types/dental';
 
 const store = useDentalTreatmentsStore();
+const { toasts, triggerToast, removeToast } = useToast();
+
+const confirmModal = ref<{ open: boolean; title: string; message: string; onConfirm: () => void }>({
+  open: false, title: '', message: '', onConfirm: () => {}
+});
+function askConfirm(title: string, message: string, onConfirm: () => void) {
+  confirmModal.value = { open: true, title, message, onConfirm };
+}
 
 const showPanel = ref(false);
 const saving    = ref(false);
@@ -55,6 +66,7 @@ async function save() {
     } else {
       await store.create(form.value);
     }
+    triggerToast('Éxito', editing.value ? 'Tratamiento actualizado' : 'Tratamiento creado', 'success');
     showPanel.value = false;
   } catch (e: any) {
     saveError.value = e?.response?.data?.error || 'Error al guardar tratamiento';
@@ -66,18 +78,25 @@ async function save() {
 async function toggleActive(t: DentalTreatment) {
   try {
     await store.update(t.id, { is_active: !t.is_active });
+    triggerToast('Éxito', 'Estado actualizado', 'success');
   } catch (e: any) {
-    alert(e?.response?.data?.error || 'Error al actualizar estado');
+    triggerToast('Error', e?.response?.data?.error || 'Error al actualizar estado', 'error');
   }
 }
 
 async function remove(t: DentalTreatment) {
-  if (!confirm(`¿Eliminar el tratamiento "${t.name}"?`)) return;
-  try {
-    await store.remove(t.id);
-  } catch (e: any) {
-    alert(e?.response?.data?.error || 'Error al eliminar tratamiento');
-  }
+  askConfirm(
+    'Eliminar tratamiento',
+    `¿Eliminar el tratamiento "${t.name}"?`,
+    async () => {
+      try {
+        await store.remove(t.id);
+        triggerToast('Éxito', 'Tratamiento eliminado', 'success');
+      } catch (e: any) {
+        triggerToast('Error', e?.response?.data?.error || 'Error al eliminar tratamiento', 'error');
+      }
+    }
+  );
 }
 
 onMounted(() => store.load());
@@ -143,7 +162,7 @@ onMounted(() => store.load());
 
         <!-- Desktop -->
         <div class="hidden md:grid md:grid-cols-[1fr_140px_100px_80px_80px_80px] gap-4 items-center flex-1">
-          <div>
+          <div class="min-w-0">
             <p class="text-sm text-white truncate">{{ t.name }}</p>
             <p v-if="t.description" class="text-xs text-white/40 truncate">{{ t.description }}</p>
           </div>
@@ -194,7 +213,7 @@ onMounted(() => store.load());
           <label class="text-xs text-white/50">Descripción</label>
           <textarea v-model="form.description" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none"></textarea>
         </div>
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="flex flex-col gap-1.5">
             <label class="text-xs text-white/50">Categoría</label>
             <input v-model="form.category" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" placeholder="Ej: Ortodoncia" />
@@ -227,5 +246,21 @@ onMounted(() => store.load());
         </button>
       </template>
     </NxrSlidePanel>
+
+    <!-- Toast container -->
+    <div class="fixed top-4 right-4 z-[9999] flex flex-col gap-2 w-80 pointer-events-none">
+      <AppToast v-for="t in toasts" :key="t.id" :toast="t" @close="removeToast" />
+    </div>
+
+    <ConfirmActionModal
+      :isOpen="confirmModal.open"
+      :title="confirmModal.title"
+      :message="confirmModal.message"
+      variant="danger"
+      confirmText="Confirmar"
+      cancelText="Cancelar"
+      @confirmed="() => { confirmModal.open = false; confirmModal.onConfirm(); }"
+      @cancelled="confirmModal.open = false"
+    />
   </div>
 </template>

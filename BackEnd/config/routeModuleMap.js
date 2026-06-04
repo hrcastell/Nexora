@@ -299,10 +299,28 @@ const ROUTE_MODULE_MAP = {
     'POST   /dental/consultations/:id/photos':                    { module: 'dental_core', transaction: 'dental_consultations' },
     'DELETE /dental/consultations/:id/photos/:photoId':           { module: 'dental_core', transaction: 'dental_consultations' },
 
+    // ── Dental Core: Servicios por consulta ──
+    'GET    /dental/consultations/:id/services':                  { module: 'dental_core', transaction: 'dental_consultations' },
+    'GET    /dental/consultations/:id/services/total':            { module: 'dental_core', transaction: 'dental_consultations' },
+    'POST   /dental/consultations/:id/services':                  { module: 'dental_core', transaction: 'dental_consultations' },
+    'PATCH  /dental/consultations/:id/services/:sid':             { module: 'dental_core', transaction: 'dental_consultations' },
+    'DELETE /dental/consultations/:id/services/:sid':             { module: 'dental_core', transaction: 'dental_consultations' },
+
+    // ── Dental Core: Sesiones por consulta ──
+    'GET    /dental/consultations/:id/sessions':                  { module: 'dental_core', transaction: 'dental_consultations' },
+    'POST   /dental/consultations/:id/sessions':                  { module: 'dental_core', transaction: 'dental_consultations' },
+    'GET    /dental/consultations/:id/sessions/:sid':             { module: 'dental_core', transaction: 'dental_consultations' },
+    'PATCH  /dental/consultations/:id/sessions/:sid':             { module: 'dental_core', transaction: 'dental_consultations' },
+    'POST   /dental/consultations/:id/sessions/:sid/complete':    { module: 'dental_core', transaction: 'dental_consultations' },
+
+    // ── Dental Core: Estado de consulta ──
+    'POST   /dental/consultations/:id/status':                    { module: 'dental_core', transaction: 'dental_consultations' },
+
     // ── Dental Core: Cobros ──
     'GET    /dental/charges':                                     { module: 'dental_core', transaction: 'dental_charges' },
     'POST   /dental/charges':                                     { module: 'dental_core', transaction: 'dental_charges' },
     'GET    /dental/charges/:id':                                 { module: 'dental_core', transaction: 'dental_charges' },
+    'DELETE /dental/charges/:id':                                 { module: 'dental_core', transaction: 'dental_charges' },
     'POST   /dental/charges/:id/payments':                        { module: 'dental_core', transaction: 'dental_charges' },
     'POST   /dental/charges/:id/installments':                    { module: 'dental_core', transaction: 'dental_charges' },
 
@@ -312,6 +330,7 @@ const ROUTE_MODULE_MAP = {
 
     // ── Dental Core: Pagos ──
     'GET    /dental/payments':                                    { module: 'dental_core', transaction: 'dental_charges' },
+    'DELETE /dental/payments/:id':                                { module: 'dental_core', transaction: 'dental_charges' },
 
     // ── Dental Core: Resumen financiero ──
     'GET    /dental/finance/summary':                             { module: 'dental_core', transaction: 'dental_dashboard' },

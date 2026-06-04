@@ -4,11 +4,14 @@ import { useRoute, useRouter } from 'vue-router';
 import { ArrowLeft, User, FileText, Stethoscope, CreditCard, CalendarDays, Pencil, Phone, MessageCircle, Plus } from 'lucide-vue-next';
 import { useDentalPatientsStore } from '../../stores/dentalPatients';
 import NxrSlidePanel from '../../components/NxrSlidePanel.vue';
+import AppToast from '../../components/AppToast.vue';
+import { useToast } from '../../composables/useToast';
 import type { DentalClinicalHistoryEntry, DentalConsultation, DentalPayment, DentalCharge, DentalMedicalHistory } from '../../types/dental';
 
 const route  = useRoute();
 const router = useRouter();
 const store  = useDentalPatientsStore();
+const { toasts, triggerToast, removeToast } = useToast();
 
 const activeTab         = ref<'summary' | 'personal' | 'history' | 'consultations' | 'payments' | 'appointments'>('summary');
 const showEditPanel     = ref(false);
@@ -106,9 +109,11 @@ async function saveEdit() {
   saveError.value = null;
   try {
     await store.update(patient.value.id, editForm.value);
+    triggerToast('Éxito', 'Datos del paciente actualizados', 'success');
     showEditPanel.value = false;
   } catch (e: any) {
     saveError.value = e?.response?.data?.error || 'Error al guardar cambios';
+    triggerToast('Error', e?.response?.data?.error || 'Error al guardar cambios', 'error');
   } finally {
     saving.value = false;
   }
@@ -140,6 +145,7 @@ async function saveMedHist() {
   try {
     await store.addMedicalHistory(patient.value.id, { ...medHistForm.value });
     medicalHistory.value = store.medicalHistory;
+    triggerToast('Éxito', 'Registro médico agregado', 'success');
     showMedHistPanel.value = false;
     medHistForm.value = {
       entry_date: new Date().toISOString().slice(0, 10),
@@ -153,6 +159,7 @@ async function saveMedHist() {
     };
   } catch (e: any) {
     medHistError.value = e?.response?.data?.error || 'Error al guardar registro';
+    triggerToast('Error', e?.response?.data?.error || 'Error al guardar registro', 'error');
   } finally {
     savingMedHist.value = false;
   }
@@ -288,7 +295,7 @@ onMounted(async () => {
       <div v-if="activeTab === 'personal'" class="flex flex-col gap-4">
         <div class="p-5 rounded-2xl border border-white/10 flex flex-col gap-3" :style="{ background: 'var(--nexora-glass-bg)' }">
           <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Datos personales</p>
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div><p class="text-xs text-white/40">Nombre</p><p class="text-sm text-white">{{ patient.first_name }} {{ patient.last_name }}</p></div>
             <div><p class="text-xs text-white/40">Documento</p><p class="text-sm text-white">{{ patient.document_type }} {{ patient.document_number ?? '—' }}</p></div>
             <div>
@@ -330,7 +337,7 @@ onMounted(async () => {
         <!-- Medical profile current -->
         <div v-if="patient.dental_profile_id" class="p-5 rounded-2xl border border-white/10 flex flex-col gap-3" :style="{ background: 'var(--nexora-glass-bg)' }">
           <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Perfil médico actual</p>
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div><p class="text-xs text-white/40">Grupo sanguíneo</p><p class="text-sm text-white">{{ patient.blood_type || '—' }}</p></div>
             <div><p class="text-xs text-white/40">Alergias</p><p class="text-sm text-white/80">{{ patient.allergies || '—' }}</p></div>
             <div><p class="text-xs text-white/40">Antecedentes</p><p class="text-sm text-white/80">{{ patient.medical_background || '—' }}</p></div>
@@ -514,7 +521,7 @@ onMounted(async () => {
     <NxrSlidePanel :open="showEditPanel" title="Editar paciente" eyebrow="Dental" @close="showEditPanel = false">
       <form class="flex flex-col gap-5" @submit.prevent="saveEdit">
         <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Datos personales</p>
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="flex flex-col gap-1.5">
             <label class="text-xs text-white/50">Nombre *</label>
             <input v-model="editForm.first_name" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" required />
@@ -524,7 +531,7 @@ onMounted(async () => {
             <input v-model="editForm.last_name" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" required />
           </div>
         </div>
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="flex flex-col gap-1.5">
             <label class="text-xs text-white/50">Tipo documento</label>
             <select v-model="editForm.document_type" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none">
@@ -541,7 +548,7 @@ onMounted(async () => {
             <input v-model="editForm.document_number" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
           </div>
         </div>
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="flex flex-col gap-1.5">
             <label class="text-xs text-white/50">Teléfono</label>
             <input v-model="editForm.phone" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
@@ -607,7 +614,7 @@ onMounted(async () => {
           <textarea v-model="editForm.dental_observations" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none"></textarea>
         </div>
         <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Contacto de emergencia</p>
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="flex flex-col gap-1.5">
             <label class="text-xs text-white/50">Nombre</label>
             <input v-model="editForm.emergency_contact_name" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
@@ -626,5 +633,10 @@ onMounted(async () => {
         </button>
       </template>
     </NxrSlidePanel>
+
+    <!-- Toast container -->
+    <div class="fixed top-4 right-4 z-[9999] flex flex-col gap-2 w-80 pointer-events-none">
+      <AppToast v-for="t in toasts" :key="t.id" :toast="t" @close="removeToast" />
+    </div>
   </div>
 </template>

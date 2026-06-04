@@ -292,7 +292,7 @@ async function closePeriod() {
           <div v-for="i in 4" :key="i" class="h-20 rounded-xl bg-white/5 animate-pulse"></div>
         </div>
         <template v-else-if="summary">
-          <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             <div class="flex flex-col gap-2 p-5 rounded-2xl border border-white/10" :style="{ background: 'var(--nexora-glass-bg)' }">
               <TrendingUp :size="18" class="text-green-400" />
               <p class="text-xl font-bold text-white">{{ fmt(summary.real_income) }}</p>

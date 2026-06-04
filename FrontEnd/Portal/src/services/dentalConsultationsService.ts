@@ -23,7 +23,9 @@ export const dentalConsultationsService = {
   },
 
   addTreatments(id: number | string, treatmentIds: (number | string)[]) {
-    return api.post(`/dental/consultations/${id}/treatments`, { treatment_ids: treatmentIds });
+    return api.post(`/dental/consultations/${id}/treatments`, {
+      treatments: treatmentIds.map(tid => ({ treatment_id: tid })),
+    });
   },
 
   complete(id: number | string) {
@@ -52,5 +54,9 @@ export const dentalConsultationsService = {
 
   deletePhoto(id: number | string, photoId: number | string) {
     return api.delete(`/dental/consultations/${id}/photos/${photoId}`);
+  },
+
+  changeStatus(id: number | string, status: string, reason?: string) {
+    return api.post(`/dental/consultations/${id}/status`, { status, reason });
   },
 };

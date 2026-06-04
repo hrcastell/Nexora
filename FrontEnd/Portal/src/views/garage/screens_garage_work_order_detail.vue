@@ -130,7 +130,7 @@ const PRIORITY_LABEL: Record<string, string> = { low: 'Baja', normal: 'Normal', 
           </div>
         </div>
 
-        <div class="grid grid-cols-3 gap-3 text-xs text-white/50">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-white/50">
           <div><span class="text-white/30">Ingreso:</span> {{ fmtDate(store.current.entry_date) }}</div>
           <div><span class="text-white/30">Entrega est.:</span> {{ fmtDate(store.current.estimated_delivery_date) }}</div>
           <div v-if="store.current.mileage_in"><span class="text-white/30">Km ingreso:</span> {{ store.current.mileage_in?.toLocaleString() }}</div>
@@ -175,7 +175,7 @@ const PRIORITY_LABEL: Record<string, string> = { low: 'Baja', normal: 'Normal', 
         />
       </div>
 
-      <div v-if="activeTab === 'info'" class="grid grid-cols-2 gap-4">
+      <div v-if="activeTab === 'info'" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div v-for="field in [
           { label: 'Notas de recepción', value: store.current.reception_notes },
           { label: 'Estado del vehículo', value: store.current.vehicle_condition_notes },

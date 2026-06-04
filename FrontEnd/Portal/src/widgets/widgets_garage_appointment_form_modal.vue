@@ -95,7 +95,7 @@ async function save() {
               v-model:vehicle-id="form.vehicle_id"
             />
 
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label class="block text-xs text-white/50 mb-1">Fecha y hora inicio *</label>
                 <input v-model="form.scheduled_start" type="datetime-local" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" />

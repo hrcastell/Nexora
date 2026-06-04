@@ -1,18 +1,26 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
-import { DollarSign, TrendingUp, Clock, AlertTriangle, CreditCard, Plus } from 'lucide-vue-next';
+import { useRouter } from 'vue-router';
+import { DollarSign, TrendingUp, Clock, AlertTriangle, CreditCard, ExternalLink } from 'lucide-vue-next';
 import { useDentalChargesStore } from '../../stores/dentalCharges';
 import NxrSlidePanel from '../../components/NxrSlidePanel.vue';
+import AppToast from '../../components/AppToast.vue';
+import { useToast } from '../../composables/useToast';
 import type { DentalCharge } from '../../types/dental';
 
 const store = useDentalChargesStore();
+const router = useRouter();
+const { toasts, triggerToast, removeToast } = useToast();
 
 const showChargeDetail = ref(false);
 const showPaymentPanel = ref(false);
 const showInstallmentPanel = ref(false);
 const saving    = ref(false);
 const saveError = ref<string | null>(null);
-const statusFilter = ref('');
+
+const statusFilter   = ref('');
+const dateFromFilter = ref('');
+const dateToFilter   = ref('');
 
 const paymentForm = ref({
   amount: 0,
@@ -62,17 +70,29 @@ const PM_LABEL: Record<string, string> = {
   other:          'Otro',
 };
 
-function fmt(n: number) {
-  return `$${Math.round(n ?? 0).toLocaleString('es-AR')}`;
+function fmt(n: number | string | null | undefined) {
+  return `$${Math.round(parseFloat(n as any) || 0).toLocaleString('es-AR')}`;
 }
 
 function fmtDate(iso: string) {
+  if (!iso) return '—';
   const d = new Date(iso);
   return d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
 function applyFilter() {
-  store.load({ status: statusFilter.value || undefined });
+  store.load({
+    status:    statusFilter.value   || undefined,
+    from:      dateFromFilter.value || undefined,
+    to:        dateToFilter.value   || undefined,
+  });
+}
+
+function clearFilters() {
+  statusFilter.value   = '';
+  dateFromFilter.value = '';
+  dateToFilter.value   = '';
+  store.load();
 }
 
 async function openCharge(c: DentalCharge) {
@@ -107,9 +127,12 @@ async function savePayment() {
   saveError.value = null;
   try {
     await store.registerPayment(store.current.id, paymentForm.value);
+    triggerToast('Éxito', 'Pago registrado', 'success');
     showPaymentPanel.value = false;
+    await store.load({ status: statusFilter.value || undefined });
   } catch (e: any) {
     saveError.value = e?.response?.data?.error || 'Error al registrar pago';
+    triggerToast('Error', saveError.value!, 'error');
   } finally {
     saving.value = false;
   }
@@ -121,12 +144,20 @@ async function saveInstallments() {
   saveError.value = null;
   try {
     await store.createInstallmentPlan(store.current.id, installmentForm.value);
+    triggerToast('Éxito', 'Plan de cuotas creado', 'success');
     showInstallmentPanel.value = false;
+    await store.load({ status: statusFilter.value || undefined });
   } catch (e: any) {
     saveError.value = e?.response?.data?.error || 'Error al crear plan de cuotas';
+    triggerToast('Error', saveError.value!, 'error');
   } finally {
     saving.value = false;
   }
+}
+
+function goToConsultation(consultationId: number | string | null | undefined) {
+  if (!consultationId) return;
+  router.push({ name: 'dental-consultation-detail', params: { id: consultationId } });
 }
 
 onMounted(async () => {
@@ -139,7 +170,12 @@ onMounted(async () => {
 
 <template>
   <div class="flex flex-col gap-6 p-6">
-    <h1 class="text-xl font-semibold text-white">Finanzas Dental</h1>
+    <div class="flex items-center justify-between flex-wrap gap-3">
+      <div>
+        <h1 class="text-xl font-semibold text-white">Finanzas Dental</h1>
+        <p class="text-xs text-white/40 mt-0.5">Vista administrativa — los pagos se originan desde cada consulta</p>
+      </div>
+    </div>
 
     <!-- Loading skeleton -->
     <div v-if="store.loading && !store.items.length" class="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -165,7 +201,7 @@ onMounted(async () => {
       </div>
       <div class="flex flex-col gap-2 p-5 rounded-2xl border border-white/10" :style="{ background: 'var(--nexora-glass-bg)' }">
         <AlertTriangle :size="20" class="text-red-400" />
-        <p class="text-2xl font-bold text-white">{{ store.financeSummary.overdue_count }}</p>
+        <p class="text-2xl font-bold text-white">{{ store.financeSummary.overdue_charges_count }}</p>
         <p class="text-xs text-white/50">Cargos vencidos</p>
       </div>
     </div>
@@ -175,15 +211,47 @@ onMounted(async () => {
       <div class="flex items-center justify-between flex-wrap gap-3">
         <div class="flex items-center gap-2">
           <CreditCard :size="16" class="text-blue-400" />
-          <h2 class="text-sm font-semibold text-white">Cargos</h2>
+          <h2 class="text-sm font-semibold text-white">Cargos por consulta</h2>
         </div>
-        <select v-model="statusFilter" class="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none" @change="applyFilter">
-          <option value="">Todos los estados</option>
-          <option value="pending">Pendiente</option>
-          <option value="partially_paid">Pago parcial</option>
-          <option value="paid">Pagado</option>
-          <option value="overdue">Vencido</option>
-        </select>
+
+        <!-- Filters -->
+        <div class="flex items-center gap-2 flex-wrap">
+          <select
+            v-model="statusFilter"
+            class="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none"
+            @change="applyFilter"
+          >
+            <option value="">Todos los estados</option>
+            <option value="pending">Pendiente</option>
+            <option value="partially_paid">Pago parcial</option>
+            <option value="paid">Pagado</option>
+            <option value="overdue">Vencido</option>
+            <option value="cancelled">Cancelado</option>
+          </select>
+
+          <input
+            v-model="dateFromFilter"
+            type="date"
+            title="Desde"
+            class="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none"
+            @change="applyFilter"
+          />
+          <input
+            v-model="dateToFilter"
+            type="date"
+            title="Hasta"
+            class="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none"
+            @change="applyFilter"
+          />
+
+          <button
+            v-if="statusFilter || dateFromFilter || dateToFilter"
+            class="px-3 py-1.5 rounded-xl text-xs text-white/40 hover:text-white/70 border border-white/10 hover:bg-white/5 transition-all"
+            @click="clearFilters"
+          >
+            Limpiar
+          </button>
+        </div>
       </div>
 
       <div v-if="store.loading && store.items.length === 0" class="flex flex-col gap-2">
@@ -198,13 +266,15 @@ onMounted(async () => {
 
       <div v-else class="flex flex-col gap-2">
         <!-- Desktop header -->
-        <div class="hidden md:grid md:grid-cols-[120px_1fr_120px_120px_120px_80px] gap-4 px-4 py-2 text-xs text-white/30 font-semibold uppercase tracking-wide">
+        <div class="hidden md:grid md:grid-cols-[100px_1fr_140px_110px_110px_110px_90px_40px] gap-3 px-4 py-2 text-xs text-white/30 font-semibold uppercase tracking-wide">
           <span>Fecha</span>
+          <span>Paciente</span>
           <span>Descripción</span>
           <span class="text-right">Total</span>
           <span class="text-right">Pagado</span>
           <span class="text-right">Pendiente</span>
           <span class="text-center">Estado</span>
+          <span></span>
         </div>
 
         <div
@@ -216,19 +286,35 @@ onMounted(async () => {
         >
           <!-- Mobile -->
           <div class="flex-1 min-w-0 md:hidden">
-            <p class="text-sm text-white truncate">{{ c.description ?? 'Cargo' }}</p>
+            <p class="text-sm text-white truncate font-medium">{{ (c as any).patient_name ?? '—' }}</p>
+            <p class="text-xs text-white/40 truncate">{{ c.description ?? 'Cargo' }}</p>
             <p class="text-xs text-white/40">{{ fmtDate(c.created_at) }} · Pendiente: {{ fmt(c.pending_amount) }}</p>
           </div>
-          <span class="px-2 py-0.5 rounded-full text-xs shrink-0 md:hidden" :class="CHARGE_STATUS_CLASS[c.status]">{{ CHARGE_STATUS_LABEL[c.status] }}</span>
+          <span class="px-2 py-0.5 rounded-full text-xs shrink-0 md:hidden" :class="CHARGE_STATUS_CLASS[c.status]">
+            {{ CHARGE_STATUS_LABEL[c.status] }}
+          </span>
 
           <!-- Desktop -->
-          <div class="hidden md:grid md:grid-cols-[120px_1fr_120px_120px_120px_80px] gap-4 items-center flex-1">
+          <div class="hidden md:grid md:grid-cols-[100px_1fr_140px_110px_110px_110px_90px_40px] gap-3 items-center flex-1">
             <p class="text-xs text-white/60">{{ fmtDate(c.created_at) }}</p>
-            <p class="text-sm text-white truncate">{{ c.description ?? 'Cargo' }}</p>
+            <p class="text-sm text-white font-medium truncate">{{ (c as any).patient_name ?? '—' }}</p>
+            <p class="text-xs text-white/60 truncate">{{ c.description ?? 'Cargo' }}</p>
             <p class="text-sm font-semibold text-white text-right">{{ fmt(c.total_amount) }}</p>
             <p class="text-sm text-green-400 text-right">{{ fmt(c.paid_amount) }}</p>
             <p class="text-sm text-yellow-400 text-right">{{ fmt(c.pending_amount) }}</p>
-            <span class="px-2 py-0.5 rounded-full text-xs w-fit mx-auto" :class="CHARGE_STATUS_CLASS[c.status]">{{ CHARGE_STATUS_LABEL[c.status] }}</span>
+            <span class="px-2 py-0.5 rounded-full text-xs w-fit mx-auto" :class="CHARGE_STATUS_CLASS[c.status]">
+              {{ CHARGE_STATUS_LABEL[c.status] }}
+            </span>
+            <div class="flex justify-center" @click.stop>
+              <button
+                v-if="(c as any).consultation_id"
+                class="text-white/30 hover:text-blue-400 transition-colors"
+                title="Ver consulta"
+                @click="goToConsultation((c as any).consultation_id)"
+              >
+                <ExternalLink :size="14" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -238,8 +324,24 @@ onMounted(async () => {
     <NxrSlidePanel :open="showChargeDetail" title="Detalle del cargo" eyebrow="Dental — Finanzas" @close="showChargeDetail = false">
       <div v-if="!store.current" class="text-center text-white/30 py-10 text-sm">Cargando...</div>
       <div v-else class="flex flex-col gap-4">
+
+        <!-- Patient + consultation link -->
+        <div class="flex items-center justify-between p-3 rounded-xl border border-white/10" :style="{ background: 'var(--nexora-glass-bg)' }">
+          <div>
+            <p class="text-xs text-white/40">Paciente</p>
+            <p class="text-sm text-white font-medium">{{ (store.current as any).patient_name ?? '—' }}</p>
+          </div>
+          <button
+            v-if="(store.current as any).consultation_id"
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs text-blue-400 border border-blue-400/30 hover:bg-blue-400/10 transition-all"
+            @click="showChargeDetail = false; goToConsultation((store.current as any).consultation_id)"
+          >
+            <ExternalLink :size="12" /> Ver consulta
+          </button>
+        </div>
+
         <!-- Status + amounts -->
-        <div class="grid grid-cols-3 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div class="flex flex-col gap-1 p-3 rounded-xl border border-white/10" :style="{ background: 'var(--nexora-glass-bg)' }">
             <p class="text-xs text-white/40">Total</p>
             <p class="text-sm font-bold text-white">{{ fmt(store.current.total_amount) }}</p>
@@ -261,7 +363,12 @@ onMounted(async () => {
         <!-- Payments -->
         <div v-if="(store.current.payments?.length ?? 0) > 0" class="flex flex-col gap-2">
           <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Pagos registrados</p>
-          <div v-for="pay in store.current.payments" :key="pay.id" class="flex items-center justify-between px-3 py-2 rounded-xl border border-white/10" :style="{ background: 'var(--nexora-glass-bg)' }">
+          <div
+            v-for="pay in store.current.payments"
+            :key="pay.id"
+            class="flex items-center justify-between px-3 py-2 rounded-xl border border-white/10"
+            :style="{ background: 'var(--nexora-glass-bg)' }"
+          >
             <div>
               <p class="text-sm text-white">{{ fmt(pay.amount) }}</p>
               <p class="text-xs text-white/40">{{ PM_LABEL[pay.payment_method] ?? pay.payment_method }} · {{ fmtDate(pay.payment_date) }}</p>
@@ -273,7 +380,12 @@ onMounted(async () => {
         <!-- Installments -->
         <div v-if="(store.current.installments?.length ?? 0) > 0" class="flex flex-col gap-2">
           <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Plan de cuotas</p>
-          <div v-for="inst in store.current.installments" :key="inst.id" class="flex items-center justify-between px-3 py-2 rounded-xl border border-white/10" :style="{ background: 'var(--nexora-glass-bg)' }">
+          <div
+            v-for="inst in store.current.installments"
+            :key="inst.id"
+            class="flex items-center justify-between px-3 py-2 rounded-xl border border-white/10"
+            :style="{ background: 'var(--nexora-glass-bg)' }"
+          >
             <div>
               <p class="text-sm text-white">Cuota {{ inst.installment_number }}</p>
               <p class="text-xs text-white/40">Vence: {{ fmtDate(inst.due_date) }}</p>
@@ -285,21 +397,20 @@ onMounted(async () => {
           </div>
         </div>
 
-        <!-- Actions -->
-        <div class="flex gap-2">
+        <!-- Actions (administrative only — register payments against existing charges) -->
+        <div v-if="store.current.status !== 'paid' && store.current.status !== 'cancelled'" class="flex gap-2 pt-2 border-t border-white/10">
           <button
-            v-if="store.current.status !== 'paid' && store.current.status !== 'cancelled'"
             class="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-green-500/20 text-green-400 hover:bg-green-500/30 transition-all"
             @click="showChargeDetail = false; openPayment()"
           >
             <DollarSign :size="13" /> Registrar pago
           </button>
           <button
-            v-if="(store.current.installments?.length ?? 0) === 0 && store.current.status !== 'paid' && store.current.status !== 'cancelled'"
+            v-if="(store.current.installments?.length ?? 0) === 0"
             class="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 transition-all"
             @click="showChargeDetail = false; openInstallment()"
           >
-            <Plus :size="13" /> Crear plan de cuotas
+            <CreditCard :size="13" /> Crear plan de cuotas
           </button>
         </div>
       </div>
@@ -353,7 +464,7 @@ onMounted(async () => {
       <form class="flex flex-col gap-5" @submit.prevent="saveInstallments">
         <div class="flex flex-col gap-1.5">
           <label class="text-xs text-white/50">Cantidad de cuotas *</label>
-          <input v-model.number="installmentForm.installments_count" type="number" min="2" max="60" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" required />
+          <input v-model.number="installmentForm.installments_count" type="number" min="2" max="12" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" required />
         </div>
         <div class="flex flex-col gap-1.5">
           <label class="text-xs text-white/50">Fecha primer vencimiento *</label>
@@ -368,5 +479,10 @@ onMounted(async () => {
         </button>
       </template>
     </NxrSlidePanel>
+
+    <!-- Toast container -->
+    <div class="fixed top-4 right-4 z-[9999] flex flex-col gap-2 w-80 pointer-events-none">
+      <AppToast v-for="t in toasts" :key="t.id" :toast="t" @close="removeToast" />
+    </div>
   </div>
 </template>

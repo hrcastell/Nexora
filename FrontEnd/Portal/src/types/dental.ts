@@ -191,6 +191,16 @@ export interface DentalConsultation {
   service?: DentalService;
   treatments?: DentalTreatment[];
   charges?: DentalCharge[];
+  requires_follow_up?: boolean;
+  requires_multiple_sessions?: boolean;
+  estimated_sessions?: number | null;
+  next_session_date?: string | null;
+  follow_up_notes?: string | null;
+  professional_id?: number | null;
+  created_by?: number | null;
+  updated_by?: number | null;
+  consultation_services?: DentalConsultationService[];
+  sessions?: DentalConsultationSession[];
   created_at: string;
   updated_at: string;
 }
@@ -204,6 +214,12 @@ export interface DentalConsultationFormData {
   clinical_notes?: string;
   indications?: string;
   total_amount?: number;
+  requires_follow_up?: boolean;
+  requires_multiple_sessions?: boolean;
+  estimated_sessions?: number;
+  next_session_date?: string;
+  follow_up_notes?: string;
+  professional_id?: number;
 }
 
 // ─── CLINICAL HISTORY ─────────────────────────────────────────
@@ -256,6 +272,7 @@ export interface DentalCharge {
   paid_amount: number;
   pending_amount: number;
   status: ChargeStatus;
+  administrative_status?: string;
   due_date?: string;
   customer?: Customer;
   payments?: DentalPayment[];
@@ -316,6 +333,74 @@ export interface DentalMedicalHistory {
   created_by?: number;
   created_at: string;
 }
+
+// ─── CONSULTATION SERVICES (multi-service) ────────────────────────────────
+
+export interface DentalConsultationService {
+  id: number;
+  tenant_id: number;
+  consultation_id: number;
+  service_id?: number | null;
+  service_name_snapshot: string;
+  service_name_current?: string;
+  unit_price: number;
+  quantity: number;
+  subtotal: number;
+  tooth_reference?: string | null;
+  clinical_notes?: string | null;
+  status: 'active' | 'voided';
+  created_at: string;
+  updated_at: string;
+  created_by?: number | null;
+}
+
+export interface DentalConsultationServiceFormData {
+  service_id?: number | null;
+  service_name_snapshot?: string;
+  unit_price: number;
+  quantity: number;
+  tooth_reference?: string;
+  clinical_notes?: string;
+}
+
+// ─── CONSULTATION SESSIONS ────────────────────────────────────────────────
+
+export type SessionStatus = 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
+
+export interface DentalConsultationSession {
+  id: number;
+  tenant_id: number;
+  consultation_id: number;
+  session_number: number;
+  session_date: string;
+  professional_id?: number | null;
+  status: SessionStatus;
+  notes?: string | null;
+  evolution?: string | null;
+  next_session_date?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DentalConsultationSessionFormData {
+  session_date?: string;
+  professional_id?: number;
+  notes?: string;
+  evolution?: string;
+  next_session_date?: string;
+}
+
+// ─── EXTENDED CONSULTATION STATUS ─────────────────────────────────────────
+
+export type ConsultationStatusExtended =
+  | 'draft'
+  | 'created'
+  | 'in_progress'
+  | 'in_treatment'
+  | 'completed'
+  | 'cancelled'
+  | 'no_show'
+  | 'voided';
 
 // ─── DASHBOARD ────────────────────────────────────────────────
 

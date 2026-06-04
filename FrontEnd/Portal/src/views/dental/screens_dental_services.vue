@@ -1,21 +1,29 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight, Tag } from 'lucide-vue-next';
+import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight } from 'lucide-vue-next';
 import { useDentalServicesStore } from '../../stores/dentalServices';
 import { useDentalTreatmentsStore } from '../../stores/dentalTreatments';
 import NxrSlidePanel from '../../components/NxrSlidePanel.vue';
+import AppToast from '../../components/AppToast.vue';
+import ConfirmActionModal from '../../components/admin/ConfirmActionModal.vue';
+import { useToast } from '../../composables/useToast';
 import type { DentalService, DentalServiceFormData } from '../../types/dental';
 
 const store            = useDentalServicesStore();
 const treatmentsStore  = useDentalTreatmentsStore();
+const { toasts, triggerToast, removeToast } = useToast();
+
+const confirmModal = ref<{ open: boolean; title: string; message: string; onConfirm: () => void }>({
+  open: false, title: '', message: '', onConfirm: () => {}
+});
+function askConfirm(title: string, message: string, onConfirm: () => void) {
+  confirmModal.value = { open: true, title, message, onConfirm };
+}
 
 const showPanel    = ref(false);
-const showTreatments = ref(false);
 const saving       = ref(false);
 const saveError    = ref<string | null>(null);
 const editing      = ref<DentalService | null>(null);
-const selected     = ref<DentalService | null>(null);
-const savingTreatments = ref(false);
 
 const selectedTreatmentIds = ref<Set<string | number>>(new Set());
 
@@ -48,6 +56,7 @@ const calculatedPreview = computed(() => {
 function openCreate() {
   editing.value = null;
   form.value = defaultForm();
+  selectedTreatmentIds.value = new Set();
   saveError.value = null;
   showPanel.value = true;
 }
@@ -58,22 +67,17 @@ function openEdit(s: DentalService) {
     name: s.name,
     description: s.description ?? '',
     price_mode: s.price_mode,
-    supplies_cost: s.supplies_cost,
-    labor_cost: s.labor_cost,
-    tax_rate: s.tax_rate,
-    profit_margin: s.profit_margin,
-    manual_price: s.manual_price ?? 0,
+    supplies_cost: parseFloat(s.supplies_cost as any) || 0,
+    labor_cost: parseFloat(s.labor_cost as any) || 0,
+    tax_rate: parseFloat(s.tax_rate as any) || 0,
+    profit_margin: parseFloat(s.profit_margin as any) || 0,
+    manual_price: parseFloat(s.manual_price as any) || 0,
     estimated_duration_minutes: s.estimated_duration_minutes,
     is_active: s.is_active,
   };
+  selectedTreatmentIds.value = new Set((s.treatments ?? []).map(t => t.treatment_id));
   saveError.value = null;
   showPanel.value = true;
-}
-
-function openTreatments(s: DentalService) {
-  selected.value = s;
-  selectedTreatmentIds.value = new Set((s.treatments ?? []).map(t => t.treatment_id));
-  showTreatments.value = true;
 }
 
 function toggleTreatment(id: number | string) {
@@ -84,29 +88,21 @@ function toggleTreatment(id: number | string) {
   }
 }
 
-async function saveTreatments() {
-  if (!selected.value) return;
-  savingTreatments.value = true;
-  try {
-    const treatments = Array.from(selectedTreatmentIds.value).map(id => ({ treatment_id: id, quantity: 1 }));
-    await store.assignTreatments(selected.value.id, treatments);
-    showTreatments.value = false;
-  } catch (e: any) {
-    alert(e?.response?.data?.error || 'Error al asignar tratamientos');
-  } finally {
-    savingTreatments.value = false;
-  }
-}
-
 async function save() {
   saving.value = true;
   saveError.value = null;
   try {
+    let serviceId: number;
     if (editing.value) {
       await store.update(editing.value.id, form.value);
+      serviceId = Number(editing.value.id);
     } else {
-      await store.create(form.value);
+      const created = await store.create(form.value);
+      serviceId = Number(created.id);
     }
+    const treatments = Array.from(selectedTreatmentIds.value).map(id => ({ treatment_id: id, quantity: 1 }));
+    await store.assignTreatments(serviceId, treatments);
+    triggerToast('Éxito', editing.value ? 'Servicio actualizado' : 'Servicio creado', 'success');
     showPanel.value = false;
   } catch (e: any) {
     saveError.value = e?.response?.data?.error || 'Error al guardar servicio';
@@ -118,18 +114,25 @@ async function save() {
 async function toggleActive(s: DentalService) {
   try {
     await store.update(s.id, { is_active: !s.is_active });
+    triggerToast('Éxito', 'Estado actualizado', 'success');
   } catch (e: any) {
-    alert(e?.response?.data?.error || 'Error al actualizar estado');
+    triggerToast('Error', e?.response?.data?.error || 'Error al actualizar estado', 'error');
   }
 }
 
 async function remove(s: DentalService) {
-  if (!confirm(`¿Eliminar el servicio "${s.name}"?`)) return;
-  try {
-    await store.remove(s.id);
-  } catch (e: any) {
-    alert(e?.response?.data?.error || 'Error al eliminar. Puede estar en uso.');
-  }
+  askConfirm(
+    'Eliminar servicio',
+    `¿Eliminar el servicio "${s.name}"?`,
+    async () => {
+      try {
+        await store.remove(s.id);
+        triggerToast('Éxito', 'Servicio eliminado', 'success');
+      } catch (e: any) {
+        triggerToast('Error', e?.response?.data?.error || 'Error al eliminar. Puede estar en uso.', 'error');
+      }
+    }
+  );
 }
 
 onMounted(async () => {
@@ -208,9 +211,6 @@ onMounted(async () => {
             </button>
           </div>
           <div class="flex items-center justify-center gap-2">
-            <button class="text-white/30 hover:text-blue-400 transition-colors" title="Asignar tratamientos" @click="openTreatments(s)">
-              <Tag :size="14" />
-            </button>
             <button class="text-white/30 hover:text-white/70 transition-colors" @click="openEdit(s)">
               <Pencil :size="14" />
             </button>
@@ -222,7 +222,6 @@ onMounted(async () => {
 
         <!-- Mobile actions -->
         <div class="flex items-center gap-2 shrink-0 md:hidden">
-          <button class="text-white/30 hover:text-blue-400" @click="openTreatments(s)"><Tag :size="14" /></button>
           <button class="text-white/30 hover:text-white/70" @click="openEdit(s)"><Pencil :size="14" /></button>
           <button class="text-white/40 hover:text-white/70" @click="toggleActive(s)">
             <ToggleRight v-if="s.is_active" :size="18" class="text-green-400" />
@@ -288,7 +287,7 @@ onMounted(async () => {
 
         <!-- Calculated price breakdown -->
         <template v-else>
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div class="flex flex-col gap-1.5">
               <label class="text-xs text-white/50">Costo insumos</label>
               <input v-model.number="form.supplies_cost" type="number" min="0" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
@@ -298,7 +297,7 @@ onMounted(async () => {
               <input v-model.number="form.labor_cost" type="number" min="0" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
             </div>
           </div>
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div class="flex flex-col gap-1.5">
               <label class="text-xs text-white/50">IVA (%)</label>
               <input v-model.number="form.tax_rate" type="number" min="0" max="100" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
@@ -319,6 +318,36 @@ onMounted(async () => {
           <span class="text-sm text-white/70">Activo</span>
         </label>
 
+        <!-- Treatments -->
+        <div class="flex flex-col gap-2">
+          <label class="text-xs text-white/50">Tratamientos incluidos</label>
+          <div v-if="treatmentsStore.items.length === 0" class="text-xs text-white/30 py-3 text-center">
+            No hay tratamientos disponibles.
+          </div>
+          <div v-else class="flex flex-col gap-1.5 max-h-48 overflow-y-auto pr-1">
+            <label
+              v-for="t in treatmentsStore.items"
+              :key="t.id"
+              class="flex items-center gap-3 px-3 py-2.5 rounded-xl border cursor-pointer transition-all"
+              :class="selectedTreatmentIds.has(t.id)
+                ? 'border-[var(--nexora-primary)] bg-[var(--nexora-primary)]/10'
+                : 'border-white/10 hover:border-white/20'"
+              :style="!selectedTreatmentIds.has(t.id) ? { background: 'var(--nexora-glass-bg)' } : {}"
+            >
+              <input
+                type="checkbox"
+                :checked="selectedTreatmentIds.has(t.id)"
+                class="rounded shrink-0"
+                @change="toggleTreatment(t.id)"
+              />
+              <div class="flex-1 min-w-0">
+                <p class="text-sm text-white truncate">{{ t.name }}</p>
+                <p v-if="t.category" class="text-xs text-white/40 truncate">{{ t.category }}</p>
+              </div>
+            </label>
+          </div>
+        </div>
+
         <p v-if="saveError" class="text-xs text-red-400">{{ saveError }}</p>
       </form>
       <template #footer>
@@ -329,47 +358,20 @@ onMounted(async () => {
       </template>
     </NxrSlidePanel>
 
-    <!-- Assign treatments panel -->
-    <NxrSlidePanel
-      :open="showTreatments"
-      :title="selected ? `Tratamientos — ${selected.name}` : 'Tratamientos'"
-      eyebrow="Dental"
-      @close="showTreatments = false"
-    >
-      <div class="flex flex-col gap-3">
-        <p class="text-xs text-white/40">Seleccioná los tratamientos incluidos en este servicio.</p>
-        <div v-if="treatmentsStore.items.length === 0" class="text-sm text-white/30 text-center py-8">
-          No hay tratamientos disponibles.
-        </div>
-        <div v-else class="flex flex-col gap-2">
-          <label
-            v-for="t in treatmentsStore.items"
-            :key="t.id"
-            class="flex items-center gap-3 px-4 py-3 rounded-xl border cursor-pointer transition-all"
-            :class="selectedTreatmentIds.has(t.id)
-              ? 'border-[var(--nexora-primary)] bg-[var(--nexora-primary)]/10'
-              : 'border-white/10 hover:border-white/20'"
-            :style="!selectedTreatmentIds.has(t.id) ? { background: 'var(--nexora-glass-bg)' } : {}"
-          >
-            <input
-              type="checkbox"
-              :checked="selectedTreatmentIds.has(t.id)"
-              class="rounded"
-              @change="toggleTreatment(t.id)"
-            />
-            <div class="flex-1">
-              <p class="text-sm text-white">{{ t.name }}</p>
-              <p v-if="t.category" class="text-xs text-white/40">{{ t.category }}</p>
-            </div>
-          </label>
-        </div>
-      </div>
-      <template #footer>
-        <button type="button" class="flex-1 px-4 py-2 rounded-xl text-sm text-white/60 border border-white/10 hover:bg-white/5" @click="showTreatments = false">Cancelar</button>
-        <button type="button" class="flex-1 px-4 py-2 rounded-xl text-sm font-semibold bg-[var(--nexora-primary)] text-white hover:opacity-90 disabled:opacity-50" :disabled="savingTreatments" @click="saveTreatments">
-          {{ savingTreatments ? 'Guardando...' : 'Asignar tratamientos' }}
-        </button>
-      </template>
-    </NxrSlidePanel>
+    <!-- Toast container -->
+    <div class="fixed top-4 right-4 z-[9999] flex flex-col gap-2 w-80 pointer-events-none">
+      <AppToast v-for="t in toasts" :key="t.id" :toast="t" @close="removeToast" />
+    </div>
+
+    <ConfirmActionModal
+      :isOpen="confirmModal.open"
+      :title="confirmModal.title"
+      :message="confirmModal.message"
+      variant="danger"
+      confirmText="Confirmar"
+      cancelText="Cancelar"
+      @confirmed="() => { confirmModal.open = false; confirmModal.onConfirm(); }"
+      @cancelled="confirmModal.open = false"
+    />
   </div>
 </template>

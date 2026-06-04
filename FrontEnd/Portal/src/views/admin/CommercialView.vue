@@ -349,7 +349,7 @@ const freqLabel   = (f: string) => ({ monthly: 'Mensual', quarterly: 'Trimestral
         </div>
 
         <!-- KPIs -->
-        <div class="mt-4 grid grid-cols-3 gap-3">
+        <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div class="rounded-2xl border p-3" :style="{ borderColor: cardBorder, backgroundColor: rowHoverBg }">
             <p class="text-xs" :style="{ color: mutedColor }">Convenios activos</p>
             <p class="mt-1 text-xl font-bold" :style="{ color: headerColor }">{{ agreements.filter(a => a.status === 'activo').length }}</p>
@@ -524,7 +524,7 @@ const freqLabel   = (f: string) => ({ monthly: 'Mensual', quarterly: 'Trimestral
 
             <!-- Convenio Form -->
             <template v-if="modalType === 'agreement'">
-              <div class="grid grid-cols-2 gap-3">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div class="col-span-2">
                   <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Plan de suscripción</label>
                   <select
@@ -592,7 +592,7 @@ const freqLabel   = (f: string) => ({ monthly: 'Mensual', quarterly: 'Trimestral
 
             <!-- Invoice Form -->
             <template v-else-if="modalType === 'invoice'">
-              <div class="grid grid-cols-2 gap-3">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Período inicio *</label>
                   <input v-model="invoiceForm.period_start" type="date" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
@@ -640,7 +640,7 @@ const freqLabel   = (f: string) => ({ monthly: 'Mensual', quarterly: 'Trimestral
 
             <!-- Payment Form -->
             <template v-else>
-              <div class="grid grid-cols-2 gap-3">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div class="col-span-2">
                   <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Recibo *</label>
                   <select v-model="paymentForm.invoice_id" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"

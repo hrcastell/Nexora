@@ -43,8 +43,10 @@ exports.list = async (req, res) => {
         }
 
         const where = `WHERE ${conditions.join(' AND ')}`;
-        const offset = (parseInt(page) - 1) * parseInt(limit);
-        params.push(parseInt(limit), offset);
+        const pageNum = Math.max(1, parseInt(page) || 1);
+        const limitNum = Math.min(200, Math.max(1, parseInt(limit) || 50));
+        const offset = (pageNum - 1) * limitNum;
+        params.push(limitNum, offset);
 
         const result = await db.query(
             `SELECT dc.*,
@@ -66,7 +68,7 @@ exports.list = async (req, res) => {
         res.json({ data: result.rows, total: parseInt(countResult.rows[0].count) });
     } catch (err) {
         console.error('chargesController.list error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al listar cobros' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al listar cobros') });
     }
 };
 
@@ -91,6 +93,12 @@ exports.create = async (req, res) => {
         if (!total_amount || parseFloat(total_amount) <= 0) {
             return res.status(400).json({ code: 'DENTAL_INVALID_AMOUNT', error: 'total_amount debe ser mayor a 0' });
         }
+        if (!consultation_id) {
+            return res.status(400).json({
+                code: 'DENTAL_CHARGE_REQUIRES_CONSULTATION',
+                error: 'Los cobros deben estar asociados a una consulta'
+            });
+        }
 
         const result = await db.query(
             `INSERT INTO ${schema}.dental_charges
@@ -103,7 +111,7 @@ exports.create = async (req, res) => {
         res.status(201).json(result.rows[0]);
     } catch (err) {
         console.error('chargesController.create error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al crear cobro' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al crear cobro') });
     }
 };
 
@@ -142,8 +150,8 @@ exports.getById = async (req, res) => {
         let consultation = null;
         if (result.rows[0].consultation_id) {
             const consResult = await db.query(
-                `SELECT id, consultation_date, status, reason FROM ${schema}.dental_consultations WHERE id = $1`,
-                [result.rows[0].consultation_id]
+                `SELECT id, consultation_date, status, reason FROM ${schema}.dental_consultations WHERE id = $1 AND tenant_id = $2`,
+                [result.rows[0].consultation_id, companyId]
             );
             consultation = consResult.rows[0] || null;
         }
@@ -158,7 +166,7 @@ exports.getById = async (req, res) => {
         });
     } catch (err) {
         console.error('chargesController.getById error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al obtener cobro' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al obtener cobro') });
     }
 };
 
@@ -210,14 +218,29 @@ exports.registerPayment = async (req, res) => {
         await db.query(
             `UPDATE ${schema}.dental_charges
              SET paid_amount = $1, pending_amount = $2, status = $3, updated_at = CURRENT_TIMESTAMP
-             WHERE id = $4`,
-            [newPaidAmount, newPendingAmount, newStatus, charge.id]
+             WHERE id = $4 AND tenant_id = $5`,
+            [newPaidAmount, newPendingAmount, newStatus, charge.id, companyId]
         );
+
+        // Sync administrative_status on the linked consultation
+        if (charge.consultation_id) {
+            const adminStatus =
+                newStatus === 'paid'           ? 'paid' :
+                newStatus === 'partially_paid' ? 'partially_paid' :
+                'unpaid';
+
+            await db.query(
+                `UPDATE ${schema}.dental_consultations
+                 SET administrative_status = $1, updated_at = NOW()
+                 WHERE id = $2 AND tenant_id = $3`,
+                [adminStatus, charge.consultation_id, companyId]
+            );
+        }
 
         res.status(201).json({ data: paymentResult.rows[0] });
     } catch (err) {
         console.error('chargesController.registerPayment error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al registrar pago' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al registrar pago') });
     }
 };
 
@@ -269,8 +292,8 @@ exports.createInstallments = async (req, res) => {
         // Delete existing unpaid installments
         await db.query(
             `DELETE FROM ${schema}.dental_installments
-             WHERE charge_id = $1 AND status NOT IN ('paid','cancelled')`,
-            [charge.id]
+             WHERE charge_id = $1 AND tenant_id = $2 AND status NOT IN ('paid','cancelled')`,
+            [charge.id, companyId]
         );
 
         // Insert new installments
@@ -291,7 +314,7 @@ exports.createInstallments = async (req, res) => {
         res.status(201).json({ data: insertedRows });
     } catch (err) {
         console.error('chargesController.createInstallments error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al crear cuotas' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al crear cuotas') });
     }
 };
 
@@ -321,7 +344,7 @@ exports.getOverdueInstallments = async (req, res) => {
         res.json({ data: result.rows });
     } catch (err) {
         console.error('chargesController.getOverdueInstallments error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al obtener cuotas vencidas' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al obtener cuotas vencidas') });
     }
 };
 
@@ -359,9 +382,12 @@ exports.payInstallment = async (req, res) => {
         }
 
         const chargeResult = await db.query(
-            `SELECT * FROM ${schema}.dental_charges WHERE id = $1`,
-            [inst.charge_id]
+            `SELECT * FROM ${schema}.dental_charges WHERE id = $1 AND tenant_id = $2`,
+            [inst.charge_id, companyId]
         );
+        if (chargeResult.rows.length === 0) {
+            return res.status(404).json({ code: 'DENTAL_CHARGE_NOT_FOUND', error: 'Cobro padre no encontrado' });
+        }
         const charge = chargeResult.rows[0];
 
         // Insert payment
@@ -379,8 +405,8 @@ exports.payInstallment = async (req, res) => {
         await db.query(
             `UPDATE ${schema}.dental_installments
              SET paid_amount = $1, status = $2, updated_at = CURRENT_TIMESTAMP
-             WHERE id = $3`,
-            [newInstPaid, newInstStatus, inst.id]
+             WHERE id = $3 AND tenant_id = $4`,
+            [newInstPaid, newInstStatus, inst.id, companyId]
         );
 
         // Update parent charge
@@ -390,14 +416,29 @@ exports.payInstallment = async (req, res) => {
         await db.query(
             `UPDATE ${schema}.dental_charges
              SET paid_amount = $1, pending_amount = $2, status = $3, updated_at = CURRENT_TIMESTAMP
-             WHERE id = $4`,
-            [newChargePaid, newChargePending, newChargeStatus, charge.id]
+             WHERE id = $4 AND tenant_id = $5`,
+            [newChargePaid, newChargePending, newChargeStatus, charge.id, companyId]
         );
+
+        // Sync administrative_status on the linked consultation
+        if (charge.consultation_id) {
+            const adminStatus =
+                newChargeStatus === 'paid'           ? 'paid' :
+                newChargeStatus === 'partially_paid' ? 'partially_paid' :
+                'unpaid';
+
+            await db.query(
+                `UPDATE ${schema}.dental_consultations
+                 SET administrative_status = $1, updated_at = NOW()
+                 WHERE id = $2 AND tenant_id = $3`,
+                [adminStatus, charge.consultation_id, companyId]
+            );
+        }
 
         res.status(201).json({ data: paymentResult.rows[0] });
     } catch (err) {
         console.error('chargesController.payInstallment error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al pagar cuota' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al pagar cuota') });
     }
 };
 
@@ -431,8 +472,10 @@ exports.listPayments = async (req, res) => {
         }
 
         const where = `WHERE ${conditions.join(' AND ')}`;
-        const offset = (parseInt(page) - 1) * parseInt(limit);
-        params.push(parseInt(limit), offset);
+        const pageNum = Math.max(1, parseInt(page) || 1);
+        const limitNum = Math.min(200, Math.max(1, parseInt(limit) || 50));
+        const offset = (pageNum - 1) * limitNum;
+        params.push(limitNum, offset);
 
         const result = await db.query(
             `SELECT dp.*,
@@ -457,7 +500,115 @@ exports.listPayments = async (req, res) => {
         res.json({ data: result.rows, total: parseInt(countResult.rows[0].count) });
     } catch (err) {
         console.error('chargesController.listPayments error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al listar pagos' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al listar pagos') });
+    }
+};
+
+/**
+ * DELETE /dental/charges/:id
+ * Only allowed when paid_amount = 0 (no payments registered)
+ */
+exports.deleteCharge = async (req, res) => {
+    try {
+        if (req.user?.read_only) return res.status(403).json({ error: 'Operación no permitida en modo solo lectura' });
+
+        const { schema, companyId } = await resolveSchema(req);
+
+        const chargeResult = await db.query(
+            `SELECT * FROM ${schema}.dental_charges WHERE id = $1 AND tenant_id = $2`,
+            [req.params.id, companyId]
+        );
+        if (chargeResult.rows.length === 0) {
+            return res.status(404).json({ code: 'DENTAL_CHARGE_NOT_FOUND', error: 'Cobro no encontrado' });
+        }
+
+        const charge = chargeResult.rows[0];
+        if (parseFloat(charge.paid_amount) > 0) {
+            return res.status(409).json({
+                code: 'DENTAL_CHARGE_HAS_PAYMENTS',
+                error: 'No se puede eliminar un cobro con pagos registrados'
+            });
+        }
+
+        await db.query(
+            `DELETE FROM ${schema}.dental_charges WHERE id = $1 AND tenant_id = $2`,
+            [req.params.id, companyId]
+        );
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error('chargesController.deleteCharge error:', err.message);
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al eliminar cobro') });
+    }
+};
+
+/**
+ * DELETE /dental/payments/:id
+ * Recalculates parent charge after deletion
+ */
+exports.deletePayment = async (req, res) => {
+    try {
+        if (req.user?.read_only) return res.status(403).json({ error: 'Operación no permitida en modo solo lectura' });
+
+        const { schema, companyId } = await resolveSchema(req);
+
+        const paymentResult = await db.query(
+            `SELECT * FROM ${schema}.dental_payments WHERE id = $1 AND tenant_id = $2`,
+            [req.params.id, companyId]
+        );
+        if (paymentResult.rows.length === 0) {
+            return res.status(404).json({ code: 'DENTAL_PAYMENT_NOT_FOUND', error: 'Pago no encontrado' });
+        }
+
+        const payment = paymentResult.rows[0];
+
+        await db.query(
+            `DELETE FROM ${schema}.dental_payments WHERE id = $1 AND tenant_id = $2`,
+            [req.params.id, companyId]
+        );
+
+        // Recalculate parent charge from actual payment sum (avoids arithmetic drift)
+        const chargeResult = await db.query(
+            `SELECT * FROM ${schema}.dental_charges WHERE id = $1 AND tenant_id = $2`,
+            [payment.charge_id, companyId]
+        );
+        if (chargeResult.rows.length > 0) {
+            const charge = chargeResult.rows[0];
+            const sumResult = await db.query(
+                `SELECT COALESCE(SUM(amount), 0) AS total_paid
+                 FROM ${schema}.dental_payments
+                 WHERE charge_id = $1 AND tenant_id = $2`,
+                [charge.id, companyId]
+            );
+            const newPaidAmount = parseFloat(sumResult.rows[0].total_paid);
+            const newPendingAmount = parseFloat(charge.total_amount) - newPaidAmount;
+            const newStatus = resolveChargeStatus(charge.total_amount, newPendingAmount);
+            await db.query(
+                `UPDATE ${schema}.dental_charges
+                 SET paid_amount = $1, pending_amount = $2, status = $3, updated_at = CURRENT_TIMESTAMP
+                 WHERE id = $4 AND tenant_id = $5`,
+                [newPaidAmount, newPendingAmount, newStatus, charge.id, companyId]
+            );
+
+            // Sync administrative_status on the linked consultation
+            if (charge.consultation_id) {
+                const adminStatus =
+                    newStatus === 'paid'           ? 'paid' :
+                    newStatus === 'partially_paid' ? 'partially_paid' :
+                    'unpaid';
+                await db.query(
+                    `UPDATE ${schema}.dental_consultations
+                     SET administrative_status = $1, updated_at = NOW()
+                     WHERE id = $2 AND tenant_id = $3`,
+                    [adminStatus, charge.consultation_id, companyId]
+                );
+            }
+        }
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error('chargesController.deletePayment error:', err.message);
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al eliminar pago') });
     }
 };
 
@@ -513,6 +664,6 @@ exports.getFinanceSummary = async (req, res) => {
         });
     } catch (err) {
         console.error('chargesController.getFinanceSummary error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al obtener resumen financiero' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al obtener resumen financiero') });
     }
 };

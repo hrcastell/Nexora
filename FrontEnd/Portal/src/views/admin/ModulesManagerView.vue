@@ -353,7 +353,7 @@ onMounted(loadCatalog);
           <!-- Module metadata (Bloque A) -->
           <div class="px-5 py-4 border-b" :style="{ borderColor: cardBorder }">
             <p class="text-xs uppercase tracking-wider mb-3" :style="{ color: mutedColor }">Configuración del módulo</p>
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label class="mb-1.5 block text-xs font-medium" :style="{ color: mutedColor }">Nombre</label>
                 <input v-model="mod.name" :disabled="!perms.isSuperAdmin.value" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none disabled:opacity-60"
@@ -458,7 +458,7 @@ onMounted(loadCatalog);
 
             <!-- Active tab content -->
             <template v-for="tx in mod.transactions" :key="tx.id">
-              <div v-if="activeTab[mod.id] === tx.id" class="grid grid-cols-2 gap-4">
+              <div v-if="activeTab[mod.id] === tx.id" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label class="mb-1.5 block text-xs font-medium" :style="{ color: mutedColor }">Nombre</label>
                   <input v-model="tx.name" :disabled="!perms.isSuperAdmin.value" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none disabled:opacity-60"

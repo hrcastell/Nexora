@@ -57,7 +57,7 @@ exports.list = async (req, res) => {
         res.json({ data: result.rows });
     } catch (err) {
         console.error('servicesController.list error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al listar servicios' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al listar servicios') });
     }
 };
 
@@ -110,7 +110,7 @@ exports.create = async (req, res) => {
         res.status(201).json(result.rows[0]);
     } catch (err) {
         console.error('servicesController.create error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al crear servicio' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al crear servicio') });
     }
 };
 
@@ -148,7 +148,7 @@ exports.getById = async (req, res) => {
         res.json({ data: result.rows[0] });
     } catch (err) {
         console.error('servicesController.getById error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al obtener servicio' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al obtener servicio') });
     }
 };
 
@@ -229,7 +229,7 @@ exports.update = async (req, res) => {
         res.json(result.rows[0]);
     } catch (err) {
         console.error('servicesController.update error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al actualizar servicio' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al actualizar servicio') });
     }
 };
 
@@ -244,12 +244,12 @@ exports.remove = async (req, res) => {
 
         // Check if referenced by consultations or charges
         const inUseConsultation = await db.query(
-            `SELECT 1 FROM ${schema}.dental_consultations WHERE service_id = $1 LIMIT 1`,
-            [req.params.id]
+            `SELECT 1 FROM ${schema}.dental_consultations WHERE service_id = $1 AND tenant_id = $2 LIMIT 1`,
+            [req.params.id, companyId]
         );
         const inUseCharge = await db.query(
-            `SELECT 1 FROM ${schema}.dental_charges WHERE service_id = $1 LIMIT 1`,
-            [req.params.id]
+            `SELECT 1 FROM ${schema}.dental_charges WHERE service_id = $1 AND tenant_id = $2 LIMIT 1`,
+            [req.params.id, companyId]
         );
 
         if (inUseConsultation.rows.length > 0 || inUseCharge.rows.length > 0) {
@@ -271,7 +271,7 @@ exports.remove = async (req, res) => {
         res.json({ message: 'Servicio eliminado' });
     } catch (err) {
         console.error('servicesController.remove error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al eliminar servicio' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al eliminar servicio') });
     }
 };
 
@@ -297,18 +297,18 @@ exports.assignTreatments = async (req, res) => {
 
         // Delete existing
         await db.query(
-            `DELETE FROM ${schema}.dental_service_treatments WHERE service_id = $1`,
-            [req.params.id]
+            `DELETE FROM ${schema}.dental_service_treatments WHERE service_id = $1 AND tenant_id = $2`,
+            [req.params.id, companyId]
         );
 
         if (treatments.length > 0) {
-            const values = treatments.map((t, i) => `($1, $${i * 2 + 2}, $${i * 2 + 3})`).join(', ');
-            const params = [req.params.id];
+            const values = treatments.map((t, i) => `($1, $2, $${i * 2 + 3}, $${i * 2 + 4})`).join(', ');
+            const params = [req.params.id, companyId];
             for (const t of treatments) {
                 params.push(t.treatment_id, t.quantity || 1);
             }
             await db.query(
-                `INSERT INTO ${schema}.dental_service_treatments (service_id, treatment_id, quantity) VALUES ${values}`,
+                `INSERT INTO ${schema}.dental_service_treatments (service_id, tenant_id, treatment_id, quantity) VALUES ${values}`,
                 params
             );
         }
@@ -337,6 +337,6 @@ exports.assignTreatments = async (req, res) => {
         res.json(result.rows[0]);
     } catch (err) {
         console.error('servicesController.assignTreatments error:', err.message);
-        res.status(err.statusCode || 500).json({ error: err.message || 'Error al asignar tratamientos al servicio' });
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al asignar tratamientos al servicio') });
     }
 };
