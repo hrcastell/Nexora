@@ -359,7 +359,7 @@ onMounted(() => {
             <span class="text-sm text-white/70">Requiere múltiples sesiones</span>
           </label>
           <template v-if="form.requires_multiple_sessions">
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div class="flex flex-col gap-1.5">
                 <label class="text-xs text-white/50">Cantidad estimada de sesiones</label>
                 <input v-model.number="form.estimated_sessions" type="number" min="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" placeholder="Ej: 3" />

@@ -1276,7 +1276,7 @@ onMounted(async () => {
             </option>
           </select>
         </div>
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="mb-1.5 block text-xs text-white/50">Precio unitario</label>
             <input

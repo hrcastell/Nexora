@@ -213,7 +213,7 @@ onMounted(() => store.load());
           <label class="text-xs text-white/50">Descripción</label>
           <textarea v-model="form.description" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none"></textarea>
         </div>
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="flex flex-col gap-1.5">
             <label class="text-xs text-white/50">Categoría</label>
             <input v-model="form.category" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" placeholder="Ej: Ortodoncia" />

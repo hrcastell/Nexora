@@ -287,7 +287,7 @@ onMounted(async () => {
 
         <!-- Calculated price breakdown -->
         <template v-else>
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div class="flex flex-col gap-1.5">
               <label class="text-xs text-white/50">Costo insumos</label>
               <input v-model.number="form.supplies_cost" type="number" min="0" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
@@ -297,7 +297,7 @@ onMounted(async () => {
               <input v-model.number="form.labor_cost" type="number" min="0" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
             </div>
           </div>
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div class="flex flex-col gap-1.5">
               <label class="text-xs text-white/50">IVA (%)</label>
               <input v-model.number="form.tax_rate" type="number" min="0" max="100" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />

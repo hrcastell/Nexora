@@ -341,7 +341,7 @@ onMounted(async () => {
         </div>
 
         <!-- Status + amounts -->
-        <div class="grid grid-cols-3 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div class="flex flex-col gap-1 p-3 rounded-xl border border-white/10" :style="{ background: 'var(--nexora-glass-bg)' }">
             <p class="text-xs text-white/40">Total</p>
             <p class="text-sm font-bold text-white">{{ fmt(store.current.total_amount) }}</p>

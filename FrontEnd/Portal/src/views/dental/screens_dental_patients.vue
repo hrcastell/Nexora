@@ -168,7 +168,7 @@ onMounted(() => store.load());
       <form class="flex flex-col gap-5" @submit.prevent="save">
         <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Datos personales</p>
 
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="flex flex-col gap-1.5">
             <label class="text-xs text-white/50">Nombre *</label>
             <input v-model="form.first_name" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" required />
@@ -179,7 +179,7 @@ onMounted(() => store.load());
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="flex flex-col gap-1.5">
             <label class="text-xs text-white/50">Tipo documento</label>
             <select v-model="form.document_type" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none">
@@ -197,7 +197,7 @@ onMounted(() => store.load());
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="flex flex-col gap-1.5">
             <label class="text-xs text-white/50">Teléfono</label>
             <input v-model="form.phone" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
@@ -277,7 +277,7 @@ onMounted(() => store.load());
 
         <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Contacto de emergencia</p>
 
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="flex flex-col gap-1.5">
             <label class="text-xs text-white/50">Nombre</label>
             <input v-model="form.emergency_contact_name" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
