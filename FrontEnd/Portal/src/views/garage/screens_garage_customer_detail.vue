@@ -91,7 +91,7 @@ function fmtDate(d: string | null) {
         </button>
       </div>
 
-      <div v-if="activeTab === 'info'" class="grid grid-cols-2 gap-4">
+      <div v-if="activeTab === 'info'" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div v-for="field in [
           { label: 'Fuente', value: custStore.current.source },
           { label: 'Notas', value: custStore.current.notes },

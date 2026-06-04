@@ -98,7 +98,7 @@ const fmtKm = (n: number | null) => n != null ? `${n.toLocaleString()} km` : 'â€
         </button>
       </div>
 
-      <div v-if="activeTab === 'info'" class="grid grid-cols-2 gap-4">
+      <div v-if="activeTab === 'info'" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div v-for="field in [
           { label: 'VIN / Chasis', value: store.current.vin },
           { label: 'NÂ° Motor', value: store.current.engine_number },
@@ -125,7 +125,7 @@ const fmtKm = (n: number | null) => n != null ? `${n.toLocaleString()} km` : 'â€
       <div v-if="activeTab === 'history'">
         <div v-if="histLoading" class="h-32 rounded-xl bg-white/5 animate-pulse"></div>
         <div v-else-if="history">
-          <div class="grid grid-cols-3 gap-3 mb-4">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
             <div class="p-4 rounded-xl border border-white/10 text-center" :style="{ background: 'var(--nexora-glass-bg)' }">
               <p class="text-xl font-bold text-white">{{ history.summary.total_orders }}</p>
               <p class="text-xs text-white/40">Ã“rdenes total</p>

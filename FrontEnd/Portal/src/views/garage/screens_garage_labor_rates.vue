@@ -139,7 +139,7 @@ const fmtDate = (d: string | null) => d ? new Date(d).toLocaleDateString('es-CL'
       size="sm"
       @close="showForm = false"
     >
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div class="col-span-2">
               <label class="block text-xs text-white/50 mb-1">Empleado *</label>
               <select v-model="form.employee_id" :disabled="!!editing" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none disabled:opacity-50">

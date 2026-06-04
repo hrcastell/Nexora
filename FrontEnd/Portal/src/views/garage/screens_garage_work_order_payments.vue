@@ -138,7 +138,7 @@ const statusConfig = computed(() => {
           <CreditCard :size="24" class="text-white/20" />
         </div>
 
-        <div class="grid grid-cols-3 gap-4 mb-4">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
           <div>
             <p class="text-xs text-white/40 mb-1">Total orden</p>
             <p class="text-lg font-bold text-white">{{ fmt(summary.total_amount, summary.currency) }}</p>
@@ -169,7 +169,7 @@ const statusConfig = computed(() => {
       <!-- New payment form -->
       <div v-if="showForm" class="p-5 rounded-2xl border border-white/10" :style="{ background: 'var(--nexora-glass-bg)' }">
         <h3 class="text-sm font-semibold text-white mb-4">Registrar nuevo pago</h3>
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label class="block text-xs text-white/50 mb-1">Monto *</label>
             <input
