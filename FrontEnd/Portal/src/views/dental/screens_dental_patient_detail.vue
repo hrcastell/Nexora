@@ -3,14 +3,16 @@ import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ArrowLeft, User, FileText, Stethoscope, CreditCard, CalendarDays, Pencil, Phone, MessageCircle, Plus } from 'lucide-vue-next';
 import { useDentalPatientsStore } from '../../stores/dentalPatients';
+import { useDentalAppointmentsStore } from '../../stores/dentalAppointments';
 import NxrSlidePanel from '../../components/NxrSlidePanel.vue';
 import AppToast from '../../components/AppToast.vue';
 import { useToast } from '../../composables/useToast';
-import type { DentalClinicalHistoryEntry, DentalConsultation, DentalPayment, DentalCharge, DentalMedicalHistory } from '../../types/dental';
+import type { DentalClinicalHistoryEntry, DentalConsultation, DentalPayment, DentalCharge, DentalMedicalHistory, DentalAppointment } from '../../types/dental';
 
 const route  = useRoute();
 const router = useRouter();
-const store  = useDentalPatientsStore();
+const store              = useDentalPatientsStore();
+const appointmentsStore  = useDentalAppointmentsStore();
 const { toasts, triggerToast, removeToast } = useToast();
 
 const activeTab         = ref<'summary' | 'personal' | 'history' | 'consultations' | 'payments' | 'appointments'>('summary');
@@ -22,6 +24,7 @@ const medicalHistory    = ref<DentalMedicalHistory[]>([]);
 const consultations     = ref<DentalConsultation[]>([]);
 const payments          = ref<DentalPayment[]>([]);
 const debt              = ref<DentalCharge[]>([]);
+const appointments      = ref<DentalAppointment[]>([]);
 
 // Medical history panel
 const showMedHistPanel  = ref(false);
@@ -135,6 +138,10 @@ async function loadTabData(tab: typeof activeTab.value) {
   if (tab === 'payments' && payments.value.length === 0) {
     payments.value = await store.getPayments(route.params.id as string);
     debt.value = await store.getDebt(route.params.id as string);
+  }
+  if (tab === 'appointments' && appointments.value.length === 0) {
+    await appointmentsStore.load({ customer_id: route.params.id as string });
+    appointments.value = appointmentsStore.items;
   }
 }
 
@@ -466,8 +473,40 @@ onMounted(async () => {
 
       <!-- Tab: Appointments -->
       <div v-if="activeTab === 'appointments'" class="flex flex-col gap-2">
-        <div class="text-center text-white/30 py-10 text-sm">
-          Ver citas desde el módulo de <button class="text-[var(--nexora-primary)] hover:underline" @click="router.push('/dental/appointments')">Citas</button>.
+        <div v-if="appointmentsStore.loading" class="text-center text-white/30 py-10 text-sm">Cargando citas...</div>
+        <div v-else-if="appointments.length === 0" class="text-center text-white/30 py-10 text-sm">
+          No hay citas registradas para este paciente.
+        </div>
+        <div
+          v-for="appt in appointments"
+          :key="appt.id"
+          class="flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-white/10"
+          :style="{ background: 'var(--nexora-glass-bg)' }"
+        >
+          <div class="flex-1 min-w-0">
+            <p class="text-sm text-white">{{ fmtDate(appt.scheduled_start) }}</p>
+            <p class="text-xs text-white/40 truncate">
+              {{ appt.service?.name ?? appt.reason ?? '—' }}
+            </p>
+          </div>
+          <span
+            class="shrink-0 px-2 py-0.5 rounded-full text-xs"
+            :class="{
+              'bg-blue-500/20 text-blue-400':   appt.status === 'scheduled',
+              'bg-green-500/20 text-green-400': appt.status === 'confirmed' || appt.status === 'completed' || appt.status === 'checked_in',
+              'bg-white/10 text-white/40':      appt.status === 'cancelled' || appt.status === 'no_show' || appt.status === 'rescheduled',
+            }"
+          >
+            {{
+              appt.status === 'scheduled'   ? 'Programada'  :
+              appt.status === 'confirmed'   ? 'Confirmada'  :
+              appt.status === 'checked_in'  ? 'Presente'    :
+              appt.status === 'completed'   ? 'Completada'  :
+              appt.status === 'cancelled'   ? 'Cancelada'   :
+              appt.status === 'no_show'     ? 'No asistió'  :
+              appt.status === 'rescheduled' ? 'Reprogramada': appt.status
+            }}
+          </span>
         </div>
       </div>
     </template>

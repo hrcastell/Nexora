@@ -47,6 +47,8 @@ exports.list = async (req, res) => {
 
         const result = await db.query(
             `SELECT dc.*,
+                    c.first_name,
+                    c.last_name,
                     c.first_name || ' ' || c.last_name AS patient_name,
                     ds.name AS service_name
              FROM ${schema}.dental_consultations dc
@@ -64,9 +66,9 @@ exports.list = async (req, res) => {
             countParams
         );
 
-        const rows = result.rows.map(({ patient_name, service_name, ...rest }) => ({
+        const rows = result.rows.map(({ patient_name, first_name, last_name, service_name, ...rest }) => ({
             ...rest,
-            customer: { full_name: patient_name },
+            customer: { full_name: patient_name, first_name: first_name ?? '', last_name: last_name ?? '' },
             service:  service_name ? { name: service_name } : null
         }));
 
@@ -88,7 +90,6 @@ exports.create = async (req, res) => {
         const {
             customer_id,
             appointment_id = null,
-            service_id = null,
             reason = null,
             diagnosis = null,
             clinical_notes = null,
@@ -101,6 +102,9 @@ exports.create = async (req, res) => {
             follow_up_notes = null,
             professional_id = null,
         } = req.body;
+
+        // Normalize: empty string from frontend select treated as null
+        const service_id = req.body.service_id || null;
 
         if (!customer_id) return res.status(400).json({ error: 'customer_id es requerido' });
 

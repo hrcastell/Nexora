@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   ArrowLeft, CheckCircle2, CreditCard, Edit2, Plus, Trash2,
@@ -142,6 +142,64 @@ const savingService        = ref(false)
 const addServiceError      = ref<string | null>(null)
 const selectedServiceForAdd = ref<any>(null)
 
+// Session scheduling (bulk — from treatment tab)
+const sessionScheduleDates  = ref<string[]>([])
+const schedulingSessions    = ref(false)
+
+// Session edit (inline date change in sessions tab)
+const editingSessionId  = ref<number | string | null>(null)
+const editSessionDate   = ref('')
+const savingEditSession = ref(false)
+
+async function startEditSession(s: DentalConsultationSession) {
+  editingSessionId.value = s.id
+  editSessionDate.value  = s.session_date
+    ? new Date(s.session_date).toISOString().slice(0, 16)
+    : new Date().toISOString().slice(0, 16)
+}
+
+function cancelEditSession() {
+  editingSessionId.value = null
+  editSessionDate.value  = ''
+}
+
+async function saveEditSession(s: DentalConsultationSession) {
+  if (!editSessionDate.value) return
+  savingEditSession.value = true
+  try {
+    await sessionsStore.update(id, s.id, { session_date: editSessionDate.value })
+    triggerToast('Éxito', `Sesión #${s.session_number} reprogramada. La cita en agenda fue actualizada.`, 'success')
+    editingSessionId.value = null
+  } catch (e: any) {
+    triggerToast('Error', e?.response?.data?.error || 'Error al guardar', 'error')
+  } finally {
+    savingEditSession.value = false
+  }
+}
+
+async function scheduleAllSessions() {
+  if (!sessionScheduleDates.value.some(d => d)) return
+  schedulingSessions.value = true
+  try {
+    for (let i = 0; i < sessionScheduleDates.value.length; i++) {
+      const date = sessionScheduleDates.value[i]
+      await sessionsStore.create(id, {
+        session_date: date || null,
+        notes: null,
+        evolution: null,
+        next_session_date: undefined,
+      })
+    }
+    triggerToast('Éxito', `${sessionScheduleDates.value.length} sesiones programadas y agendadas`, 'success')
+    sessionScheduleDates.value = []
+    activeTab.value = 'sessions'
+  } catch (e: any) {
+    triggerToast('Error', e?.response?.data?.error || 'Error al programar sesiones', 'error')
+  } finally {
+    schedulingSessions.value = false
+  }
+}
+
 // Session
 const showSessionPanel = ref(false)
 const sessionForm      = ref<DentalConsultationSessionFormData>({
@@ -160,6 +218,12 @@ const followUpForm = ref({
   follow_up_notes: ''
 })
 const savingFollowUp = ref(false)
+
+watch(() => followUpForm.value.estimated_sessions, (n) => {
+  const count = Math.max(0, n ?? 0)
+  const current = sessionScheduleDates.value
+  sessionScheduleDates.value = Array.from({ length: count }, (_, i) => current[i] ?? '')
+}, { immediate: true })
 
 // Payments
 const chargeDetail      = ref<DentalCharge | null>(null)
@@ -307,14 +371,30 @@ async function addService() {
 }
 
 async function voidService(s: DentalConsultationService) {
-  askConfirm('Anular servicio', `¿Anular "${s.service_name_snapshot}"?`, async () => {
-    try {
-      await consultationServicesStore.voidService(id, s.id)
-      triggerToast('Éxito', 'Servicio anulado', 'success')
-    } catch (e: any) {
-      triggerToast('Error', e?.response?.data?.error || 'Error al anular servicio', 'error')
+  const adminStatus = (consultation.value as any)?.administrative_status
+  const hasPayments = adminStatus && ['partially_paid', 'paid', 'overdue'].includes(adminStatus)
+
+  if (hasPayments) {
+    triggerToast(
+      'No permitido',
+      'No se puede eliminar este servicio porque la consulta tiene pagos registrados. Para modificar los servicios, primero revertí los pagos existentes.',
+      'error'
+    )
+    return
+  }
+
+  askConfirm(
+    'Eliminar servicio',
+    `¿Eliminar "${s.service_name_snapshot}" de la consulta? Esta acción no se puede deshacer.`,
+    async () => {
+      try {
+        await consultationServicesStore.voidService(id, s.id)
+        triggerToast('Éxito', 'Servicio eliminado', 'success')
+      } catch (e: any) {
+        triggerToast('Error', e?.response?.data?.error || 'Error al eliminar servicio', 'error')
+      }
     }
-  })
+  )
 }
 
 async function saveFollowUp() {
@@ -340,8 +420,9 @@ async function createSession() {
   sessionError.value = null
   try {
     await sessionsStore.create(id, sessionForm.value)
-    triggerToast('Éxito', 'Sesión creada', 'success')
+    triggerToast('Éxito', 'Sesión creada y cita agendada', 'success')
     showSessionPanel.value = false
+    activeTab.value = 'sessions'
     sessionForm.value = { session_date: new Date().toISOString().slice(0, 16), notes: '', evolution: '', next_session_date: '' }
   } catch (e: any) {
     sessionError.value = e?.response?.data?.error || 'Error al crear sesión'
@@ -489,7 +570,7 @@ onMounted(async () => {
       requires_follow_up: c.requires_follow_up ?? false,
       requires_multiple_sessions: c.requires_multiple_sessions ?? false,
       estimated_sessions: c.estimated_sessions ?? undefined,
-      next_session_date: c.next_session_date ?? '',
+      next_session_date: c.next_session_date ? (c.next_session_date as string).slice(0, 10) : '',
       follow_up_notes: c.follow_up_notes ?? '',
     }
   }
@@ -841,23 +922,62 @@ onMounted(async () => {
               <span class="text-sm">Requiere múltiples sesiones</span>
             </label>
 
-            <div v-if="followUpForm.requires_multiple_sessions" class="grid gap-4 border-t border-white/10 pt-4 sm:grid-cols-2">
-              <div>
-                <label class="mb-1.5 block text-xs text-white/50">Sesiones estimadas</label>
-                <input
-                  v-model.number="followUpForm.estimated_sessions"
-                  type="number"
-                  min="1"
-                  class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
-                />
+            <div v-if="followUpForm.requires_multiple_sessions" class="space-y-4 border-t border-white/10 pt-4">
+              <div class="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label class="mb-1.5 block text-xs text-white/50">Sesiones estimadas</label>
+                  <input
+                    v-model.number="followUpForm.estimated_sessions"
+                    type="number"
+                    min="1"
+                    class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+                  />
+                </div>
+                <div>
+                  <label class="mb-1.5 block text-xs text-white/50">Fecha próxima sesión</label>
+                  <input
+                    v-model="followUpForm.next_session_date"
+                    type="date"
+                    class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+                  />
+                </div>
               </div>
-              <div>
-                <label class="mb-1.5 block text-xs text-white/50">Fecha próxima sesión</label>
-                <input
-                  v-model="followUpForm.next_session_date"
-                  type="date"
-                  class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
-                />
+
+              <!-- Session date scheduler — only shown before any sessions are created -->
+              <div
+                v-if="sessionScheduleDates.length > 0 && sessionsStore.items.length === 0"
+                class="rounded-xl border border-white/10 bg-white/5 p-4 space-y-3"
+              >
+                <p class="text-xs font-semibold text-white/50 uppercase tracking-wide">Programar fechas de sesiones</p>
+                <div
+                  v-for="(_, i) in sessionScheduleDates"
+                  :key="i"
+                  class="flex items-center gap-3"
+                >
+                  <span class="shrink-0 text-xs text-white/40 w-16">Sesión {{ i + 1 }}</span>
+                  <input
+                    v-model="sessionScheduleDates[i]"
+                    type="datetime-local"
+                    class="flex-1 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+                  />
+                </div>
+                <button
+                  class="w-full rounded-xl py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50"
+                  :style="{ background: 'var(--nexora-primary)' }"
+                  :disabled="schedulingSessions || !sessionScheduleDates.some(d => d)"
+                  @click="scheduleAllSessions"
+                >
+                  {{ schedulingSessions ? 'Programando...' : `Programar ${sessionScheduleDates.length} sesiones y crear citas` }}
+                </button>
+              </div>
+
+              <!-- Already has sessions -->
+              <div
+                v-else-if="sessionScheduleDates.length > 0 && sessionsStore.items.length > 0"
+                class="flex items-center gap-2 text-xs text-white/40 px-1"
+              >
+                <CheckCircle2 class="h-3.5 w-3.5 text-green-400" />
+                {{ sessionsStore.items.length }} sesiones programadas. Modificá las fechas desde el tab Sesiones.
               </div>
             </div>
 
@@ -928,7 +1048,7 @@ onMounted(async () => {
             class="rounded-xl border border-white/10 bg-white/5 p-4"
           >
             <div class="flex items-start justify-between gap-3">
-              <div class="flex-1">
+              <div class="flex-1 min-w-0">
                 <div class="mb-2 flex flex-wrap items-center gap-2">
                   <span class="text-sm font-semibold">Sesión #{{ session.session_number }}</span>
                   <span
@@ -943,15 +1063,52 @@ onMounted(async () => {
                 <p v-if="session.next_session_date" class="mt-1 text-xs text-white/40">
                   Próxima: {{ fmtDate(session.next_session_date) }}
                 </p>
+
+                <!-- Inline date edit -->
+                <div
+                  v-if="editingSessionId === session.id"
+                  class="mt-3 flex flex-wrap items-center gap-2"
+                >
+                  <input
+                    v-model="editSessionDate"
+                    type="datetime-local"
+                    class="rounded-xl border border-white/20 bg-white/5 px-3 py-1.5 text-sm text-white outline-none focus:border-white/40"
+                  />
+                  <button
+                    class="rounded-lg px-3 py-1.5 text-xs font-medium text-white transition hover:opacity-90 disabled:opacity-50"
+                    :style="{ background: 'var(--nexora-primary)' }"
+                    :disabled="savingEditSession || !editSessionDate"
+                    @click="saveEditSession(session)"
+                  >
+                    {{ savingEditSession ? '...' : 'Guardar' }}
+                  </button>
+                  <button
+                    class="rounded-lg border border-white/10 px-3 py-1.5 text-xs text-white/50 hover:text-white transition"
+                    @click="cancelEditSession"
+                  >
+                    Cancelar
+                  </button>
+                </div>
               </div>
-              <button
-                v-if="!['completed', 'cancelled'].includes(session.status ?? '')"
-                class="shrink-0 flex items-center gap-1 rounded-lg bg-green-500/20 px-3 py-1.5 text-xs font-medium text-green-400 transition hover:bg-green-500/30"
-                @click="completeSession(session)"
-              >
-                <CheckCircle2 class="h-3.5 w-3.5" />
-                Completar
-              </button>
+
+              <div class="shrink-0 flex flex-col items-end gap-1.5">
+                <button
+                  v-if="!['completed', 'cancelled'].includes(session.status ?? '')"
+                  class="flex items-center gap-1 rounded-lg bg-green-500/20 px-3 py-1.5 text-xs font-medium text-green-400 transition hover:bg-green-500/30"
+                  @click="completeSession(session)"
+                >
+                  <CheckCircle2 class="h-3.5 w-3.5" />
+                  Completar
+                </button>
+                <button
+                  v-if="editingSessionId !== session.id && !['completed', 'cancelled'].includes(session.status ?? '')"
+                  class="flex items-center gap-1 rounded-lg border border-white/10 px-3 py-1.5 text-xs text-white/50 transition hover:border-white/20 hover:text-white"
+                  @click="startEditSession(session)"
+                >
+                  <Edit2 class="h-3 w-3" />
+                  Editar fecha
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -1264,6 +1421,17 @@ onMounted(async () => {
     <!-- 3. Add service -->
     <NxrSlidePanel :open="showAddServicePanel" title="Agregar servicio" @close="showAddServicePanel = false">
       <div class="space-y-4">
+        <!-- Warning: consultation already has payments -->
+        <div
+          v-if="(consultation as any)?.administrative_status && !['unpaid', 'cancelled'].includes((consultation as any).administrative_status)"
+          class="flex gap-3 rounded-xl border border-yellow-500/30 bg-yellow-500/10 px-4 py-3"
+        >
+          <AlertCircle class="mt-0.5 h-4 w-4 shrink-0 text-yellow-400" />
+          <div class="text-xs text-yellow-300">
+            <p class="font-semibold">Esta consulta ya tiene pagos registrados.</p>
+            <p class="mt-1 text-yellow-300/70">Agregar un servicio modificará el total. Si existen cuotas, deberás recalcularlas manualmente desde el tab de Pagos.</p>
+          </div>
+        </div>
         <div>
           <label class="mb-1.5 block text-xs text-white/50">Servicio</label>
           <select

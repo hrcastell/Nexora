@@ -233,7 +233,7 @@ exports.void = async (req, res) => {
         if (chargeCheck.rows.length > 0) {
             return res.status(409).json({
                 code: 'DENTAL_CONS_SERVICE_HAS_PAYMENTS',
-                error: 'No se puede anular un servicio con pagos registrados'
+                error: 'No se puede eliminar este servicio porque la consulta ya tiene pagos registrados. Para modificar los servicios, primero revertí los pagos existentes.'
             });
         }
 
