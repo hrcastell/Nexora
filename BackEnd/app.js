@@ -29,7 +29,6 @@ const corsOptions = {
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
 };
 
-app.options('*', cors(corsOptions)); // explicit preflight for all routes
 app.use(cors(corsOptions));
 
 app.use(morgan('dev'));
