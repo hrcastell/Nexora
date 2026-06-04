@@ -19,7 +19,15 @@ const props = withDefaults(defineProps<{
 }>(), { readonly: false })
 
 const store = useDentalConsultationsStore()
-const baseUrl = (api.defaults.baseURL ?? '').replace('/api', '')
+const baseUrl = (() => {
+  const url = api.defaults.baseURL ?? 'http://localhost:3000/api'
+  try {
+    const parsed = new URL(url)
+    return `${parsed.protocol}//${parsed.host}`
+  } catch {
+    return url.replace(/\/api.*$/, '')
+  }
+})()
 
 const beforePhotos = ref<DentalConsultationPhoto[]>([])
 const afterPhotos  = ref<DentalConsultationPhoto[]>([])
