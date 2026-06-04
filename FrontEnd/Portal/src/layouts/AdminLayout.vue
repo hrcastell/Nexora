@@ -243,7 +243,7 @@ const logout = () => {
 
     <!-- Main Content -->
     <main class="flex-1 overflow-y-auto h-screen relative z-10">
-      <div class="px-5 py-6 lg:px-8 lg:py-7 min-h-full">
+      <div class="px-3 py-4 sm:px-5 sm:py-6 lg:px-8 lg:py-7 min-h-full">
         <!-- Mobile Header -->
         <header class="mb-6 flex items-center justify-between rounded-[32px] border nxr-surface p-4 shadow-2xl shadow-black/15 backdrop-blur-xl md:hidden">
           <button 
@@ -296,7 +296,7 @@ const logout = () => {
         </header>
 
         <!-- Page Content -->
-        <div class="rounded-[32px] border nxr-surface p-5 shadow-2xl shadow-black/15 backdrop-blur-xl min-h-[calc(100%-140px)]">
+        <div class="rounded-2xl sm:rounded-[32px] border nxr-surface p-3 sm:p-5 shadow-2xl shadow-black/15 backdrop-blur-xl min-h-[calc(100%-140px)]">
           <router-view />
         </div>
 

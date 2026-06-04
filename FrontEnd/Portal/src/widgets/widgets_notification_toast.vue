@@ -81,7 +81,7 @@ function typeIconChar(type: Notification['type']): string {
 
 <template>
   <!-- Fixed container bottom-right -->
-  <div class="pointer-events-none fixed bottom-6 right-6 z-[100] flex flex-col gap-3 w-80">
+  <div class="pointer-events-none fixed bottom-6 right-6 z-[100] flex flex-col gap-3 w-[calc(100vw-2rem)] sm:w-80">
     <TransitionGroup name="toast">
       <div
         v-for="t in activeToasts"
