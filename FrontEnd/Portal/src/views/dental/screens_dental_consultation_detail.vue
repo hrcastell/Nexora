@@ -184,9 +184,9 @@ async function scheduleAllSessions() {
     for (let i = 0; i < sessionScheduleDates.value.length; i++) {
       const date = sessionScheduleDates.value[i]
       await sessionsStore.create(id, {
-        session_date: date || null,
-        notes: null,
-        evolution: null,
+        session_date: date || undefined,
+        notes: undefined,
+        evolution: undefined,
         next_session_date: undefined,
       })
     }
