@@ -591,7 +591,7 @@ const initials = (u: CompanyUser) => `${u.first_name?.[0] ?? ''}${u.last_name?.[
             <!-- Datos personales -->
             <div>
               <p class="text-xs font-semibold uppercase tracking-wide mb-3" :style="{ color: mutedColor }">Datos personales</p>
-              <div class="grid grid-cols-2 gap-3">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Nombre *</label>
                   <input v-model="form.first_name" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
@@ -633,7 +633,7 @@ const initials = (u: CompanyUser) => `${u.first_name?.[0] ?? ''}${u.last_name?.[
             <!-- Acceso y rol -->
             <div>
               <p class="text-xs font-semibold uppercase tracking-wide mb-3" :style="{ color: mutedColor }">Acceso y rol</p>
-              <div class="grid grid-cols-2 gap-3">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Rol del sistema</label>
                   <select v-model="form.role" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
@@ -692,7 +692,7 @@ const initials = (u: CompanyUser) => `${u.first_name?.[0] ?? ''}${u.last_name?.[
               <p class="text-xs font-semibold uppercase tracking-wide mb-3" :style="{ color: mutedColor }">
                 {{ isEditing ? 'Cambiar contrasena (opcional)' : 'Contrasena *' }}
               </p>
-              <div class="grid grid-cols-2 gap-3">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div class="relative">
                   <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Contrasena</label>
                   <div class="relative">

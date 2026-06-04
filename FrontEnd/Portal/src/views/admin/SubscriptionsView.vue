@@ -256,7 +256,7 @@ const fmtCurrency = (n: number, c = 'CLP') =>
               <ShieldAlert class="h-4 w-4 shrink-0" /> {{ saveError }}
             </div>
 
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <!-- Código (solo en creación) -->
               <div class="col-span-2" v-if="!editingId">
                 <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Código * <span class="font-normal">(único, ej: basico, pro)</span></label>
