@@ -31,11 +31,12 @@ async function loadPhotos() {
   loading.value = true
   error.value = null
   try {
-    const all = await store.listPhotos(props.consultationId) as DentalConsultationPhoto[]
+    const result = await store.listPhotos(props.consultationId)
+    const all = Array.isArray(result) ? result as DentalConsultationPhoto[] : []
     beforePhotos.value = all.filter(p => p.stage === 'before')
     afterPhotos.value  = all.filter(p => p.stage === 'after')
   } catch (e: any) {
-    error.value = e?.response?.data?.error || 'Error al cargar las fotos'
+    error.value = e?.response?.data?.error || e?.message || 'Error al cargar las fotos'
   } finally {
     loading.value = false
   }
