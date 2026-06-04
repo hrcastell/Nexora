@@ -108,49 +108,62 @@ exports.create = async (req, res) => {
 
         if (!customer_id) return res.status(400).json({ error: 'customer_id es requerido' });
 
-        const result = await db.query(
-            `INSERT INTO ${schema}.dental_consultations
-             (tenant_id, customer_id, appointment_id, service_id, reason, diagnosis, clinical_notes, indications, total_amount, status, consultation_date,
-              requires_follow_up, requires_multiple_sessions, estimated_sessions, next_session_date, follow_up_notes, professional_id, created_by)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'in_progress', NOW(),
-                     $10, $11, $12, $13, $14, $15, $16)
-             RETURNING *`,
-            [companyId, customer_id, appointment_id, service_id, reason, diagnosis, clinical_notes, indications, parseFloat(total_amount) || 0,
-             requires_follow_up, requires_multiple_sessions, estimated_sessions, next_session_date, follow_up_notes, professional_id, req.user?.id || null]
-        );
+        const txClient = await db.getClient();
+        let consultation;
+        try {
+            await txClient.query('BEGIN');
 
-        const consultation = result.rows[0];
-
-        // Auto-copy treatments from the service if service_id was provided
-        if (service_id) {
-            // Auto-seed dental_consultation_services from the initial service
-            const svcResult = await db.query(
-                `SELECT name, final_price FROM ${schema}.dental_services WHERE id = $1 AND tenant_id = $2`,
-                [service_id, companyId]
+            const result = await txClient.query(
+                `INSERT INTO ${schema}.dental_consultations
+                 (tenant_id, customer_id, appointment_id, service_id, reason, diagnosis, clinical_notes, indications, total_amount, status, consultation_date,
+                  requires_follow_up, requires_multiple_sessions, estimated_sessions, next_session_date, follow_up_notes, professional_id, created_by)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'in_progress', NOW(),
+                         $10, $11, $12, $13, $14, $15, $16)
+                 RETURNING *`,
+                [companyId, customer_id, appointment_id, service_id, reason, diagnosis, clinical_notes, indications, parseFloat(total_amount) || 0,
+                 requires_follow_up, requires_multiple_sessions, estimated_sessions, next_session_date, follow_up_notes, professional_id, req.user?.id || null]
             );
-            if (svcResult.rows.length > 0) {
-                const svc = svcResult.rows[0];
-                await db.query(
-                    `INSERT INTO ${schema}.dental_consultation_services
-                     (tenant_id, consultation_id, service_id, service_name_snapshot, unit_price, quantity, subtotal, status, created_by)
-                     VALUES ($1, $2, $3, $4, $5, 1, $5, 'active', $6)`,
-                    [companyId, consultation.id, service_id, svc.name, parseFloat(svc.final_price) || 0, req.user?.id || null]
+
+            consultation = result.rows[0];
+
+            // Auto-copy treatments from the service if service_id was provided
+            if (service_id) {
+                // Auto-seed dental_consultation_services from the initial service
+                const svcResult = await txClient.query(
+                    `SELECT name, final_price FROM ${schema}.dental_services WHERE id = $1 AND tenant_id = $2`,
+                    [service_id, companyId]
                 );
+                if (svcResult.rows.length > 0) {
+                    const svc = svcResult.rows[0];
+                    await txClient.query(
+                        `INSERT INTO ${schema}.dental_consultation_services
+                         (tenant_id, consultation_id, service_id, service_name_snapshot, unit_price, quantity, subtotal, status, created_by)
+                         VALUES ($1, $2, $3, $4, $5, 1, $5, 'active', $6)`,
+                        [companyId, consultation.id, service_id, svc.name, parseFloat(svc.final_price) || 0, req.user?.id || null]
+                    );
+                }
+
+                const svcTreatments = await txClient.query(
+                    `SELECT treatment_id, quantity, notes FROM ${schema}.dental_service_treatments
+                     WHERE service_id = $1 AND tenant_id = $2`,
+                    [service_id, companyId]
+                );
+                for (const t of svcTreatments.rows) {
+                    await txClient.query(
+                        `INSERT INTO ${schema}.dental_consultation_treatments
+                         (tenant_id, consultation_id, treatment_id, quantity, notes)
+                         VALUES ($1, $2, $3, $4, $5)`,
+                        [companyId, consultation.id, t.treatment_id, t.quantity, t.notes || null]
+                    );
+                }
             }
 
-            const svcTreatments = await db.query(
-                `SELECT treatment_id, quantity, notes FROM ${schema}.dental_service_treatments
-                 WHERE service_id = $1 AND tenant_id = $2`,
-                [service_id, companyId]
-            );
-            for (const t of svcTreatments.rows) {
-                await db.query(
-                    `INSERT INTO ${schema}.dental_consultation_treatments
-                     (tenant_id, consultation_id, treatment_id, quantity, notes)
-                     VALUES ($1, $2, $3, $4, $5)`,
-                    [companyId, consultation.id, t.treatment_id, t.quantity, t.notes || null]
-                );
-            }
+            await txClient.query('COMMIT');
+        } catch (txErr) {
+            await txClient.query('ROLLBACK');
+            throw txErr;
+        } finally {
+            txClient.release();
         }
 
         res.status(201).json(consultation);
@@ -257,7 +270,9 @@ exports.update = async (req, res) => {
             return res.status(404).json({ code: 'DENTAL_CONSULTATION_NOT_FOUND', error: 'Consulta no encontrada' });
         }
 
-        const serviceChanged = service_id !== undefined && service_id !== existing.rows[0].service_id;
+        const normalizedNewServiceId  = (service_id != null && service_id !== '') ? parseInt(service_id, 10) : null;
+        const normalizedCurrServiceId = existing.rows[0].service_id ?? null;
+        const serviceChanged = service_id !== undefined && normalizedNewServiceId !== normalizedCurrServiceId;
 
         // If service changed, resolve new total_amount from service final_price
         let resolvedTotalAmount = total_amount !== undefined ? parseFloat(total_amount) : null;
@@ -271,68 +286,81 @@ exports.update = async (req, res) => {
             }
         }
 
-        const result = await db.query(
-            `UPDATE ${schema}.dental_consultations
-             SET service_id                  = COALESCE($1, service_id),
-                 reason                      = COALESCE($2, reason),
-                 diagnosis                   = COALESCE($3, diagnosis),
-                 clinical_notes              = COALESCE($4, clinical_notes),
-                 indications                 = COALESCE($5, indications),
-                 total_amount                = COALESCE($6, total_amount),
-                 administrative_status       = COALESCE($7, administrative_status),
-                 requires_follow_up          = COALESCE($10, requires_follow_up),
-                 requires_multiple_sessions  = COALESCE($11, requires_multiple_sessions),
-                 estimated_sessions          = COALESCE($12, estimated_sessions),
-                 next_session_date           = COALESCE($13, next_session_date),
-                 follow_up_notes             = COALESCE($14, follow_up_notes),
-                 professional_id             = COALESCE($15, professional_id),
-                 updated_at                  = CURRENT_TIMESTAMP,
-                 updated_by                  = $16
-             WHERE id = $8 AND tenant_id = $9
-             RETURNING *`,
-            [
-                service_id !== undefined ? service_id : null,
-                reason !== undefined ? reason : null,
-                diagnosis !== undefined ? diagnosis : null,
-                clinical_notes !== undefined ? clinical_notes : null,
-                indications !== undefined ? indications : null,
-                resolvedTotalAmount,
-                administrative_status !== undefined ? administrative_status : null,
-                req.params.id,
-                companyId,
-                requires_follow_up !== undefined ? requires_follow_up : null,
-                requires_multiple_sessions !== undefined ? requires_multiple_sessions : null,
-                estimated_sessions !== undefined ? estimated_sessions : null,
-                next_session_date !== undefined ? next_session_date : null,
-                follow_up_notes !== undefined ? follow_up_notes : null,
-                professional_id !== undefined ? professional_id : null,
-                req.user?.id || null
-            ]
-        );
+        const updateClient = await db.getClient();
+        let result;
+        try {
+            await updateClient.query('BEGIN');
 
-        if (result.rows.length === 0) {
-            return res.status(404).json({ code: 'DENTAL_CONSULTATION_NOT_FOUND', error: 'Consulta no encontrada' });
-        }
+            result = await updateClient.query(
+                `UPDATE ${schema}.dental_consultations
+                 SET service_id                  = COALESCE($1, service_id),
+                     reason                      = COALESCE($2, reason),
+                     diagnosis                   = COALESCE($3, diagnosis),
+                     clinical_notes              = COALESCE($4, clinical_notes),
+                     indications                 = COALESCE($5, indications),
+                     total_amount                = COALESCE($6, total_amount),
+                     administrative_status       = COALESCE($7, administrative_status),
+                     requires_follow_up          = COALESCE($10, requires_follow_up),
+                     requires_multiple_sessions  = COALESCE($11, requires_multiple_sessions),
+                     estimated_sessions          = COALESCE($12, estimated_sessions),
+                     next_session_date           = COALESCE($13, next_session_date),
+                     follow_up_notes             = COALESCE($14, follow_up_notes),
+                     professional_id             = COALESCE($15, professional_id),
+                     updated_at                  = CURRENT_TIMESTAMP,
+                     updated_by                  = $16
+                 WHERE id = $8 AND tenant_id = $9
+                 RETURNING *`,
+                [
+                    service_id !== undefined ? service_id : null,
+                    reason !== undefined ? reason : null,
+                    diagnosis !== undefined ? diagnosis : null,
+                    clinical_notes !== undefined ? clinical_notes : null,
+                    indications !== undefined ? indications : null,
+                    resolvedTotalAmount,
+                    administrative_status !== undefined ? administrative_status : null,
+                    req.params.id,
+                    companyId,
+                    requires_follow_up !== undefined ? requires_follow_up : null,
+                    requires_multiple_sessions !== undefined ? requires_multiple_sessions : null,
+                    estimated_sessions !== undefined ? estimated_sessions : null,
+                    next_session_date !== undefined ? next_session_date : null,
+                    follow_up_notes !== undefined ? follow_up_notes : null,
+                    professional_id !== undefined ? professional_id : null,
+                    req.user?.id || null
+                ]
+            );
 
-        // If service changed, replace consultation treatments
-        if (serviceChanged) {
-            await db.query(
-                `DELETE FROM ${schema}.dental_consultation_treatments WHERE consultation_id = $1 AND tenant_id = $2`,
-                [req.params.id, companyId]
-            );
-            const svcTreatments = await db.query(
-                `SELECT treatment_id, quantity, notes FROM ${schema}.dental_service_treatments
-                 WHERE service_id = $1 AND tenant_id = $2`,
-                [service_id, companyId]
-            );
-            for (const t of svcTreatments.rows) {
-                await db.query(
-                    `INSERT INTO ${schema}.dental_consultation_treatments
-                     (tenant_id, consultation_id, treatment_id, quantity, notes)
-                     VALUES ($1, $2, $3, $4, $5)`,
-                    [companyId, req.params.id, t.treatment_id, t.quantity, t.notes || null]
-                );
+            if (result.rows.length === 0) {
+                await updateClient.query('ROLLBACK');
+                return res.status(404).json({ code: 'DENTAL_CONSULTATION_NOT_FOUND', error: 'Consulta no encontrada' });
             }
+
+            if (serviceChanged) {
+                await updateClient.query(
+                    `DELETE FROM ${schema}.dental_consultation_treatments WHERE consultation_id = $1 AND tenant_id = $2`,
+                    [req.params.id, companyId]
+                );
+                const svcTreatments = await updateClient.query(
+                    `SELECT treatment_id, quantity, notes FROM ${schema}.dental_service_treatments
+                     WHERE service_id = $1 AND tenant_id = $2`,
+                    [service_id, companyId]
+                );
+                for (const t of svcTreatments.rows) {
+                    await updateClient.query(
+                        `INSERT INTO ${schema}.dental_consultation_treatments
+                         (tenant_id, consultation_id, treatment_id, quantity, notes)
+                         VALUES ($1, $2, $3, $4, $5)`,
+                        [companyId, req.params.id, t.treatment_id, t.quantity, t.notes || null]
+                    );
+                }
+            }
+
+            await updateClient.query('COMMIT');
+        } catch (txErr) {
+            await updateClient.query('ROLLBACK');
+            throw txErr;
+        } finally {
+            updateClient.release();
         }
 
         res.json(result.rows[0]);
@@ -404,16 +432,29 @@ exports.addTreatments = async (req, res) => {
             return res.status(400).json({ error: 'treatments no puede estar vacío' });
         }
 
-        const insertedRows = [];
-        for (const t of treatments) {
-            const row = await db.query(
-                `INSERT INTO ${schema}.dental_consultation_treatments
-                 (tenant_id, consultation_id, treatment_id, service_id, quantity, notes)
-                 VALUES ($1, $2, $3, $4, $5, $6)
-                 RETURNING *`,
-                [companyId, req.params.id, t.treatment_id, t.service_id || null, t.quantity || 1, t.notes || null]
-            );
-            insertedRows.push(row.rows[0]);
+        const txClient = await db.getClient();
+        let insertedRows;
+        try {
+            await txClient.query('BEGIN');
+
+            insertedRows = [];
+            for (const t of treatments) {
+                const row = await txClient.query(
+                    `INSERT INTO ${schema}.dental_consultation_treatments
+                     (tenant_id, consultation_id, treatment_id, service_id, quantity, notes)
+                     VALUES ($1, $2, $3, $4, $5, $6)
+                     RETURNING *`,
+                    [companyId, req.params.id, t.treatment_id, t.service_id || null, t.quantity || 1, t.notes || null]
+                );
+                insertedRows.push(row.rows[0]);
+            }
+
+            await txClient.query('COMMIT');
+        } catch (txErr) {
+            await txClient.query('ROLLBACK');
+            throw txErr;
+        } finally {
+            txClient.release();
         }
 
         res.status(201).json({ data: insertedRows });
@@ -459,49 +500,60 @@ exports.complete = async (req, res) => {
             });
         }
 
-        // Now it is safe to write — set status and total in one statement
-        const result = await db.query(
-            `UPDATE ${schema}.dental_consultations
-             SET status = 'completed', total_amount = $3, updated_at = CURRENT_TIMESTAMP
-             WHERE id = $1 AND tenant_id = $2
-             RETURNING *`,
-            [req.params.id, companyId, realTotal]
-        );
-
-        // Optionally auto-create charge if realTotal > 0 and no charge exists
+        // Now it is safe to write — wrap the three writes in a transaction
+        const txClient = await db.getClient();
+        let result;
         let chargeCreated = null;
-        if (realTotal > 0) {
-            const existingCharge = await db.query(
-                `SELECT id FROM ${schema}.dental_charges WHERE consultation_id = $1 AND tenant_id = $2 LIMIT 1`,
-                [req.params.id, companyId]
-            );
-            if (existingCharge.rows.length === 0) {
-                const chargeResult = await db.query(
-                    `INSERT INTO ${schema}.dental_charges
-                     (tenant_id, customer_id, consultation_id, description, total_amount, paid_amount, pending_amount, status)
-                     VALUES ($1, $2, $3, $4, $5, 0, $5, 'pending')
-                     RETURNING *`,
-                    [companyId, cons.customer_id, cons.id, 'Cargo por consulta', realTotal]
-                );
-                chargeCreated = chargeResult.rows[0];
-            }
-        }
+        try {
+            await txClient.query('BEGIN');
 
-        // Auto-insert clinical history entry on completion
-        await db.query(
-            `INSERT INTO ${schema}.dental_clinical_history_entries
-             (tenant_id, customer_id, consultation_id, type, title, description, diagnosis, clinical_notes, indications, entry_date)
-             VALUES ($1, $2, $3, 'evolution', $4, NULL, $5, $6, $7, NOW())`,
-            [
-                companyId,
-                cons.customer_id,
-                cons.id,
-                `Consulta completada${cons.reason ? ': ' + cons.reason : ''}`,
-                cons.diagnosis || null,
-                cons.clinical_notes || null,
-                cons.indications || null
-            ]
-        );
+            result = await txClient.query(
+                `UPDATE ${schema}.dental_consultations
+                 SET status = 'completed', total_amount = $3, updated_at = CURRENT_TIMESTAMP
+                 WHERE id = $1 AND tenant_id = $2
+                 RETURNING *`,
+                [req.params.id, companyId, realTotal]
+            );
+
+            if (realTotal > 0) {
+                const existingCharge = await txClient.query(
+                    `SELECT id FROM ${schema}.dental_charges WHERE consultation_id = $1 AND tenant_id = $2 LIMIT 1`,
+                    [req.params.id, companyId]
+                );
+                if (existingCharge.rows.length === 0) {
+                    const chargeResult = await txClient.query(
+                        `INSERT INTO ${schema}.dental_charges
+                         (tenant_id, customer_id, consultation_id, description, total_amount, paid_amount, pending_amount, status)
+                         VALUES ($1, $2, $3, $4, $5, 0, $5, 'pending')
+                         RETURNING *`,
+                        [companyId, cons.customer_id, cons.id, 'Cargo por consulta', realTotal]
+                    );
+                    chargeCreated = chargeResult.rows[0];
+                }
+            }
+
+            await txClient.query(
+                `INSERT INTO ${schema}.dental_clinical_history_entries
+                 (tenant_id, customer_id, consultation_id, type, title, description, diagnosis, clinical_notes, indications, entry_date)
+                 VALUES ($1, $2, $3, 'evolution', $4, NULL, $5, $6, $7, NOW())`,
+                [
+                    companyId,
+                    cons.customer_id,
+                    cons.id,
+                    `Consulta completada${cons.reason ? ': ' + cons.reason : ''}`,
+                    cons.diagnosis || null,
+                    cons.clinical_notes || null,
+                    cons.indications || null
+                ]
+            );
+
+            await txClient.query('COMMIT');
+        } catch (txErr) {
+            await txClient.query('ROLLBACK');
+            throw txErr;
+        } finally {
+            txClient.release();
+        }
 
         res.json({ data: result.rows[0], charge_created: chargeCreated });
     } catch (err) {
@@ -776,7 +828,7 @@ exports.deletePhoto = async (req, res) => {
             return res.status(404).json({ code: 'DENTAL_PHOTO_NOT_FOUND', error: 'Foto no encontrada' });
         }
 
-        // Delete the file from disk — validate path stays within uploads root (path traversal guard)
+        // Validate path stays within uploads root (path traversal guard) — before any writes
         const UPLOADS_BASE = path.resolve(__dirname, '..', '..', 'uploads');
         const rawUrl = photo.rows[0].photo_url || '';
         const safeRelative = rawUrl.replace(/\\/g, '/').replace(/^\/+/, '');
@@ -784,16 +836,19 @@ exports.deletePhoto = async (req, res) => {
         if (!filePath.startsWith(UPLOADS_BASE + path.sep) && filePath !== UPLOADS_BASE) {
             return res.status(400).json({ error: 'Invalid file path' });
         }
-        if (fs.existsSync(filePath)) {
-            fs.unlinkSync(filePath);
-        }
 
+        // DB DELETE first — if this fails the file is preserved and the record stays consistent
         const deleteResult = await db.query(
             `DELETE FROM ${schema}.dental_consultation_photos WHERE id = $1 AND tenant_id = $2`,
             [req.params.photoId, companyId]
         );
         if (deleteResult.rowCount === 0) {
             return res.status(404).json({ code: 'DENTAL_PHOTO_NOT_FOUND', error: 'Foto no encontrada' });
+        }
+
+        // File deletion after confirmed DB delete — orphaned file is preferable to dangling DB record
+        if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
         }
 
         res.json({ message: 'Foto eliminada' });

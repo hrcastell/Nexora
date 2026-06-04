@@ -180,21 +180,34 @@ async function saveEditSession(s: DentalConsultationSession) {
 async function scheduleAllSessions() {
   if (!sessionScheduleDates.value.some(d => d)) return
   schedulingSessions.value = true
+  let successCount = 0
+  let failCount = 0
   try {
     for (let i = 0; i < sessionScheduleDates.value.length; i++) {
       const date = sessionScheduleDates.value[i]
-      await sessionsStore.create(id, {
-        session_date: date || undefined,
-        notes: undefined,
-        evolution: undefined,
-        next_session_date: undefined,
-      })
+      try {
+        await sessionsStore.create(id, {
+          session_date: date || undefined,
+          notes: undefined,
+          evolution: undefined,
+          next_session_date: undefined,
+        })
+        successCount++
+      } catch {
+        failCount++
+      }
     }
-    triggerToast('Éxito', `${sessionScheduleDates.value.length} sesiones programadas y agendadas`, 'success')
-    sessionScheduleDates.value = []
-    activeTab.value = 'sessions'
-  } catch (e: any) {
-    triggerToast('Error', e?.response?.data?.error || 'Error al programar sesiones', 'error')
+    if (successCount > 0 && failCount > 0) {
+      triggerToast('Advertencia', `${successCount} sesiones creadas, ${failCount} fallaron`, 'warning')
+      sessionScheduleDates.value = []
+      activeTab.value = 'sessions'
+    } else if (successCount > 0) {
+      triggerToast('Éxito', `${successCount} sesiones programadas y agendadas`, 'success')
+      sessionScheduleDates.value = []
+      activeTab.value = 'sessions'
+    } else {
+      triggerToast('Error', 'No se pudo crear ninguna sesión', 'error')
+    }
   } finally {
     schedulingSessions.value = false
   }

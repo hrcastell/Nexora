@@ -69,22 +69,41 @@ exports.create = async (req, res) => {
             next_session_date = null
         } = req.body;
 
-        // Auto-increment session_number
-        const maxResult = await db.query(
-            `SELECT COALESCE(MAX(session_number), 0) + 1 AS next_number
-             FROM ${schema}.dental_consultation_sessions
-             WHERE consultation_id = $1 AND tenant_id = $2`,
-            [req.params.id, companyId]
-        );
-        const session_number = parseInt(maxResult.rows[0].next_number);
+        const client = await db.getClient();
+        let insertResult;
+        let session_number;
+        try {
+            await client.query('BEGIN');
 
-        const insertResult = await db.query(
-            `INSERT INTO ${schema}.dental_consultation_sessions
-             (tenant_id, consultation_id, session_number, session_date, professional_id, notes, evolution, next_session_date)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-             RETURNING *`,
-            [companyId, req.params.id, session_number, session_date, professional_id, notes, evolution, next_session_date]
-        );
+            // Lock the parent consultation row to serialize concurrent session creates
+            await client.query(
+                `SELECT id FROM ${schema}.dental_consultations WHERE id = $1 AND tenant_id = $2 FOR UPDATE`,
+                [req.params.id, companyId]
+            );
+
+            const maxResult = await client.query(
+                `SELECT COALESCE(MAX(session_number), 0) + 1 AS next_number
+                 FROM ${schema}.dental_consultation_sessions
+                 WHERE consultation_id = $1 AND tenant_id = $2`,
+                [req.params.id, companyId]
+            );
+            session_number = parseInt(maxResult.rows[0].next_number);
+
+            insertResult = await client.query(
+                `INSERT INTO ${schema}.dental_consultation_sessions
+                 (tenant_id, consultation_id, session_number, session_date, professional_id, notes, evolution, next_session_date)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                 RETURNING *`,
+                [companyId, req.params.id, session_number, session_date, professional_id, notes, evolution, next_session_date]
+            );
+
+            await client.query('COMMIT');
+        } catch (txErr) {
+            await client.query('ROLLBACK');
+            throw txErr;
+        } finally {
+            client.release();
+        }
 
         // Also create a dental_appointment linked to this session.
         // Non-blocking: appointment failure must not roll back the session.

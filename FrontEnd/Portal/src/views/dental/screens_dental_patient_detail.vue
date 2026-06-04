@@ -7,7 +7,7 @@ import { useDentalAppointmentsStore } from '../../stores/dentalAppointments';
 import NxrSlidePanel from '../../components/NxrSlidePanel.vue';
 import AppToast from '../../components/AppToast.vue';
 import { useToast } from '../../composables/useToast';
-import type { DentalClinicalHistoryEntry, DentalConsultation, DentalPayment, DentalCharge, DentalMedicalHistory, DentalAppointment } from '../../types/dental';
+import type { DentalClinicalHistoryEntry, DentalConsultation, DentalPayment, DentalCharge, DentalMedicalHistory } from '../../types/dental';
 
 const route  = useRoute();
 const router = useRouter();
@@ -24,7 +24,7 @@ const medicalHistory    = ref<DentalMedicalHistory[]>([]);
 const consultations     = ref<DentalConsultation[]>([]);
 const payments          = ref<DentalPayment[]>([]);
 const debt              = ref<DentalCharge[]>([]);
-const appointments      = ref<DentalAppointment[]>([]);
+const appointments      = computed(() => appointmentsStore.items);
 
 // Medical history panel
 const showMedHistPanel  = ref(false);
@@ -141,7 +141,6 @@ async function loadTabData(tab: typeof activeTab.value) {
   }
   if (tab === 'appointments' && appointments.value.length === 0) {
     await appointmentsStore.load({ customer_id: route.params.id as string });
-    appointments.value = appointmentsStore.items;
   }
 }
 
