@@ -178,7 +178,7 @@ const isActive = (condition: boolean) => condition;
           </div>
 
           <!-- Modo Oscuro/Claro - Menu style buttons -->
-          <div class="mb-4 grid grid-cols-2 gap-2">
+          <div class="mb-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
             <button
               @click="draft.mode = 'dark'"
               class="flex items-center gap-3 rounded-2xl border px-4 py-3 text-left transition"
@@ -253,7 +253,7 @@ const isActive = (condition: boolean) => condition;
           </div>
 
           <!-- Wallpapers - Grid -->
-          <div class="grid grid-cols-4 gap-2">
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <button
               v-for="wallpaper in WALLPAPERS"
               :key="wallpaper.id"
@@ -412,7 +412,7 @@ const isActive = (condition: boolean) => condition;
             <!-- Preset colors -->
             <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
               <div class="text-sm font-medium text-white mb-3">Colores predefinidos</div>
-              <div class="grid grid-cols-4 gap-2">
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 <button
                   v-for="color in PRESET_COLORS"
                   :key="color"
@@ -430,7 +430,7 @@ const isActive = (condition: boolean) => condition;
             </div>
 
             <!-- Custom colors - Menu style -->
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <button
                 @click=""
                 class="flex items-center gap-3 rounded-2xl border px-4 py-3 text-left transition border-transparent bg-white/5 hover:border-white/10 hover:bg-white/10"

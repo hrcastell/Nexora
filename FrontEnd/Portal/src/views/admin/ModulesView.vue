@@ -270,7 +270,7 @@ const fmtDate = (d?: string) => d ? new Date(d).toLocaleDateString('es-CL') : 'â
               <ShieldAlert class="h-4 w-4 shrink-0" /> {{ saveError }}
             </div>
 
-            <div class="grid grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div class="col-span-2 sm:col-span-1">
                 <label class="mb-1.5 block text-xs font-medium" :style="{ color: mutedColor }">CÃ³digo *</label>
                 <input v-model="form.code" :disabled="isEditing" placeholder="ej: facturacion" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none disabled:opacity-50"

@@ -229,6 +229,7 @@ CREATE TABLE IF NOT EXISTS {schema_name}.vehicle_fuel_types (
 
 CREATE TABLE IF NOT EXISTS {schema_name}.customers (
     id                SERIAL PRIMARY KEY,
+    tenant_id         INTEGER,
     first_name        VARCHAR(100) NOT NULL,
     last_name         VARCHAR(100),
     document_type     VARCHAR(50),
@@ -252,6 +253,7 @@ CREATE TABLE IF NOT EXISTS {schema_name}.customers (
 
 CREATE INDEX IF NOT EXISTS idx_customers_status ON {schema_name}.customers(status);
 CREATE INDEX IF NOT EXISTS idx_customers_email  ON {schema_name}.customers(email);
+CREATE INDEX IF NOT EXISTS idx_customers_tenant ON {schema_name}.customers(tenant_id);
 
 -- ─── VEHÍCULOS ────────────────────────────────────────────────
 
@@ -305,6 +307,7 @@ CREATE INDEX IF NOT EXISTS idx_vehicle_photos_vehicle ON {schema_name}.vehicle_p
 
 CREATE TABLE IF NOT EXISTS {schema_name}.employees (
     id              SERIAL PRIMARY KEY,
+    tenant_id       INTEGER,
     user_id         INTEGER,
     first_name      VARCHAR(100) NOT NULL,
     last_name       VARCHAR(100),
@@ -323,6 +326,7 @@ CREATE TABLE IF NOT EXISTS {schema_name}.employees (
 
 CREATE INDEX IF NOT EXISTS idx_employees_status  ON {schema_name}.employees(status);
 CREATE INDEX IF NOT EXISTS idx_employees_user_id ON {schema_name}.employees(user_id);
+CREATE INDEX IF NOT EXISTS idx_employees_tenant  ON {schema_name}.employees(tenant_id);
 
 -- ─── TARIFAS DE MANO DE OBRA ──────────────────────────────────
 
@@ -643,3 +647,343 @@ CREATE TABLE IF NOT EXISTS {schema_name}.vehicle_ownership_transfers (
 
 CREATE INDEX IF NOT EXISTS idx_vot_vehicle  ON {schema_name}.vehicle_ownership_transfers(vehicle_id);
 CREATE INDEX IF NOT EXISTS idx_vot_customer ON {schema_name}.vehicle_ownership_transfers(new_customer_id);
+
+-- ═══════════════════════════════════════════════════════════════
+-- CORE 2 — FINANCIAL CORE
+-- Gestión del flujo económico mensual personal por usuario.
+-- Todas las queries filtran por user_id — los datos son por usuario,
+-- no por empresa completa. La visibilidad del módulo se controla
+-- por public.company_modules como el resto de los módulos.
+-- ═══════════════════════════════════════════════════════════════
+
+CREATE TABLE IF NOT EXISTS {schema_name}.financial_periods (
+    id              SERIAL PRIMARY KEY,
+    user_id         INTEGER      NOT NULL,
+    year            INTEGER      NOT NULL,
+    month           INTEGER      NOT NULL,
+    initial_balance INTEGER      NOT NULL DEFAULT 0,
+    status          VARCHAR(20)  NOT NULL DEFAULT 'open',
+    created_at      TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT chk_financial_period_month  CHECK (month >= 1 AND month <= 12),
+    CONSTRAINT chk_financial_period_status CHECK (status IN ('open', 'closed', 'archived')),
+    CONSTRAINT uq_financial_period_user_year_month UNIQUE (user_id, year, month)
+);
+
+CREATE TABLE IF NOT EXISTS {schema_name}.financial_categories (
+    id           SERIAL PRIMARY KEY,
+    user_id      INTEGER      NOT NULL,
+    name         VARCHAR(120) NOT NULL,
+    type         VARCHAR(20)  NOT NULL,
+    parent_id    INTEGER      NULL REFERENCES {schema_name}.financial_categories(id),
+    is_fixed     BOOLEAN      NOT NULL DEFAULT FALSE,
+    is_essential BOOLEAN      NOT NULL DEFAULT FALSE,
+    is_active             BOOLEAN      NOT NULL DEFAULT TRUE,
+    total_installments    INTEGER      NULL,
+    created_at            TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    updated_at            TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT chk_financial_category_type          CHECK (type IN ('income', 'expense', 'saving', 'debt', 'transfer')),
+    CONSTRAINT chk_category_total_installments      CHECK (total_installments IS NULL OR total_installments > 0)
+);
+
+CREATE TABLE IF NOT EXISTS {schema_name}.budget_plans (
+    id             SERIAL PRIMARY KEY,
+    user_id        INTEGER      NOT NULL,
+    period_id      INTEGER      NOT NULL REFERENCES {schema_name}.financial_periods(id) ON DELETE CASCADE,
+    category_id    INTEGER      NOT NULL REFERENCES {schema_name}.financial_categories(id),
+    planned_amount       INTEGER      NOT NULL DEFAULT 0,
+    notes                TEXT         NULL,
+    current_installment  INTEGER      NULL,
+    created_at           TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    updated_at           TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT chk_budget_plan_amount               CHECK (planned_amount >= 0),
+    CONSTRAINT chk_budget_plan_current_installment  CHECK (current_installment IS NULL OR current_installment > 0),
+    CONSTRAINT uq_budget_plan_user_period_category  UNIQUE (user_id, period_id, category_id)
+);
+
+CREATE TABLE IF NOT EXISTS {schema_name}.financial_transactions (
+    id             SERIAL PRIMARY KEY,
+    user_id        INTEGER      NOT NULL,
+    period_id      INTEGER      NOT NULL REFERENCES {schema_name}.financial_periods(id) ON DELETE CASCADE,
+    category_id    INTEGER      NOT NULL REFERENCES {schema_name}.financial_categories(id),
+    type           VARCHAR(20)  NOT NULL,
+    amount         INTEGER      NOT NULL,
+    date           DATE         NOT NULL,
+    description    TEXT         NULL,
+    payment_method VARCHAR(80)  NULL,
+    source         VARCHAR(80)  NULL,
+    created_at     TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    updated_at     TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT chk_financial_transaction_type   CHECK (type IN ('income', 'expense', 'saving', 'debt', 'transfer')),
+    CONSTRAINT chk_financial_transaction_amount CHECK (amount > 0)
+);
+
+CREATE INDEX IF NOT EXISTS idx_financial_periods_user               ON {schema_name}.financial_periods(user_id);
+CREATE INDEX IF NOT EXISTS idx_financial_periods_user_status        ON {schema_name}.financial_periods(user_id, status);
+CREATE INDEX IF NOT EXISTS idx_financial_categories_user            ON {schema_name}.financial_categories(user_id);
+CREATE INDEX IF NOT EXISTS idx_financial_categories_user_type       ON {schema_name}.financial_categories(user_id, type);
+CREATE INDEX IF NOT EXISTS idx_budget_plans_user_period             ON {schema_name}.budget_plans(user_id, period_id);
+CREATE INDEX IF NOT EXISTS idx_budget_plans_category                ON {schema_name}.budget_plans(category_id);
+CREATE INDEX IF NOT EXISTS idx_financial_transactions_user_period   ON {schema_name}.financial_transactions(user_id, period_id);
+CREATE INDEX IF NOT EXISTS idx_financial_transactions_user_period_type ON {schema_name}.financial_transactions(user_id, period_id, type);
+CREATE INDEX IF NOT EXISTS idx_financial_transactions_category      ON {schema_name}.financial_transactions(category_id);
+CREATE INDEX IF NOT EXISTS idx_financial_transactions_date          ON {schema_name}.financial_transactions(date);
+
+-- ═══════════════════════════════════════════════════════════════
+-- CORE 3 — DENTAL CORE
+-- Módulo odontológico integral. Gestión de pacientes, consultas,
+-- agenda, historia clínica y facturación dental por tenant.
+-- ═══════════════════════════════════════════════════════════════
+
+CREATE TABLE IF NOT EXISTS {schema_name}.dental_patient_profiles (
+    id                        SERIAL PRIMARY KEY,
+    tenant_id                 INTEGER      NOT NULL,
+    customer_id               INTEGER      NOT NULL REFERENCES {schema_name}.customers(id) ON DELETE CASCADE,
+    medical_background        TEXT,
+    allergies                 TEXT,
+    blood_type                VARCHAR(20),
+    current_medications       TEXT,
+    chronic_conditions        TEXT,
+    dental_observations       TEXT,
+    emergency_contact_name    VARCHAR(255),
+    emergency_contact_phone   VARCHAR(50),
+    notes                     TEXT,
+    created_at                TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    updated_at                TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_dental_patient_profile UNIQUE (tenant_id, customer_id)
+);
+
+CREATE TABLE IF NOT EXISTS {schema_name}.dental_treatments (
+    id                          SERIAL PRIMARY KEY,
+    tenant_id                   INTEGER      NOT NULL,
+    name                        VARCHAR(255) NOT NULL,
+    description                 TEXT,
+    category                    VARCHAR(120),
+    estimated_duration_minutes  INTEGER,
+    requires_follow_up          BOOLEAN      NOT NULL DEFAULT FALSE,
+    requires_multiple_sessions  BOOLEAN      NOT NULL DEFAULT FALSE,
+    is_active                   BOOLEAN      NOT NULL DEFAULT TRUE,
+    created_at                  TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    updated_at                  TIMESTAMP    DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS {schema_name}.dental_services (
+    id                          SERIAL PRIMARY KEY,
+    tenant_id                   INTEGER       NOT NULL,
+    name                        VARCHAR(255)  NOT NULL,
+    description                 TEXT,
+    price_mode                  VARCHAR(20)   NOT NULL DEFAULT 'manual',
+    supplies_cost               NUMERIC(12,2) NOT NULL DEFAULT 0,
+    labor_cost                  NUMERIC(12,2) NOT NULL DEFAULT 0,
+    tax_rate                    NUMERIC(8,4)  NOT NULL DEFAULT 0,
+    profit_margin               NUMERIC(8,4)  NOT NULL DEFAULT 0,
+    manual_price                NUMERIC(12,2),
+    final_price                 NUMERIC(12,2) NOT NULL DEFAULT 0,
+    estimated_duration_minutes  INTEGER,
+    is_active                   BOOLEAN       NOT NULL DEFAULT TRUE,
+    created_at                  TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
+    updated_at                  TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT chk_dental_services_price_mode CHECK (price_mode IN ('manual', 'calculated'))
+);
+
+CREATE TABLE IF NOT EXISTS {schema_name}.dental_service_treatments (
+    id            SERIAL PRIMARY KEY,
+    tenant_id     INTEGER   NOT NULL,
+    service_id    INTEGER   NOT NULL REFERENCES {schema_name}.dental_services(id)   ON DELETE CASCADE,
+    treatment_id  INTEGER   NOT NULL REFERENCES {schema_name}.dental_treatments(id) ON DELETE CASCADE,
+    quantity      INTEGER   NOT NULL DEFAULT 1,
+    created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_dental_service_treatment UNIQUE (tenant_id, service_id, treatment_id)
+);
+
+CREATE TABLE IF NOT EXISTS {schema_name}.dental_appointments (
+    id                      SERIAL PRIMARY KEY,
+    tenant_id               INTEGER      NOT NULL,
+    customer_id             INTEGER      NOT NULL REFERENCES {schema_name}.customers(id) ON DELETE RESTRICT,
+    service_id              INTEGER      REFERENCES {schema_name}.dental_services(id) ON DELETE SET NULL,
+    scheduled_start         TIMESTAMP    NOT NULL,
+    scheduled_end           TIMESTAMP    NOT NULL,
+    status                  VARCHAR(30)  NOT NULL DEFAULT 'scheduled',
+    reason                  TEXT,
+    notes                   TEXT,
+    reminder_email_sent_at  TIMESTAMP,
+    created_at              TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    updated_at              TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT chk_dental_appointment_status CHECK (status IN (
+        'scheduled', 'confirmed', 'checked_in', 'completed',
+        'cancelled', 'no_show', 'rescheduled'
+    ))
+);
+
+CREATE TABLE IF NOT EXISTS {schema_name}.dental_consultations (
+    id                      SERIAL PRIMARY KEY,
+    tenant_id               INTEGER       NOT NULL,
+    customer_id             INTEGER       NOT NULL REFERENCES {schema_name}.customers(id) ON DELETE RESTRICT,
+    appointment_id          INTEGER       REFERENCES {schema_name}.dental_appointments(id) ON DELETE SET NULL,
+    service_id              INTEGER       REFERENCES {schema_name}.dental_services(id) ON DELETE SET NULL,
+    consultation_date       TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    status                  VARCHAR(30)   NOT NULL DEFAULT 'draft',
+    administrative_status   VARCHAR(30)   NOT NULL DEFAULT 'unpaid',
+    reason                  TEXT,
+    diagnosis               TEXT,
+    clinical_notes          TEXT,
+    indications             TEXT,
+    total_amount            NUMERIC(12,2) NOT NULL DEFAULT 0,
+    created_at              TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
+    updated_at              TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT chk_dental_consultation_status CHECK (status IN (
+        'draft', 'scheduled', 'in_progress', 'completed', 'cancelled', 'no_show'
+    )),
+    CONSTRAINT chk_dental_consultation_admin_status CHECK (administrative_status IN (
+        'unpaid', 'partially_paid', 'paid', 'overdue', 'cancelled'
+    ))
+);
+
+CREATE TABLE IF NOT EXISTS {schema_name}.dental_consultation_treatments (
+    id              SERIAL PRIMARY KEY,
+    tenant_id       INTEGER   NOT NULL,
+    consultation_id INTEGER   NOT NULL REFERENCES {schema_name}.dental_consultations(id) ON DELETE CASCADE,
+    treatment_id    INTEGER   NOT NULL REFERENCES {schema_name}.dental_treatments(id) ON DELETE RESTRICT,
+    service_id      INTEGER   REFERENCES {schema_name}.dental_services(id) ON DELETE SET NULL,
+    quantity        INTEGER   NOT NULL DEFAULT 1,
+    notes           TEXT,
+    created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS {schema_name}.dental_clinical_history_entries (
+    id              SERIAL PRIMARY KEY,
+    tenant_id       INTEGER      NOT NULL,
+    customer_id     INTEGER      NOT NULL REFERENCES {schema_name}.customers(id) ON DELETE RESTRICT,
+    consultation_id INTEGER      REFERENCES {schema_name}.dental_consultations(id) ON DELETE SET NULL,
+    entry_date      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    type            VARCHAR(40)  NOT NULL DEFAULT 'general_note',
+    title           VARCHAR(255),
+    description     TEXT,
+    diagnosis       TEXT,
+    clinical_notes  TEXT,
+    indications     TEXT,
+    created_by      INTEGER,
+    created_at      TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT chk_dental_history_entry_type CHECK (type IN (
+        'initial', 'evolution', 'diagnosis', 'procedure_note', 'follow_up', 'general_note'
+    ))
+);
+
+CREATE TABLE IF NOT EXISTS {schema_name}.dental_charges (
+    id              SERIAL PRIMARY KEY,
+    tenant_id       INTEGER       NOT NULL,
+    customer_id     INTEGER       NOT NULL REFERENCES {schema_name}.customers(id) ON DELETE RESTRICT,
+    consultation_id INTEGER       REFERENCES {schema_name}.dental_consultations(id) ON DELETE SET NULL,
+    service_id      INTEGER       REFERENCES {schema_name}.dental_services(id) ON DELETE SET NULL,
+    description     TEXT,
+    total_amount    NUMERIC(12,2) NOT NULL,
+    paid_amount     NUMERIC(12,2) NOT NULL DEFAULT 0,
+    pending_amount  NUMERIC(12,2) NOT NULL DEFAULT 0,
+    status          VARCHAR(30)   NOT NULL DEFAULT 'pending',
+    due_date        DATE,
+    created_at      TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT chk_dental_charge_status CHECK (status IN (
+        'pending', 'partially_paid', 'paid', 'overdue', 'cancelled', 'refunded'
+    ))
+);
+
+CREATE TABLE IF NOT EXISTS {schema_name}.dental_payments (
+    id              SERIAL PRIMARY KEY,
+    tenant_id       INTEGER       NOT NULL,
+    customer_id     INTEGER       NOT NULL REFERENCES {schema_name}.customers(id) ON DELETE RESTRICT,
+    charge_id       INTEGER       NOT NULL REFERENCES {schema_name}.dental_charges(id) ON DELETE CASCADE,
+    amount          NUMERIC(12,2) NOT NULL,
+    payment_date    TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    payment_method  VARCHAR(40)   NOT NULL,
+    reference       VARCHAR(255),
+    notes           TEXT,
+    created_at      TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT chk_dental_payment_amount  CHECK (amount > 0),
+    CONSTRAINT chk_dental_payment_method  CHECK (payment_method IN (
+        'cash', 'card', 'bank_transfer', 'mobile_payment', 'insurance', 'other'
+    ))
+);
+
+CREATE TABLE IF NOT EXISTS {schema_name}.dental_installments (
+    id                  SERIAL PRIMARY KEY,
+    tenant_id           INTEGER       NOT NULL,
+    charge_id           INTEGER       NOT NULL REFERENCES {schema_name}.dental_charges(id) ON DELETE CASCADE,
+    customer_id         INTEGER       NOT NULL REFERENCES {schema_name}.customers(id) ON DELETE RESTRICT,
+    installment_number  INTEGER       NOT NULL,
+    amount              NUMERIC(12,2) NOT NULL,
+    due_date            DATE          NOT NULL,
+    paid_amount         NUMERIC(12,2) NOT NULL DEFAULT 0,
+    status              VARCHAR(30)   NOT NULL DEFAULT 'pending',
+    paid_at             TIMESTAMP,
+    created_at          TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
+    updated_at          TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT chk_dental_installment_amount CHECK (amount > 0),
+    CONSTRAINT chk_dental_installment_status CHECK (status IN (
+        'pending', 'partially_paid', 'paid', 'overdue', 'cancelled'
+    )),
+    CONSTRAINT uq_dental_installment UNIQUE (tenant_id, charge_id, installment_number)
+);
+
+CREATE TABLE IF NOT EXISTS {schema_name}.dental_notifications (
+    id              SERIAL PRIMARY KEY,
+    tenant_id       INTEGER      NOT NULL,
+    customer_id     INTEGER      REFERENCES {schema_name}.customers(id) ON DELETE SET NULL,
+    appointment_id  INTEGER      REFERENCES {schema_name}.dental_appointments(id) ON DELETE SET NULL,
+    type            VARCHAR(50)  NOT NULL,
+    channel         VARCHAR(30)  NOT NULL,
+    status          VARCHAR(30)  NOT NULL DEFAULT 'pending',
+    scheduled_for   TIMESTAMP,
+    sent_at         TIMESTAMP,
+    error_message   TEXT,
+    created_at      TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT chk_dental_notification_channel CHECK (channel IN ('email', 'internal')),
+    CONSTRAINT chk_dental_notification_status  CHECK (status IN ('pending', 'sent', 'failed', 'cancelled'))
+);
+
+CREATE TABLE IF NOT EXISTS {schema_name}.dental_medical_history (
+    id                   SERIAL PRIMARY KEY,
+    tenant_id            INTEGER NOT NULL,
+    customer_id          INTEGER NOT NULL,
+    entry_date           DATE NOT NULL DEFAULT CURRENT_DATE,
+    blood_type           VARCHAR(10),
+    medical_background   TEXT,
+    allergies            TEXT,
+    current_medications  TEXT,
+    chronic_conditions   TEXT,
+    dental_observations  TEXT,
+    notes                TEXT,
+    created_by           INTEGER,
+    created_at           TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_dental_profiles_tenant_customer       ON {schema_name}.dental_patient_profiles(tenant_id, customer_id);
+CREATE INDEX IF NOT EXISTS idx_dental_treatments_tenant              ON {schema_name}.dental_treatments(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_dental_services_tenant                ON {schema_name}.dental_services(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_dental_appointments_tenant_date       ON {schema_name}.dental_appointments(tenant_id, scheduled_start);
+CREATE INDEX IF NOT EXISTS idx_dental_appointments_tenant_customer   ON {schema_name}.dental_appointments(tenant_id, customer_id);
+CREATE INDEX IF NOT EXISTS idx_dental_consultations_tenant_customer  ON {schema_name}.dental_consultations(tenant_id, customer_id);
+CREATE INDEX IF NOT EXISTS idx_dental_consultations_tenant_date      ON {schema_name}.dental_consultations(tenant_id, consultation_date);
+CREATE INDEX IF NOT EXISTS idx_dental_charges_tenant_customer        ON {schema_name}.dental_charges(tenant_id, customer_id);
+CREATE INDEX IF NOT EXISTS idx_dental_charges_tenant_status          ON {schema_name}.dental_charges(tenant_id, status);
+CREATE INDEX IF NOT EXISTS idx_dental_payments_tenant_date           ON {schema_name}.dental_payments(tenant_id, payment_date);
+CREATE INDEX IF NOT EXISTS idx_dental_installments_tenant_status_due ON {schema_name}.dental_installments(tenant_id, status, due_date);
+CREATE INDEX IF NOT EXISTS idx_dental_history_tenant_customer        ON {schema_name}.dental_clinical_history_entries(tenant_id, customer_id);
+
+-- Dental consultation photos (before/after)
+CREATE TABLE IF NOT EXISTS {schema_name}.dental_consultation_photos (
+    id              SERIAL PRIMARY KEY,
+    tenant_id       INTEGER      NOT NULL,
+    consultation_id INTEGER      NOT NULL REFERENCES {schema_name}.dental_consultations(id) ON DELETE CASCADE,
+    photo_url       TEXT         NOT NULL,
+    stage           VARCHAR(20)  NOT NULL DEFAULT 'before',
+    caption         TEXT,
+    sort_order      INTEGER      DEFAULT 0,
+    uploaded_by     INTEGER,
+    created_at      TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT chk_dental_photo_stage CHECK (stage IN ('before', 'after'))
+);
+CREATE INDEX IF NOT EXISTS idx_dental_consultation_photos_consultation ON {schema_name}.dental_consultation_photos(consultation_id);

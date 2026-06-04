@@ -256,7 +256,7 @@ async function removeProduct(templateId: number, productLineId: number) {
       @close="showForm = false"
     >
       <!-- Nombre y descripción -->
-          <div class="grid grid-cols-2 gap-3 mb-5">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
             <div class="col-span-2">
               <label class="block text-xs text-white/50 mb-1">Nombre *</label>
               <input v-model="form.name" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" />
@@ -270,7 +270,7 @@ async function removeProduct(templateId: number, productLineId: number) {
           <!-- Mano de obra -->
           <div class="rounded-xl border border-white/10 p-4 mb-4">
             <p class="text-xs font-semibold text-white/60 mb-3 uppercase tracking-wide">Mano de obra</p>
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label class="block text-xs text-white/50 mb-1">Horas estimadas</label>
                 <input v-model.number="form.estimated_hours" type="number" min="0" step="0.5" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" />
@@ -335,7 +335,7 @@ async function removeProduct(templateId: number, productLineId: number) {
                 <option value="">— Seleccionar del catálogo —</option>
                 <option v-for="p in products" :key="p.id" :value="p.id">{{ p.name }} · {{ fmt(p.reference_price ?? 0) }}/{{ p.unit || 'u.' }}</option>
               </select>
-              <div class="grid grid-cols-3 gap-2">
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <input v-model="newProd.product_name" type="text" placeholder="Nombre *" class="col-span-3 px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white text-xs outline-none" />
                 <input v-model.number="newProd.quantity" type="number" min="0.01" step="0.01" placeholder="Cantidad" class="px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white text-xs outline-none" />
                 <input v-model="newProd.unit" type="text" placeholder="Unidad" class="px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white text-xs outline-none" />
@@ -358,7 +358,7 @@ async function removeProduct(templateId: number, productLineId: number) {
           <!-- Margen, impuesto y total final -->
           <div class="rounded-xl border border-white/10 p-4 mb-5">
             <p class="text-xs font-semibold text-white/60 mb-3 uppercase tracking-wide">Precio final</p>
-            <div class="grid grid-cols-2 gap-3 mb-3">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
               <div>
                 <label class="block text-xs text-white/50 mb-1">Margen de ganancia (%)</label>
                 <input v-model.number="form.margin_pct" type="number" min="0" max="100" step="0.5" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" />

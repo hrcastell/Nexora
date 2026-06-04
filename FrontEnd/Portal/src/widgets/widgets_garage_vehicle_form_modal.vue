@@ -201,7 +201,7 @@ async function save() {
             ></textarea>
           </div>
 
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label class="block text-xs text-white/50 mb-1">Tipo de vehículo</label>
               <widgets_garage_catalog_combobox v-model="form.vehicle_type_id" type="vehicle_types" placeholder="Tipo..." :allow-create="true" />

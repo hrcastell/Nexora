@@ -7,7 +7,7 @@ export interface Notification {
   user_id: number;
   company_id: number | null;
   type: 'info' | 'success' | 'warning' | 'error';
-  category: 'system' | 'users' | 'subscriptions' | 'requests' | 'billing' | 'modules';
+  category: 'system' | 'users' | 'subscriptions' | 'requests' | 'billing' | 'modules' | 'dental';
   title: string;
   body: string | null;
   action_url: string | null;
@@ -25,6 +25,7 @@ export interface NotificationPreferences {
     requests: boolean;
     billing: boolean;
     modules: boolean;
+    dental: boolean;
   };
   show_toast: boolean;
   updated_at: string | null;

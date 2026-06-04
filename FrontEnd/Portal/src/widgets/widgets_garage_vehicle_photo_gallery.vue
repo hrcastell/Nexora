@@ -105,7 +105,7 @@ function navLightbox(dir: 1 | -1) {
         </button>
       </div>
 
-      <div class="grid grid-cols-4 gap-2">
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
         <div
           v-for="photo in group.photos"
           :key="photo.id"

@@ -17,8 +17,9 @@ const CATEGORIES = [
   { key: 'users',         label: 'Usuarios' },
   { key: 'subscriptions', label: 'Suscripciones' },
   { key: 'requests',      label: 'Solicitudes' },
-  { key: 'billing',       label: 'Facturación' },
-  { key: 'modules',       label: 'Módulos' },
+  { key: 'billing',       label: 'Facturacion' },
+  { key: 'modules',       label: 'Modulos' },
+  { key: 'dental',        label: 'Dental' },
 ];
 
 async function loadNotifications(reset = true) {

@@ -138,6 +138,7 @@ CREATE TABLE IF NOT EXISTS {schema_name}.vehicle_fuel_types (
 
 CREATE TABLE IF NOT EXISTS {schema_name}.customers (
     id                SERIAL PRIMARY KEY,
+    tenant_id         INTEGER,
     first_name        VARCHAR(100) NOT NULL,
     last_name         VARCHAR(100),
     document_type     VARCHAR(50),
@@ -161,6 +162,7 @@ CREATE TABLE IF NOT EXISTS {schema_name}.customers (
 
 CREATE INDEX IF NOT EXISTS idx_customers_status ON {schema_name}.customers(status);
 CREATE INDEX IF NOT EXISTS idx_customers_email  ON {schema_name}.customers(email);
+CREATE INDEX IF NOT EXISTS idx_customers_tenant ON {schema_name}.customers(tenant_id);
 
 -- ─── VEHÍCULOS ────────────────────────────────────────────────
 
@@ -214,6 +216,7 @@ CREATE INDEX IF NOT EXISTS idx_vehicle_photos_vehicle ON {schema_name}.vehicle_p
 
 CREATE TABLE IF NOT EXISTS {schema_name}.employees (
     id              SERIAL PRIMARY KEY,
+    tenant_id       INTEGER,
     user_id         INTEGER,
     first_name      VARCHAR(100) NOT NULL,
     last_name       VARCHAR(100),
@@ -232,6 +235,7 @@ CREATE TABLE IF NOT EXISTS {schema_name}.employees (
 
 CREATE INDEX IF NOT EXISTS idx_employees_status  ON {schema_name}.employees(status);
 CREATE INDEX IF NOT EXISTS idx_employees_user_id ON {schema_name}.employees(user_id);
+CREATE INDEX IF NOT EXISTS idx_employees_tenant  ON {schema_name}.employees(tenant_id);
 
 -- ─── TARIFAS DE MANO DE OBRA ──────────────────────────────────
 

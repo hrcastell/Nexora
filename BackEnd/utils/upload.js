@@ -59,5 +59,38 @@ function makeGarageUpload(subfolder, maxSizeMb = 5) {
     });
 }
 
+/**
+ * makeDentalUpload(subfolder, maxSizeMb)
+ *
+ * Crea una instancia multer para el módulo dental.
+ * Las fotos se guardan en: uploads/dental/{subfolder}/{schema}/{filename}
+ * El schema se extrae de req.user.schema_name (inyectado por authMiddleware).
+ *
+ * @param {string} subfolder   - 'photos' | 'xrays'
+ * @param {number} maxSizeMb   - Límite en MB (default 8)
+ * @returns {multer.Multer}
+ */
+function makeDentalUpload(subfolder, maxSizeMb = 8) {
+    const dentalStorage = multer.diskStorage({
+        destination: (req, _file, cb) => {
+            const schema = req.user?.schema_name || 'default';
+            const dir = path.join(__dirname, '..', 'uploads', 'dental', subfolder, schema);
+            if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+            cb(null, dir);
+        },
+        filename: (_req, file, cb) => {
+            const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+            cb(null, `${unique}${path.extname(file.originalname)}`);
+        }
+    });
+
+    return multer({
+        storage:    dentalStorage,
+        fileFilter: imageFilter,
+        limits:     { fileSize: maxSizeMb * 1024 * 1024 }
+    });
+}
+
 module.exports = upload;
 module.exports.makeGarageUpload = makeGarageUpload;
+module.exports.makeDentalUpload = makeDentalUpload;

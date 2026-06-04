@@ -207,6 +207,133 @@ const ROUTE_MODULE_MAP = {
     'GET    /garage/work-orders/:id/payments':              { module: 'garage_operations', transaction: 'garage_work_orders' },
     'POST   /garage/work-orders/:id/payments':              { module: 'garage_operations', transaction: 'garage_work_orders' },
     'DELETE /garage/work-orders/:id/payments/:paymentId':   { module: 'garage_operations', transaction: 'garage_work_orders' },
+
+    // ── Financial Core: Períodos ──
+    'POST   /financial/periods':                                  { module: 'financial_core', transaction: 'financial_periods' },
+    'GET    /financial/periods':                                  { module: 'financial_core', transaction: 'financial_periods' },
+    'GET    /financial/periods/current':                          { module: 'financial_core', transaction: 'financial_periods' },
+    'GET    /financial/periods/:periodId':                        { module: 'financial_core', transaction: 'financial_periods' },
+    'POST   /financial/periods/:periodId/close':                  { module: 'financial_core', transaction: 'financial_periods' },
+
+    // ── Financial Core: Categorías ──
+    'POST   /financial/categories/seed':                          { module: 'financial_core', transaction: 'financial_categories' },
+    'POST   /financial/categories':                               { module: 'financial_core', transaction: 'financial_categories' },
+    'GET    /financial/categories':                               { module: 'financial_core', transaction: 'financial_categories' },
+    'GET    /financial/categories/:categoryId':                   { module: 'financial_core', transaction: 'financial_categories' },
+    'PUT    /financial/categories/:categoryId':                   { module: 'financial_core', transaction: 'financial_categories' },
+    'PATCH  /financial/categories/:categoryId/status':            { module: 'financial_core', transaction: 'financial_categories' },
+    'DELETE /financial/categories/:categoryId':                   { module: 'financial_core', transaction: 'financial_categories' },
+
+    // ── Financial Core: Presupuesto ──
+    'POST   /financial/periods/:periodId/budget-plans':           { module: 'financial_core', transaction: 'financial_budget' },
+    'GET    /financial/periods/:periodId/budget-plans':           { module: 'financial_core', transaction: 'financial_budget' },
+    'PUT    /financial/budget-plans/:budgetPlanId':               { module: 'financial_core', transaction: 'financial_budget' },
+    'DELETE /financial/budget-plans/:budgetPlanId':               { module: 'financial_core', transaction: 'financial_budget' },
+
+    // ── Financial Core: Transacciones ──
+    'POST   /financial/periods/:periodId/transactions':           { module: 'financial_core', transaction: 'financial_transactions' },
+    'GET    /financial/periods/:periodId/transactions':           { module: 'financial_core', transaction: 'financial_transactions' },
+    'GET    /financial/transactions/:transactionId':              { module: 'financial_core', transaction: 'financial_transactions' },
+    'PATCH  /financial/transactions/:transactionId':              { module: 'financial_core', transaction: 'financial_transactions' },
+    'DELETE /financial/transactions/:transactionId':              { module: 'financial_core', transaction: 'financial_transactions' },
+
+    // ── Financial Core: Resumen ──
+    'GET    /financial/periods/:periodId/summary':                { module: 'financial_core', transaction: 'financial_summary' },
+    'GET    /financial/periods/:periodId/breakdown':              { module: 'financial_core', transaction: 'financial_summary' },
+    'GET    /financial/periods/:periodId/deviations':             { module: 'financial_core', transaction: 'financial_summary' },
+
+    // ── Dental Core: Dashboard ──
+    'GET    /dental/dashboard':                                   { module: 'dental_core', transaction: 'dental_dashboard' },
+    'GET    /dental/dashboard/today':                             { module: 'dental_core', transaction: 'dental_dashboard' },
+    'GET    /dental/dashboard/finance':                           { module: 'dental_core', transaction: 'dental_dashboard' },
+
+    // ── Dental Core: Pacientes ──
+    'GET    /dental/patients':                                    { module: 'dental_core', transaction: 'dental_patients' },
+    'POST   /dental/patients':                                    { module: 'dental_core', transaction: 'dental_patients' },
+    'GET    /dental/patients/:id':                                { module: 'dental_core', transaction: 'dental_patients' },
+    'PATCH  /dental/patients/:id':                                { module: 'dental_core', transaction: 'dental_patients' },
+    'GET    /dental/patients/:id/clinical-history':               { module: 'dental_core', transaction: 'dental_patients' },
+    'GET    /dental/patients/:id/medical-history':                { module: 'dental_core', transaction: 'dental_patients' },
+    'POST   /dental/patients/:id/medical-history':                { module: 'dental_core', transaction: 'dental_patients' },
+    'GET    /dental/patients/:id/consultations':                  { module: 'dental_core', transaction: 'dental_patients' },
+    'GET    /dental/patients/:id/payments':                       { module: 'dental_core', transaction: 'dental_patients' },
+    'GET    /dental/patients/:id/debt':                           { module: 'dental_core', transaction: 'dental_patients' },
+
+    // ── Dental Core: Tratamientos ──
+    'GET    /dental/treatments':                                  { module: 'dental_core', transaction: 'dental_treatments' },
+    'POST   /dental/treatments':                                  { module: 'dental_core', transaction: 'dental_treatments' },
+    'PATCH  /dental/treatments/:id':                              { module: 'dental_core', transaction: 'dental_treatments' },
+    'DELETE /dental/treatments/:id':                              { module: 'dental_core', transaction: 'dental_treatments' },
+
+    // ── Dental Core: Servicios ──
+    'GET    /dental/services':                                    { module: 'dental_core', transaction: 'dental_services' },
+    'POST   /dental/services':                                    { module: 'dental_core', transaction: 'dental_services' },
+    'GET    /dental/services/:id':                                { module: 'dental_core', transaction: 'dental_services' },
+    'PATCH  /dental/services/:id':                                { module: 'dental_core', transaction: 'dental_services' },
+    'DELETE /dental/services/:id':                                { module: 'dental_core', transaction: 'dental_services' },
+    'POST   /dental/services/:id/treatments':                     { module: 'dental_core', transaction: 'dental_services' },
+
+    // ── Dental Core: Citas ──
+    'GET    /dental/appointments':                                { module: 'dental_core', transaction: 'dental_appointments' },
+    'GET    /dental/appointments/day':                            { module: 'dental_core', transaction: 'dental_appointments' },
+    'GET    /dental/appointments/month':                          { module: 'dental_core', transaction: 'dental_appointments' },
+    'POST   /dental/appointments':                                { module: 'dental_core', transaction: 'dental_appointments' },
+    'GET    /dental/appointments/:id':                            { module: 'dental_core', transaction: 'dental_appointments' },
+    'PATCH  /dental/appointments/:id':                            { module: 'dental_core', transaction: 'dental_appointments' },
+    'POST   /dental/appointments/:id/confirm':                    { module: 'dental_core', transaction: 'dental_appointments' },
+    'POST   /dental/appointments/:id/cancel':                     { module: 'dental_core', transaction: 'dental_appointments' },
+    'POST   /dental/appointments/:id/no-show':                    { module: 'dental_core', transaction: 'dental_appointments' },
+    'POST   /dental/appointments/:id/convert-to-consultation':    { module: 'dental_core', transaction: 'dental_appointments' },
+
+    // ── Dental Core: Consultas ──
+    'GET    /dental/consultations':                               { module: 'dental_core', transaction: 'dental_consultations' },
+    'POST   /dental/consultations':                               { module: 'dental_core', transaction: 'dental_consultations' },
+    'GET    /dental/consultations/:id':                           { module: 'dental_core', transaction: 'dental_consultations' },
+    'PATCH  /dental/consultations/:id':                           { module: 'dental_core', transaction: 'dental_consultations' },
+    'POST   /dental/consultations/:id/clinical-history':          { module: 'dental_core', transaction: 'dental_consultations' },
+    'POST   /dental/consultations/:id/treatments':                { module: 'dental_core', transaction: 'dental_consultations' },
+    'POST   /dental/consultations/:id/complete':                  { module: 'dental_core', transaction: 'dental_consultations' },
+    'POST   /dental/consultations/:id/cancel':                    { module: 'dental_core', transaction: 'dental_consultations' },
+    'POST   /dental/consultations/:id/create-charge':             { module: 'dental_core', transaction: 'dental_consultations' },
+    'GET    /dental/consultations/:id/photos':                    { module: 'dental_core', transaction: 'dental_consultations' },
+    'POST   /dental/consultations/:id/photos':                    { module: 'dental_core', transaction: 'dental_consultations' },
+    'DELETE /dental/consultations/:id/photos/:photoId':           { module: 'dental_core', transaction: 'dental_consultations' },
+
+    // ── Dental Core: Servicios por consulta ──
+    'GET    /dental/consultations/:id/services':                  { module: 'dental_core', transaction: 'dental_consultations' },
+    'GET    /dental/consultations/:id/services/total':            { module: 'dental_core', transaction: 'dental_consultations' },
+    'POST   /dental/consultations/:id/services':                  { module: 'dental_core', transaction: 'dental_consultations' },
+    'PATCH  /dental/consultations/:id/services/:sid':             { module: 'dental_core', transaction: 'dental_consultations' },
+    'DELETE /dental/consultations/:id/services/:sid':             { module: 'dental_core', transaction: 'dental_consultations' },
+
+    // ── Dental Core: Sesiones por consulta ──
+    'GET    /dental/consultations/:id/sessions':                  { module: 'dental_core', transaction: 'dental_consultations' },
+    'POST   /dental/consultations/:id/sessions':                  { module: 'dental_core', transaction: 'dental_consultations' },
+    'GET    /dental/consultations/:id/sessions/:sid':             { module: 'dental_core', transaction: 'dental_consultations' },
+    'PATCH  /dental/consultations/:id/sessions/:sid':             { module: 'dental_core', transaction: 'dental_consultations' },
+    'POST   /dental/consultations/:id/sessions/:sid/complete':    { module: 'dental_core', transaction: 'dental_consultations' },
+
+    // ── Dental Core: Estado de consulta ──
+    'POST   /dental/consultations/:id/status':                    { module: 'dental_core', transaction: 'dental_consultations' },
+
+    // ── Dental Core: Cobros ──
+    'GET    /dental/charges':                                     { module: 'dental_core', transaction: 'dental_charges' },
+    'POST   /dental/charges':                                     { module: 'dental_core', transaction: 'dental_charges' },
+    'GET    /dental/charges/:id':                                 { module: 'dental_core', transaction: 'dental_charges' },
+    'DELETE /dental/charges/:id':                                 { module: 'dental_core', transaction: 'dental_charges' },
+    'POST   /dental/charges/:id/payments':                        { module: 'dental_core', transaction: 'dental_charges' },
+    'POST   /dental/charges/:id/installments':                    { module: 'dental_core', transaction: 'dental_charges' },
+
+    // ── Dental Core: Cuotas ──
+    'GET    /dental/installments/overdue':                        { module: 'dental_core', transaction: 'dental_charges' },
+    'POST   /dental/installments/:id/pay':                        { module: 'dental_core', transaction: 'dental_charges' },
+
+    // ── Dental Core: Pagos ──
+    'GET    /dental/payments':                                    { module: 'dental_core', transaction: 'dental_charges' },
+    'DELETE /dental/payments/:id':                                { module: 'dental_core', transaction: 'dental_charges' },
+
+    // ── Dental Core: Resumen financiero ──
+    'GET    /dental/finance/summary':                             { module: 'dental_core', transaction: 'dental_dashboard' },
 };
 
 /**

@@ -240,6 +240,104 @@ const router = createRouter({
     },
     // ─────────────────────────────────────────────────────────────────────────
 
+    // ── Core 2: Financial Core (code='financial_core') ───────────────────────
+    {
+      path: '/',
+      component: AdminLayout,
+      meta: { requiresAuth: true, requiresCompany: true },
+      children: [
+        {
+          path: 'financial',
+          name: 'financial-dashboard',
+          component: () => import('../views/financial/screens_financial_dashboard.vue'),
+          meta: { requiresModule: 'financial_core', requiresTransaction: 'financial_dashboard' }
+        },
+        {
+          path: 'financial/periods',
+          name: 'financial-periods',
+          component: () => import('../views/financial/screens_financial_periods.vue'),
+          meta: { requiresModule: 'financial_core', requiresTransaction: 'financial_periods' }
+        },
+        {
+          path: 'financial/periods/:periodId',
+          name: 'financial-period-detail',
+          component: () => import('../views/financial/screens_financial_period_detail.vue'),
+          meta: { requiresModule: 'financial_core', requiresTransaction: 'financial_summary' }
+        },
+        {
+          path: 'financial/categories',
+          name: 'financial-categories',
+          component: () => import('../views/financial/screens_financial_categories.vue'),
+          meta: { requiresModule: 'financial_core', requiresTransaction: 'financial_categories' }
+        },
+      ]
+    },
+    // ─────────────────────────────────────────────────────────────────────────
+
+    // ── Core 3: Dental Core (code='dental_core') ─────────────────────────────
+    {
+      path: '/',
+      component: AdminLayout,
+      meta: { requiresAuth: true, requiresCompany: true },
+      children: [
+        {
+          path: 'dental',
+          name: 'dental-dashboard',
+          component: () => import('../views/dental/screens_dental_dashboard.vue'),
+          meta: { requiresModule: 'dental_core', requiresTransaction: 'dental_dashboard' }
+        },
+        {
+          path: 'dental/patients',
+          name: 'dental-patients',
+          component: () => import('../views/dental/screens_dental_patients.vue'),
+          meta: { requiresModule: 'dental_core', requiresTransaction: 'dental_patients' }
+        },
+        {
+          path: 'dental/patients/:id',
+          name: 'dental-patient-detail',
+          component: () => import('../views/dental/screens_dental_patient_detail.vue'),
+          meta: { requiresModule: 'dental_core', requiresTransaction: 'dental_patients' }
+        },
+        {
+          path: 'dental/appointments',
+          name: 'dental-appointments',
+          component: () => import('../views/dental/screens_dental_appointments.vue'),
+          meta: { requiresModule: 'dental_core', requiresTransaction: 'dental_appointments' }
+        },
+        {
+          path: 'dental/consultations',
+          name: 'dental-consultations',
+          component: () => import('../views/dental/screens_dental_consultations.vue'),
+          meta: { requiresModule: 'dental_core', requiresTransaction: 'dental_consultations' }
+        },
+        {
+          path: 'dental/consultations/:id',
+          name: 'dental-consultation-detail',
+          component: () => import('../views/dental/screens_dental_consultation_detail.vue'),
+          meta: { requiresModule: 'dental_core', requiresTransaction: 'dental_consultations' }
+        },
+        {
+          path: 'dental/finance',
+          name: 'dental-finance',
+          component: () => import('../views/dental/screens_dental_finance.vue'),
+          meta: { requiresModule: 'dental_core', requiresTransaction: 'dental_finance' }
+        },
+        {
+          path: 'dental/config/treatments',
+          name: 'dental-treatments',
+          component: () => import('../views/dental/screens_dental_treatments.vue'),
+          meta: { requiresModule: 'dental_core', requiresTransaction: 'dental_treatments' }
+        },
+        {
+          path: 'dental/config/services',
+          name: 'dental-services',
+          component: () => import('../views/dental/screens_dental_services.vue'),
+          meta: { requiresModule: 'dental_core', requiresTransaction: 'dental_services' }
+        },
+      ]
+    },
+    // ─────────────────────────────────────────────────────────────────────────
+
     {
       path: '/:pathMatch(.*)*',
       redirect: '/dashboard'

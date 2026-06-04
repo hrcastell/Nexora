@@ -127,7 +127,7 @@ const PRODUCT_TYPE_LABEL: Record<string, string> = { consumable: 'Consumible', p
       size="sm"
       @close="showForm = false"
     >
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div class="col-span-2">
               <label class="block text-xs text-white/50 mb-1">Nombre *</label>
               <input v-model="form.name" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" />
