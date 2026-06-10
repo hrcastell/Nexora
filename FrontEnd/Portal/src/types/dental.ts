@@ -29,6 +29,7 @@ export interface DentalPatientProfile {
   dental_observations?: string;
   emergency_contact_name?: string;
   emergency_contact_phone?: string;
+  photo_url?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -47,6 +48,7 @@ export interface DentalPatient extends Customer {
   emergency_contact_name?: string;
   emergency_contact_phone?: string;
   dental_notes?: string;
+  photo_url?: string | null;
 }
 
 export interface DentalPatientFormData {

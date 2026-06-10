@@ -19,6 +19,9 @@ router.get('/dashboard',         dashboardCtrl.getSummary);
 router.get('/dashboard/today',   dashboardCtrl.getToday);
 router.get('/dashboard/finance', dashboardCtrl.getFinance);
 
+// ─── COMPANY CONFIG (for print documents) ─────────────────────
+router.get('/company-config',    dashboardCtrl.getCompanyConfig);
+
 // ─── PATIENTS ─────────────────────────────────────────────────
 router.get('/patients',                          patientsCtrl.list);
 router.post('/patients',                         patientsCtrl.create);
@@ -27,6 +30,8 @@ router.patch('/patients/:id',                    patientsCtrl.update);
 router.get('/patients/:id/clinical-history',     patientsCtrl.getClinicalHistory);
 router.get('/patients/:id/medical-history',      patientsCtrl.getMedicalHistory);
 router.post('/patients/:id/medical-history',     patientsCtrl.createMedicalHistory);
+router.post('/patients/:id/photo',               patientsCtrl.patientPhotoUpload.single('photo'), patientsCtrl.uploadPhoto);
+router.delete('/patients/:id/photo',             patientsCtrl.deletePhoto);
 router.get('/patients/:id/consultations',        patientsCtrl.getConsultations);
 router.get('/patients/:id/payments',             patientsCtrl.getPayments);
 router.get('/patients/:id/debt',                 patientsCtrl.getDebt);

@@ -98,6 +98,53 @@ exports.getToday = async (req, res) => {
 };
 
 /**
+ * GET /dental/company-config
+ * Company configuration for print documents.
+ */
+exports.getCompanyConfig = async (req, res) => {
+    try {
+        const { schema, companyId } = await resolveSchema(req);
+
+        // Get company info from public.companies
+        const companyResult = await db.query(
+            `SELECT name, address, phone, email, tax_id
+             FROM public.companies
+             WHERE id = $1`,
+            [companyId]
+        );
+
+        // Get tenant config (logo_url, etc.) from config_company if it exists
+        let config = {};
+        try {
+            const configResult = await db.query(
+                `SELECT logo_url, company_name, address, phone, email, tax_id, professional_license
+                 FROM ${schema}.config_company
+                 WHERE tenant_id = $1
+                 LIMIT 1`,
+                [companyId]
+            );
+            if (configResult.rows[0]) config = configResult.rows[0];
+        } catch (e) {
+            // config_company may not exist or may not have all columns — ignore
+        }
+
+        const company = companyResult.rows[0] || {};
+        res.json({
+            company_name:         config.company_name || company.name || '',
+            address:              config.address      || company.address || '',
+            phone:                config.phone        || company.phone || '',
+            email:                config.email        || company.email || '',
+            tax_id:               config.tax_id       || company.tax_id || '',
+            logo_url:             config.logo_url     || null,
+            professional_license: config.professional_license || null,
+        });
+    } catch (err) {
+        console.error('dashboardController.getCompanyConfig error:', err.message);
+        res.status(err.statusCode || 500).json({ error: 'Error al obtener configuración' });
+    }
+};
+
+/**
  * GET /dental/dashboard/finance
  * Financial summary.
  */

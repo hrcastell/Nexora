@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ArrowLeft, User, FileText, Stethoscope, CreditCard, CalendarDays, Pencil, Phone, MessageCircle, Plus } from 'lucide-vue-next';
+import { ArrowLeft, User, FileText, Stethoscope, CreditCard, CalendarDays, Pencil, Phone, MessageCircle, Plus, Camera, Trash2 } from 'lucide-vue-next';
 import { useDentalPatientsStore } from '../../stores/dentalPatients';
 import { useDentalAppointmentsStore } from '../../stores/dentalAppointments';
 import NxrSlidePanel from '../../components/NxrSlidePanel.vue';
@@ -42,6 +42,38 @@ const medHistForm       = ref({
 });
 
 const patient = computed(() => store.current);
+
+// Photo upload
+const photoInput    = ref<HTMLInputElement | null>(null);
+const uploadingPhoto = ref(false);
+
+async function onPhotoSelected(event: Event) {
+  const file = (event.target as HTMLInputElement).files?.[0];
+  if (!file || !patient.value) return;
+  uploadingPhoto.value = true;
+  try {
+    await store.uploadPhoto(patient.value.id, file);
+    triggerToast('Foto actualizada', '', 'success');
+  } catch (e: any) {
+    triggerToast('Error', e?.response?.data?.error || 'Error al subir foto', 'error');
+  } finally {
+    uploadingPhoto.value = false;
+    if (photoInput.value) photoInput.value.value = '';
+  }
+}
+
+async function onDeletePhoto() {
+  if (!patient.value) return;
+  uploadingPhoto.value = true;
+  try {
+    await store.deletePhoto(patient.value.id);
+    triggerToast('Foto eliminada', '', 'success');
+  } catch (e: any) {
+    triggerToast('Error', e?.response?.data?.error || 'Error al eliminar foto', 'error');
+  } finally {
+    uploadingPhoto.value = false;
+  }
+}
 
 const editForm = ref({
   first_name: '',
@@ -223,19 +255,61 @@ onMounted(async () => {
   <div class="flex flex-col gap-5 p-6">
     <!-- Header -->
     <div class="flex items-center gap-3">
-      <button class="text-white/40 hover:text-white transition-colors" @click="router.back()">
+      <button class="text-white/40 hover:text-white transition-colors shrink-0" @click="router.back()">
         <ArrowLeft :size="20" />
       </button>
+
+      <!-- Patient photo -->
+      <div v-if="patient" class="relative shrink-0 group">
+        <div class="w-14 h-14 rounded-full overflow-hidden flex items-center justify-center text-lg font-semibold select-none"
+          :class="patient.photo_url ? '' : 'bg-blue-500/20 text-blue-300 border border-white/10'"
+        >
+          <img
+            v-if="patient.photo_url"
+            :src="patient.photo_url"
+            :alt="`${patient.first_name} ${patient.last_name}`"
+            class="w-full h-full object-cover"
+          />
+          <span v-else>{{ (patient.first_name?.[0] ?? '').toUpperCase() }}{{ (patient.last_name?.[0] ?? '').toUpperCase() }}</span>
+        </div>
+        <!-- Upload overlay -->
+        <button
+          class="absolute inset-0 rounded-full flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity"
+          :disabled="uploadingPhoto"
+          title="Cambiar foto"
+          @click="photoInput?.click()"
+        >
+          <Camera :size="14" class="text-white" />
+        </button>
+        <input
+          ref="photoInput"
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          class="hidden"
+          @change="onPhotoSelected"
+        />
+      </div>
+
       <div class="flex-1 min-w-0">
         <div v-if="store.loading" class="h-5 w-48 bg-white/5 animate-pulse rounded-lg"></div>
         <h1 v-else class="text-xl font-semibold text-white truncate">
           {{ patient?.first_name }} {{ patient?.last_name }}
         </h1>
         <p class="text-xs text-white/40">{{ patient?.document_type }} {{ patient?.document_number }}</p>
+        <!-- Delete photo link (only when photo exists) -->
+        <button
+          v-if="patient && patient.photo_url"
+          class="text-xs text-red-400/60 hover:text-red-400 transition-colors flex items-center gap-1 mt-0.5"
+          :disabled="uploadingPhoto"
+          @click="onDeletePhoto"
+        >
+          <Trash2 :size="10" /> Eliminar foto
+        </button>
       </div>
+
       <button
         v-if="patient"
-        class="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold border border-white/10 text-white/60 hover:border-white/30 hover:text-white transition-all"
+        class="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold border border-white/10 text-white/60 hover:border-white/30 hover:text-white transition-all shrink-0"
         @click="openEdit"
       >
         <Pencil :size="12" /> Editar

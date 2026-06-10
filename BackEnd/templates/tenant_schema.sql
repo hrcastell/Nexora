@@ -748,6 +748,7 @@ CREATE TABLE IF NOT EXISTS {schema_name}.dental_patient_profiles (
     emergency_contact_name    VARCHAR(255),
     emergency_contact_phone   VARCHAR(50),
     notes                     TEXT,
+    photo_url                 TEXT,
     created_at                TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     updated_at                TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT uq_dental_patient_profile UNIQUE (tenant_id, customer_id)

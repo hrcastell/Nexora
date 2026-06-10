@@ -93,11 +93,32 @@ export const useDentalPatientsStore = defineStore('dentalPatients', () => {
     return entry as DentalMedicalHistory;
   }
 
+  async function uploadPhoto(id: number | string, file: File): Promise<string> {
+    const res = await dentalPatientsService.uploadPhoto(id, file);
+    const photoUrl = res.photo_url;
+    // Patch local state so UI updates without a full reload
+    if (current.value && String(current.value.id) === String(id)) {
+      (current.value as any).photo_url = photoUrl;
+    }
+    const idx = items.value.findIndex(p => String(p.id) === String(id));
+    if (idx !== -1) (items.value[idx] as any).photo_url = photoUrl;
+    return photoUrl;
+  }
+
+  async function deletePhoto(id: number | string): Promise<void> {
+    await dentalPatientsService.deletePhoto(id);
+    if (current.value && String(current.value.id) === String(id)) {
+      (current.value as any).photo_url = null;
+    }
+    const idx = items.value.findIndex(p => String(p.id) === String(id));
+    if (idx !== -1) (items.value[idx] as any).photo_url = null;
+  }
+
   function reset() {
     items.value = [];
     current.value = null;
     error.value = null;
   }
 
-  return { items, current, medicalHistory, loading, error, load, loadOne, create, update, getClinicalHistory, getConsultations, getPayments, getDebt, fetchMedicalHistory, addMedicalHistory, reset };
+  return { items, current, medicalHistory, loading, error, load, loadOne, create, update, getClinicalHistory, getConsultations, getPayments, getDebt, fetchMedicalHistory, addMedicalHistory, uploadPhoto, deletePhoto, reset };
 });
