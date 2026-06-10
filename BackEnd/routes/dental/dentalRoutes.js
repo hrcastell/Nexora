@@ -11,6 +11,7 @@ const chargesCtrl      = require('../../controllers/dental/chargesController');
 const consultationTreatmentsCtrl = require('../../controllers/dental/consultationTreatmentsController');
 const consultationSessionsCtrl = require('../../controllers/dental/consultationSessionsController');
 const consultationAttachmentsController = require('../../controllers/dental/consultationAttachmentsController');
+const quotesController = require('../../controllers/dental/quotesController');
 
 // All dental routes require authentication
 router.use(authMiddleware);
@@ -90,6 +91,21 @@ router.delete('/consultations/:id/attachments/:aid', consultationAttachmentsCont
 
 // ─── CONSULTATION STATUS ──────────────────────────────────────────────────
 router.post('/consultations/:id/status', consultationsCtrl.changeStatus);
+
+// ─── QUOTES ───────────────────────────────────────────────────
+router.get('/quotes',                        quotesController.list);
+router.post('/quotes',                       quotesController.create);
+router.get('/quotes/:id',                    quotesController.getById);
+router.put('/quotes/:id',                    quotesController.update);
+router.post('/quotes/:id/send',              quotesController.send);
+router.post('/quotes/:id/accept',            quotesController.accept);
+router.post('/quotes/:id/reject',            quotesController.reject);
+router.post('/quotes/:id/convert',           quotesController.convertToConsultation);
+router.get('/quotes/:id/print',              quotesController.getPrintData);
+router.post('/quotes/:id/items',             quotesController.addItem);
+router.put('/quotes/:id/items/:iid',         quotesController.updateItem);
+router.delete('/quotes/:id/items/:iid',      quotesController.removeItem);
+router.get('/patients/:customerId/quotes',   quotesController.getForPatient);
 
 // ─── FINANCE: CHARGES ─────────────────────────────────────────
 router.get('/charges',                   chargesCtrl.list);

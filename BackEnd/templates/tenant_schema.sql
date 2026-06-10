@@ -1019,6 +1019,53 @@ CREATE TABLE IF NOT EXISTS {schema_name}.dental_consultation_attachments (
 );
 CREATE INDEX IF NOT EXISTS idx_dental_consultation_attachments_tenant_consultation ON {schema_name}.dental_consultation_attachments(tenant_id, consultation_id);
 
+-- ─── DENTAL: QUOTES (migration 38) ─────────────────────────────
+
+CREATE SEQUENCE IF NOT EXISTS {schema_name}.dental_quote_number_seq START 1;
+
+CREATE TABLE IF NOT EXISTS {schema_name}.dental_quotes (
+    id                  SERIAL PRIMARY KEY,
+    tenant_id           VARCHAR(255) NOT NULL,
+    customer_id         INTEGER      NOT NULL REFERENCES {schema_name}.customers(id) ON DELETE RESTRICT,
+    quote_number        VARCHAR(20)  NOT NULL,
+    quote_date          DATE         NOT NULL DEFAULT CURRENT_DATE,
+    valid_until         DATE,
+    status              VARCHAR(30)  NOT NULL DEFAULT 'draft'
+        CONSTRAINT chk_dental_quote_status CHECK (status IN ('draft','sent','accepted','rejected','expired','converted')),
+    total_amount        NUMERIC(12,2) NOT NULL DEFAULT 0,
+    discount_amount     NUMERIC(12,2) NOT NULL DEFAULT 0,
+    final_amount        NUMERIC(12,2) NOT NULL DEFAULT 0,
+    notes               TEXT,
+    conditions_text     TEXT,
+    professional_id     INTEGER REFERENCES public.users(id) ON DELETE SET NULL,
+    accepted_at         TIMESTAMPTZ,
+    accepted_by_name    VARCHAR(255),
+    acceptance_notes    TEXT,
+    rejected_at         TIMESTAMPTZ,
+    rejection_reason    TEXT,
+    consultation_id     INTEGER REFERENCES {schema_name}.dental_consultations(id) ON DELETE SET NULL,
+    converted_at        TIMESTAMPTZ,
+    created_at          TIMESTAMPTZ DEFAULT NOW(),
+    updated_at          TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE(tenant_id, quote_number)
+);
+CREATE INDEX IF NOT EXISTS idx_dental_quotes_tenant_customer ON {schema_name}.dental_quotes(tenant_id, customer_id);
+
+CREATE TABLE IF NOT EXISTS {schema_name}.dental_quote_items (
+    id                        SERIAL PRIMARY KEY,
+    tenant_id                 VARCHAR(255) NOT NULL,
+    quote_id                  INTEGER      NOT NULL REFERENCES {schema_name}.dental_quotes(id) ON DELETE CASCADE,
+    treatment_id              INTEGER REFERENCES {schema_name}.dental_treatments(id) ON DELETE SET NULL,
+    treatment_name_snapshot   VARCHAR(255) NOT NULL,
+    description               TEXT,
+    tooth_reference           VARCHAR(50),
+    unit_price                NUMERIC(12,2) NOT NULL DEFAULT 0,
+    quantity                  INTEGER       NOT NULL DEFAULT 1,
+    subtotal                  NUMERIC(12,2) NOT NULL DEFAULT 0,
+    sort_order                INTEGER       NOT NULL DEFAULT 0
+);
+CREATE INDEX IF NOT EXISTS idx_dental_quote_items_tenant_quote ON {schema_name}.dental_quote_items(tenant_id, quote_id);
+
 -- ─── DENTAL: CONSULTATION SERVICES (migration 26) ─────────────
 
 CREATE TABLE IF NOT EXISTS {schema_name}.dental_consultation_services (

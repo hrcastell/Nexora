@@ -328,6 +328,18 @@ const router = createRouter({
           component: () => import('../views/dental/screens_dental_treatments.vue'),
           meta: { requiresModule: 'dental_core', requiresTransaction: 'dental_treatments' }
         },
+        {
+          path: 'dental/quotes',
+          name: 'dental-quotes',
+          component: () => import('../views/dental/screens_dental_quotes.vue'),
+          meta: { requiresModule: 'dental_core', requiresTransaction: 'dental_consultations' }
+        },
+        {
+          path: 'dental/quotes/:id',
+          name: 'dental-quote-detail',
+          component: () => import('../views/dental/screens_dental_quote_detail.vue'),
+          meta: { requiresModule: 'dental_core', requiresTransaction: 'dental_consultations' }
+        },
       ]
     },
     // ─────────────────────────────────────────────────────────────────────────

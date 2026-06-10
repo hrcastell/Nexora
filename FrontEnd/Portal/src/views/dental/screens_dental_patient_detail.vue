@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ArrowLeft, User, FileText, Stethoscope, CreditCard, CalendarDays, Pencil, Phone, MessageCircle, Plus, Camera, Trash2 } from 'lucide-vue-next';
+import { ArrowLeft, User, FileText, Stethoscope, CreditCard, CalendarDays, Pencil, Phone, MessageCircle, Plus, Camera, Trash2, Receipt } from 'lucide-vue-next';
+import { dentalQuotesService } from '../../services/dentalQuotesService';
+import type { DentalQuote } from '../../types/dental';
+import { QUOTE_STATUS_LABELS, QUOTE_STATUS_COLORS } from '../../types/dental';
 import { useDentalPatientsStore } from '../../stores/dentalPatients';
 import { useDentalAppointmentsStore } from '../../stores/dentalAppointments';
 import NxrSlidePanel from '../../components/NxrSlidePanel.vue';
@@ -15,7 +18,9 @@ const store              = useDentalPatientsStore();
 const appointmentsStore  = useDentalAppointmentsStore();
 const { toasts, triggerToast, removeToast } = useToast();
 
-const activeTab         = ref<'summary' | 'personal' | 'history' | 'consultations' | 'payments' | 'appointments'>('summary');
+const activeTab         = ref<'summary' | 'personal' | 'history' | 'consultations' | 'payments' | 'appointments' | 'quotes'>('summary');
+const patientQuotes     = ref<DentalQuote[]>([]);
+const quotesLoading     = ref(false);
 const showEditPanel     = ref(false);
 const saving            = ref(false);
 const saveError         = ref<string | null>(null);
@@ -173,6 +178,17 @@ async function loadTabData(tab: typeof activeTab.value) {
   }
   if (tab === 'appointments' && appointments.value.length === 0) {
     await appointmentsStore.load({ customer_id: route.params.id as string });
+  }
+  if (tab === 'quotes' && patientQuotes.value.length === 0) {
+    quotesLoading.value = true;
+    try {
+      const res = await dentalQuotesService.getForPatient(Number(route.params.id));
+      patientQuotes.value = res.data.data;
+    } catch {
+      // non-critical
+    } finally {
+      quotesLoading.value = false;
+    }
   }
 }
 
@@ -336,6 +352,7 @@ onMounted(async () => {
             { key: 'consultations', label: 'Consultas',     icon: Stethoscope },
             { key: 'payments',      label: 'Pagos',         icon: CreditCard },
             { key: 'appointments',  label: 'Citas',         icon: CalendarDays },
+            { key: 'quotes',        label: 'Presupuestos',  icon: Receipt },
           ]"
           :key="tab.key"
           class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all"
@@ -580,6 +597,43 @@ onMounted(async () => {
               appt.status === 'rescheduled' ? 'Reprogramada': appt.status
             }}
           </span>
+        </div>
+      </div>
+
+      <!-- Tab: Quotes -->
+      <div v-if="activeTab === 'quotes'" class="flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+          <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Presupuestos del paciente</p>
+          <button
+            class="flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs text-white/70 bg-white/10 hover:bg-white/20 transition"
+            @click="router.push(`/dental/quotes?customer_id=${route.params.id}`)"
+          >
+            <Plus class="h-3.5 w-3.5" />
+            Nuevo presupuesto
+          </button>
+        </div>
+
+        <div v-if="quotesLoading" class="text-center text-white/30 py-10 text-sm">Cargando...</div>
+        <div v-else-if="patientQuotes.length === 0" class="text-center text-white/30 py-10 text-sm">
+          No hay presupuestos registrados para este paciente.
+        </div>
+        <div
+          v-for="q in patientQuotes"
+          :key="q.id"
+          class="flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-white/10 cursor-pointer hover:border-white/20 transition-all"
+          :style="{ background: 'var(--nexora-glass-bg)' }"
+          @click="router.push(`/dental/quotes/${q.id}`)"
+        >
+          <div class="flex-1 min-w-0">
+            <p class="text-sm text-white font-mono">{{ q.quote_number }}</p>
+            <p class="text-xs text-white/40">{{ fmtDate(q.quote_date) }}{{ q.valid_until ? ` · Vence: ${fmtDate(q.valid_until)}` : '' }}</p>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <span class="px-2 py-0.5 rounded-full text-xs" :class="QUOTE_STATUS_COLORS[q.status]">
+              {{ QUOTE_STATUS_LABELS[q.status] }}
+            </span>
+            <p class="text-sm font-semibold text-white">{{ fmt(q.final_amount) }}</p>
+          </div>
         </div>
       </div>
     </template>

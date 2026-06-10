@@ -464,3 +464,93 @@ export const ATTACHMENT_CATEGORY_LABELS: Record<AttachmentCategory, string> = {
   referral:     'Derivación',
   general:      'General',
 };
+
+// ─── QUOTES ──────────────────────────────────────────────────
+
+export type QuoteStatus = 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired' | 'converted';
+
+export interface DentalQuoteItem {
+  id: number;
+  tenant_id: string;
+  quote_id: number;
+  treatment_id?: number;
+  treatment_name_snapshot: string;
+  description?: string;
+  tooth_reference?: string;
+  unit_price: number;
+  quantity: number;
+  subtotal: number;
+  sort_order: number;
+}
+
+export interface DentalQuote {
+  id: number;
+  tenant_id: string;
+  customer_id: number;
+  quote_number: string;
+  quote_date: string;
+  valid_until?: string;
+  status: QuoteStatus;
+  total_amount: number;
+  discount_amount: number;
+  final_amount: number;
+  notes?: string;
+  conditions_text?: string;
+  professional_id?: number;
+  accepted_at?: string;
+  accepted_by_name?: string;
+  acceptance_notes?: string;
+  rejected_at?: string;
+  rejection_reason?: string;
+  consultation_id?: number;
+  converted_at?: string;
+  created_at: string;
+  updated_at: string;
+  // Joined fields (list/getById)
+  customer_first_name?: string;
+  customer_last_name?: string;
+  customer_document_type?: string;
+  customer_document_number?: string;
+  customer_phone?: string;
+  customer_address?: string;
+  customer_city?: string;
+  items?: DentalQuoteItem[];
+}
+
+export interface DentalQuoteFormData {
+  customer_id: number | string;
+  valid_until?: string;
+  notes?: string;
+  conditions_text?: string;
+  professional_id?: number | string;
+  discount_amount?: number;
+  items?: DentalQuoteItemFormData[];
+}
+
+export interface DentalQuoteItemFormData {
+  treatment_id?: number | string;
+  treatment_name_snapshot: string;
+  description?: string;
+  tooth_reference?: string;
+  unit_price: number | string;
+  quantity: number | string;
+  sort_order?: number;
+}
+
+export const QUOTE_STATUS_LABELS: Record<QuoteStatus, string> = {
+  draft:     'Borrador',
+  sent:      'Enviado',
+  accepted:  'Aceptado',
+  rejected:  'Rechazado',
+  expired:   'Vencido',
+  converted: 'Convertido',
+};
+
+export const QUOTE_STATUS_COLORS: Record<QuoteStatus, string> = {
+  draft:     'text-white/50 bg-white/10',
+  sent:      'text-blue-300 bg-blue-500/20',
+  accepted:  'text-green-300 bg-green-500/20',
+  rejected:  'text-red-300 bg-red-500/20',
+  expired:   'text-orange-300 bg-orange-500/20',
+  converted: 'text-purple-300 bg-purple-500/20',
+};
