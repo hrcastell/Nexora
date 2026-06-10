@@ -437,3 +437,30 @@ export interface DentalDashboardSummary {
   overdue_installments_count: number;
   recent_consultations: DentalConsultation[];
 }
+
+// ─── CONSULTATION ATTACHMENT ──────────────────────────────────
+
+export type AttachmentCategory = 'xray' | 'lab_result' | 'prescription' | 'consent' | 'referral' | 'general';
+
+export interface DentalConsultationAttachment {
+  id: number;
+  tenant_id: string;
+  consultation_id: number;
+  file_url: string;
+  file_name: string;
+  file_type?: string;
+  file_size_bytes?: number;
+  category: AttachmentCategory;
+  description?: string;
+  uploaded_by?: number;
+  created_at: string;
+}
+
+export const ATTACHMENT_CATEGORY_LABELS: Record<AttachmentCategory, string> = {
+  xray:         'Radiografía',
+  lab_result:   'Resultado de laboratorio',
+  prescription: 'Prescripción',
+  consent:      'Consentimiento informado',
+  referral:     'Derivación',
+  general:      'General',
+};

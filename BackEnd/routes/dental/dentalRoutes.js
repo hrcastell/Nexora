@@ -10,6 +10,7 @@ const consultationsCtrl = require('../../controllers/dental/consultationsControl
 const chargesCtrl      = require('../../controllers/dental/chargesController');
 const consultationTreatmentsCtrl = require('../../controllers/dental/consultationTreatmentsController');
 const consultationSessionsCtrl = require('../../controllers/dental/consultationSessionsController');
+const consultationAttachmentsController = require('../../controllers/dental/consultationAttachmentsController');
 
 // All dental routes require authentication
 router.use(authMiddleware);
@@ -81,6 +82,11 @@ router.post('/consultations/:id/sessions',                         consultationS
 router.get('/consultations/:id/sessions/:sid',                     consultationSessionsCtrl.getById);
 router.patch('/consultations/:id/sessions/:sid',                   consultationSessionsCtrl.update);
 router.post('/consultations/:id/sessions/:sid/complete',           consultationSessionsCtrl.complete);
+
+// ─── CONSULTATION ATTACHMENTS ─────────────────────────────────────────────
+router.get('/consultations/:id/attachments',       consultationAttachmentsController.list);
+router.post('/consultations/:id/attachments',      consultationAttachmentsController.attachmentUpload.single('file'), consultationAttachmentsController.upload);
+router.delete('/consultations/:id/attachments/:aid', consultationAttachmentsController.remove);
 
 // ─── CONSULTATION STATUS ──────────────────────────────────────────────────
 router.post('/consultations/:id/status', consultationsCtrl.changeStatus);

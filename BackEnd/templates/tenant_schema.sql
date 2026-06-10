@@ -1001,6 +1001,24 @@ CREATE TABLE IF NOT EXISTS {schema_name}.dental_consultation_photos (
 );
 CREATE INDEX IF NOT EXISTS idx_dental_consultation_photos_consultation ON {schema_name}.dental_consultation_photos(consultation_id);
 
+-- ─── DENTAL: CONSULTATION ATTACHMENTS (migration 37) ──────────
+
+CREATE TABLE IF NOT EXISTS {schema_name}.dental_consultation_attachments (
+    id               SERIAL PRIMARY KEY,
+    tenant_id        VARCHAR(255) NOT NULL,
+    consultation_id  INTEGER      NOT NULL REFERENCES {schema_name}.dental_consultations(id) ON DELETE CASCADE,
+    file_url         TEXT         NOT NULL,
+    file_name        VARCHAR(255) NOT NULL,
+    file_type        VARCHAR(100),
+    file_size_bytes  INTEGER,
+    category         VARCHAR(50)  DEFAULT 'general'
+        CONSTRAINT chk_dca_category CHECK (category IN ('xray','lab_result','prescription','consent','referral','general')),
+    description      TEXT,
+    uploaded_by      INTEGER REFERENCES public.users(id) ON DELETE SET NULL,
+    created_at       TIMESTAMPTZ  DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_dental_consultation_attachments_tenant_consultation ON {schema_name}.dental_consultation_attachments(tenant_id, consultation_id);
+
 -- ─── DENTAL: CONSULTATION SERVICES (migration 26) ─────────────
 
 CREATE TABLE IF NOT EXISTS {schema_name}.dental_consultation_services (
