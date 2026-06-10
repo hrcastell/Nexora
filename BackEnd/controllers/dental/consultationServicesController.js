@@ -1,12 +1,16 @@
 const db = require('../../config/db');
 const { resolveSchema } = require('../../utils/tenantResolver');
+const { requireConsultation } = require('../../utils/dentalHelpers');
 
 /**
  * Recalculates and updates total_amount on dental_consultations
  * summing only active consultation services.
+ * Accepts an optional pg client so callers can run this inside their
+ * existing transaction.  Falls back to the pool when no client is given.
  */
-async function recalcConsultationTotal(schema, consultationId, companyId) {
-    await db.query(
+async function recalcConsultationTotal(schema, consultationId, companyId, client) {
+    const runner = client || db;
+    await runner.query(
         `UPDATE ${schema}.dental_consultations
          SET total_amount = (
              SELECT COALESCE(SUM(subtotal), 0)
@@ -16,24 +20,6 @@ async function recalcConsultationTotal(schema, consultationId, companyId) {
          WHERE id = $1 AND tenant_id = $2`,
         [consultationId, companyId]
     );
-}
-
-/**
- * Verifies the consultation exists and belongs to the tenant.
- * Returns the consultation row or throws a structured error.
- */
-async function requireConsultation(schema, companyId, consultationId) {
-    const result = await db.query(
-        `SELECT * FROM ${schema}.dental_consultations WHERE id = $1 AND tenant_id = $2`,
-        [consultationId, companyId]
-    );
-    if (result.rows.length === 0) {
-        const err = new Error('Consulta no encontrada');
-        err.statusCode = 404;
-        err.code = 'DENTAL_CONSULTATION_NOT_FOUND';
-        throw err;
-    }
-    return result.rows[0];
 }
 
 /**
@@ -131,15 +117,28 @@ exports.add = async (req, res) => {
 
         const subtotal = unit_price * quantity;
 
-        const insertResult = await db.query(
-            `INSERT INTO ${schema}.dental_consultation_services
-             (tenant_id, consultation_id, service_id, service_name_snapshot, unit_price, quantity, subtotal, status, tooth_reference, clinical_notes)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, 'active', $8, $9)
-             RETURNING *`,
-            [companyId, req.params.id, service_id, service_name_snapshot, unit_price, quantity, subtotal, tooth_reference, clinical_notes]
-        );
+        const addClient = await db.getClient();
+        let insertResult;
+        try {
+            await addClient.query('BEGIN');
 
-        await recalcConsultationTotal(schema, req.params.id, companyId);
+            insertResult = await addClient.query(
+                `INSERT INTO ${schema}.dental_consultation_services
+                 (tenant_id, consultation_id, service_id, service_name_snapshot, unit_price, quantity, subtotal, status, tooth_reference, clinical_notes)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7, 'active', $8, $9)
+                 RETURNING *`,
+                [companyId, req.params.id, service_id, service_name_snapshot, unit_price, quantity, subtotal, tooth_reference, clinical_notes]
+            );
+
+            await recalcConsultationTotal(schema, req.params.id, companyId, addClient);
+
+            await addClient.query('COMMIT');
+        } catch (txErr) {
+            await addClient.query('ROLLBACK');
+            throw txErr;
+        } finally {
+            addClient.release();
+        }
 
         res.status(201).json(insertResult.rows[0]);
     } catch (err) {
@@ -187,15 +186,28 @@ exports.update = async (req, res) => {
 
         const subtotal = unit_price * quantity;
 
-        const updateResult = await db.query(
-            `UPDATE ${schema}.dental_consultation_services
-             SET unit_price = $1, quantity = $2, subtotal = $3, tooth_reference = $4, clinical_notes = $5, updated_at = NOW()
-             WHERE id = $6 AND consultation_id = $7 AND tenant_id = $8
-             RETURNING *`,
-            [unit_price, quantity, subtotal, tooth_reference, clinical_notes, req.params.sid, req.params.id, companyId]
-        );
+        const updateClient = await db.getClient();
+        let updateResult;
+        try {
+            await updateClient.query('BEGIN');
 
-        await recalcConsultationTotal(schema, req.params.id, companyId);
+            updateResult = await updateClient.query(
+                `UPDATE ${schema}.dental_consultation_services
+                 SET unit_price = $1, quantity = $2, subtotal = $3, tooth_reference = $4, clinical_notes = $5, updated_at = NOW()
+                 WHERE id = $6 AND consultation_id = $7 AND tenant_id = $8
+                 RETURNING *`,
+                [unit_price, quantity, subtotal, tooth_reference, clinical_notes, req.params.sid, req.params.id, companyId]
+            );
+
+            await recalcConsultationTotal(schema, req.params.id, companyId, updateClient);
+
+            await updateClient.query('COMMIT');
+        } catch (txErr) {
+            await updateClient.query('ROLLBACK');
+            throw txErr;
+        } finally {
+            updateClient.release();
+        }
 
         res.json(updateResult.rows[0]);
     } catch (err) {
@@ -237,14 +249,26 @@ exports.void = async (req, res) => {
             });
         }
 
-        await db.query(
-            `UPDATE ${schema}.dental_consultation_services
-             SET status = 'voided', updated_at = NOW()
-             WHERE id = $1 AND consultation_id = $2 AND tenant_id = $3`,
-            [req.params.sid, req.params.id, companyId]
-        );
+        const voidClient = await db.getClient();
+        try {
+            await voidClient.query('BEGIN');
 
-        await recalcConsultationTotal(schema, req.params.id, companyId);
+            await voidClient.query(
+                `UPDATE ${schema}.dental_consultation_services
+                 SET status = 'voided', updated_at = NOW()
+                 WHERE id = $1 AND consultation_id = $2 AND tenant_id = $3`,
+                [req.params.sid, req.params.id, companyId]
+            );
+
+            await recalcConsultationTotal(schema, req.params.id, companyId, voidClient);
+
+            await voidClient.query('COMMIT');
+        } catch (txErr) {
+            await voidClient.query('ROLLBACK');
+            throw txErr;
+        } finally {
+            voidClient.release();
+        }
 
         res.json({ message: 'Servicio anulado' });
     } catch (err) {

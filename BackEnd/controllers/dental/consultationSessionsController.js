@@ -1,25 +1,8 @@
 const db = require('../../config/db');
 const { resolveSchema } = require('../../utils/tenantResolver');
+const { requireConsultation } = require('../../utils/dentalHelpers');
 
 const VALID_SESSION_STATUSES = ['scheduled', 'in_progress', 'completed', 'cancelled'];
-
-/**
- * Verifies the consultation exists and belongs to the tenant.
- * Returns the consultation row or throws a structured error.
- */
-async function requireConsultation(schema, companyId, consultationId) {
-    const result = await db.query(
-        `SELECT * FROM ${schema}.dental_consultations WHERE id = $1 AND tenant_id = $2`,
-        [consultationId, companyId]
-    );
-    if (result.rows.length === 0) {
-        const err = new Error('Consulta no encontrada');
-        err.statusCode = 404;
-        err.code = 'DENTAL_CONSULTATION_NOT_FOUND';
-        throw err;
-    }
-    return result.rows[0];
-}
 
 /**
  * GET /dental/consultations/:id/sessions
@@ -108,15 +91,32 @@ exports.create = async (req, res) => {
         // Also create a dental_appointment linked to this session.
         // Non-blocking: appointment failure must not roll back the session.
         if (session_date && consultation.customer_id) {
+            // Resolve duration from the linked service; default to 60 min.
+            let durationMinutes = 60;
+            if (consultation.service_id) {
+                try {
+                    const svcResult = await db.query(
+                        `SELECT estimated_duration_minutes FROM ${schema}.dental_services WHERE id = $1 AND tenant_id = $2`,
+                        [consultation.service_id, companyId]
+                    );
+                    if (svcResult.rows.length > 0 && svcResult.rows[0].estimated_duration_minutes) {
+                        durationMinutes = parseInt(svcResult.rows[0].estimated_duration_minutes, 10) || 60;
+                    }
+                } catch (svcErr) {
+                    console.warn('consultationSessionsController.create: could not read service duration:', svcErr.message);
+                }
+            }
+
             db.query(
                 `INSERT INTO ${schema}.dental_appointments
                  (tenant_id, customer_id, service_id, scheduled_start, scheduled_end, status, reason, notes, session_id)
-                 VALUES ($1, $2, $3, $4, $4::timestamp + INTERVAL '1 hour', 'scheduled', $5, $6, $7)`,
+                 VALUES ($1, $2, $3, $4, $4::timestamp + ($5 || ' minutes')::interval, 'scheduled', $6, $7, $8)`,
                 [
                     companyId,
                     consultation.customer_id,
                     consultation.service_id || null,
                     session_date,
+                    durationMinutes,
                     `Sesión #${session_number}`,
                     notes || null,
                     insertResult.rows[0].id,
@@ -207,14 +207,37 @@ exports.update = async (req, res) => {
         // If session_date changed: update linked appointment + create notification
         const dateChanged = session_date && String(session_date) !== String(prevDate);
         if (dateChanged) {
+            // Resolve duration from the linked service; default to 60 min.
+            let durationMinutes = 60;
+            if (updatedSession.consultation_id) {
+                try {
+                    const consForSvc = await db.query(
+                        `SELECT service_id FROM ${schema}.dental_consultations WHERE id = $1 AND tenant_id = $2`,
+                        [updatedSession.consultation_id, companyId]
+                    );
+                    const serviceId = consForSvc.rows[0]?.service_id;
+                    if (serviceId) {
+                        const svcResult = await db.query(
+                            `SELECT estimated_duration_minutes FROM ${schema}.dental_services WHERE id = $1 AND tenant_id = $2`,
+                            [serviceId, companyId]
+                        );
+                        if (svcResult.rows.length > 0 && svcResult.rows[0].estimated_duration_minutes) {
+                            durationMinutes = parseInt(svcResult.rows[0].estimated_duration_minutes, 10) || 60;
+                        }
+                    }
+                } catch (svcErr) {
+                    console.warn('consultationSessionsController.update: could not read service duration:', svcErr.message);
+                }
+            }
+
             // Update the linked appointment (non-blocking)
             db.query(
                 `UPDATE ${schema}.dental_appointments
                  SET scheduled_start = $1,
-                     scheduled_end   = $1::timestamp + INTERVAL '1 hour',
+                     scheduled_end   = $1::timestamp + ($2 || ' minutes')::interval,
                      updated_at      = NOW()
-                 WHERE session_id = $2 AND tenant_id = $3`,
-                [session_date, req.params.sid, companyId]
+                 WHERE session_id = $3 AND tenant_id = $4`,
+                [session_date, durationMinutes, req.params.sid, companyId]
             ).catch((err) => {
                 console.warn('consultationSessionsController.update: appointment sync failed:', err.message);
             });

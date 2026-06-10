@@ -807,6 +807,7 @@ CREATE TABLE IF NOT EXISTS {schema_name}.dental_appointments (
     reason                  TEXT,
     notes                   TEXT,
     reminder_email_sent_at  TIMESTAMP,
+    session_id              INTEGER,
     created_at              TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     updated_at              TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT chk_dental_appointment_status CHECK (status IN (
@@ -816,23 +817,32 @@ CREATE TABLE IF NOT EXISTS {schema_name}.dental_appointments (
 );
 
 CREATE TABLE IF NOT EXISTS {schema_name}.dental_consultations (
-    id                      SERIAL PRIMARY KEY,
-    tenant_id               INTEGER       NOT NULL,
-    customer_id             INTEGER       NOT NULL REFERENCES {schema_name}.customers(id) ON DELETE RESTRICT,
-    appointment_id          INTEGER       REFERENCES {schema_name}.dental_appointments(id) ON DELETE SET NULL,
-    service_id              INTEGER       REFERENCES {schema_name}.dental_services(id) ON DELETE SET NULL,
-    consultation_date       TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    status                  VARCHAR(30)   NOT NULL DEFAULT 'draft',
-    administrative_status   VARCHAR(30)   NOT NULL DEFAULT 'unpaid',
-    reason                  TEXT,
-    diagnosis               TEXT,
-    clinical_notes          TEXT,
-    indications             TEXT,
-    total_amount            NUMERIC(12,2) NOT NULL DEFAULT 0,
-    created_at              TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
-    updated_at              TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
+    id                          SERIAL PRIMARY KEY,
+    tenant_id                   INTEGER       NOT NULL,
+    customer_id                 INTEGER       NOT NULL REFERENCES {schema_name}.customers(id) ON DELETE RESTRICT,
+    appointment_id              INTEGER       REFERENCES {schema_name}.dental_appointments(id) ON DELETE SET NULL,
+    service_id                  INTEGER       REFERENCES {schema_name}.dental_services(id) ON DELETE SET NULL,
+    consultation_date           TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    status                      VARCHAR(30)   NOT NULL DEFAULT 'draft',
+    administrative_status       VARCHAR(30)   NOT NULL DEFAULT 'unpaid',
+    reason                      TEXT,
+    diagnosis                   TEXT,
+    clinical_notes              TEXT,
+    indications                 TEXT,
+    total_amount                NUMERIC(12,2) NOT NULL DEFAULT 0,
+    requires_follow_up          BOOLEAN       DEFAULT FALSE,
+    requires_multiple_sessions  BOOLEAN       DEFAULT FALSE,
+    estimated_sessions          INTEGER,
+    next_session_date           DATE,
+    follow_up_notes             TEXT,
+    professional_id             INTEGER,
+    created_by                  INTEGER,
+    updated_by                  INTEGER,
+    created_at                  TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
+    updated_at                  TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT chk_dental_consultation_status CHECK (status IN (
-        'draft', 'scheduled', 'in_progress', 'completed', 'cancelled', 'no_show'
+        'draft', 'created', 'in_progress', 'in_treatment',
+        'completed', 'cancelled', 'no_show', 'voided'
     )),
     CONSTRAINT chk_dental_consultation_admin_status CHECK (administrative_status IN (
         'unpaid', 'partially_paid', 'paid', 'overdue', 'cancelled'
@@ -855,6 +865,7 @@ CREATE TABLE IF NOT EXISTS {schema_name}.dental_clinical_history_entries (
     tenant_id       INTEGER      NOT NULL,
     customer_id     INTEGER      NOT NULL REFERENCES {schema_name}.customers(id) ON DELETE RESTRICT,
     consultation_id INTEGER      REFERENCES {schema_name}.dental_consultations(id) ON DELETE SET NULL,
+    session_id      INTEGER,
     entry_date      TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
     type            VARCHAR(40)  NOT NULL DEFAULT 'general_note',
     title           VARCHAR(255),
@@ -978,6 +989,7 @@ CREATE TABLE IF NOT EXISTS {schema_name}.dental_consultation_photos (
     id              SERIAL PRIMARY KEY,
     tenant_id       INTEGER      NOT NULL,
     consultation_id INTEGER      NOT NULL REFERENCES {schema_name}.dental_consultations(id) ON DELETE CASCADE,
+    session_id      INTEGER,
     photo_url       TEXT         NOT NULL,
     stage           VARCHAR(20)  NOT NULL DEFAULT 'before',
     caption         TEXT,
@@ -987,3 +999,89 @@ CREATE TABLE IF NOT EXISTS {schema_name}.dental_consultation_photos (
     CONSTRAINT chk_dental_photo_stage CHECK (stage IN ('before', 'after'))
 );
 CREATE INDEX IF NOT EXISTS idx_dental_consultation_photos_consultation ON {schema_name}.dental_consultation_photos(consultation_id);
+
+-- ─── DENTAL: CONSULTATION SERVICES (migration 26) ─────────────
+
+CREATE TABLE IF NOT EXISTS {schema_name}.dental_consultation_services (
+    id                    SERIAL PRIMARY KEY,
+    tenant_id             INTEGER       NOT NULL,
+    consultation_id       INTEGER       NOT NULL
+        REFERENCES {schema_name}.dental_consultations(id) ON DELETE RESTRICT,
+    service_id            INTEGER
+        REFERENCES {schema_name}.dental_services(id) ON DELETE SET NULL,
+    service_name_snapshot VARCHAR(255)  NOT NULL,
+    unit_price            NUMERIC(12,2) NOT NULL DEFAULT 0,
+    quantity              INTEGER       NOT NULL DEFAULT 1,
+    subtotal              NUMERIC(12,2) NOT NULL DEFAULT 0,
+    tooth_reference       VARCHAR(100),
+    clinical_notes        TEXT,
+    status                VARCHAR(20)   NOT NULL DEFAULT 'active',
+    created_at            TIMESTAMP     DEFAULT NOW(),
+    updated_at            TIMESTAMP     DEFAULT NOW(),
+    created_by            INTEGER,
+    CONSTRAINT chk_dcs_quantity CHECK (quantity > 0),
+    CONSTRAINT chk_dcs_status   CHECK (status IN ('active', 'voided'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_dcs_consultation_id       ON {schema_name}.dental_consultation_services(consultation_id);
+CREATE INDEX IF NOT EXISTS idx_dcs_service_id            ON {schema_name}.dental_consultation_services(service_id);
+CREATE INDEX IF NOT EXISTS idx_dcs_tenant_consultation   ON {schema_name}.dental_consultation_services(tenant_id, consultation_id);
+
+-- ─── DENTAL: CONSULTATION SESSIONS (migration 27) ─────────────
+
+CREATE TABLE IF NOT EXISTS {schema_name}.dental_consultation_sessions (
+    id                SERIAL PRIMARY KEY,
+    tenant_id         INTEGER      NOT NULL,
+    consultation_id   INTEGER      NOT NULL
+        REFERENCES {schema_name}.dental_consultations(id) ON DELETE RESTRICT,
+    session_number    INTEGER      NOT NULL,
+    session_date      TIMESTAMP    NOT NULL DEFAULT NOW(),
+    professional_id   INTEGER,
+    status            VARCHAR(20)  NOT NULL DEFAULT 'scheduled',
+    notes             TEXT,
+    evolution         TEXT,
+    next_session_date DATE,
+    created_at        TIMESTAMP    DEFAULT NOW(),
+    updated_at        TIMESTAMP    DEFAULT NOW(),
+    CONSTRAINT chk_dcse_status CHECK (status IN (
+        'scheduled', 'in_progress', 'completed', 'cancelled'
+    )),
+    CONSTRAINT uq_dcse_tenant_consultation_session
+        UNIQUE (tenant_id, consultation_id, session_number)
+);
+
+CREATE INDEX IF NOT EXISTS idx_dcse_consultation_id ON {schema_name}.dental_consultation_sessions(consultation_id);
+CREATE INDEX IF NOT EXISTS idx_dcse_tenant_id       ON {schema_name}.dental_consultation_sessions(tenant_id);
+
+-- FK: session_id on dental_consultation_photos -> dental_consultation_sessions (migration 28)
+-- (column already defined in dental_consultation_photos above; FK added here)
+ALTER TABLE {schema_name}.dental_consultation_photos
+    ADD CONSTRAINT fk_dental_photo_session
+    FOREIGN KEY (session_id)
+    REFERENCES {schema_name}.dental_consultation_sessions(id)
+    ON DELETE SET NULL;
+
+-- FK: session_id on dental_clinical_history_entries -> dental_consultation_sessions (migration 28)
+ALTER TABLE {schema_name}.dental_clinical_history_entries
+    ADD CONSTRAINT fk_dental_history_session
+    FOREIGN KEY (session_id)
+    REFERENCES {schema_name}.dental_consultation_sessions(id)
+    ON DELETE SET NULL;
+
+-- FK: session_id on dental_appointments -> dental_consultation_sessions (migration 33)
+ALTER TABLE {schema_name}.dental_appointments
+    ADD CONSTRAINT dental_appointments_session_id_fkey
+    FOREIGN KEY (session_id)
+    REFERENCES {schema_name}.dental_consultation_sessions(id)
+    ON DELETE SET NULL;
+
+CREATE INDEX IF NOT EXISTS idx_da_session_id ON {schema_name}.dental_appointments(session_id);
+
+-- Unique partial index: prevent duplicate active charges per consultation (migration 25)
+CREATE UNIQUE INDEX IF NOT EXISTS idx_unique_active_charge
+    ON {schema_name}.dental_charges (consultation_id)
+    WHERE status != 'cancelled';
+
+-- Index: dental_medical_history (migration 23)
+CREATE INDEX IF NOT EXISTS idx_dental_med_history_tenant_customer
+    ON {schema_name}.dental_medical_history(tenant_id, customer_id);

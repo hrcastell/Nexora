@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight } from 'lucide-vue-next';
+import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight, Tag } from 'lucide-vue-next';
 import { useDentalServicesStore } from '../../stores/dentalServices';
 import { useDentalTreatmentsStore } from '../../stores/dentalTreatments';
 import NxrSlidePanel from '../../components/NxrSlidePanel.vue';

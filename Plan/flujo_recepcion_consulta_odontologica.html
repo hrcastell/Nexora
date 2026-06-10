@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Diagramas de flujo — Recepción de paciente y generación de consulta odontológica</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    body { background:#f8fafc; color:#0f172a; }
+    pre.mermaid { background:white; border-radius:1rem; padding:1.25rem; overflow-x:auto; border:1px solid #e2e8f0; }
+    .note { background:#fff7ed; border:1px solid #fed7aa; color:#7c2d12; }
+  </style>
+</head>
+<body>
+  <header class="sticky top-0 z-20 backdrop-blur bg-white/90 border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 py-4">
+      <h1 class="text-xl font-semibold">Recepción de paciente y generación de consulta odontológica</h1>
+      <p class="text-sm text-slate-600">Flujos funcionales para paciente sin cita, paciente con cita y manejo de pagos/sesiones.</p>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-8 space-y-10">
+    <section class="note rounded-2xl p-4">
+      <h2 class="font-semibold mb-2">Reglas transversales obligatorias</h2>
+      <ul class="list-disc pl-5 space-y-1 text-sm">
+        <li>La creación de paciente debe estar disponible desde la ventana de Pacientes y desde el formulario de Consulta.</li>
+        <li>Al buscar por cédula o nombre, si no existen coincidencias en BD, el sistema debe advertirlo y desplegar el formulario de creación de paciente en la misma ventana.</li>
+        <li>Una consulta multisesión no puede cerrarse hasta completar todas las sesiones inicialmente coordinadas o hasta modificar formalmente el plan.</li>
+        <li>Una consulta multisesión puede manejar pagos por sesión, pagos únicos, cuotas o métodos mixtos; pago por sesión no debe confundirse con pago en cuotas.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2 class="text-lg font-semibold mb-3">Mapa general del proceso</h2>
+      <pre class="mermaid">
+flowchart TD
+  A[Paciente llega / contacto inicial] --> B{¿Tiene cita agendada?}
+  B -->|No| C[Caso 1: sin cita]
+  B -->|Sí| D[Caso 2: con cita]
+
+  C --> E[Recepción manual]
+  D --> F[Confirmar asistencia]
+
+  E --> G[Buscar paciente por cédula o nombre]
+  F --> H{¿Asistencia confirmada?}
+  H -->|No| I[Reagendar / marcar no asistió / cancelar]
+  H -->|Sí| J[Convertir cita en consulta]
+
+  G --> K{¿Paciente existe?}
+  K -->|Sí| L[Autocompletar datos del paciente]
+  K -->|No| M[Advertencia: paciente no existe]
+  M --> N[Desplegar formulario de paciente en la misma ventana]
+  N --> O[Crear paciente]
+  O --> L
+
+  L --> P[Crear consulta]
+  J --> Q{¿Existe consulta multisesión activa del mismo plan?}
+  Q -->|Sí| R[Continuar última consulta/sesión pendiente]
+  Q -->|No| S[Crear nueva consulta desde datos de la cita]
+
+  P --> T[Atención odontológica]
+  R --> T
+  S --> T
+
+  T --> U[Historia clínica / revisión / evidencia / tratamiento / informe / pago]
+      </pre>
+    </section>
+
+    <section>
+      <h2 class="text-lg font-semibold mb-3">Caso 1 — Cliente no existe y llega sin cita</h2>
+      <pre class="mermaid">
+flowchart TD
+  A[Paciente llega sin cita] --> B[Recepción toma datos básicos]
+  B --> C[Buscar por cédula o nombre]
+  C --> D{¿Existe coincidencia en BD?}
+
+  D -->|Sí| E[Seleccionar paciente existente]
+  D -->|No| F[Mostrar advertencia: paciente no existe]
+  F --> G[Desplegar formulario de paciente en la misma ventana]
+  G --> H[Crear paciente nuevo]
+  H --> E
+
+  E --> I[Odontóloga hace pasar al paciente]
+  I --> J[Crear consulta]
+  J --> K[Recopilar información general]
+  K --> L[Crear / actualizar historia clínica]
+  L --> M[Revisión e inspección bucal]
+  M --> N[Tomar fotografía del antes]
+  N --> O{¿Requiere tratamiento?}
+
+  O -->|No| P[Registrar evaluación, indicaciones y cierre clínico]
+  P --> Q[Gestionar pago de consulta si aplica]
+  Q --> Z[Consulta cerrada]
+
+  O -->|Sí| R[Generar cotización / propuesta con plan de tratamiento]
+  R --> S{¿Plan de tratamiento es multisesión?}
+  S -->|No| T[Plan de una sola sesión]
+  S -->|Sí| U[Definir número de sesiones, objetivos por sesión y fechas sugeridas]
+
+  T --> V[Presentar cotización al paciente]
+  U --> V
+  V --> W{¿Paciente acepta?}
+
+  W -->|No| X[Guardar cotización rechazada o pendiente]
+  X --> Y[Opcional: pautar seguimiento]
+  Y --> Z1[Consulta queda cerrada o pendiente administrativa]
+
+  W -->|Sí| AA{¿Tratamiento se realiza hoy?}
+  AA -->|No| AB[Pautar cita para tratamiento]
+  AB --> AC[Consulta queda abierta / plan aceptado pendiente]
+
+  AA -->|Sí| AD[Iniciar procedimiento]
+  AD --> AE[Ejecutar tratamiento]
+  AE --> AF[Tomar fotografía del después]
+  AF --> AG[Generar informe del trabajo realizado]
+  AG --> AH[Registrar indicaciones y prescripciones]
+  AH --> AI{¿Plan multisesión?}
+
+  AI -->|No| AJ[Gestionar pago final]
+  AJ --> AK{Tipo de pago}
+  AK -->|Pago único| AL[Registrar pago completo]
+  AK -->|Cuotas| AM[Crear plan de cuotas]
+  AK -->|Métodos mixtos| AN[Registrar varios métodos de pago]
+  AL --> AO[Consulta cerrada]
+  AM --> AO
+  AN --> AO
+
+  AI -->|Sí| AP[Registrar sesión realizada]
+  AP --> AQ[Gestionar pago de sesión / abono / cuota si aplica]
+  AQ --> AR{¿Todas las sesiones completadas?}
+  AR -->|No| AS[Pautar próxima sesión]
+  AS --> AT[Consulta permanece abierta]
+  AR -->|Sí| AU[Informe final + cierre clínico]
+  AU --> AV[Validar saldo financiero]
+  AV --> AW[Consulta cerrada]
+      </pre>
+    </section>
+
+    <section>
+      <h2 class="text-lg font-semibold mb-3">Caso 2 — Cliente existe y llega con cita</h2>
+      <pre class="mermaid">
+flowchart TD
+  A[Cita previamente agendada] --> B[Llamar para confirmar asistencia]
+  B --> C{¿Paciente confirma?}
+
+  C -->|No responde| D[Marcar pendiente de confirmación]
+  D --> E[Intentar nuevo contacto / mantener cita según política]
+  C -->|No asistirá| F[Reagendar o cancelar cita]
+  C -->|Sí confirma| G[Marcar cita confirmada]
+
+  G --> H[Paciente llega a recepción]
+  H --> I[Validar identidad del paciente]
+  I --> J[Convertir cita en consulta]
+  J --> K[Importar datos precargados de la cita]
+
+  K --> L{¿Existe plan/consulta multisesión activa?}
+  L -->|Sí| M[Continuar última consulta activa]
+  L -->|No| N[Crear nueva consulta]
+
+  M --> O[Identificar sesión pendiente actual]
+  N --> P[Crear sesión inicial de consulta]
+
+  O --> Q[Atención odontológica]
+  P --> Q
+
+  Q --> R[Actualizar historia clínica]
+  R --> S[Revisión / evolución / evidencia antes si aplica]
+  S --> T{¿Es continuación de tratamiento?}
+
+  T -->|Sí| U[Ejecutar intervención de la sesión programada]
+  T -->|No| V[Evaluación inicial y propuesta de tratamiento]
+
+  V --> W[Generar cotización / plan]
+  W --> X{¿Paciente acepta?}
+  X -->|No| Y[Guardar propuesta pendiente/rechazada]
+  Y --> Z[Cerrar o dejar seguimiento]
+  X -->|Sí| AA{¿Plan multisesión?}
+
+  AA -->|No| AB[Ejecutar tratamiento de sesión única]
+  AA -->|Sí| AC[Crear plan multisesión: sesiones, fechas, objetivos y reglas de cobro]
+  AC --> AD[Ejecutar sesión 1 o pautar próxima sesión]
+
+  U --> AE[Tomar fotografía del después si aplica]
+  AB --> AE
+  AD --> AE
+
+  AE --> AF[Informe de la sesión / trabajo realizado]
+  AF --> AG[Indicaciones y prescripciones]
+  AG --> AH{¿Consulta multisesión?}
+
+  AH -->|No| AI[Gestionar pago de consulta/tratamiento]
+  AI --> AJ{Modalidad de pago}
+  AJ -->|Pago único| AK[Registrar pago completo]
+  AJ -->|Cuotas| AL[Crear calendario de cuotas]
+  AJ -->|Métodos mixtos| AM[Registrar pagos con distintos métodos]
+  AK --> AN[Cerrar consulta]
+  AL --> AN
+  AM --> AN
+
+  AH -->|Sí| AO[Registrar sesión realizada]
+  AO --> AP{Regla financiera del plan}
+  AP -->|Pago por sesión| AQ[Crear/registrar pago individual de esta sesión]
+  AP -->|Pago único anticipado o final| AR[Validar pago global asociado al plan]
+  AP -->|Cuotas| AS[Actualizar cuota del calendario financiero]
+  AP -->|Mixto| AT[Registrar combinación: sesión + abono + método]
+
+  AQ --> AU{¿Sesión pagada o autorizada?}
+  AR --> AU
+  AS --> AU
+  AT --> AU
+
+  AU -->|No| AV[Marcar saldo pendiente / mora / autorización administrativa]
+  AU -->|Sí| AW[Actualizar saldo del plan]
+
+  AV --> AX{¿Permite continuar con deuda?}
+  AX -->|No| AY[Bloquear nueva sesión hasta regularizar]
+  AX -->|Sí| AZ[Permitir pauta con alerta de deuda]
+
+  AW --> BA{¿Todas las sesiones coordinadas completadas?}
+  AZ --> BA
+  BA -->|No| BB[Pautar próxima sesión]
+  BB --> BC[Consulta permanece abierta]
+  BA -->|Sí| BD[Generar informe final del tratamiento]
+  BD --> BE[Validar saldo total]
+  BE --> BF{¿Saldo total pagado o autorizado?}
+  BF -->|No| BG[Consulta clínicamente finalizada pero financieramente pendiente]
+  BF -->|Sí| BH[Cerrar consulta multisesión]
+      </pre>
+    </section>
+
+    <section>
+      <h2 class="text-lg font-semibold mb-3">Subflujo — Buscar o crear paciente desde consulta</h2>
+      <pre class="mermaid">
+flowchart TD
+  A[Formulario de consulta] --> B[Campo paciente: buscar por cédula o nombre]
+  B --> C{¿Hay coincidencias?}
+  C -->|Sí| D[Mostrar lista de coincidencias]
+  D --> E[Seleccionar paciente]
+  E --> F[Autocompletar datos clínicos/administrativos disponibles]
+  F --> G[Continuar creación de consulta]
+
+  C -->|No| H[Toast / alerta: Paciente no existe]
+  H --> I[Botón: Crear paciente]
+  I --> J[Formulario embebido o modal de paciente]
+  J --> K[Validar datos mínimos obligatorios]
+  K --> L{¿Datos válidos?}
+  L -->|No| M[Mostrar errores de validación]
+  M --> J
+  L -->|Sí| N[Guardar paciente]
+  N --> O[Asociar paciente recién creado a la consulta]
+  O --> G
+      </pre>
+    </section>
+
+    <section>
+      <h2 class="text-lg font-semibold mb-3">Subflujo — Control de consulta multisesión</h2>
+      <pre class="mermaid">
+flowchart TD
+  A[Consulta con plan multisesión aceptado] --> B[Crear plan de sesiones]
+  B --> C[Definir número de sesiones iniciales]
+  C --> D[Definir objetivo clínico por sesión]
+  D --> E[Definir modalidad de cobro]
+  E --> F{Modalidad de cobro}
+
+  F -->|Pago por sesión| G[Generar obligación financiera individual por sesión]
+  F -->|Pago único| H[Generar obligación financiera global]
+  F -->|Cuotas| I[Generar calendario de cuotas]
+  F -->|Mixto| J[Combinar obligaciones por sesión, abonos y métodos]
+
+  G --> K[Sesión 1 pendiente]
+  H --> K
+  I --> K
+  J --> K
+
+  K --> L[Ejecutar sesión]
+  L --> M[Registrar evolución + evidencia + informe parcial]
+  M --> N[Registrar pago según regla financiera]
+  N --> O{¿Quedan sesiones pendientes?}
+  O -->|Sí| P[Agendar próxima sesión]
+  P --> Q[Consulta sigue abierta]
+  Q --> L
+  O -->|No| R[Generar informe final]
+  R --> S[Validar saldo]
+  S --> T{¿Saldo resuelto?}
+  T -->|No| U[Estado: finalizada clínicamente / pendiente de pago]
+  T -->|Sí| V[Cerrar consulta]
+      </pre>
+    </section>
+
+    <section>
+      <h2 class="text-lg font-semibold mb-3">Estados sugeridos</h2>
+      <pre class="mermaid">
+stateDiagram-v2
+  [*] --> Borrador
+  Borrador --> Creada
+  Creada --> EnEvaluacion
+  EnEvaluacion --> Cotizada
+  Cotizada --> PropuestaPendiente
+  PropuestaPendiente --> Aceptada
+  PropuestaPendiente --> Rechazada
+  Aceptada --> EnTratamiento
+  EnTratamiento --> SesionPendiente: multisesión incompleta
+  SesionPendiente --> EnTratamiento: siguiente sesión
+  EnTratamiento --> FinalizadaClinicamente
+  FinalizadaClinicamente --> PendientePago: saldo pendiente
+  PendientePago --> Cerrada: saldo resuelto/autorizado
+  FinalizadaClinicamente --> Cerrada: saldo resuelto
+  Rechazada --> Cerrada
+      </pre>
+    </section>
+  </main>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'neutral',
+      flowchart: { curve: 'basis', htmlLabels: true },
+      securityLevel: 'loose'
+    });
+  </script>
+</body>
+</html>

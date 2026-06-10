@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { Plus, CalendarDays, List, Calendar, CheckCircle2, XCircle, UserX, ArrowRightCircle } from 'lucide-vue-next';
 import { useDentalAppointmentsStore } from '../../stores/dentalAppointments';
 import { useDentalPatientsStore } from '../../stores/dentalPatients';
@@ -10,6 +11,7 @@ import ConfirmActionModal from '../../components/admin/ConfirmActionModal.vue';
 import { useToast } from '../../composables/useToast';
 import type { DentalAppointment, DentalAppointmentFormData } from '../../types/dental';
 
+const router = useRouter();
 const store = useDentalAppointmentsStore();
 const patientsStore = useDentalPatientsStore();
 const servicesStore = useDentalServicesStore();
@@ -250,9 +252,13 @@ async function doAction(action: 'confirm' | 'cancel' | 'no_show' | 'convert', ap
       triggerToast('Éxito', 'Marcado como no presentado', 'success');
       await refreshActiveTab();
     } else if (action === 'convert') {
-      await store.convertToConsultation(apt.id);
+      const result = await store.convertToConsultation(apt.id);
       triggerToast('Éxito', 'Convertida a consulta', 'success');
-      await refreshActiveTab();
+      if (result?.id) {
+        router.push({ name: 'dental-consultation-detail', params: { id: result.id } });
+      } else {
+        await refreshActiveTab();
+      }
     }
   } catch (e: any) {
     actionError.value = e?.response?.data?.error || 'Error al ejecutar acción';
