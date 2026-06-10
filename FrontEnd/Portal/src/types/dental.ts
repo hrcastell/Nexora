@@ -72,35 +72,9 @@ export interface DentalPatientFormData {
   emergency_contact_phone?: string;
 }
 
-// ─── TREATMENT ────────────────────────────────────────────────
+// ─── TREATMENT (billable catalog — replaces old Service) ──────
 
 export interface DentalTreatment {
-  id: number | string;
-  tenant_id: string;
-  name: string;
-  description?: string;
-  category?: string;
-  estimated_duration_minutes?: number;
-  requires_follow_up: boolean;
-  requires_multiple_sessions: boolean;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface DentalTreatmentFormData {
-  name: string;
-  description?: string;
-  category?: string;
-  estimated_duration_minutes?: number;
-  requires_follow_up?: boolean;
-  requires_multiple_sessions?: boolean;
-  is_active?: boolean;
-}
-
-// ─── SERVICE ──────────────────────────────────────────────────
-
-export interface DentalService {
   id: number | string;
   tenant_id: string;
   name: string;
@@ -113,19 +87,18 @@ export interface DentalService {
   manual_price?: number;
   final_price: number;
   estimated_duration_minutes?: number;
+  category?: string;
+  procedure_code?: string;
+  requires_follow_up?: boolean;
+  requires_multiple_sessions?: boolean;
+  contraindications?: string;
+  post_treatment_instructions?: string;
   is_active: boolean;
-  treatments?: DentalServiceTreatment[];
   created_at: string;
   updated_at: string;
 }
 
-export interface DentalServiceTreatment {
-  treatment_id: number | string;
-  treatment_name?: string;
-  quantity: number;
-}
-
-export interface DentalServiceFormData {
+export interface DentalTreatmentFormData {
   name: string;
   description?: string;
   price_mode: 'manual' | 'calculated';
@@ -135,7 +108,22 @@ export interface DentalServiceFormData {
   profit_margin?: number;
   manual_price?: number;
   estimated_duration_minutes?: number;
+  category?: string;
+  procedure_code?: string;
+  requires_follow_up?: boolean;
+  requires_multiple_sessions?: boolean;
+  contraindications?: string;
+  post_treatment_instructions?: string;
   is_active?: boolean;
+}
+
+// Backward-compatible alias (for code that still uses DentalService)
+export type DentalService = DentalTreatment;
+export type DentalServiceFormData = DentalTreatmentFormData;
+export interface DentalServiceTreatment {
+  treatment_id: number | string;
+  treatment_name?: string;
+  quantity: number;
 }
 
 // ─── APPOINTMENT ──────────────────────────────────────────────
@@ -146,7 +134,7 @@ export interface DentalAppointment {
   id: number | string;
   tenant_id: string;
   customer_id: number | string;
-  service_id?: number | string;
+  treatment_id?: number | string;
   scheduled_start: string;
   scheduled_end: string;
   status: AppointmentStatus;
@@ -154,14 +142,14 @@ export interface DentalAppointment {
   notes?: string;
   reminder_email_sent_at?: string;
   customer?: Customer;
-  service?: DentalService;
+  treatment?: DentalTreatment;
   created_at: string;
   updated_at: string;
 }
 
 export interface DentalAppointmentFormData {
   customer_id: number | string;
-  service_id?: number | string;
+  treatment_id?: number | string;
   scheduled_start: string;
   scheduled_end: string;
   reason?: string;
@@ -170,15 +158,56 @@ export interface DentalAppointmentFormData {
 
 // ─── CONSULTATION ─────────────────────────────────────────────
 
-export type ConsultationStatus = 'draft' | 'scheduled' | 'in_progress' | 'completed' | 'cancelled' | 'no_show';
+export type ConsultationStatus =
+  | 'borrador' | 'creada' | 'en_evaluacion' | 'cotizada'
+  | 'propuesta_pendiente' | 'aceptada' | 'en_tratamiento' | 'sesion_pendiente'
+  | 'finalizada_clinicamente' | 'pendiente_pago' | 'cerrada' | 'rechazada'
+  | 'cancelled' | 'no_show' | 'voided';
+
 export type ConsultationAdminStatus = 'unpaid' | 'partially_paid' | 'paid' | 'overdue' | 'cancelled';
+
+export const CONSULTATION_STATUS_LABELS: Record<ConsultationStatus, string> = {
+  borrador:                'Borrador',
+  creada:                  'Creada',
+  en_evaluacion:           'En Evaluación',
+  cotizada:                'Cotizada',
+  propuesta_pendiente:     'Propuesta Pendiente',
+  aceptada:                'Aceptada',
+  en_tratamiento:          'En Tratamiento',
+  sesion_pendiente:        'Sesión Pendiente',
+  finalizada_clinicamente: 'Finalizada',
+  pendiente_pago:          'Pendiente Pago',
+  cerrada:                 'Cerrada',
+  rechazada:               'Rechazada',
+  cancelled:               'Cancelada',
+  no_show:                 'No Se Presentó',
+  voided:                  'Anulada',
+};
+
+export const CONSULTATION_STATUS_COLORS: Record<ConsultationStatus, string> = {
+  borrador:                'gray',
+  creada:                  'blue',
+  en_evaluacion:           'indigo',
+  cotizada:                'violet',
+  propuesta_pendiente:     'amber',
+  aceptada:                'cyan',
+  en_tratamiento:          'green',
+  sesion_pendiente:        'yellow',
+  finalizada_clinicamente: 'teal',
+  pendiente_pago:          'orange',
+  cerrada:                 'slate',
+  rechazada:               'red',
+  cancelled:               'red',
+  no_show:                 'zinc',
+  voided:                  'zinc',
+};
 
 export interface DentalConsultation {
   id: number | string;
   tenant_id: string;
   customer_id: number | string;
   appointment_id?: number | string;
-  service_id?: number | string;
+  treatment_id?: number | string;
   consultation_date: string;
   status: ConsultationStatus;
   administrative_status: ConsultationAdminStatus;
@@ -188,8 +217,7 @@ export interface DentalConsultation {
   indications?: string;
   total_amount: number;
   customer?: Customer;
-  service?: DentalService;
-  treatments?: DentalTreatment[];
+  treatment?: DentalTreatment;
   charges?: DentalCharge[];
   requires_follow_up?: boolean;
   requires_multiple_sessions?: boolean;
@@ -199,7 +227,7 @@ export interface DentalConsultation {
   professional_id?: number | null;
   created_by?: number | null;
   updated_by?: number | null;
-  consultation_services?: DentalConsultationService[];
+  consultation_treatments?: DentalConsultationTreatment[];
   sessions?: DentalConsultationSession[];
   created_at: string;
   updated_at: string;
@@ -208,7 +236,7 @@ export interface DentalConsultation {
 export interface DentalConsultationFormData {
   customer_id: number | string;
   appointment_id?: number | string;
-  service_id?: number | string;
+  treatment_id?: number | string;
   reason?: string;
   diagnosis?: string;
   clinical_notes?: string;
@@ -266,7 +294,7 @@ export interface DentalCharge {
   tenant_id: string;
   customer_id: number | string;
   consultation_id?: number | string;
-  service_id?: number | string;
+  treatment_id?: number | string;
   description?: string;
   total_amount: number;
   paid_amount: number;
@@ -334,15 +362,15 @@ export interface DentalMedicalHistory {
   created_at: string;
 }
 
-// ─── CONSULTATION SERVICES (multi-service) ────────────────────────────────
+// ─── CONSULTATION TREATMENTS (multi-treatment per consultation) ──────────
 
-export interface DentalConsultationService {
+export interface DentalConsultationTreatment {
   id: number;
   tenant_id: number;
   consultation_id: number;
-  service_id?: number | null;
-  service_name_snapshot: string;
-  service_name_current?: string;
+  treatment_id?: number | null;
+  treatment_name_snapshot: string;
+  treatment_name_current?: string;
   unit_price: number;
   quantity: number;
   subtotal: number;
@@ -354,14 +382,18 @@ export interface DentalConsultationService {
   created_by?: number | null;
 }
 
-export interface DentalConsultationServiceFormData {
-  service_id?: number | null;
-  service_name_snapshot?: string;
+export interface DentalConsultationTreatmentFormData {
+  treatment_id?: number | null;
+  treatment_name_snapshot?: string;
   unit_price: number;
   quantity: number;
   tooth_reference?: string;
   clinical_notes?: string;
 }
+
+// Backward-compatible aliases
+export type DentalConsultationService = DentalConsultationTreatment;
+export type DentalConsultationServiceFormData = DentalConsultationTreatmentFormData;
 
 // ─── CONSULTATION SESSIONS ────────────────────────────────────────────────
 
@@ -389,18 +421,6 @@ export interface DentalConsultationSessionFormData {
   evolution?: string;
   next_session_date?: string;
 }
-
-// ─── EXTENDED CONSULTATION STATUS ─────────────────────────────────────────
-
-export type ConsultationStatusExtended =
-  | 'draft'
-  | 'created'
-  | 'in_progress'
-  | 'in_treatment'
-  | 'completed'
-  | 'cancelled'
-  | 'no_show'
-  | 'voided';
 
 // ─── DASHBOARD ────────────────────────────────────────────────
 

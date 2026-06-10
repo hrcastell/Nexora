@@ -5,11 +5,10 @@ const authMiddleware = require('../../middleware/authMiddleware');
 const dashboardCtrl    = require('../../controllers/dental/dashboardController');
 const patientsCtrl     = require('../../controllers/dental/patientsController');
 const treatmentsCtrl   = require('../../controllers/dental/treatmentsController');
-const servicesCtrl     = require('../../controllers/dental/servicesController');
 const appointmentsCtrl = require('../../controllers/dental/appointmentsController');
 const consultationsCtrl = require('../../controllers/dental/consultationsController');
 const chargesCtrl      = require('../../controllers/dental/chargesController');
-const consultationServicesCtrl = require('../../controllers/dental/consultationServicesController');
+const consultationTreatmentsCtrl = require('../../controllers/dental/consultationTreatmentsController');
 const consultationSessionsCtrl = require('../../controllers/dental/consultationSessionsController');
 
 // All dental routes require authentication
@@ -32,19 +31,12 @@ router.get('/patients/:id/consultations',        patientsCtrl.getConsultations);
 router.get('/patients/:id/payments',             patientsCtrl.getPayments);
 router.get('/patients/:id/debt',                 patientsCtrl.getDebt);
 
-// ─── TREATMENTS ───────────────────────────────────────────────
+// ─── TREATMENTS (billable catalog — replaces old services) ────
 router.get('/treatments',        treatmentsCtrl.list);
 router.post('/treatments',       treatmentsCtrl.create);
+router.get('/treatments/:id',    treatmentsCtrl.getById);
 router.patch('/treatments/:id',  treatmentsCtrl.update);
 router.delete('/treatments/:id', treatmentsCtrl.remove);
-
-// ─── SERVICES ─────────────────────────────────────────────────
-router.get('/services',                   servicesCtrl.list);
-router.post('/services',                  servicesCtrl.create);
-router.get('/services/:id',               servicesCtrl.getById);
-router.patch('/services/:id',             servicesCtrl.update);
-router.delete('/services/:id',            servicesCtrl.remove);
-router.post('/services/:id/treatments',   servicesCtrl.assignTreatments);
 
 // ─── APPOINTMENTS ─────────────────────────────────────────────
 router.get('/appointments',                            appointmentsCtrl.list);
@@ -64,7 +56,6 @@ router.post('/consultations',                          consultationsCtrl.create)
 router.get('/consultations/:id',                       consultationsCtrl.getById);
 router.patch('/consultations/:id',                     consultationsCtrl.update);
 router.post('/consultations/:id/clinical-history',     consultationsCtrl.addClinicalHistory);
-router.post('/consultations/:id/treatments',           consultationsCtrl.addTreatments);
 router.post('/consultations/:id/complete',             consultationsCtrl.complete);
 router.post('/consultations/:id/cancel',               consultationsCtrl.cancel);
 router.post('/consultations/:id/create-charge',        consultationsCtrl.createCharge);
@@ -72,12 +63,12 @@ router.get('/consultations/:id/photos',                consultationsCtrl.listPho
 router.post('/consultations/:id/photos',               consultationsCtrl.photoUpload.single('photo'), consultationsCtrl.uploadPhoto);
 router.delete('/consultations/:id/photos/:photoId',    consultationsCtrl.deletePhoto);
 
-// ─── CONSULTATION SERVICES (multi-service per consultation) ──────────────
-router.get('/consultations/:id/services',              consultationServicesCtrl.list);
-router.get('/consultations/:id/services/total',        consultationServicesCtrl.getTotal);
-router.post('/consultations/:id/services',             consultationServicesCtrl.add);
-router.patch('/consultations/:id/services/:sid',       consultationServicesCtrl.update);
-router.delete('/consultations/:id/services/:sid',      consultationServicesCtrl.void);
+// ─── CONSULTATION TREATMENTS (multi-treatment per consultation) ──────────
+router.get('/consultations/:id/treatments',              consultationTreatmentsCtrl.list);
+router.get('/consultations/:id/treatments/total',        consultationTreatmentsCtrl.getTotal);
+router.post('/consultations/:id/treatments',             consultationTreatmentsCtrl.add);
+router.patch('/consultations/:id/treatments/:sid',       consultationTreatmentsCtrl.update);
+router.delete('/consultations/:id/treatments/:sid',      consultationTreatmentsCtrl.void);
 
 // ─── CONSULTATION SESSIONS ────────────────────────────────────────────────
 router.get('/consultations/:id/sessions',                          consultationSessionsCtrl.list);

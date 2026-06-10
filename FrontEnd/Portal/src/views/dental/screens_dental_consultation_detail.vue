@@ -7,9 +7,9 @@ import {
 } from 'lucide-vue-next'
 import { useDentalConsultationsStore } from '../../stores/dentalConsultations'
 import { useDentalPatientsStore } from '../../stores/dentalPatients'
-import { useDentalConsultationServicesStore } from '../../stores/dentalConsultationServices'
+import { useDentalConsultationTreatmentsStore } from '../../stores/dentalConsultationTreatments'
 import { useDentalConsultationSessionsStore } from '../../stores/dentalConsultationSessions'
-import { useDentalServicesStore } from '../../stores/dentalServices'
+import { useDentalTreatmentsStore } from '../../stores/dentalTreatments'
 import { dentalChargesService } from '../../services/dentalChargesService'
 import NxrSlidePanel from '../../components/NxrSlidePanel.vue'
 import AppToast from '../../components/AppToast.vue'
@@ -18,8 +18,8 @@ import WidgetsDentalPhotoGallery from '../../components/widgets_dental_photo_gal
 import { useToast } from '../../composables/useToast'
 import type {
   DentalCharge, DentalInstallment, DentalMedicalHistory,
-  DentalConsultationService, DentalConsultationSession,
-  DentalConsultationServiceFormData, DentalConsultationSessionFormData
+  DentalConsultationTreatment, DentalConsultationSession,
+  DentalConsultationTreatmentFormData, DentalConsultationSessionFormData
 } from '../../types/dental'
 
 // ── Route / Router ────────────────────────────────────────────────────────────
@@ -31,9 +31,9 @@ const { toasts, triggerToast, removeToast } = useToast()
 // ── Stores ────────────────────────────────────────────────────────────────────
 const store                    = useDentalConsultationsStore()
 const patientStore             = useDentalPatientsStore()
-const consultationServicesStore = useDentalConsultationServicesStore()
-const sessionsStore            = useDentalConsultationSessionsStore()
-const servicesStore            = useDentalServicesStore()
+const consultationTreatmentsStore = useDentalConsultationTreatmentsStore()
+const sessionsStore               = useDentalConsultationSessionsStore()
+const treatmentsStore             = useDentalTreatmentsStore()
 
 const consultation = computed(() => store.current)
 
@@ -58,24 +58,38 @@ function selectTab(key: TabKey) {
 
 // ── Status maps ───────────────────────────────────────────────────────────────
 const STATUS_LABEL: Record<string, string> = {
-  draft:        'Borrador',
-  created:      'Creada',
-  in_progress:  'En curso',
-  in_treatment: 'En tratamiento',
-  completed:    'Completada',
-  cancelled:    'Cancelada',
-  no_show:      'No asistió',
-  voided:       'Anulada',
+  borrador:                'Borrador',
+  creada:                  'Creada',
+  en_evaluacion:           'En Evaluación',
+  cotizada:                'Cotizada',
+  propuesta_pendiente:     'Propuesta Pendiente',
+  aceptada:                'Aceptada',
+  en_tratamiento:          'En Tratamiento',
+  sesion_pendiente:        'Sesión Pendiente',
+  finalizada_clinicamente: 'Finalizada',
+  pendiente_pago:          'Pendiente Pago',
+  cerrada:                 'Cerrada',
+  rechazada:               'Rechazada',
+  cancelled:               'Cancelada',
+  no_show:                 'No Asistió',
+  voided:                  'Anulada',
 }
 const STATUS_CLASS: Record<string, string> = {
-  draft:        'bg-white/10 text-white/40',
-  created:      'bg-purple-500/20 text-purple-400',
-  in_progress:  'bg-cyan-500/20 text-cyan-400',
-  in_treatment: 'bg-indigo-500/20 text-indigo-400',
-  completed:    'bg-green-500/20 text-green-400',
-  cancelled:    'bg-red-500/20 text-red-400',
-  no_show:      'bg-orange-500/20 text-orange-400',
-  voided:       'bg-red-900/30 text-red-300',
+  borrador:                'bg-white/10 text-white/40',
+  creada:                  'bg-blue-500/20 text-blue-400',
+  en_evaluacion:           'bg-indigo-500/20 text-indigo-400',
+  cotizada:                'bg-violet-500/20 text-violet-400',
+  propuesta_pendiente:     'bg-amber-500/20 text-amber-400',
+  aceptada:                'bg-cyan-500/20 text-cyan-400',
+  en_tratamiento:          'bg-green-500/20 text-green-400',
+  sesion_pendiente:        'bg-yellow-500/20 text-yellow-400',
+  finalizada_clinicamente: 'bg-teal-500/20 text-teal-400',
+  pendiente_pago:          'bg-orange-500/20 text-orange-400',
+  cerrada:                 'bg-slate-500/20 text-slate-400',
+  rechazada:               'bg-red-500/20 text-red-400',
+  cancelled:               'bg-red-500/20 text-red-400',
+  no_show:                 'bg-zinc-500/20 text-zinc-400',
+  voided:                  'bg-red-900/30 text-red-300',
 }
 const ADMIN_STATUS_LABEL: Record<string, string> = {
   unpaid:         'Sin pagar',
@@ -102,14 +116,21 @@ const PAYMENT_METHOD_LABEL: Record<string, string> = {
 
 // ── Allowed transitions ───────────────────────────────────────────────────────
 const ALLOWED_TRANSITIONS: Record<string, string[]> = {
-  draft:        ['created', 'cancelled'],
-  created:      ['in_progress', 'cancelled'],
-  in_progress:  ['in_treatment', 'completed', 'cancelled'],
-  in_treatment: ['completed', 'in_progress'],
-  completed:    ['voided'],
-  cancelled:    [],
-  no_show:      [],
-  voided:       [],
+  borrador:                ['creada'],
+  creada:                  ['en_evaluacion', 'cancelled'],
+  en_evaluacion:           ['cotizada', 'en_tratamiento', 'cancelled'],
+  cotizada:                ['propuesta_pendiente', 'en_tratamiento', 'cancelled'],
+  propuesta_pendiente:     ['aceptada', 'rechazada'],
+  aceptada:                ['en_tratamiento'],
+  en_tratamiento:          ['sesion_pendiente', 'finalizada_clinicamente'],
+  sesion_pendiente:        ['en_tratamiento'],
+  finalizada_clinicamente: ['pendiente_pago', 'cerrada'],
+  pendiente_pago:          ['cerrada'],
+  rechazada:               ['cerrada'],
+  cerrada:                 [],
+  cancelled:               [],
+  no_show:                 [],
+  voided:                  [],
 }
 
 // ── State ─────────────────────────────────────────────────────────────────────
@@ -132,10 +153,10 @@ const statusReason     = ref('')
 const showStatusPanel  = ref(false)
 const targetStatus     = ref('')
 
-// Add service
+// Add treatment
 const showAddServicePanel  = ref(false)
-const addServiceForm       = ref<DentalConsultationServiceFormData>({
-  service_id: null, service_name_snapshot: '', unit_price: 0,
+const addServiceForm       = ref<DentalConsultationTreatmentFormData>({
+  treatment_id: null, treatment_name_snapshot: '', unit_price: 0,
   quantity: 1, tooth_reference: '', clinical_notes: ''
 })
 const savingService        = ref(false)
@@ -284,15 +305,15 @@ const hasClosedPayments = computed(() =>
 
 const canCreateCharge = computed(() =>
   consultation.value?.administrative_status === 'unpaid' &&
-  consultationServicesStore.total > 0 &&
+  consultationTreatmentsStore.total > 0 &&
   !chargeDetail.value
 )
 
 const activeServices = computed(() =>
-  (consultationServicesStore.items as DentalConsultationService[]).filter(s => s.status !== 'voided')
+  (consultationTreatmentsStore.items as DentalConsultationTreatment[]).filter(t => t.status !== 'voided')
 )
 const voidedServices = computed(() =>
-  (consultationServicesStore.items as DentalConsultationService[]).filter(s => s.status === 'voided')
+  (consultationTreatmentsStore.items as DentalConsultationTreatment[]).filter(t => t.status === 'voided')
 )
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -354,12 +375,12 @@ async function confirmStatusChange() {
   }
 }
 
-function onServiceSelect(serviceId: string | number) {
-  const svc = servicesStore.items.find(s => String(s.id) === String(serviceId))
-  selectedServiceForAdd.value = svc || null
-  if (svc) {
-    addServiceForm.value.service_name_snapshot = svc.name
-    addServiceForm.value.unit_price = parseFloat(svc.final_price as any) || 0
+function onServiceSelect(treatmentId: string | number) {
+  const trt = treatmentsStore.items.find(t => String(t.id) === String(treatmentId))
+  selectedServiceForAdd.value = trt || null
+  if (trt) {
+    addServiceForm.value.treatment_name_snapshot = trt.name
+    addServiceForm.value.unit_price = parseFloat(trt.final_price as any) || 0
   }
 }
 
@@ -371,40 +392,40 @@ async function addService() {
   savingService.value = true
   addServiceError.value = null
   try {
-    await consultationServicesStore.add(id, addServiceForm.value)
-    triggerToast('Éxito', 'Servicio agregado', 'success')
+    await consultationTreatmentsStore.add(id, addServiceForm.value)
+    triggerToast('Éxito', 'Tratamiento agregado', 'success')
     showAddServicePanel.value = false
-    addServiceForm.value = { service_id: null, service_name_snapshot: '', unit_price: 0, quantity: 1, tooth_reference: '', clinical_notes: '' }
+    addServiceForm.value = { treatment_id: null, treatment_name_snapshot: '', unit_price: 0, quantity: 1, tooth_reference: '', clinical_notes: '' }
     selectedServiceForAdd.value = null
   } catch (e: any) {
-    addServiceError.value = e?.response?.data?.error || 'Error al agregar servicio'
+    addServiceError.value = e?.response?.data?.error || 'Error al agregar tratamiento'
   } finally {
     savingService.value = false
   }
 }
 
-async function voidService(s: DentalConsultationService) {
+async function voidService(s: DentalConsultationTreatment) {
   const adminStatus = (consultation.value as any)?.administrative_status
   const hasPayments = adminStatus && ['partially_paid', 'paid', 'overdue'].includes(adminStatus)
 
   if (hasPayments) {
     triggerToast(
       'No permitido',
-      'No se puede eliminar este servicio porque la consulta tiene pagos registrados. Para modificar los servicios, primero revertí los pagos existentes.',
+      'No se puede eliminar este tratamiento porque la consulta tiene pagos registrados. Para modificar los tratamientos, primero revertí los pagos existentes.',
       'error'
     )
     return
   }
 
   askConfirm(
-    'Eliminar servicio',
-    `¿Eliminar "${s.service_name_snapshot}" de la consulta? Esta acción no se puede deshacer.`,
+    'Eliminar tratamiento',
+    `¿Eliminar "${s.treatment_name_snapshot}" de la consulta? Esta acción no se puede deshacer.`,
     async () => {
       try {
-        await consultationServicesStore.voidService(id, s.id)
-        triggerToast('Éxito', 'Servicio eliminado', 'success')
+        await consultationTreatmentsStore.voidTreatment(id, s.id)
+        triggerToast('Éxito', 'Tratamiento eliminado', 'success')
       } catch (e: any) {
-        triggerToast('Error', e?.response?.data?.error || 'Error al eliminar servicio', 'error')
+        triggerToast('Error', e?.response?.data?.error || 'Error al eliminar tratamiento', 'error')
       }
     }
   )
@@ -560,7 +581,7 @@ async function saveMedHist() {
 async function generateCharge() {
   actionLoading.value = true
   try {
-    await store.createCharge(id, consultationServicesStore.total)
+    await store.createCharge(id, consultationTreatmentsStore.total)
     await store.loadOne(id)
     await loadCharge()
     triggerToast('Éxito', 'Cargo generado', 'success')
@@ -573,9 +594,9 @@ async function generateCharge() {
 onMounted(async () => {
   await store.loadOne(id)
   await Promise.all([
-    consultationServicesStore.load(id),
+    consultationTreatmentsStore.load(id),
     sessionsStore.load(id),
-    servicesStore.load(),
+    treatmentsStore.load(),
   ])
   const c = consultation.value as any
   if (c) {
@@ -637,7 +658,7 @@ onMounted(async () => {
 
             <!-- Total -->
             <span class="rounded-full bg-white/5 px-3 py-1 text-xs font-semibold text-white/70">
-              {{ fmtCurrency(consultationServicesStore.total) }}
+              {{ fmtCurrency(consultationTreatmentsStore.total) }}
             </span>
 
             <!-- Status transition dropdown -->
@@ -756,7 +777,7 @@ onMounted(async () => {
         <div class="grid gap-4 sm:grid-cols-3">
           <div class="rounded-xl border border-white/10 bg-white/5 p-4">
             <p class="mb-1 text-xs text-white/40">Total servicios</p>
-            <p class="text-2xl font-bold">{{ fmtCurrency(consultationServicesStore.total) }}</p>
+            <p class="text-2xl font-bold">{{ fmtCurrency(consultationTreatmentsStore.total) }}</p>
           </div>
           <div class="rounded-xl border border-white/10 bg-white/5 p-4">
             <p class="mb-1 text-xs text-white/40">Total pagado</p>
@@ -765,7 +786,7 @@ onMounted(async () => {
           <div class="rounded-xl border border-white/10 bg-white/5 p-4">
             <p class="mb-1 text-xs text-white/40">Saldo pendiente</p>
             <p class="text-2xl font-bold text-yellow-400">
-              {{ fmtCurrency(consultationServicesStore.total - Number(chargeDetail?.paid_amount ?? 0)) }}
+              {{ fmtCurrency(consultationTreatmentsStore.total - Number(chargeDetail?.paid_amount ?? 0)) }}
             </p>
           </div>
         </div>
@@ -803,18 +824,18 @@ onMounted(async () => {
         <!-- Services summary -->
         <div class="rounded-xl border border-white/10 bg-white/5 p-5">
           <h2 class="mb-4 text-sm font-semibold text-white/70">Servicios aplicados</h2>
-          <div v-if="!consultationServicesStore.items.length" class="py-6 text-center text-sm text-white/30">
+          <div v-if="!consultationTreatmentsStore.items.length" class="py-6 text-center text-sm text-white/30">
             Sin servicios registrados
           </div>
           <div v-else class="space-y-2">
             <div
-              v-for="svc in consultationServicesStore.items"
+              v-for="svc in consultationTreatmentsStore.items"
               :key="svc.id"
               class="flex items-center justify-between rounded-lg border border-white/5 bg-white/5 px-4 py-2.5"
               :class="{ 'opacity-40': svc.status === 'voided' }"
             >
               <div class="flex items-center gap-3">
-                <span class="text-sm">{{ svc.service_name_snapshot }}</span>
+                <span class="text-sm">{{ svc.treatment_name_snapshot }}</span>
                 <span v-if="svc.tooth_reference" class="rounded bg-white/10 px-1.5 py-0.5 text-xs text-white/50">
                   Diente {{ svc.tooth_reference }}
                 </span>
@@ -827,7 +848,7 @@ onMounted(async () => {
               </span>
             </div>
             <div class="flex justify-end border-t border-white/10 pt-2">
-              <span class="text-sm font-semibold">Total: {{ fmtCurrency(consultationServicesStore.total) }}</span>
+              <span class="text-sm font-semibold">Total: {{ fmtCurrency(consultationTreatmentsStore.total) }}</span>
             </div>
           </div>
         </div>
@@ -850,7 +871,7 @@ onMounted(async () => {
             </button>
           </div>
 
-          <div v-if="!consultationServicesStore.items.length" class="py-8 text-center text-sm text-white/30">
+          <div v-if="!consultationTreatmentsStore.items.length" class="py-8 text-center text-sm text-white/30">
             Sin servicios registrados
           </div>
 
@@ -871,7 +892,7 @@ onMounted(async () => {
                 :key="svc.id"
                 class="grid grid-cols-2 gap-3 rounded-lg border border-white/5 bg-white/5 px-3 py-2.5 sm:grid-cols-6"
               >
-                <span class="col-span-2 text-sm sm:col-span-2">{{ svc.service_name_snapshot }}</span>
+                <span class="col-span-2 text-sm sm:col-span-2">{{ svc.treatment_name_snapshot }}</span>
                 <span class="text-sm text-white/50 sm:col-span-1">{{ svc.tooth_reference || '—' }}</span>
                 <span class="text-right text-sm sm:col-span-1">{{ svc.quantity }}</span>
                 <span class="text-right text-sm sm:col-span-1">{{ fmtCurrency(svc.unit_price) }}</span>
@@ -897,7 +918,7 @@ onMounted(async () => {
                 :key="svc.id"
                 class="grid grid-cols-2 gap-3 rounded-lg border border-white/5 bg-white/5 px-3 py-2.5 line-through sm:grid-cols-6"
               >
-                <span class="col-span-2 text-sm sm:col-span-2">{{ svc.service_name_snapshot }}</span>
+                <span class="col-span-2 text-sm sm:col-span-2">{{ svc.treatment_name_snapshot }}</span>
                 <span class="text-sm sm:col-span-1">{{ svc.tooth_reference || '—' }}</span>
                 <span class="text-right text-sm sm:col-span-1">{{ svc.quantity }}</span>
                 <span class="text-right text-sm sm:col-span-1">{{ fmtCurrency(svc.unit_price) }}</span>
@@ -907,7 +928,7 @@ onMounted(async () => {
 
             <!-- Total -->
             <div class="mt-3 flex justify-end border-t border-white/10 pt-3">
-              <span class="text-base font-semibold">Total: {{ fmtCurrency(consultationServicesStore.total) }}</span>
+              <span class="text-base font-semibold">Total: {{ fmtCurrency(consultationTreatmentsStore.total) }}</span>
             </div>
           </div>
         </div>
@@ -1214,7 +1235,7 @@ onMounted(async () => {
         <div v-else-if="!chargeDetail" class="rounded-xl border border-white/10 bg-white/5 p-10 text-center">
           <CreditCard class="mx-auto mb-4 h-10 w-10 text-white/20" />
           <p class="mb-1 text-sm text-white/50">No hay cargo generado para esta consulta</p>
-          <p v-if="!consultationServicesStore.total" class="mb-4 text-xs text-white/30">
+          <p v-if="!consultationTreatmentsStore.total" class="mb-4 text-xs text-white/30">
             Agregá al menos un servicio en la pestaña Tratamiento para habilitar el cargo.
           </p>
           <p v-else-if="!canCreateCharge" class="mb-4 text-xs text-white/30">
@@ -1446,13 +1467,13 @@ onMounted(async () => {
           </div>
         </div>
         <div>
-          <label class="mb-1.5 block text-xs text-white/50">Servicio</label>
+          <label class="mb-1.5 block text-xs text-white/50">Tratamiento</label>
           <select
             class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
-            @change="onServiceSelect(($event.target as HTMLSelectElement).value); addServiceForm.service_id = ($event.target as HTMLSelectElement).value as any"
+            @change="onServiceSelect(($event.target as HTMLSelectElement).value); addServiceForm.treatment_id = ($event.target as HTMLSelectElement).value as any"
           >
-            <option value="">Seleccioná un servicio...</option>
-            <option v-for="svc in servicesStore.items" :key="svc.id" :value="svc.id">
+            <option value="">Seleccioná un tratamiento...</option>
+            <option v-for="svc in treatmentsStore.items" :key="svc.id" :value="svc.id">
               {{ svc.name }}
             </option>
           </select>

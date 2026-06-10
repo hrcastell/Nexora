@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router';
 import { Plus, CalendarDays, List, Calendar, CheckCircle2, XCircle, UserX, ArrowRightCircle } from 'lucide-vue-next';
 import { useDentalAppointmentsStore } from '../../stores/dentalAppointments';
 import { useDentalPatientsStore } from '../../stores/dentalPatients';
-import { useDentalServicesStore } from '../../stores/dentalServices';
+import { useDentalTreatmentsStore } from '../../stores/dentalTreatments';
 import NxrSlidePanel from '../../components/NxrSlidePanel.vue';
 import AppToast from '../../components/AppToast.vue';
 import ConfirmActionModal from '../../components/admin/ConfirmActionModal.vue';
@@ -14,7 +14,7 @@ import type { DentalAppointment, DentalAppointmentFormData } from '../../types/d
 const router = useRouter();
 const store = useDentalAppointmentsStore();
 const patientsStore = useDentalPatientsStore();
-const servicesStore = useDentalServicesStore();
+const treatmentsStore = useDentalTreatmentsStore();
 const { toasts, triggerToast, removeToast } = useToast();
 
 const confirmModal = ref<{ open: boolean; title: string; message: string; onConfirm: () => void }>({
@@ -75,7 +75,7 @@ const currentMonth = ref(now.getMonth() + 1);
 
 const defaultForm = (): DentalAppointmentFormData => ({
   customer_id: '',
-  service_id: undefined,
+  treatment_id: undefined,
   scheduled_start: '',
   scheduled_end: '',
   reason: '',
@@ -269,7 +269,7 @@ async function doAction(action: 'confirm' | 'cancel' | 'no_show' | 'convert', ap
 onMounted(() => {
   store.loadToday();
   patientsStore.load();
-  servicesStore.load();
+  treatmentsStore.load();
 });
 </script>
 
@@ -343,7 +343,7 @@ onMounted(() => {
           </div>
           <div class="flex-1 min-w-0">
             <p class="text-sm font-medium text-white truncate">{{ apt.customer?.first_name }} {{ apt.customer?.last_name }}</p>
-            <p class="text-xs text-white/40 truncate">{{ apt.service?.name ?? apt.reason ?? '—' }}</p>
+            <p class="text-xs text-white/40 truncate">{{ apt.treatment?.name ?? apt.reason ?? '—' }}</p>
           </div>
           <span class="px-2 py-0.5 rounded-full text-xs shrink-0" :class="STATUS_CLASS[apt.status]">{{ STATUS_LABEL[apt.status] }}</span>
           <!-- Action buttons -->
@@ -449,7 +449,7 @@ onMounted(() => {
           <div class="hidden md:grid md:grid-cols-[140px_1fr_1fr_120px_100px] gap-4 items-center flex-1">
             <p class="text-xs text-white/60">{{ fmtDate(apt.scheduled_start) }}<br />{{ fmtTime(apt.scheduled_start) }}</p>
             <p class="text-sm text-white truncate">{{ apt.customer?.first_name }} {{ apt.customer?.last_name }}</p>
-            <p class="text-xs text-white/60 truncate">{{ apt.service?.name ?? apt.reason ?? '—' }}</p>
+            <p class="text-xs text-white/60 truncate">{{ apt.treatment?.name ?? apt.reason ?? '—' }}</p>
             <span class="px-2 py-0.5 rounded-full text-xs w-fit" :class="STATUS_CLASS[apt.status]">{{ STATUS_LABEL[apt.status] }}</span>
             <div class="flex items-center justify-end gap-1">
               <button v-if="apt.status === 'scheduled'" class="text-green-400 hover:opacity-70" title="Confirmar" @click="doAction('confirm', apt)"><CheckCircle2 :size="14" /></button>
@@ -511,10 +511,10 @@ onMounted(() => {
           <input v-model="form.scheduled_end" type="datetime-local" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" required />
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Servicio</label>
-          <select v-model="form.service_id" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30">
-            <option value="">Sin servicio</option>
-            <option v-for="s in servicesStore.items" :key="s.id" :value="s.id">{{ s.name }}</option>
+          <label class="text-xs text-white/50">Tratamiento</label>
+          <select v-model="form.treatment_id" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30">
+            <option value="">Sin tratamiento</option>
+            <option v-for="s in treatmentsStore.items" :key="s.id" :value="s.id">{{ s.name }}</option>
           </select>
         </div>
         <div class="flex flex-col gap-1.5">

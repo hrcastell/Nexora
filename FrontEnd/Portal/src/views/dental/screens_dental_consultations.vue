@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router';
 import { Plus, Stethoscope } from 'lucide-vue-next';
 import { useDentalConsultationsStore } from '../../stores/dentalConsultations';
 import { useDentalPatientsStore } from '../../stores/dentalPatients';
-import { useDentalServicesStore } from '../../stores/dentalServices';
+import { useDentalTreatmentsStore } from '../../stores/dentalTreatments';
 import NxrSlidePanel from '../../components/NxrSlidePanel.vue';
 import AppToast from '../../components/AppToast.vue';
 import { useToast } from '../../composables/useToast';
@@ -14,15 +14,15 @@ const router = useRouter();
 
 const store = useDentalConsultationsStore();
 const patientsStore = useDentalPatientsStore();
-const servicesStore = useDentalServicesStore();
+const treatmentsStore = useDentalTreatmentsStore();
 const { toasts, triggerToast, removeToast } = useToast();
 
 const selectedService = ref<any>(null);
 
-function onServiceSelect(serviceId: string | number) {
-  const svc = servicesStore.items.find(s => String(s.id) === String(serviceId));
-  selectedService.value = svc || null;
-  if (svc) form.value.total_amount = svc.final_price;
+function onServiceSelect(treatmentId: string | number) {
+  const trt = treatmentsStore.items.find(t => String(t.id) === String(treatmentId));
+  selectedService.value = trt || null;
+  if (trt) form.value.total_amount = trt.final_price;
 }
 
 
@@ -73,7 +73,7 @@ const adminStatusFilter = ref('');
 
 const defaultForm = (): DentalConsultationFormData => ({
   customer_id: '',
-  service_id: undefined,
+  treatment_id: undefined,
   reason: '',
   diagnosis: '',
   clinical_notes: '',
@@ -89,27 +89,39 @@ const defaultForm = (): DentalConsultationFormData => ({
 const form = ref<DentalConsultationFormData>(defaultForm());
 
 const STATUS_LABEL: Record<string, string> = {
-  draft:        'Borrador',
-  created:      'Creada',
-  scheduled:    'Programada',
-  in_progress:  'En curso',
-  in_treatment: 'En tratamiento',
-  completed:    'Completada',
-  cancelled:    'Cancelada',
-  no_show:      'No asistió',
-  voided:       'Anulada',
+  borrador:                'Borrador',
+  creada:                  'Creada',
+  en_evaluacion:           'En Evaluación',
+  cotizada:                'Cotizada',
+  propuesta_pendiente:     'Propuesta Pendiente',
+  aceptada:                'Aceptada',
+  en_tratamiento:          'En Tratamiento',
+  sesion_pendiente:        'Sesión Pendiente',
+  finalizada_clinicamente: 'Finalizada',
+  pendiente_pago:          'Pendiente Pago',
+  cerrada:                 'Cerrada',
+  rechazada:               'Rechazada',
+  cancelled:               'Cancelada',
+  no_show:                 'No Asistió',
+  voided:                  'Anulada',
 };
 
 const STATUS_CLASS: Record<string, string> = {
-  draft:        'bg-white/10 text-white/40',
-  created:      'bg-purple-500/20 text-purple-400',
-  scheduled:    'bg-blue-500/20 text-blue-400',
-  in_progress:  'bg-cyan-500/20 text-cyan-400',
-  in_treatment: 'bg-indigo-500/20 text-indigo-400',
-  completed:    'bg-green-500/20 text-green-400',
-  cancelled:    'bg-red-500/20 text-red-400',
-  no_show:      'bg-orange-500/20 text-orange-400',
-  voided:       'bg-red-900/30 text-red-300',
+  borrador:                'bg-white/10 text-white/40',
+  creada:                  'bg-blue-500/20 text-blue-400',
+  en_evaluacion:           'bg-indigo-500/20 text-indigo-400',
+  cotizada:                'bg-violet-500/20 text-violet-400',
+  propuesta_pendiente:     'bg-amber-500/20 text-amber-400',
+  aceptada:                'bg-cyan-500/20 text-cyan-400',
+  en_tratamiento:          'bg-green-500/20 text-green-400',
+  sesion_pendiente:        'bg-yellow-500/20 text-yellow-400',
+  finalizada_clinicamente: 'bg-teal-500/20 text-teal-400',
+  pendiente_pago:          'bg-orange-500/20 text-orange-400',
+  cerrada:                 'bg-slate-500/20 text-slate-400',
+  rechazada:               'bg-red-500/20 text-red-400',
+  cancelled:               'bg-red-500/20 text-red-400',
+  no_show:                 'bg-zinc-500/20 text-zinc-400',
+  voided:                  'bg-red-900/30 text-red-300',
 };
 
 const ADMIN_STATUS_LABEL: Record<string, string> = {
@@ -181,7 +193,7 @@ function openDetail(id: number | string) {
 onMounted(() => {
   store.load();
   patientsStore.load();
-  servicesStore.load();
+  treatmentsStore.load();
 });
 </script>
 
@@ -201,13 +213,20 @@ onMounted(() => {
     <div class="flex items-center gap-3 flex-wrap">
       <select v-model="statusFilter" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none" @change="applyFilters">
         <option value="">Todos los estados</option>
-        <option value="draft">Borrador</option>
-        <option value="created">Creada</option>
-        <option value="scheduled">Programada</option>
-        <option value="in_progress">En curso</option>
-        <option value="in_treatment">En tratamiento</option>
-        <option value="completed">Completada</option>
+        <option value="borrador">Borrador</option>
+        <option value="creada">Creada</option>
+        <option value="en_evaluacion">En Evaluación</option>
+        <option value="cotizada">Cotizada</option>
+        <option value="propuesta_pendiente">Propuesta Pendiente</option>
+        <option value="aceptada">Aceptada</option>
+        <option value="en_tratamiento">En Tratamiento</option>
+        <option value="sesion_pendiente">Sesión Pendiente</option>
+        <option value="finalizada_clinicamente">Finalizada</option>
+        <option value="pendiente_pago">Pendiente Pago</option>
+        <option value="cerrada">Cerrada</option>
+        <option value="rechazada">Rechazada</option>
         <option value="cancelled">Cancelada</option>
+        <option value="no_show">No Asistió</option>
         <option value="voided">Anulada</option>
       </select>
       <select v-model="adminStatusFilter" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none" @change="applyFilters">
@@ -243,7 +262,7 @@ onMounted(() => {
       <div class="hidden md:grid md:grid-cols-[120px_1fr_1fr_130px_130px_80px] gap-4 px-4 py-2 text-xs text-white/30 font-semibold uppercase tracking-wide">
         <span>Fecha</span>
         <span>Paciente</span>
-        <span>Servicio / Motivo</span>
+        <span>Tratamiento / Motivo</span>
         <span>Estado</span>
         <span>Pago</span>
         <span class="text-right">Total</span>
@@ -259,7 +278,7 @@ onMounted(() => {
         <!-- Mobile -->
         <div class="flex-1 min-w-0 md:hidden">
           <p class="text-sm font-medium text-white truncate">{{ c.customer?.first_name }} {{ c.customer?.last_name }}</p>
-          <p class="text-xs text-white/40">{{ fmtDate(c.consultation_date) }} · {{ c.service?.name ?? c.reason ?? '—' }}</p>
+          <p class="text-xs text-white/40">{{ fmtDate(c.consultation_date) }} · {{ c.treatment?.name ?? c.reason ?? '—' }}</p>
           <div class="flex items-center gap-2 mt-1">
             <span class="px-2 py-0.5 rounded-full text-xs" :class="STATUS_CLASS[c.status]">{{ STATUS_LABEL[c.status] }}</span>
             <span class="px-2 py-0.5 rounded-full text-xs" :class="ADMIN_STATUS_CLASS[c.administrative_status]">{{ ADMIN_STATUS_LABEL[c.administrative_status] }}</span>
@@ -271,7 +290,7 @@ onMounted(() => {
         <div class="hidden md:grid md:grid-cols-[120px_1fr_1fr_130px_130px_80px] gap-4 items-center flex-1">
           <p class="text-xs text-white/60">{{ fmtDate(c.consultation_date) }}</p>
           <p class="text-sm text-white truncate">{{ c.customer?.first_name }} {{ c.customer?.last_name }}</p>
-          <p class="text-xs text-white/60 truncate">{{ c.service?.name ?? c.reason ?? '—' }}</p>
+          <p class="text-xs text-white/60 truncate">{{ c.treatment?.name ?? c.reason ?? '—' }}</p>
           <span class="px-2 py-0.5 rounded-full text-xs w-fit" :class="STATUS_CLASS[c.status]">{{ STATUS_LABEL[c.status] }}</span>
           <span class="px-2 py-0.5 rounded-full text-xs w-fit" :class="ADMIN_STATUS_CLASS[c.administrative_status]">{{ ADMIN_STATUS_LABEL[c.administrative_status] }}</span>
           <p class="text-sm font-semibold text-white text-right">{{ fmt(c.total_amount) }}</p>
@@ -316,14 +335,14 @@ onMounted(() => {
           </div>
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Servicio</label>
+          <label class="text-xs text-white/50">Tratamiento</label>
           <select
-            v-model="form.service_id"
+            v-model="form.treatment_id"
             class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30"
-            @change="onServiceSelect(form.service_id as string)"
+            @change="onServiceSelect(form.treatment_id as string)"
           >
-            <option value="">Sin servicio</option>
-            <option v-for="s in servicesStore.items" :key="s.id" :value="s.id">{{ s.name }}</option>
+            <option value="">Sin tratamiento</option>
+            <option v-for="s in treatmentsStore.items" :key="s.id" :value="s.id">{{ s.name }}</option>
           </select>
           <div v-if="selectedService" class="flex flex-col gap-1 px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-xs text-white/60">
             <div class="flex justify-between">

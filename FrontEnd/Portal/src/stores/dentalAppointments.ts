@@ -39,11 +39,11 @@ export const useDentalAppointmentsStore = defineStore('dentalAppointments', () =
         phone: raw.patient_phone ?? undefined,
         email: raw.patient_email ?? undefined,
       } as any : undefined),
-      service: raw.service ?? (raw.service_id ? {
-        id: raw.service_id,
-        name: raw.service_name ?? '',
-        final_price: raw.service_price as any,
-        estimated_duration_minutes: raw.service_duration as any,
+      treatment: (raw as any).treatment ?? ((raw as any).treatment_id ? {
+        id: (raw as any).treatment_id,
+        name: (raw as any).treatment_name ?? '',
+        final_price: (raw as any).treatment_price as any,
+        estimated_duration_minutes: (raw as any).treatment_duration as any,
       } as any : undefined),
     };
   }

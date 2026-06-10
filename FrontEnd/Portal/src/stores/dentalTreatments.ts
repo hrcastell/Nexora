@@ -5,6 +5,7 @@ import type { DentalTreatment, DentalTreatmentFormData } from '../types/dental';
 
 export const useDentalTreatmentsStore = defineStore('dentalTreatments', () => {
   const items   = ref<DentalTreatment[]>([]);
+  const current = ref<DentalTreatment | null>(null);
   const loading = ref(false);
   const error   = ref<string | null>(null);
 
@@ -27,6 +28,21 @@ export const useDentalTreatmentsStore = defineStore('dentalTreatments', () => {
     }
   }
 
+  async function loadOne(id: number | string) {
+    loading.value = true;
+    error.value = null;
+    try {
+      const res = await dentalTreatmentsService.getById(id);
+      current.value = unwrapData<DentalTreatment>(res.data);
+      return current.value;
+    } catch (e: any) {
+      error.value = e?.response?.data?.error || 'Error al cargar tratamiento';
+      throw e;
+    } finally {
+      loading.value = false;
+    }
+  }
+
   async function create(data: DentalTreatmentFormData) {
     const res = await dentalTreatmentsService.create(data);
     const treatment = unwrapData<DentalTreatment>(res.data);
@@ -39,6 +55,7 @@ export const useDentalTreatmentsStore = defineStore('dentalTreatments', () => {
     const updated = unwrapData<DentalTreatment>(res.data);
     const idx = items.value.findIndex(t => t.id === id);
     if (idx !== -1) Object.assign(items.value[idx], updated);
+    if (current.value?.id === id) Object.assign(current.value, updated);
     return updated;
   }
 
@@ -49,8 +66,9 @@ export const useDentalTreatmentsStore = defineStore('dentalTreatments', () => {
 
   function reset() {
     items.value = [];
+    current.value = null;
     error.value = null;
   }
 
-  return { items, loading, error, load, create, update, remove, reset };
+  return { items, current, loading, error, load, loadOne, create, update, remove, reset };
 });

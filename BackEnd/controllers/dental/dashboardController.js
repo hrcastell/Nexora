@@ -34,7 +34,7 @@ exports.getSummary = async (req, res) => {
                 (SELECT COUNT(*) FROM ${schema}.dental_consultations
                  WHERE tenant_id = $1
                    AND DATE(consultation_date) = $2
-                   AND status = 'completed') AS patients_seen_today,
+                   AND status IN ('finalizada_clinicamente', 'cerrada', 'pendiente_pago')) AS patients_seen_today,
 
                 (SELECT COALESCE(SUM(amount), 0) FROM ${schema}.dental_payments
                  WHERE tenant_id = $1

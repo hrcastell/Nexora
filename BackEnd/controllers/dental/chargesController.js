@@ -83,7 +83,7 @@ exports.create = async (req, res) => {
         const {
             customer_id,
             consultation_id = null,
-            service_id = null,
+            treatment_id = null,
             description = null,
             total_amount,
             due_date = null
@@ -102,10 +102,10 @@ exports.create = async (req, res) => {
 
         const result = await db.query(
             `INSERT INTO ${schema}.dental_charges
-             (tenant_id, customer_id, consultation_id, service_id, description, total_amount, paid_amount, pending_amount, due_date, status)
+             (tenant_id, customer_id, consultation_id, treatment_id, description, total_amount, paid_amount, pending_amount, due_date, status)
              VALUES ($1, $2, $3, $4, $5, $6, 0, $6, $7, 'pending')
              RETURNING *`,
-            [companyId, customer_id, consultation_id, service_id, description, parseFloat(total_amount), due_date]
+            [companyId, customer_id, consultation_id, treatment_id, description, parseFloat(total_amount), due_date]
         );
 
         res.status(201).json(result.rows[0]);

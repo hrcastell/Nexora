@@ -91,30 +91,30 @@ exports.create = async (req, res) => {
         // Also create a dental_appointment linked to this session.
         // Non-blocking: appointment failure must not roll back the session.
         if (session_date && consultation.customer_id) {
-            // Resolve duration from the linked service; default to 60 min.
+            // Resolve duration from the linked treatment; default to 60 min.
             let durationMinutes = 60;
-            if (consultation.service_id) {
+            if (consultation.treatment_id) {
                 try {
-                    const svcResult = await db.query(
-                        `SELECT estimated_duration_minutes FROM ${schema}.dental_services WHERE id = $1 AND tenant_id = $2`,
-                        [consultation.service_id, companyId]
+                    const trtResult = await db.query(
+                        `SELECT estimated_duration_minutes FROM ${schema}.dental_treatments WHERE id = $1 AND tenant_id = $2`,
+                        [consultation.treatment_id, companyId]
                     );
-                    if (svcResult.rows.length > 0 && svcResult.rows[0].estimated_duration_minutes) {
-                        durationMinutes = parseInt(svcResult.rows[0].estimated_duration_minutes, 10) || 60;
+                    if (trtResult.rows.length > 0 && trtResult.rows[0].estimated_duration_minutes) {
+                        durationMinutes = parseInt(trtResult.rows[0].estimated_duration_minutes, 10) || 60;
                     }
-                } catch (svcErr) {
-                    console.warn('consultationSessionsController.create: could not read service duration:', svcErr.message);
+                } catch (trtErr) {
+                    console.warn('consultationSessionsController.create: could not read treatment duration:', trtErr.message);
                 }
             }
 
             db.query(
                 `INSERT INTO ${schema}.dental_appointments
-                 (tenant_id, customer_id, service_id, scheduled_start, scheduled_end, status, reason, notes, session_id)
+                 (tenant_id, customer_id, treatment_id, scheduled_start, scheduled_end, status, reason, notes, session_id)
                  VALUES ($1, $2, $3, $4, $4::timestamp + ($5 || ' minutes')::interval, 'scheduled', $6, $7, $8)`,
                 [
                     companyId,
                     consultation.customer_id,
-                    consultation.service_id || null,
+                    consultation.treatment_id || null,
                     session_date,
                     durationMinutes,
                     `Sesión #${session_number}`,
@@ -207,26 +207,26 @@ exports.update = async (req, res) => {
         // If session_date changed: update linked appointment + create notification
         const dateChanged = session_date && String(session_date) !== String(prevDate);
         if (dateChanged) {
-            // Resolve duration from the linked service; default to 60 min.
+            // Resolve duration from the linked treatment; default to 60 min.
             let durationMinutes = 60;
             if (updatedSession.consultation_id) {
                 try {
-                    const consForSvc = await db.query(
-                        `SELECT service_id FROM ${schema}.dental_consultations WHERE id = $1 AND tenant_id = $2`,
+                    const consForTrt = await db.query(
+                        `SELECT treatment_id FROM ${schema}.dental_consultations WHERE id = $1 AND tenant_id = $2`,
                         [updatedSession.consultation_id, companyId]
                     );
-                    const serviceId = consForSvc.rows[0]?.service_id;
-                    if (serviceId) {
-                        const svcResult = await db.query(
-                            `SELECT estimated_duration_minutes FROM ${schema}.dental_services WHERE id = $1 AND tenant_id = $2`,
-                            [serviceId, companyId]
+                    const treatmentId = consForTrt.rows[0]?.treatment_id;
+                    if (treatmentId) {
+                        const trtResult = await db.query(
+                            `SELECT estimated_duration_minutes FROM ${schema}.dental_treatments WHERE id = $1 AND tenant_id = $2`,
+                            [treatmentId, companyId]
                         );
-                        if (svcResult.rows.length > 0 && svcResult.rows[0].estimated_duration_minutes) {
-                            durationMinutes = parseInt(svcResult.rows[0].estimated_duration_minutes, 10) || 60;
+                        if (trtResult.rows.length > 0 && trtResult.rows[0].estimated_duration_minutes) {
+                            durationMinutes = parseInt(trtResult.rows[0].estimated_duration_minutes, 10) || 60;
                         }
                     }
-                } catch (svcErr) {
-                    console.warn('consultationSessionsController.update: could not read service duration:', svcErr.message);
+                } catch (trtErr) {
+                    console.warn('consultationSessionsController.update: could not read treatment duration:', trtErr.message);
                 }
             }
 

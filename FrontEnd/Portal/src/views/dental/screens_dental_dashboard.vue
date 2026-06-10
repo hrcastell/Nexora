@@ -171,7 +171,7 @@ onMounted(() => store.load());
             </div>
             <div class="flex-1 min-w-0">
               <p class="text-sm text-white truncate">{{ apt.customer?.first_name }} {{ apt.customer?.last_name }}</p>
-              <p class="text-xs text-white/40 truncate">{{ apt.service?.name ?? apt.reason ?? '—' }}</p>
+              <p class="text-xs text-white/40 truncate">{{ apt.treatment?.name ?? apt.reason ?? '—' }}</p>
             </div>
             <span class="px-2 py-0.5 rounded-full text-xs shrink-0" :class="STATUS_CLASS[apt.status]">
               {{ STATUS_LABEL[apt.status] ?? apt.status }}
@@ -196,7 +196,7 @@ onMounted(() => store.load());
           >
             <div class="flex-1 min-w-0">
               <p class="text-sm text-white truncate">{{ c.customer?.first_name }} {{ c.customer?.last_name }}</p>
-              <p class="text-xs text-white/40 truncate">{{ fmtDate(c.consultation_date) }} · {{ c.service?.name ?? c.reason ?? '—' }}</p>
+              <p class="text-xs text-white/40 truncate">{{ fmtDate(c.consultation_date) }} · {{ c.treatment?.name ?? c.reason ?? '—' }}</p>
             </div>
             <div class="flex items-center gap-2 shrink-0">
               <span class="px-2 py-0.5 rounded-full text-xs" :class="ADMIN_STATUS_CLASS[c.administrative_status]">

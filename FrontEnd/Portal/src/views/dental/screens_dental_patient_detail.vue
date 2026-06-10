@@ -420,7 +420,7 @@ onMounted(async () => {
         >
           <div class="flex-1 min-w-0">
             <p class="text-sm text-white">{{ fmtDate(c.consultation_date) }}</p>
-            <p class="text-xs text-white/40 truncate">{{ c.reason ?? c.service?.name ?? '—' }}</p>
+            <p class="text-xs text-white/40 truncate">{{ c.reason ?? c.treatment?.name ?? '—' }}</p>
           </div>
           <div class="flex items-center gap-2 shrink-0">
             <span class="px-2 py-0.5 rounded-full text-xs" :class="ADMIN_STATUS_CLASS[c.administrative_status]">
@@ -485,7 +485,7 @@ onMounted(async () => {
           <div class="flex-1 min-w-0">
             <p class="text-sm text-white">{{ fmtDate(appt.scheduled_start) }}</p>
             <p class="text-xs text-white/40 truncate">
-              {{ appt.service?.name ?? appt.reason ?? '—' }}
+              {{ appt.treatment?.name ?? appt.reason ?? '—' }}
             </p>
           </div>
           <span

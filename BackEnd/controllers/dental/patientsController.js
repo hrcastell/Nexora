@@ -372,9 +372,9 @@ exports.getConsultations = async (req, res) => {
 
         const result = await db.query(
             `SELECT dc.*,
-                    ds.name AS service_name
+                    dt.name AS treatment_name
              FROM ${schema}.dental_consultations dc
-             LEFT JOIN ${schema}.dental_services ds ON ds.id = dc.service_id
+             LEFT JOIN ${schema}.dental_treatments dt ON dt.id = dc.treatment_id
              WHERE dc.tenant_id = $1 AND dc.customer_id = $2
              ORDER BY dc.consultation_date DESC`,
             [companyId, req.params.id]

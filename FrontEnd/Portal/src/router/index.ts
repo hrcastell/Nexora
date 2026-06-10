@@ -328,12 +328,6 @@ const router = createRouter({
           component: () => import('../views/dental/screens_dental_treatments.vue'),
           meta: { requiresModule: 'dental_core', requiresTransaction: 'dental_treatments' }
         },
-        {
-          path: 'dental/config/services',
-          name: 'dental-services',
-          component: () => import('../views/dental/screens_dental_services.vue'),
-          meta: { requiresModule: 'dental_core', requiresTransaction: 'dental_services' }
-        },
       ]
     },
     // ─────────────────────────────────────────────────────────────────────────
