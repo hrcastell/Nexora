@@ -12,6 +12,7 @@ const consultationTreatmentsCtrl = require('../../controllers/dental/consultatio
 const consultationSessionsCtrl = require('../../controllers/dental/consultationSessionsController');
 const consultationAttachmentsController = require('../../controllers/dental/consultationAttachmentsController');
 const quotesController = require('../../controllers/dental/quotesController');
+const medicalDocumentsCtrl = require('../../controllers/dental/medicalDocumentsController');
 
 // All dental routes require authentication
 router.use(authMiddleware);
@@ -125,5 +126,15 @@ router.delete('/payments/:id', chargesCtrl.deletePayment);
 
 // ─── FINANCE: SUMMARY ─────────────────────────────────────────
 router.get('/finance/summary', chargesCtrl.getFinanceSummary);
+
+// ─── MEDICAL DOCUMENTS ────────────────────────────────────────
+router.get('/medical-documents',                              medicalDocumentsCtrl.list);
+router.post('/medical-documents',                             medicalDocumentsCtrl.create);
+router.get('/medical-documents/:id',                          medicalDocumentsCtrl.getById);
+router.patch('/medical-documents/:id',                        medicalDocumentsCtrl.update);
+router.delete('/medical-documents/:id',                       medicalDocumentsCtrl.remove);
+router.get('/medical-documents/:id/print',                    medicalDocumentsCtrl.getPrintData);
+router.get('/patients/:customerId/medical-documents',         medicalDocumentsCtrl.getForPatient);
+router.get('/consultations/:consultationId/medical-documents', medicalDocumentsCtrl.getForConsultation);
 
 module.exports = router;

@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ArrowLeft, User, FileText, Stethoscope, CreditCard, CalendarDays, Pencil, Phone, MessageCircle, Plus, Camera, Trash2, Receipt } from 'lucide-vue-next';
+import { ArrowLeft, User, FileText, Stethoscope, CreditCard, CalendarDays, Pencil, Phone, MessageCircle, Plus, Camera, Trash2, Receipt, BookOpen } from 'lucide-vue-next';
 import { dentalQuotesService } from '../../services/dentalQuotesService';
-import type { DentalQuote } from '../../types/dental';
-import { QUOTE_STATUS_LABELS, QUOTE_STATUS_COLORS } from '../../types/dental';
+import { dentalMedicalDocumentsService } from '../../services/dentalMedicalDocumentsService';
+import type { DentalQuote, DentalMedicalDocument } from '../../types/dental';
+import { QUOTE_STATUS_LABELS, QUOTE_STATUS_COLORS, MEDICAL_DOCUMENT_TYPE_LABELS, MEDICAL_DOCUMENT_TYPE_COLORS } from '../../types/dental';
 import { useDentalPatientsStore } from '../../stores/dentalPatients';
 import { useDentalAppointmentsStore } from '../../stores/dentalAppointments';
 import NxrSlidePanel from '../../components/NxrSlidePanel.vue';
@@ -18,8 +19,10 @@ const store              = useDentalPatientsStore();
 const appointmentsStore  = useDentalAppointmentsStore();
 const { toasts, triggerToast, removeToast } = useToast();
 
-const activeTab         = ref<'summary' | 'personal' | 'history' | 'consultations' | 'payments' | 'appointments' | 'quotes'>('summary');
+const activeTab         = ref<'summary' | 'personal' | 'history' | 'consultations' | 'payments' | 'appointments' | 'quotes' | 'documents'>('summary');
 const patientQuotes     = ref<DentalQuote[]>([]);
+const patientDocs       = ref<DentalMedicalDocument[]>([]);
+const docsLoading       = ref(false);
 const quotesLoading     = ref(false);
 const showEditPanel     = ref(false);
 const saving            = ref(false);
@@ -190,6 +193,17 @@ async function loadTabData(tab: typeof activeTab.value) {
       quotesLoading.value = false;
     }
   }
+  if (tab === 'documents' && patientDocs.value.length === 0) {
+    docsLoading.value = true;
+    try {
+      const res = await dentalMedicalDocumentsService.getForPatient(Number(route.params.id));
+      patientDocs.value = res.data.data;
+    } catch {
+      // non-critical
+    } finally {
+      docsLoading.value = false;
+    }
+  }
 }
 
 async function saveMedHist() {
@@ -352,7 +366,8 @@ onMounted(async () => {
             { key: 'consultations', label: 'Consultas',     icon: Stethoscope },
             { key: 'payments',      label: 'Pagos',         icon: CreditCard },
             { key: 'appointments',  label: 'Citas',         icon: CalendarDays },
-            { key: 'quotes',        label: 'Presupuestos',  icon: Receipt },
+            { key: 'quotes',     label: 'Presupuestos', icon: Receipt   },
+            { key: 'documents',  label: 'Documentos',   icon: BookOpen  },
           ]"
           :key="tab.key"
           class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all"
@@ -634,6 +649,45 @@ onMounted(async () => {
             </span>
             <p class="text-sm font-semibold text-white">{{ fmt(q.final_amount) }}</p>
           </div>
+        </div>
+      </div>
+
+      <!-- Tab: Documents -->
+      <div v-if="activeTab === 'documents'" class="flex flex-col gap-3">
+        <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Documentos médicos del paciente</p>
+
+        <div v-if="docsLoading" class="text-center text-white/30 py-10 text-sm">Cargando...</div>
+
+        <div v-else-if="patientDocs.length === 0" class="text-center text-white/30 py-10 text-sm">
+          No hay documentos registrados para este paciente.
+        </div>
+
+        <div
+          v-for="doc in patientDocs"
+          :key="doc.id"
+          class="flex items-start gap-3 px-4 py-3 rounded-xl border border-white/10 cursor-pointer hover:border-white/20 transition-all"
+          :style="{ background: 'var(--nexora-glass-bg)' }"
+          @click="doc.consultation_id ? router.push(`/dental/consultations/${doc.consultation_id}`) : undefined"
+        >
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span
+                class="px-2 py-0.5 rounded-full text-xs font-medium"
+                :class="MEDICAL_DOCUMENT_TYPE_COLORS[doc.document_type]"
+              >
+                {{ MEDICAL_DOCUMENT_TYPE_LABELS[doc.document_type] }}
+              </span>
+              <span class="text-xs font-mono text-white/60">{{ doc.document_number }}</span>
+              <span class="text-xs text-white/30">{{ fmtDate(doc.document_date) }}</span>
+            </div>
+            <p v-if="doc.title" class="mt-1 text-sm text-white truncate">{{ doc.title }}</p>
+          </div>
+          <button
+            class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs text-white/60 bg-white/5 hover:bg-white/10 transition shrink-0"
+            @click.stop="doc.consultation_id ? router.push(`/dental/consultations/${doc.consultation_id}`) : undefined"
+          >
+            Ver / Imprimir
+          </button>
         </div>
       </div>
     </template>

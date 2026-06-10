@@ -3,7 +3,7 @@ import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   ArrowLeft, CheckCircle2, CreditCard, Edit2, Plus, Trash2,
-  Stethoscope, Calendar, ClipboardList, DollarSign, Camera, BookOpen, AlertCircle, Paperclip
+  Stethoscope, Calendar, ClipboardList, DollarSign, Camera, BookOpen, AlertCircle, Paperclip, FileText
 } from 'lucide-vue-next'
 import { useDentalConsultationsStore } from '../../stores/dentalConsultations'
 import { useDentalPatientsStore } from '../../stores/dentalPatients'
@@ -16,6 +16,7 @@ import AppToast from '../../components/AppToast.vue'
 import ConfirmActionModal from '../../components/admin/ConfirmActionModal.vue'
 import WidgetsDentalPhotoGallery from '../../components/widgets_dental_photo_gallery.vue'
 import ConsultationAttachmentsTab from '../../components/dental/ConsultationAttachmentsTab.vue'
+import ConsultationDocumentsSection from '../../components/dental/ConsultationDocumentsSection.vue'
 import { useToast } from '../../composables/useToast'
 import type {
   DentalCharge, DentalInstallment, DentalMedicalHistory,
@@ -39,17 +40,18 @@ const treatmentsStore             = useDentalTreatmentsStore()
 const consultation = computed(() => store.current)
 
 // ── Tabs ──────────────────────────────────────────────────────────────────────
-type TabKey = 'summary' | 'treatments' | 'sessions' | 'photos' | 'history' | 'payments' | 'attachments'
+type TabKey = 'summary' | 'treatments' | 'sessions' | 'photos' | 'history' | 'payments' | 'attachments' | 'documents'
 const activeTab = ref<TabKey>('summary')
 
 const tabs: { key: TabKey; label: string; icon: any }[] = [
-  { key: 'summary',    label: 'Resumen',     icon: ClipboardList },
-  { key: 'treatments', label: 'Tratamiento', icon: Stethoscope   },
-  { key: 'sessions',   label: 'Sesiones',    icon: Calendar       },
-  { key: 'photos',     label: 'Fotos',       icon: Camera         },
-  { key: 'history',     label: 'Historia',  icon: BookOpen    },
-  { key: 'payments',   label: 'Pagos',      icon: DollarSign  },
-  { key: 'attachments', label: 'Adjuntos',  icon: Paperclip   },
+  { key: 'summary',     label: 'Resumen',     icon: ClipboardList },
+  { key: 'treatments',  label: 'Tratamiento', icon: Stethoscope   },
+  { key: 'sessions',    label: 'Sesiones',    icon: Calendar       },
+  { key: 'photos',      label: 'Fotos',       icon: Camera         },
+  { key: 'history',     label: 'Historia',    icon: BookOpen       },
+  { key: 'payments',    label: 'Pagos',       icon: DollarSign     },
+  { key: 'attachments', label: 'Adjuntos',    icon: Paperclip      },
+  { key: 'documents',   label: 'Documentos',  icon: FileText       },
 ]
 
 function selectTab(key: TabKey) {
@@ -1158,6 +1160,15 @@ onMounted(async () => {
       <!-- ═══════════ TAB: ADJUNTOS ═══════════ -->
       <div v-else-if="activeTab === 'attachments'">
         <ConsultationAttachmentsTab :consultationId="Number(id)" />
+      </div>
+
+      <!-- ═══════════ TAB: DOCUMENTOS ═══════════ -->
+      <div v-else-if="activeTab === 'documents'">
+        <ConsultationDocumentsSection
+          :consultation-id="Number(id)"
+          :customer-id="Number(consultation?.customer_id ?? 0)"
+          :read-only="consultation?.status === 'voided' || consultation?.status === 'cancelled'"
+        />
       </div>
 
       <!-- ═══════════ TAB: HISTORIA ═══════════ -->

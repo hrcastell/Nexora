@@ -554,3 +554,60 @@ export const QUOTE_STATUS_COLORS: Record<QuoteStatus, string> = {
   expired:   'text-orange-300 bg-orange-500/20',
   converted: 'text-purple-300 bg-purple-500/20',
 };
+
+// ─── MEDICAL DOCUMENTS ────────────────────────────────────────
+
+export type MedicalDocumentType = 'medical_report' | 'medical_certificate' | 'prescription';
+
+export interface DentalMedicalDocument {
+  id: number;
+  tenant_id: string;
+  customer_id: number;
+  consultation_id?: number | null;
+  document_type: MedicalDocumentType;
+  document_number: string;
+  document_date: string;
+  title?: string;
+  content?: string;
+  professional_name?: string;
+  professional_license?: string;
+  professional_specialty?: string;
+  created_by?: number;
+  created_at: string;
+  updated_at: string;
+  // Joined fields
+  customer_first_name?: string;
+  customer_last_name?: string;
+}
+
+export interface DentalMedicalDocumentFormData {
+  customer_id: number | string;
+  consultation_id?: number | string;
+  document_type: MedicalDocumentType;
+  document_date?: string;
+  title?: string;
+  content?: string;
+  professional_name?: string;
+  professional_license?: string;
+  professional_specialty?: string;
+}
+
+// Prescription medication item (stored as JSON in content field)
+export interface PrescriptionMedication {
+  name: string;
+  dose: string;
+  frequency: string;
+  duration: string;
+}
+
+export const MEDICAL_DOCUMENT_TYPE_LABELS: Record<MedicalDocumentType, string> = {
+  medical_report:      'Informe Médico',
+  medical_certificate: 'Constancia Médica',
+  prescription:        'Receta',
+};
+
+export const MEDICAL_DOCUMENT_TYPE_COLORS: Record<MedicalDocumentType, string> = {
+  medical_report:      'text-blue-300 bg-blue-500/20',
+  medical_certificate: 'text-green-300 bg-green-500/20',
+  prescription:        'text-purple-300 bg-purple-500/20',
+};
