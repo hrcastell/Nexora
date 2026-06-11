@@ -1,0 +1,144 @@
+{
+  "nodes": [
+    {
+      "id": "file:Plan/logo_full.png",
+      "label": "logo_full.png",
+      "type": "image_file",
+      "file_type": "image",
+      "source_path": "Plan/logo_full.png",
+      "properties": {
+        "format": "PNG",
+        "dimensions": {
+          "width": 1536,
+          "height": 1024
+        },
+        "mode": "RGBA"
+      }
+    },
+    {
+      "id": "brand:HRCastell",
+      "label": "HRCastell",
+      "type": "brand_identity",
+      "file_type": "image",
+      "source_path": "Plan/logo_full.png",
+      "properties": {
+        "visible_text": "HRCastell",
+        "role": "primary brand wordmark"
+      }
+    },
+    {
+      "id": "tagline:Enterprise_Core",
+      "label": "Enterprise Core",
+      "type": "tagline",
+      "file_type": "image",
+      "source_path": "Plan/logo_full.png",
+      "properties": {
+        "visible_text": "ENTERPRISE CORE",
+        "role": "secondary descriptor/tagline",
+        "letter_case": "uppercase"
+      }
+    },
+    {
+      "id": "logo_mark:blue_octagonal_emblem",
+      "label": "Blue octagonal emblem",
+      "type": "logo_mark",
+      "file_type": "image",
+      "source_path": "Plan/logo_full.png",
+      "properties": {
+        "description": "glowing blue geometric octagonal/castle-like emblem with nested outlines and right-side notch",
+        "dominant_color": "blue",
+        "position": "left of wordmark"
+      }
+    },
+    {
+      "id": "layout:horizontal_logo_lockup",
+      "label": "Horizontal logo lockup",
+      "type": "visual_layout",
+      "file_type": "image",
+      "source_path": "Plan/logo_full.png",
+      "properties": {
+        "description": "left icon paired with right-aligned two-line text lockup",
+        "orientation": "horizontal",
+        "background": "dark gray gradient/blurred backdrop"
+      }
+    },
+    {
+      "id": "style:dark_enterprise_tech",
+      "label": "Dark enterprise technology styling",
+      "type": "visual_style",
+      "file_type": "image",
+      "source_path": "Plan/logo_full.png",
+      "properties": {
+        "description": "black bold sans-serif text, blue glow accent, dark gray atmospheric background",
+        "mood": "enterprise technology"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:Plan/logo_full.png",
+      "target": "layout:horizontal_logo_lockup",
+      "type": "DEPICTS",
+      "confidence_score": 0.98,
+      "evidence": "The image is a composed logo with a left emblem and right text lockup."
+    },
+    {
+      "source": "layout:horizontal_logo_lockup",
+      "target": "logo_mark:blue_octagonal_emblem",
+      "type": "CONTAINS",
+      "confidence_score": 0.99,
+      "evidence": "A blue glowing emblem appears on the left side of the lockup."
+    },
+    {
+      "source": "layout:horizontal_logo_lockup",
+      "target": "brand:HRCastell",
+      "type": "CONTAINS",
+      "confidence_score": 0.99,
+      "evidence": "The primary wordmark text reads HRCastell."
+    },
+    {
+      "source": "layout:horizontal_logo_lockup",
+      "target": "tagline:Enterprise_Core",
+      "type": "CONTAINS",
+      "confidence_score": 0.99,
+      "evidence": "The secondary line reads ENTERPRISE CORE below the wordmark."
+    },
+    {
+      "source": "tagline:Enterprise_Core",
+      "target": "brand:HRCastell",
+      "type": "DESCRIBES",
+      "confidence_score": 0.92,
+      "evidence": "ENTERPRISE CORE is positioned directly beneath HRCastell as a descriptor."
+    },
+    {
+      "source": "style:dark_enterprise_tech",
+      "target": "layout:horizontal_logo_lockup",
+      "type": "STYLES",
+      "confidence_score": 0.9,
+      "evidence": "Dark background, black typography, and blue glow define the visual treatment."
+    },
+    {
+      "source": "logo_mark:blue_octagonal_emblem",
+      "target": "brand:HRCastell",
+      "type": "BRAND_MARK_FOR",
+      "confidence_score": 0.86,
+      "evidence": "The emblem is spatially paired with the HRCastell wordmark in the same logo composition."
+    }
+  ],
+  "hyperedges": [
+    {
+      "id": "hyperedge:hrcastell_logo_identity",
+      "type": "LOGO_IDENTITY_COMPOSITION",
+      "nodes": [
+        "logo_mark:blue_octagonal_emblem",
+        "brand:HRCastell",
+        "tagline:Enterprise_Core",
+        "style:dark_enterprise_tech"
+      ],
+      "confidence_score": 0.94,
+      "evidence": "These visible elements form a single brand logo composition in the image."
+    }
+  ],
+  "input_tokens": 1,
+  "output_tokens": 681
+}

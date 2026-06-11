@@ -1,8 +1,13 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ArrowLeft, User, FileText, Stethoscope, CreditCard, CalendarDays, Pencil, Phone, MessageCircle, Plus } from 'lucide-vue-next';
+import { ArrowLeft, User, FileText, Stethoscope, CreditCard, CalendarDays, Pencil, Phone, MessageCircle, Plus, Camera, Trash2, Receipt, BookOpen } from 'lucide-vue-next';
+import { dentalQuotesService } from '../../services/dentalQuotesService';
+import { dentalMedicalDocumentsService } from '../../services/dentalMedicalDocumentsService';
+import type { DentalQuote, DentalMedicalDocument } from '../../types/dental';
+import { QUOTE_STATUS_LABELS, QUOTE_STATUS_COLORS, MEDICAL_DOCUMENT_TYPE_LABELS, MEDICAL_DOCUMENT_TYPE_COLORS } from '../../types/dental';
 import { useDentalPatientsStore } from '../../stores/dentalPatients';
+import { useDentalAppointmentsStore } from '../../stores/dentalAppointments';
 import NxrSlidePanel from '../../components/NxrSlidePanel.vue';
 import AppToast from '../../components/AppToast.vue';
 import { useToast } from '../../composables/useToast';
@@ -10,10 +15,15 @@ import type { DentalClinicalHistoryEntry, DentalConsultation, DentalPayment, Den
 
 const route  = useRoute();
 const router = useRouter();
-const store  = useDentalPatientsStore();
+const store              = useDentalPatientsStore();
+const appointmentsStore  = useDentalAppointmentsStore();
 const { toasts, triggerToast, removeToast } = useToast();
 
-const activeTab         = ref<'summary' | 'personal' | 'history' | 'consultations' | 'payments' | 'appointments'>('summary');
+const activeTab         = ref<'summary' | 'personal' | 'history' | 'consultations' | 'payments' | 'appointments' | 'quotes' | 'documents'>('summary');
+const patientQuotes     = ref<DentalQuote[]>([]);
+const patientDocs       = ref<DentalMedicalDocument[]>([]);
+const docsLoading       = ref(false);
+const quotesLoading     = ref(false);
 const showEditPanel     = ref(false);
 const saving            = ref(false);
 const saveError         = ref<string | null>(null);
@@ -22,6 +32,7 @@ const medicalHistory    = ref<DentalMedicalHistory[]>([]);
 const consultations     = ref<DentalConsultation[]>([]);
 const payments          = ref<DentalPayment[]>([]);
 const debt              = ref<DentalCharge[]>([]);
+const appointments      = computed(() => appointmentsStore.items);
 
 // Medical history panel
 const showMedHistPanel  = ref(false);
@@ -39,6 +50,38 @@ const medHistForm       = ref({
 });
 
 const patient = computed(() => store.current);
+
+// Photo upload
+const photoInput    = ref<HTMLInputElement | null>(null);
+const uploadingPhoto = ref(false);
+
+async function onPhotoSelected(event: Event) {
+  const file = (event.target as HTMLInputElement).files?.[0];
+  if (!file || !patient.value) return;
+  uploadingPhoto.value = true;
+  try {
+    await store.uploadPhoto(patient.value.id, file);
+    triggerToast('Foto actualizada', '', 'success');
+  } catch (e: any) {
+    triggerToast('Error', e?.response?.data?.error || 'Error al subir foto', 'error');
+  } finally {
+    uploadingPhoto.value = false;
+    if (photoInput.value) photoInput.value.value = '';
+  }
+}
+
+async function onDeletePhoto() {
+  if (!patient.value) return;
+  uploadingPhoto.value = true;
+  try {
+    await store.deletePhoto(patient.value.id);
+    triggerToast('Foto eliminada', '', 'success');
+  } catch (e: any) {
+    triggerToast('Error', e?.response?.data?.error || 'Error al eliminar foto', 'error');
+  } finally {
+    uploadingPhoto.value = false;
+  }
+}
 
 const editForm = ref({
   first_name: '',
@@ -123,18 +166,43 @@ async function loadTabData(tab: typeof activeTab.value) {
   activeTab.value = tab;
   if (tab === 'history') {
     if (clinicalHistory.value.length === 0) {
-      clinicalHistory.value = await store.getClinicalHistory(route.params.id as string);
+      clinicalHistory.value = await store.getClinicalHistory(route.params.id as string) ?? [];
     }
     if (medicalHistory.value.length === 0) {
-      medicalHistory.value = await store.fetchMedicalHistory(route.params.id as string);
+      medicalHistory.value = await store.fetchMedicalHistory(route.params.id as string) ?? [];
     }
   }
   if (tab === 'consultations' && consultations.value.length === 0) {
-    consultations.value = await store.getConsultations(route.params.id as string);
+    consultations.value = await store.getConsultations(route.params.id as string) ?? [];
   }
   if (tab === 'payments' && payments.value.length === 0) {
-    payments.value = await store.getPayments(route.params.id as string);
-    debt.value = await store.getDebt(route.params.id as string);
+    payments.value = await store.getPayments(route.params.id as string) ?? [];
+    debt.value = await store.getDebt(route.params.id as string) ?? 0;
+  }
+  if (tab === 'appointments' && appointments.value.length === 0) {
+    await appointmentsStore.load({ customer_id: route.params.id as string });
+  }
+  if (tab === 'quotes' && patientQuotes.value.length === 0) {
+    quotesLoading.value = true;
+    try {
+      const res = await dentalQuotesService.getForPatient(Number(route.params.id));
+      patientQuotes.value = res.data.data ?? [];
+    } catch {
+      // non-critical
+    } finally {
+      quotesLoading.value = false;
+    }
+  }
+  if (tab === 'documents' && patientDocs.value.length === 0) {
+    docsLoading.value = true;
+    try {
+      const res = await dentalMedicalDocumentsService.getForPatient(Number(route.params.id));
+      patientDocs.value = res.data.data ?? [];
+    } catch {
+      // non-critical
+    } finally {
+      docsLoading.value = false;
+    }
   }
 }
 
@@ -217,19 +285,61 @@ onMounted(async () => {
   <div class="flex flex-col gap-5 p-6">
     <!-- Header -->
     <div class="flex items-center gap-3">
-      <button class="text-white/40 hover:text-white transition-colors" @click="router.back()">
+      <button class="text-white/40 hover:text-white transition-colors shrink-0" @click="router.back()">
         <ArrowLeft :size="20" />
       </button>
+
+      <!-- Patient photo -->
+      <div v-if="patient" class="relative shrink-0 group">
+        <div class="w-14 h-14 rounded-full overflow-hidden flex items-center justify-center text-lg font-semibold select-none"
+          :class="patient.photo_url ? '' : 'bg-blue-500/20 text-blue-300 border border-white/10'"
+        >
+          <img
+            v-if="patient.photo_url"
+            :src="patient.photo_url"
+            :alt="`${patient.first_name} ${patient.last_name}`"
+            class="w-full h-full object-cover"
+          />
+          <span v-else>{{ (patient.first_name?.[0] ?? '').toUpperCase() }}{{ (patient.last_name?.[0] ?? '').toUpperCase() }}</span>
+        </div>
+        <!-- Upload overlay -->
+        <button
+          class="absolute inset-0 rounded-full flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity"
+          :disabled="uploadingPhoto"
+          title="Cambiar foto"
+          @click="photoInput?.click()"
+        >
+          <Camera :size="14" class="text-white" />
+        </button>
+        <input
+          ref="photoInput"
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          class="hidden"
+          @change="onPhotoSelected"
+        />
+      </div>
+
       <div class="flex-1 min-w-0">
         <div v-if="store.loading" class="h-5 w-48 bg-white/5 animate-pulse rounded-lg"></div>
         <h1 v-else class="text-xl font-semibold text-white truncate">
           {{ patient?.first_name }} {{ patient?.last_name }}
         </h1>
         <p class="text-xs text-white/40">{{ patient?.document_type }} {{ patient?.document_number }}</p>
+        <!-- Delete photo link (only when photo exists) -->
+        <button
+          v-if="patient && patient.photo_url"
+          class="text-xs text-red-400/60 hover:text-red-400 transition-colors flex items-center gap-1 mt-0.5"
+          :disabled="uploadingPhoto"
+          @click="onDeletePhoto"
+        >
+          <Trash2 :size="10" /> Eliminar foto
+        </button>
       </div>
+
       <button
         v-if="patient"
-        class="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold border border-white/10 text-white/60 hover:border-white/30 hover:text-white transition-all"
+        class="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold border border-white/10 text-white/60 hover:border-white/30 hover:text-white transition-all shrink-0"
         @click="openEdit"
       >
         <Pencil :size="12" /> Editar
@@ -256,6 +366,8 @@ onMounted(async () => {
             { key: 'consultations', label: 'Consultas',     icon: Stethoscope },
             { key: 'payments',      label: 'Pagos',         icon: CreditCard },
             { key: 'appointments',  label: 'Citas',         icon: CalendarDays },
+            { key: 'quotes',     label: 'Presupuestos', icon: Receipt   },
+            { key: 'documents',  label: 'Documentos',   icon: BookOpen  },
           ]"
           :key="tab.key"
           class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all"
@@ -414,7 +526,7 @@ onMounted(async () => {
         >
           <div class="flex-1 min-w-0">
             <p class="text-sm text-white">{{ fmtDate(c.consultation_date) }}</p>
-            <p class="text-xs text-white/40 truncate">{{ c.reason ?? c.service?.name ?? '—' }}</p>
+            <p class="text-xs text-white/40 truncate">{{ c.reason ?? c.treatment?.name ?? '—' }}</p>
           </div>
           <div class="flex items-center gap-2 shrink-0">
             <span class="px-2 py-0.5 rounded-full text-xs" :class="ADMIN_STATUS_CLASS[c.administrative_status]">
@@ -466,8 +578,116 @@ onMounted(async () => {
 
       <!-- Tab: Appointments -->
       <div v-if="activeTab === 'appointments'" class="flex flex-col gap-2">
-        <div class="text-center text-white/30 py-10 text-sm">
-          Ver citas desde el módulo de <button class="text-[var(--nexora-primary)] hover:underline" @click="router.push('/dental/appointments')">Citas</button>.
+        <div v-if="appointmentsStore.loading" class="text-center text-white/30 py-10 text-sm">Cargando citas...</div>
+        <div v-else-if="appointments.length === 0" class="text-center text-white/30 py-10 text-sm">
+          No hay citas registradas para este paciente.
+        </div>
+        <div
+          v-for="appt in appointments"
+          :key="appt.id"
+          class="flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-white/10"
+          :style="{ background: 'var(--nexora-glass-bg)' }"
+        >
+          <div class="flex-1 min-w-0">
+            <p class="text-sm text-white">{{ fmtDate(appt.scheduled_start) }}</p>
+            <p class="text-xs text-white/40 truncate">
+              {{ appt.treatment?.name ?? appt.reason ?? '—' }}
+            </p>
+          </div>
+          <span
+            class="shrink-0 px-2 py-0.5 rounded-full text-xs"
+            :class="{
+              'bg-blue-500/20 text-blue-400':   appt.status === 'scheduled',
+              'bg-green-500/20 text-green-400': appt.status === 'confirmed' || appt.status === 'completed' || appt.status === 'checked_in',
+              'bg-white/10 text-white/40':      appt.status === 'cancelled' || appt.status === 'no_show' || appt.status === 'rescheduled',
+            }"
+          >
+            {{
+              appt.status === 'scheduled'   ? 'Programada'  :
+              appt.status === 'confirmed'   ? 'Confirmada'  :
+              appt.status === 'checked_in'  ? 'Presente'    :
+              appt.status === 'completed'   ? 'Completada'  :
+              appt.status === 'cancelled'   ? 'Cancelada'   :
+              appt.status === 'no_show'     ? 'No asistió'  :
+              appt.status === 'rescheduled' ? 'Reprogramada': appt.status
+            }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Tab: Quotes -->
+      <div v-if="activeTab === 'quotes'" class="flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+          <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Presupuestos del paciente</p>
+          <button
+            class="flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs text-white/70 bg-white/10 hover:bg-white/20 transition"
+            @click="router.push(`/dental/quotes?customer_id=${route.params.id}`)"
+          >
+            <Plus class="h-3.5 w-3.5" />
+            Nuevo presupuesto
+          </button>
+        </div>
+
+        <div v-if="quotesLoading" class="text-center text-white/30 py-10 text-sm">Cargando...</div>
+        <div v-else-if="patientQuotes.length === 0" class="text-center text-white/30 py-10 text-sm">
+          No hay presupuestos registrados para este paciente.
+        </div>
+        <div
+          v-for="q in patientQuotes"
+          :key="q.id"
+          class="flex items-center justify-between gap-3 px-4 py-3 rounded-xl border border-white/10 cursor-pointer hover:border-white/20 transition-all"
+          :style="{ background: 'var(--nexora-glass-bg)' }"
+          @click="router.push(`/dental/quotes/${q.id}`)"
+        >
+          <div class="flex-1 min-w-0">
+            <p class="text-sm text-white font-mono">{{ q.quote_number }}</p>
+            <p class="text-xs text-white/40">{{ fmtDate(q.quote_date) }}{{ q.valid_until ? ` · Vence: ${fmtDate(q.valid_until)}` : '' }}</p>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <span class="px-2 py-0.5 rounded-full text-xs" :class="QUOTE_STATUS_COLORS[q.status]">
+              {{ QUOTE_STATUS_LABELS[q.status] }}
+            </span>
+            <p class="text-sm font-semibold text-white">{{ fmt(q.final_amount) }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: Documents -->
+      <div v-if="activeTab === 'documents'" class="flex flex-col gap-3">
+        <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Documentos médicos del paciente</p>
+
+        <div v-if="docsLoading" class="text-center text-white/30 py-10 text-sm">Cargando...</div>
+
+        <div v-else-if="patientDocs.length === 0" class="text-center text-white/30 py-10 text-sm">
+          No hay documentos registrados para este paciente.
+        </div>
+
+        <div
+          v-for="doc in patientDocs"
+          :key="doc.id"
+          class="flex items-start gap-3 px-4 py-3 rounded-xl border border-white/10 cursor-pointer hover:border-white/20 transition-all"
+          :style="{ background: 'var(--nexora-glass-bg)' }"
+          @click="doc.consultation_id ? router.push(`/dental/consultations/${doc.consultation_id}`) : undefined"
+        >
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span
+                class="px-2 py-0.5 rounded-full text-xs font-medium"
+                :class="MEDICAL_DOCUMENT_TYPE_COLORS[doc.document_type]"
+              >
+                {{ MEDICAL_DOCUMENT_TYPE_LABELS[doc.document_type] }}
+              </span>
+              <span class="text-xs font-mono text-white/60">{{ doc.document_number }}</span>
+              <span class="text-xs text-white/30">{{ fmtDate(doc.document_date) }}</span>
+            </div>
+            <p v-if="doc.title" class="mt-1 text-sm text-white truncate">{{ doc.title }}</p>
+          </div>
+          <button
+            class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs text-white/60 bg-white/5 hover:bg-white/10 transition shrink-0"
+            @click.stop="doc.consultation_id ? router.push(`/dental/consultations/${doc.consultation_id}`) : undefined"
+          >
+            Ver / Imprimir
+          </button>
         </div>
       </div>
     </template>

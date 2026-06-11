@@ -73,7 +73,10 @@ function makeGarageUpload(subfolder, maxSizeMb = 5) {
 function makeDentalUpload(subfolder, maxSizeMb = 8) {
     const dentalStorage = multer.diskStorage({
         destination: (req, _file, cb) => {
-            const schema = req.user?.schema_name || 'default';
+            const schema = req.user?.schema_name;
+            if (!schema) {
+                return cb(new Error('Missing schema_name — auth middleware must run before file upload'));
+            }
             const dir = path.join(__dirname, '..', 'uploads', 'dental', subfolder, schema);
             if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
             cb(null, dir);
@@ -91,6 +94,50 @@ function makeDentalUpload(subfolder, maxSizeMb = 8) {
     });
 }
 
+const documentFilter = (_req, file, cb) => {
+    const allowedExts  = /jpeg|jpg|png|webp|pdf|doc|docx/;
+    const allowedMimes = /image\/(jpeg|png|webp)|application\/(pdf|msword|vnd\.openxmlformats-officedocument\.wordprocessingml\.document)/;
+    const extOk  = allowedExts.test(path.extname(file.originalname).toLowerCase());
+    const mimeOk = allowedMimes.test(file.mimetype);
+    if (extOk && mimeOk) return cb(null, true);
+    cb(new Error('Solo se permiten imágenes (JPG/PNG/WebP), PDF, DOC o DOCX'));
+};
+
+/**
+ * makeDentalDocumentUpload(subfolder, maxSizeMb)
+ *
+ * Multer instance for dental documents (images + PDF + Word).
+ * Files saved to: uploads/dental/{subfolder}/{schema}/{filename}
+ *
+ * @param {string} subfolder  - e.g. 'documents' | 'attachments'
+ * @param {number} maxSizeMb  - File size limit in MB (default 10)
+ * @returns {multer.Multer}
+ */
+function makeDentalDocumentUpload(subfolder, maxSizeMb = 10) {
+    const docStorage = multer.diskStorage({
+        destination: (req, _file, cb) => {
+            const schema = req.user?.schema_name;
+            if (!schema) {
+                return cb(new Error('Missing schema_name — auth middleware must run before file upload'));
+            }
+            const dir = path.join(__dirname, '..', 'uploads', 'dental', subfolder, schema);
+            if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+            cb(null, dir);
+        },
+        filename: (_req, file, cb) => {
+            const unique = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
+            cb(null, `${unique}${path.extname(file.originalname)}`);
+        }
+    });
+
+    return multer({
+        storage:    docStorage,
+        fileFilter: documentFilter,
+        limits:     { fileSize: maxSizeMb * 1024 * 1024 }
+    });
+}
+
 module.exports = upload;
-module.exports.makeGarageUpload = makeGarageUpload;
-module.exports.makeDentalUpload = makeDentalUpload;
+module.exports.makeGarageUpload          = makeGarageUpload;
+module.exports.makeDentalUpload          = makeDentalUpload;
+module.exports.makeDentalDocumentUpload  = makeDentalDocumentUpload;

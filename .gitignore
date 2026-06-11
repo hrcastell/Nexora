@@ -2,3 +2,5 @@ node_modules
 
 # FrontEnd build output
 FrontEnd/Portal/dist
+
+.atl/

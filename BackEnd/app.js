@@ -100,6 +100,13 @@ app.post('/api/users/avatar',     authMiddleware, upload.single('avatar'), users
 
 // Error Handling Middleware
 app.use((err, req, res, next) => {
+  // Ensure CORS headers are present even when an error bypasses the cors() middleware
+  const origin = req.headers.origin;
+  if (origin && allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Vary', 'Origin');
+  }
   console.error('Unhandled error:', err.message, err.stack);
   if (err.message && err.message.startsWith('CORS:')) {
     return res.status(403).json({ error: err.message });

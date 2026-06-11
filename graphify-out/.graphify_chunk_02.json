@@ -1,0 +1,882 @@
+{
+  "nodes": [
+    {
+      "id": "login_auth01",
+      "label": "AUTH-01 Login multiempresa y multiperfil con onboarding de solicitud",
+      "file_type": "document",
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "?pica",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "login_multi_company_login_flow",
+      "label": "Login multiempresa por pasos",
+      "file_type": "document",
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Objetivo",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "login_discover_companies_endpoint",
+      "label": "POST /auth/discover-companies",
+      "file_type": "document",
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Fase 3 ? Endpoints sugeridos",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "login_validate_password_endpoint",
+      "label": "POST /auth/validate-password",
+      "file_type": "document",
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Fase 3 ? Endpoints sugeridos",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "login_select_profile_endpoint",
+      "label": "POST /auth/select-profile",
+      "file_type": "document",
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Fase 3 ? Endpoints sugeridos",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "login_auth_me_endpoint",
+      "label": "GET /auth/me",
+      "file_type": "document",
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Fase 3 ? Endpoints sugeridos",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "login_onboarding_request",
+      "label": "Onboarding request",
+      "file_type": "document",
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Fase 5",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "login_super_admin_review",
+      "label": "Super admin onboarding review",
+      "file_type": "document",
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Fase 5",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "login_auth_service",
+      "label": "AuthService",
+      "file_type": "document",
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Recomendaci?n t?cnica",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "login_session_context_auth_store",
+      "label": "SessionContext or AuthStore",
+      "file_type": "document",
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Recomendaci?n t?cnica",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "login_state_machine",
+      "label": "Step login state machine",
+      "file_type": "document",
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Recomendaci?n t?cnica",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "login_session_token_context",
+      "label": "Token with schema companyId and profile",
+      "file_type": "document",
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Fase 2/Fase 3",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "login_role_permission_navigation",
+      "label": "Profile-driven modules and navigation",
+      "file_type": "document",
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Fase 6",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "profiles_sec_profiles01",
+      "label": "SEC-PROFILES-01 Perfiles permisos y m?dulos",
+      "file_type": "document",
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "M?dulo",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "profiles_parameterized_access_model",
+      "label": "Parameterized access model",
+      "file_type": "document",
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Objetivo/Rol de esta ventana",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "profiles_module",
+      "label": "M?dulo",
+      "file_type": "document",
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Definiciones funcionales clave ? M?dulo",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "profiles_profile",
+      "label": "Perfil reutilizable",
+      "file_type": "document",
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Definiciones funcionales clave ? Perfil",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "profiles_action_permission",
+      "label": "Permiso por acci?n",
+      "file_type": "document",
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Definiciones funcionales clave ? Permiso por acci?n",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "profiles_profile_scope",
+      "label": "Alcance del perfil",
+      "file_type": "document",
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Definiciones funcionales clave ? Alcance del perfil",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "profiles_profile_module_action_relation",
+      "label": "Relaci?n perfil m?dulo acci?n",
+      "file_type": "document",
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Fase 1",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "profiles_modules_catalog",
+      "label": "Biblioteca de m?dulos",
+      "file_type": "document",
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Componentes funcionales aprobados ? 5",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "profiles_profile_library",
+      "label": "Biblioteca de perfiles",
+      "file_type": "document",
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Componentes funcionales aprobados ? 3",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "profiles_navigation_visibility",
+      "label": "Navigation and visibility integration",
+      "file_type": "document",
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Fase 5",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "profiles_permission_middleware",
+      "label": "Middleware or validation layer",
+      "file_type": "document",
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Fase 5/Recomendaci?n t?cnica",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "users_sec_users01",
+      "label": "SEC-USERS-01 Gesti?n de usuarios accesos y visibilidad",
+      "file_type": "document",
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "M?dulo",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "users_user_management_window",
+      "label": "User management window",
+      "file_type": "document",
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "Objetivo",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "users_user",
+      "label": "Usuario",
+      "file_type": "document",
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "Objetivo/Alcance funcional",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "users_role",
+      "label": "Rol",
+      "file_type": "document",
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "Definiciones funcionales clave ? Rol",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "users_job_position",
+      "label": "Cargo",
+      "file_type": "document",
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "Definiciones funcionales clave ? Cargo",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "users_profile",
+      "label": "Perfil funcional del usuario",
+      "file_type": "document",
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "Definiciones funcionales clave ? Perfil",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "users_access_level",
+      "label": "Nivel de acceso",
+      "file_type": "document",
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "Definiciones funcionales clave ? Nivel de acceso",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "users_enabled_modules",
+      "label": "M?dulos habilitados",
+      "file_type": "document",
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "Alcance funcional/Formulario",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "users_user_company_relation",
+      "label": "Relaci?n usuario empresa",
+      "file_type": "document",
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "Fase 3",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "users_user_profile_relation",
+      "label": "Relaci?n usuario perfil",
+      "file_type": "document",
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "Fase 3",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "users_crud_endpoints",
+      "label": "User CRUD endpoints",
+      "file_type": "document",
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "Fase 4",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "users_advanced_permissions_base",
+      "label": "Base para permisos avanzados",
+      "file_type": "document",
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "Fase 5",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "login_auth01",
+      "target": "login_multi_company_login_flow",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Objetivo",
+      "weight": 1.0
+    },
+    {
+      "source": "login_multi_company_login_flow",
+      "target": "login_discover_companies_endpoint",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Fase 4",
+      "weight": 1.0
+    },
+    {
+      "source": "login_multi_company_login_flow",
+      "target": "login_validate_password_endpoint",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Fase 4",
+      "weight": 1.0
+    },
+    {
+      "source": "login_multi_company_login_flow",
+      "target": "login_select_profile_endpoint",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Fase 3",
+      "weight": 1.0
+    },
+    {
+      "source": "login_select_profile_endpoint",
+      "target": "login_session_token_context",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Fase 3",
+      "weight": 1.0
+    },
+    {
+      "source": "login_auth_me_endpoint",
+      "target": "login_session_token_context",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Fase 3",
+      "weight": 1.0
+    },
+    {
+      "source": "login_onboarding_request",
+      "target": "login_super_admin_review",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Objetivo/Fase 5",
+      "weight": 1.0
+    },
+    {
+      "source": "login_auth_service",
+      "target": "login_multi_company_login_flow",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Recomendaci?n t?cnica",
+      "weight": 1.0
+    },
+    {
+      "source": "login_session_context_auth_store",
+      "target": "login_session_token_context",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Recomendaci?n t?cnica",
+      "weight": 1.0
+    },
+    {
+      "source": "login_state_machine",
+      "target": "login_multi_company_login_flow",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Recomendaci?n t?cnica",
+      "weight": 1.0
+    },
+    {
+      "source": "login_role_permission_navigation",
+      "target": "login_select_profile_endpoint",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Fase 6",
+      "weight": 1.0
+    },
+    {
+      "source": "profiles_sec_profiles01",
+      "target": "profiles_parameterized_access_model",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Objetivo",
+      "weight": 1.0
+    },
+    {
+      "source": "profiles_parameterized_access_model",
+      "target": "profiles_module",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Rol de esta ventana",
+      "weight": 1.0
+    },
+    {
+      "source": "profiles_parameterized_access_model",
+      "target": "profiles_profile",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Rol de esta ventana",
+      "weight": 1.0
+    },
+    {
+      "source": "profiles_profile",
+      "target": "profiles_module",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Relaci?n con la ventana de usuarios",
+      "weight": 1.0
+    },
+    {
+      "source": "profiles_profile",
+      "target": "profiles_action_permission",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Definiciones funcionales clave",
+      "weight": 1.0
+    },
+    {
+      "source": "profiles_profile",
+      "target": "profiles_profile_scope",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Definiciones funcionales clave",
+      "weight": 1.0
+    },
+    {
+      "source": "profiles_profile_module_action_relation",
+      "target": "profiles_profile",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Fase 1",
+      "weight": 1.0
+    },
+    {
+      "source": "profiles_profile_module_action_relation",
+      "target": "profiles_module",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Fase 1",
+      "weight": 1.0
+    },
+    {
+      "source": "profiles_profile_module_action_relation",
+      "target": "profiles_action_permission",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Fase 1",
+      "weight": 1.0
+    },
+    {
+      "source": "profiles_modules_catalog",
+      "target": "profiles_module",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Componentes funcionales aprobados",
+      "weight": 1.0
+    },
+    {
+      "source": "profiles_profile_library",
+      "target": "profiles_profile",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Componentes funcionales aprobados",
+      "weight": 1.0
+    },
+    {
+      "source": "profiles_navigation_visibility",
+      "target": "profiles_parameterized_access_model",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Fase 5",
+      "weight": 1.0
+    },
+    {
+      "source": "profiles_permission_middleware",
+      "target": "profiles_action_permission",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.82,
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Fase 5",
+      "weight": 1.0
+    },
+    {
+      "source": "users_sec_users01",
+      "target": "users_user_management_window",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "Objetivo",
+      "weight": 1.0
+    },
+    {
+      "source": "users_user_management_window",
+      "target": "users_user",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "Alcance funcional",
+      "weight": 1.0
+    },
+    {
+      "source": "users_user",
+      "target": "users_role",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "Objetivo",
+      "weight": 1.0
+    },
+    {
+      "source": "users_user",
+      "target": "users_job_position",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "Objetivo",
+      "weight": 1.0
+    },
+    {
+      "source": "users_user",
+      "target": "users_profile",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "Objetivo",
+      "weight": 1.0
+    },
+    {
+      "source": "users_user",
+      "target": "users_access_level",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "Definiciones funcionales clave",
+      "weight": 1.0
+    },
+    {
+      "source": "users_user",
+      "target": "users_enabled_modules",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "Alcance funcional",
+      "weight": 1.0
+    },
+    {
+      "source": "users_user_company_relation",
+      "target": "users_user",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "Fase 3",
+      "weight": 1.0
+    },
+    {
+      "source": "users_user_profile_relation",
+      "target": "users_user",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "Fase 3",
+      "weight": 1.0
+    },
+    {
+      "source": "users_user_profile_relation",
+      "target": "users_profile",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "Fase 3",
+      "weight": 1.0
+    },
+    {
+      "source": "users_crud_endpoints",
+      "target": "users_user_management_window",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "Fase 4",
+      "weight": 1.0
+    },
+    {
+      "source": "users_advanced_permissions_base",
+      "target": "users_enabled_modules",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "Fase 5",
+      "weight": 1.0
+    },
+    {
+      "source": "login_role_permission_navigation",
+      "target": "profiles_navigation_visibility",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.88,
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Fase 6",
+      "weight": 1.0
+    },
+    {
+      "source": "login_select_profile_endpoint",
+      "target": "profiles_profile",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.84,
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Fase 3/Fase 6",
+      "weight": 1.0
+    },
+    {
+      "source": "profiles_sec_profiles01",
+      "target": "users_sec_users01",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Relaci?n con la ventana de usuarios",
+      "weight": 1.0
+    },
+    {
+      "source": "profiles_profile",
+      "target": "users_profile",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.93,
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Definiciones funcionales clave",
+      "weight": 1.0
+    },
+    {
+      "source": "profiles_module",
+      "target": "users_enabled_modules",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Relaci?n con la ventana de usuarios",
+      "weight": 1.0
+    },
+    {
+      "source": "profiles_parameterized_access_model",
+      "target": "users_advanced_permissions_base",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.86,
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Beneficio t?cnico/Recomendaci?n t?cnica",
+      "weight": 1.0
+    },
+    {
+      "source": "profiles_permission_middleware",
+      "target": "users_advanced_permissions_base",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.78,
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Fase 5",
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": [
+    {
+      "id": "multi_company_login_flow_components",
+      "label": "Multi-company login flow components",
+      "nodes": [
+        "login_discover_companies_endpoint",
+        "login_validate_password_endpoint",
+        "login_select_profile_endpoint",
+        "login_auth_me_endpoint",
+        "login_session_token_context"
+      ],
+      "relation": "participate_in",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/plan_implementacion_login_nexora.md"
+    },
+    {
+      "id": "parameterized_permission_model",
+      "label": "Parameterized permission model",
+      "nodes": [
+        "profiles_profile",
+        "profiles_module",
+        "profiles_action_permission",
+        "profiles_profile_scope",
+        "profiles_profile_module_action_relation"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md"
+    },
+    {
+      "id": "user_access_identity_model",
+      "label": "User access identity model",
+      "nodes": [
+        "users_user",
+        "users_role",
+        "users_job_position",
+        "users_profile",
+        "users_access_level",
+        "users_enabled_modules"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md"
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

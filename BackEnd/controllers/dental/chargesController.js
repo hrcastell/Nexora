@@ -83,7 +83,7 @@ exports.create = async (req, res) => {
         const {
             customer_id,
             consultation_id = null,
-            service_id = null,
+            treatment_id = null,
             description = null,
             total_amount,
             due_date = null
@@ -102,10 +102,10 @@ exports.create = async (req, res) => {
 
         const result = await db.query(
             `INSERT INTO ${schema}.dental_charges
-             (tenant_id, customer_id, consultation_id, service_id, description, total_amount, paid_amount, pending_amount, due_date, status)
+             (tenant_id, customer_id, consultation_id, treatment_id, description, total_amount, paid_amount, pending_amount, due_date, status)
              VALUES ($1, $2, $3, $4, $5, $6, 0, $6, $7, 'pending')
              RETURNING *`,
-            [companyId, customer_id, consultation_id, service_id, description, parseFloat(total_amount), due_date]
+            [companyId, customer_id, consultation_id, treatment_id, description, parseFloat(total_amount), due_date]
         );
 
         res.status(201).json(result.rows[0]);
@@ -185,56 +185,72 @@ exports.registerPayment = async (req, res) => {
             return res.status(400).json({ code: 'DENTAL_INVALID_AMOUNT', error: 'amount debe ser mayor a 0' });
         }
 
-        const chargeResult = await db.query(
-            `SELECT * FROM ${schema}.dental_charges WHERE id = $1 AND tenant_id = $2`,
-            [req.params.id, companyId]
-        );
-        if (chargeResult.rows.length === 0) {
-            return res.status(404).json({ code: 'DENTAL_CHARGE_NOT_FOUND', error: 'Cobro no encontrado' });
-        }
+        const client = await db.getClient();
+        let paymentResult;
+        try {
+            await client.query('BEGIN');
 
-        const charge = chargeResult.rows[0];
-        if (parseFloat(amount) > parseFloat(charge.pending_amount)) {
-            return res.status(400).json({
-                code: 'DENTAL_PAYMENT_EXCEEDS_PENDING',
-                error: `El monto ($${amount}) supera el saldo pendiente ($${charge.pending_amount})`
-            });
-        }
+            // READ inside transaction with FOR UPDATE to prevent TOCTOU race
+            const chargeResult = await client.query(
+                `SELECT * FROM ${schema}.dental_charges WHERE id = $1 AND tenant_id = $2 FOR UPDATE`,
+                [req.params.id, companyId]
+            );
+            if (chargeResult.rows.length === 0) {
+                await client.query('ROLLBACK');
+                return res.status(404).json({ code: 'DENTAL_CHARGE_NOT_FOUND', error: 'Cobro no encontrado' });
+            }
 
-        const newPaidAmount    = parseFloat(charge.paid_amount) + parseFloat(amount);
-        const newPendingAmount = parseFloat(charge.pending_amount) - parseFloat(amount);
-        const newStatus        = resolveChargeStatus(charge.total_amount, newPendingAmount);
+            const charge = chargeResult.rows[0];
+            if (parseFloat(amount) > parseFloat(charge.pending_amount)) {
+                await client.query('ROLLBACK');
+                return res.status(400).json({
+                    code: 'DENTAL_PAYMENT_EXCEEDS_PENDING',
+                    error: `El monto ($${amount}) supera el saldo pendiente ($${charge.pending_amount})`
+                });
+            }
 
-        // Insert payment
-        const paymentResult = await db.query(
-            `INSERT INTO ${schema}.dental_payments
-             (tenant_id, customer_id, charge_id, amount, payment_method, notes, payment_date)
-             VALUES ($1, $2, $3, $4, $5, $6, NOW())
-             RETURNING *`,
-            [companyId, charge.customer_id, charge.id, parseFloat(amount), payment_method, notes]
-        );
+            const newPaidAmount    = parseFloat(charge.paid_amount) + parseFloat(amount);
+            const newPendingAmount = parseFloat(charge.pending_amount) - parseFloat(amount);
+            const newStatus        = resolveChargeStatus(charge.total_amount, newPendingAmount);
 
-        // Update charge
-        await db.query(
-            `UPDATE ${schema}.dental_charges
-             SET paid_amount = $1, pending_amount = $2, status = $3, updated_at = CURRENT_TIMESTAMP
-             WHERE id = $4 AND tenant_id = $5`,
-            [newPaidAmount, newPendingAmount, newStatus, charge.id, companyId]
-        );
-
-        // Sync administrative_status on the linked consultation
-        if (charge.consultation_id) {
             const adminStatus =
                 newStatus === 'paid'           ? 'paid' :
                 newStatus === 'partially_paid' ? 'partially_paid' :
                 'unpaid';
 
-            await db.query(
-                `UPDATE ${schema}.dental_consultations
-                 SET administrative_status = $1, updated_at = NOW()
-                 WHERE id = $2 AND tenant_id = $3`,
-                [adminStatus, charge.consultation_id, companyId]
+            // Insert payment
+            paymentResult = await client.query(
+                `INSERT INTO ${schema}.dental_payments
+                 (tenant_id, customer_id, charge_id, amount, payment_method, notes, payment_date)
+                 VALUES ($1, $2, $3, $4, $5, $6, NOW())
+                 RETURNING *`,
+                [companyId, charge.customer_id, charge.id, parseFloat(amount), payment_method, notes]
             );
+
+            // Update charge
+            await client.query(
+                `UPDATE ${schema}.dental_charges
+                 SET paid_amount = $1, pending_amount = $2, status = $3, updated_at = CURRENT_TIMESTAMP
+                 WHERE id = $4 AND tenant_id = $5`,
+                [newPaidAmount, newPendingAmount, newStatus, charge.id, companyId]
+            );
+
+            // Sync administrative_status on the linked consultation
+            if (charge.consultation_id) {
+                await client.query(
+                    `UPDATE ${schema}.dental_consultations
+                     SET administrative_status = $1, updated_at = NOW()
+                     WHERE id = $2 AND tenant_id = $3`,
+                    [adminStatus, charge.consultation_id, companyId]
+                );
+            }
+
+            await client.query('COMMIT');
+        } catch (txErr) {
+            await client.query('ROLLBACK');
+            throw txErr;
+        } finally {
+            client.release();
         }
 
         res.status(201).json({ data: paymentResult.rows[0] });
@@ -289,26 +305,39 @@ exports.createInstallments = async (req, res) => {
             return d.toISOString().slice(0, 10);
         }
 
-        // Delete existing unpaid installments
-        await db.query(
-            `DELETE FROM ${schema}.dental_installments
-             WHERE charge_id = $1 AND tenant_id = $2 AND status NOT IN ('paid','cancelled')`,
-            [charge.id, companyId]
-        );
+        const client = await db.getClient();
+        let insertedRows;
+        try {
+            await client.query('BEGIN');
 
-        // Insert new installments
-        const insertedRows = [];
-        for (let i = 0; i < count; i++) {
-            const amount = i === count - 1 ? lastAmount : amountPer;
-            const dueDate = addMonths(first_due_date, i);
-            const row = await db.query(
-                `INSERT INTO ${schema}.dental_installments
-                 (tenant_id, charge_id, customer_id, installment_number, amount, paid_amount, due_date, status)
-                 VALUES ($1, $2, $3, $4, $5, 0, $6, 'pending')
-                 RETURNING *`,
-                [companyId, charge.id, charge.customer_id, i + 1, amount, dueDate]
+            // Delete existing unpaid installments
+            await client.query(
+                `DELETE FROM ${schema}.dental_installments
+                 WHERE charge_id = $1 AND tenant_id = $2 AND status NOT IN ('paid','cancelled')`,
+                [charge.id, companyId]
             );
-            insertedRows.push(row.rows[0]);
+
+            // Insert new installments
+            insertedRows = [];
+            for (let i = 0; i < count; i++) {
+                const amount = i === count - 1 ? lastAmount : amountPer;
+                const dueDate = addMonths(first_due_date, i);
+                const row = await client.query(
+                    `INSERT INTO ${schema}.dental_installments
+                     (tenant_id, charge_id, customer_id, installment_number, amount, paid_amount, due_date, status)
+                     VALUES ($1, $2, $3, $4, $5, 0, $6, 'pending')
+                     RETURNING *`,
+                    [companyId, charge.id, charge.customer_id, i + 1, amount, dueDate]
+                );
+                insertedRows.push(row.rows[0]);
+            }
+
+            await client.query('COMMIT');
+        } catch (txErr) {
+            await client.query('ROLLBACK');
+            throw txErr;
+        } finally {
+            client.release();
         }
 
         res.status(201).json({ data: insertedRows });
@@ -363,76 +392,95 @@ exports.payInstallment = async (req, res) => {
             return res.status(400).json({ code: 'DENTAL_INVALID_AMOUNT', error: 'amount debe ser mayor a 0' });
         }
 
-        const instResult = await db.query(
-            `SELECT * FROM ${schema}.dental_installments WHERE id = $1 AND tenant_id = $2`,
-            [req.params.id, companyId]
-        );
-        if (instResult.rows.length === 0) {
-            return res.status(404).json({ code: 'DENTAL_INSTALLMENT_NOT_FOUND', error: 'Cuota no encontrada' });
-        }
+        const client = await db.getClient();
+        let paymentResult;
+        try {
+            await client.query('BEGIN');
 
-        const inst = instResult.rows[0];
-        const remaining = parseFloat(inst.amount) - parseFloat(inst.paid_amount);
+            // READ inside transaction with FOR UPDATE to prevent TOCTOU race
+            const instResult = await client.query(
+                `SELECT * FROM ${schema}.dental_installments WHERE id = $1 AND tenant_id = $2 FOR UPDATE`,
+                [req.params.id, companyId]
+            );
+            if (instResult.rows.length === 0) {
+                await client.query('ROLLBACK');
+                return res.status(404).json({ code: 'DENTAL_INSTALLMENT_NOT_FOUND', error: 'Cuota no encontrada' });
+            }
 
-        if (parseFloat(amount) > remaining) {
-            return res.status(400).json({
-                code: 'DENTAL_PAYMENT_EXCEEDS_PENDING',
-                error: `El monto ($${amount}) supera el saldo restante de la cuota ($${remaining})`
-            });
-        }
+            const inst = instResult.rows[0];
+            const remaining = parseFloat(inst.amount) - parseFloat(inst.paid_amount);
 
-        const chargeResult = await db.query(
-            `SELECT * FROM ${schema}.dental_charges WHERE id = $1 AND tenant_id = $2`,
-            [inst.charge_id, companyId]
-        );
-        if (chargeResult.rows.length === 0) {
-            return res.status(404).json({ code: 'DENTAL_CHARGE_NOT_FOUND', error: 'Cobro padre no encontrado' });
-        }
-        const charge = chargeResult.rows[0];
+            if (parseFloat(amount) > remaining) {
+                await client.query('ROLLBACK');
+                return res.status(400).json({
+                    code: 'DENTAL_PAYMENT_EXCEEDS_PENDING',
+                    error: `El monto ($${amount}) supera el saldo restante de la cuota ($${remaining})`
+                });
+            }
 
-        // Insert payment
-        const paymentResult = await db.query(
-            `INSERT INTO ${schema}.dental_payments
-             (tenant_id, customer_id, charge_id, amount, payment_method, notes, payment_date)
-             VALUES ($1, $2, $3, $4, $5, $6, NOW())
-             RETURNING *`,
-            [companyId, inst.customer_id, inst.charge_id, parseFloat(amount), payment_method, notes]
-        );
+            const chargeResult = await client.query(
+                `SELECT * FROM ${schema}.dental_charges WHERE id = $1 AND tenant_id = $2 FOR UPDATE`,
+                [inst.charge_id, companyId]
+            );
+            if (chargeResult.rows.length === 0) {
+                await client.query('ROLLBACK');
+                return res.status(404).json({ code: 'DENTAL_CHARGE_NOT_FOUND', error: 'Cobro padre no encontrado' });
+            }
+            const charge = chargeResult.rows[0];
 
-        // Update installment
-        const newInstPaid      = parseFloat(inst.paid_amount) + parseFloat(amount);
-        const newInstStatus    = newInstPaid >= parseFloat(inst.amount) ? 'paid' : 'partial';
-        await db.query(
-            `UPDATE ${schema}.dental_installments
-             SET paid_amount = $1, status = $2, updated_at = CURRENT_TIMESTAMP
-             WHERE id = $3 AND tenant_id = $4`,
-            [newInstPaid, newInstStatus, inst.id, companyId]
-        );
+            const newInstPaid   = parseFloat(inst.paid_amount) + parseFloat(amount);
+            const newInstStatus = newInstPaid >= parseFloat(inst.amount) ? 'paid' : 'partial';
 
-        // Update parent charge
-        const newChargePaid    = parseFloat(charge.paid_amount) + parseFloat(amount);
-        const newChargePending = parseFloat(charge.pending_amount) - parseFloat(amount);
-        const newChargeStatus  = resolveChargeStatus(charge.total_amount, newChargePending);
-        await db.query(
-            `UPDATE ${schema}.dental_charges
-             SET paid_amount = $1, pending_amount = $2, status = $3, updated_at = CURRENT_TIMESTAMP
-             WHERE id = $4 AND tenant_id = $5`,
-            [newChargePaid, newChargePending, newChargeStatus, charge.id, companyId]
-        );
+            const newChargePaid    = parseFloat(charge.paid_amount) + parseFloat(amount);
+            const newChargePending = parseFloat(charge.pending_amount) - parseFloat(amount);
+            const newChargeStatus  = resolveChargeStatus(charge.total_amount, newChargePending);
 
-        // Sync administrative_status on the linked consultation
-        if (charge.consultation_id) {
             const adminStatus =
                 newChargeStatus === 'paid'           ? 'paid' :
                 newChargeStatus === 'partially_paid' ? 'partially_paid' :
                 'unpaid';
 
-            await db.query(
-                `UPDATE ${schema}.dental_consultations
-                 SET administrative_status = $1, updated_at = NOW()
-                 WHERE id = $2 AND tenant_id = $3`,
-                [adminStatus, charge.consultation_id, companyId]
+            // Insert payment
+            paymentResult = await client.query(
+                `INSERT INTO ${schema}.dental_payments
+                 (tenant_id, customer_id, charge_id, amount, payment_method, notes, payment_date)
+                 VALUES ($1, $2, $3, $4, $5, $6, NOW())
+                 RETURNING *`,
+                [companyId, inst.customer_id, inst.charge_id, parseFloat(amount), payment_method, notes]
             );
+
+            // Update installment
+            await client.query(
+                `UPDATE ${schema}.dental_installments
+                 SET paid_amount = $1, status = $2, updated_at = CURRENT_TIMESTAMP
+                 WHERE id = $3 AND tenant_id = $4`,
+                [newInstPaid, newInstStatus, inst.id, companyId]
+            );
+
+            // Update parent charge
+            await client.query(
+                `UPDATE ${schema}.dental_charges
+                 SET paid_amount = $1, pending_amount = $2, status = $3, updated_at = CURRENT_TIMESTAMP
+                 WHERE id = $4 AND tenant_id = $5`,
+                [newChargePaid, newChargePending, newChargeStatus, charge.id, companyId]
+            );
+
+            // Sync administrative_status on the linked consultation
+            if (charge.consultation_id) {
+                await client.query(
+                    `UPDATE ${schema}.dental_consultations
+                     SET administrative_status = $1, updated_at = NOW()
+                     WHERE id = $2 AND tenant_id = $3`,
+                    [adminStatus, charge.consultation_id, companyId]
+                );
+            }
+
+            await client.query('COMMIT');
+        } catch (txErr) {
+            await client.query('ROLLBACK');
+            throw txErr;
+        } finally {
+            client.release();
         }
 
         res.status(201).json({ data: paymentResult.rows[0] });
@@ -562,47 +610,59 @@ exports.deletePayment = async (req, res) => {
 
         const payment = paymentResult.rows[0];
 
-        await db.query(
-            `DELETE FROM ${schema}.dental_payments WHERE id = $1 AND tenant_id = $2`,
-            [req.params.id, companyId]
-        );
+        const client = await db.getClient();
+        try {
+            await client.query('BEGIN');
 
-        // Recalculate parent charge from actual payment sum (avoids arithmetic drift)
-        const chargeResult = await db.query(
-            `SELECT * FROM ${schema}.dental_charges WHERE id = $1 AND tenant_id = $2`,
-            [payment.charge_id, companyId]
-        );
-        if (chargeResult.rows.length > 0) {
-            const charge = chargeResult.rows[0];
-            const sumResult = await db.query(
-                `SELECT COALESCE(SUM(amount), 0) AS total_paid
-                 FROM ${schema}.dental_payments
-                 WHERE charge_id = $1 AND tenant_id = $2`,
-                [charge.id, companyId]
-            );
-            const newPaidAmount = parseFloat(sumResult.rows[0].total_paid);
-            const newPendingAmount = parseFloat(charge.total_amount) - newPaidAmount;
-            const newStatus = resolveChargeStatus(charge.total_amount, newPendingAmount);
-            await db.query(
-                `UPDATE ${schema}.dental_charges
-                 SET paid_amount = $1, pending_amount = $2, status = $3, updated_at = CURRENT_TIMESTAMP
-                 WHERE id = $4 AND tenant_id = $5`,
-                [newPaidAmount, newPendingAmount, newStatus, charge.id, companyId]
+            await client.query(
+                `DELETE FROM ${schema}.dental_payments WHERE id = $1 AND tenant_id = $2`,
+                [req.params.id, companyId]
             );
 
-            // Sync administrative_status on the linked consultation
-            if (charge.consultation_id) {
-                const adminStatus =
-                    newStatus === 'paid'           ? 'paid' :
-                    newStatus === 'partially_paid' ? 'partially_paid' :
-                    'unpaid';
-                await db.query(
-                    `UPDATE ${schema}.dental_consultations
-                     SET administrative_status = $1, updated_at = NOW()
-                     WHERE id = $2 AND tenant_id = $3`,
-                    [adminStatus, charge.consultation_id, companyId]
+            // Recalculate parent charge from actual payment sum (avoids arithmetic drift)
+            const chargeResult = await client.query(
+                `SELECT * FROM ${schema}.dental_charges WHERE id = $1 AND tenant_id = $2`,
+                [payment.charge_id, companyId]
+            );
+            if (chargeResult.rows.length > 0) {
+                const charge = chargeResult.rows[0];
+                const sumResult = await client.query(
+                    `SELECT COALESCE(SUM(amount), 0) AS total_paid
+                     FROM ${schema}.dental_payments
+                     WHERE charge_id = $1 AND tenant_id = $2`,
+                    [charge.id, companyId]
                 );
+                const newPaidAmount = parseFloat(sumResult.rows[0].total_paid);
+                const newPendingAmount = parseFloat(charge.total_amount) - newPaidAmount;
+                const newStatus = resolveChargeStatus(charge.total_amount, newPendingAmount);
+                await client.query(
+                    `UPDATE ${schema}.dental_charges
+                     SET paid_amount = $1, pending_amount = $2, status = $3, updated_at = CURRENT_TIMESTAMP
+                     WHERE id = $4 AND tenant_id = $5`,
+                    [newPaidAmount, newPendingAmount, newStatus, charge.id, companyId]
+                );
+
+                // Sync administrative_status on the linked consultation
+                if (charge.consultation_id) {
+                    const adminStatus =
+                        newStatus === 'paid'           ? 'paid' :
+                        newStatus === 'partially_paid' ? 'partially_paid' :
+                        'unpaid';
+                    await client.query(
+                        `UPDATE ${schema}.dental_consultations
+                         SET administrative_status = $1, updated_at = NOW()
+                         WHERE id = $2 AND tenant_id = $3`,
+                        [adminStatus, charge.consultation_id, companyId]
+                    );
+                }
             }
+
+            await client.query('COMMIT');
+        } catch (txErr) {
+            await client.query('ROLLBACK');
+            throw txErr;
+        } finally {
+            client.release();
         }
 
         res.json({ success: true });

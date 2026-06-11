@@ -1,0 +1,151 @@
+﻿{
+  "nodes": [
+    {
+      "id": "logo_sf_nexora_logo",
+      "label": "Nexora Logo",
+      "file_type": "image",
+      "source_file": "Plan/Logo/Logo_SF.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "logo_sf_metallic_letter_n",
+      "label": "Metallic Letter N",
+      "file_type": "image",
+      "source_file": "Plan/Logo/Logo_SF.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "logo_sf_circular_gradient_ring",
+      "label": "Circular Gradient Ring",
+      "file_type": "image",
+      "source_file": "Plan/Logo/Logo_SF.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "logo_sf_purple_gold_palette",
+      "label": "Purple and Gold Palette",
+      "file_type": "image",
+      "source_file": "Plan/Logo/Logo_SF.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "logo_sf_metallic_embossed_style",
+      "label": "Metallic Embossed Style",
+      "file_type": "image",
+      "source_file": "Plan/Logo/Logo_SF.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "logo_sf_glowing_background",
+      "label": "Soft Glowing Background",
+      "file_type": "image",
+      "source_file": "Plan/Logo/Logo_SF.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "logo_sf_nexora_logo",
+      "target": "logo_sf_metallic_letter_n",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/Logo/Logo_SF.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "logo_sf_nexora_logo",
+      "target": "logo_sf_circular_gradient_ring",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/Logo/Logo_SF.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "logo_sf_circular_gradient_ring",
+      "target": "logo_sf_purple_gold_palette",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/Logo/Logo_SF.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "logo_sf_metallic_letter_n",
+      "target": "logo_sf_metallic_embossed_style",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/Logo/Logo_SF.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "logo_sf_circular_gradient_ring",
+      "target": "logo_sf_metallic_embossed_style",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/Logo/Logo_SF.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "logo_sf_glowing_background",
+      "target": "logo_sf_purple_gold_palette",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/Logo/Logo_SF.png",
+      "source_location": null,
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": [
+    {
+      "id": "logo_sf_brand_mark_composition",
+      "label": "Brand Mark Composition",
+      "nodes": [
+        "logo_sf_metallic_letter_n",
+        "logo_sf_circular_gradient_ring",
+        "logo_sf_purple_gold_palette",
+        "logo_sf_metallic_embossed_style",
+        "logo_sf_glowing_background"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/Logo/Logo_SF.png"
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

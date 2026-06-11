@@ -12,9 +12,9 @@ function mapAppointment(row) {
         patient_name,
         patient_phone,
         patient_email,
-        service_name,
-        service_price,
-        service_duration,
+        treatment_name,
+        treatment_price,
+        treatment_duration,
         ...appointment
     } = row;
 
@@ -28,11 +28,11 @@ function mapAppointment(row) {
             phone: patient_phone || null,
             email: patient_email || null,
         } : null,
-        service: row.service_id ? {
-            id: row.service_id,
-            name: service_name || null,
-            final_price: service_price ?? null,
-            estimated_duration_minutes: service_duration ?? null,
+        service: row.treatment_id ? {
+            id: row.treatment_id,
+            name: treatment_name || null,
+            final_price: treatment_price ?? null,
+            estimated_duration_minutes: treatment_duration ?? null,
         } : null,
     };
 }
@@ -44,12 +44,12 @@ function appointmentSelect(schema) {
                    c.first_name || ' ' || c.last_name AS patient_name,
                    c.phone AS patient_phone,
                    c.email AS patient_email,
-                   ds.name AS service_name,
-                   ds.final_price AS service_price,
-                   ds.estimated_duration_minutes AS service_duration
+                   dt.name AS treatment_name,
+                   dt.final_price AS treatment_price,
+                   dt.estimated_duration_minutes AS treatment_duration
             FROM ${schema}.dental_appointments da
             LEFT JOIN ${schema}.customers c ON c.id = da.customer_id
-            LEFT JOIN ${schema}.dental_services ds ON ds.id = da.service_id`;
+            LEFT JOIN ${schema}.dental_treatments dt ON dt.id = da.treatment_id`;
 }
 
 async function getAppointmentById(schema, companyId, id, client = db) {
@@ -167,7 +167,7 @@ exports.create = async (req, res) => {
     try {
         if (req.user?.read_only) return res.status(403).json({ error: 'Operación no permitida en modo solo lectura' });
         const { schema, companyId } = await resolveSchema(req);
-        const { customer_id, service_id = null, scheduled_start, scheduled_end, reason = null, notes = null, status = 'scheduled' } = req.body;
+        const { customer_id, treatment_id = null, scheduled_start, scheduled_end, reason = null, notes = null, status = 'scheduled' } = req.body;
 
         if (!customer_id) return res.status(400).json({ error: 'customer_id es requerido' });
         if (!scheduled_start) return res.status(400).json({ error: 'scheduled_start es requerido' });
@@ -177,10 +177,10 @@ exports.create = async (req, res) => {
 
         const result = await db.query(
             `INSERT INTO ${schema}.dental_appointments
-             (tenant_id, customer_id, service_id, scheduled_start, scheduled_end, reason, notes, status)
+             (tenant_id, customer_id, treatment_id, scheduled_start, scheduled_end, reason, notes, status)
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
              RETURNING id`,
-            [companyId, customer_id, service_id || null, scheduled_start, scheduled_end, reason, notes, status]
+            [companyId, customer_id, treatment_id || null, scheduled_start, scheduled_end, reason, notes, status]
         );
         const appointment = await getAppointmentById(schema, companyId, result.rows[0].id);
         notifyCompanyUsers(companyId, { type: 'info', title: 'Nueva cita dental', body: `${appointmentLabel(appointment)} tiene una cita programada.`, actionUrl: actionUrl(appointment.id) });
@@ -207,7 +207,7 @@ exports.update = async (req, res) => {
     try {
         if (req.user?.read_only) return res.status(403).json({ error: 'Operación no permitida en modo solo lectura' });
         const { schema, companyId } = await resolveSchema(req);
-        const { service_id, scheduled_start, scheduled_end, reason, notes, status } = req.body;
+        const { treatment_id, scheduled_start, scheduled_end, reason, notes, status } = req.body;
         const existing = await getAppointmentById(schema, companyId, req.params.id);
         if (!existing) return res.status(404).json({ code: 'DENTAL_APPOINTMENT_NOT_FOUND', error: 'Cita no encontrada' });
 
@@ -218,11 +218,11 @@ exports.update = async (req, res) => {
 
         const result = await db.query(
             `UPDATE ${schema}.dental_appointments
-             SET service_id = COALESCE($1, service_id), scheduled_start = COALESCE($2, scheduled_start), scheduled_end = COALESCE($3, scheduled_end),
+             SET treatment_id = COALESCE($1, treatment_id), scheduled_start = COALESCE($2, scheduled_start), scheduled_end = COALESCE($3, scheduled_end),
                  reason = COALESCE($4, reason), notes = COALESCE($5, notes), status = COALESCE($6, status), updated_at = CURRENT_TIMESTAMP
              WHERE id = $7 AND tenant_id = $8
              RETURNING id`,
-            [service_id !== undefined && service_id !== '' ? service_id : null, scheduled_start || null, scheduled_end || null, reason !== undefined ? reason : null, notes !== undefined ? notes : null, status || null, req.params.id, companyId]
+            [treatment_id !== undefined && treatment_id !== '' ? treatment_id : null, scheduled_start || null, scheduled_end || null, reason !== undefined ? reason : null, notes !== undefined ? notes : null, status || null, req.params.id, companyId]
         );
         const appointment = await getAppointmentById(schema, companyId, result.rows[0].id);
         const scheduleChanged = scheduled_start && scheduled_start !== existing.scheduled_start;
@@ -287,30 +287,22 @@ exports.convertToConsultation = async (req, res) => {
 
         const consResult = await client.query(
             `INSERT INTO ${schema}.dental_consultations
-             (tenant_id, customer_id, appointment_id, service_id, reason, clinical_notes, status, consultation_date, created_by)
-             VALUES ($1, $2, $3, $4, $5, $6, 'in_progress', NOW(), $7)
+             (tenant_id, customer_id, appointment_id, treatment_id, reason, clinical_notes, status, consultation_date, created_by)
+             VALUES ($1, $2, $3, $4, $5, $6, 'en_evaluacion', NOW(), $7)
              RETURNING *`,
-            [companyId, a.customer_id, a.id, a.service_id, reason || a.reason, notes || a.notes, req.user?.id || null]
+            [companyId, a.customer_id, a.id, a.treatment_id || null, reason || a.reason, notes || a.notes, req.user?.id || null]
         );
         const consultation = consResult.rows[0];
 
-        if (a.service_id) {
-            const svcResult = await client.query(`SELECT name, final_price FROM ${schema}.dental_services WHERE id = $1 AND tenant_id = $2`, [a.service_id, companyId]);
-            if (svcResult.rows.length > 0) {
-                const svc = svcResult.rows[0];
+        if (a.treatment_id) {
+            const trtResult = await client.query(`SELECT name, final_price FROM ${schema}.dental_treatments WHERE id = $1 AND tenant_id = $2`, [a.treatment_id, companyId]);
+            if (trtResult.rows.length > 0) {
+                const trt = trtResult.rows[0];
                 await client.query(
-                    `INSERT INTO ${schema}.dental_consultation_services
-                     (tenant_id, consultation_id, service_id, service_name_snapshot, unit_price, quantity, subtotal, status, created_by)
+                    `INSERT INTO ${schema}.dental_consultation_treatments
+                     (tenant_id, consultation_id, treatment_id, treatment_name_snapshot, unit_price, quantity, subtotal, status, created_by)
                      VALUES ($1, $2, $3, $4, $5, 1, $5, 'active', $6)`,
-                    [companyId, consultation.id, a.service_id, svc.name, parseFloat(svc.final_price) || 0, req.user?.id || null]
-                );
-            }
-            const svcTreatments = await client.query(`SELECT treatment_id, quantity, notes FROM ${schema}.dental_service_treatments WHERE service_id = $1 AND tenant_id = $2`, [a.service_id, companyId]);
-            for (const t of svcTreatments.rows) {
-                await client.query(
-                    `INSERT INTO ${schema}.dental_consultation_treatments (tenant_id, consultation_id, treatment_id, service_id, quantity, notes)
-                     VALUES ($1, $2, $3, $4, $5, $6)`,
-                    [companyId, consultation.id, t.treatment_id, a.service_id, t.quantity, t.notes || null]
+                    [companyId, consultation.id, a.treatment_id, trt.name, parseFloat(trt.final_price) || 0, req.user?.id || null]
                 );
             }
         }

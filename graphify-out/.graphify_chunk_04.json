@@ -1,0 +1,153 @@
+{
+  "nodes": [
+    {
+      "id": "file:FrontEnd/Portal/src/assets/logo_icon3.png",
+      "label": "logo_icon3.png",
+      "type": "file",
+      "file_type": "image",
+      "path": "FrontEnd/Portal/src/assets/logo_icon3.png",
+      "image_dimensions": {
+        "width": 700,
+        "height": 675
+      },
+      "image_mode": "RGBA"
+    },
+    {
+      "id": "image:logo_icon3",
+      "label": "Nexora icon logo",
+      "type": "brand_asset",
+      "file_type": "image",
+      "description": "A centered metallic silver uppercase N inside a thick circular gradient ring on a transparent background."
+    },
+    {
+      "id": "visual:metallic_n_monogram",
+      "label": "Metallic N monogram",
+      "type": "visual_component",
+      "file_type": "image",
+      "description": "Large beveled uppercase N with silver metallic gradient, central placement, and subtle shadow/highlight edges."
+    },
+    {
+      "id": "visual:circular_gradient_ring",
+      "label": "Circular purple-gold ring",
+      "type": "visual_component",
+      "file_type": "image",
+      "description": "Thick circular ring surrounding the monogram, mostly purple with gold/yellow gradient around the lower-right arc."
+    },
+    {
+      "id": "visual:transparent_background",
+      "label": "Transparent background",
+      "type": "visual_property",
+      "file_type": "image",
+      "description": "RGBA image uses transparent/empty background outside the logo mark."
+    },
+    {
+      "id": "color:purple_gradient",
+      "label": "Purple gradient",
+      "type": "color_palette",
+      "file_type": "image"
+    },
+    {
+      "id": "color:gold_gradient",
+      "label": "Gold gradient",
+      "type": "color_palette",
+      "file_type": "image"
+    },
+    {
+      "id": "color:silver_metallic",
+      "label": "Silver metallic gradient",
+      "type": "color_palette",
+      "file_type": "image"
+    },
+    {
+      "id": "layout:centered_logo_composition",
+      "label": "Centered logo composition",
+      "type": "layout",
+      "file_type": "image",
+      "description": "The monogram is visually centered inside the circular ring, forming a compact app/logo icon."
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:FrontEnd/Portal/src/assets/logo_icon3.png",
+      "target": "image:logo_icon3",
+      "type": "CONTAINS_IMAGE_ASSET",
+      "evidence": "The PNG file displays the full icon logo.",
+      "confidence_score": 0.99
+    },
+    {
+      "source": "image:logo_icon3",
+      "target": "visual:metallic_n_monogram",
+      "type": "COMPOSED_OF",
+      "evidence": "The center of the icon is a prominent uppercase N.",
+      "confidence_score": 0.98
+    },
+    {
+      "source": "image:logo_icon3",
+      "target": "visual:circular_gradient_ring",
+      "type": "COMPOSED_OF",
+      "evidence": "A thick circular ring surrounds the monogram.",
+      "confidence_score": 0.98
+    },
+    {
+      "source": "image:logo_icon3",
+      "target": "visual:transparent_background",
+      "type": "HAS_PROPERTY",
+      "evidence": "The RGBA image has transparent empty space outside the mark.",
+      "confidence_score": 0.95
+    },
+    {
+      "source": "visual:circular_gradient_ring",
+      "target": "color:purple_gradient",
+      "type": "USES_COLOR",
+      "evidence": "Most of the ring appears purple/violet.",
+      "confidence_score": 0.97
+    },
+    {
+      "source": "visual:circular_gradient_ring",
+      "target": "color:gold_gradient",
+      "type": "USES_COLOR",
+      "evidence": "The lower-right portion of the ring transitions into gold/yellow.",
+      "confidence_score": 0.96
+    },
+    {
+      "source": "visual:metallic_n_monogram",
+      "target": "color:silver_metallic",
+      "type": "USES_COLOR",
+      "evidence": "The N uses silver gradients and beveled highlights.",
+      "confidence_score": 0.97
+    },
+    {
+      "source": "layout:centered_logo_composition",
+      "target": "visual:metallic_n_monogram",
+      "type": "POSITIONS_CENTER",
+      "evidence": "The N is centered within the surrounding ring.",
+      "confidence_score": 0.94
+    },
+    {
+      "source": "layout:centered_logo_composition",
+      "target": "visual:circular_gradient_ring",
+      "type": "ARRANGES_AROUND",
+      "evidence": "The ring wraps around the central N monogram.",
+      "confidence_score": 0.95
+    }
+  ],
+  "hyperedges": [
+    {
+      "id": "hyperedge:logo_icon3_brand_mark_composition",
+      "type": "BRAND_MARK_COMPOSITION",
+      "nodes": [
+        "image:logo_icon3",
+        "visual:metallic_n_monogram",
+        "visual:circular_gradient_ring",
+        "layout:centered_logo_composition",
+        "color:purple_gradient",
+        "color:gold_gradient",
+        "color:silver_metallic"
+      ],
+      "description": "The brand mark combines a metallic N monogram, a purple-to-gold circular ring, and centered icon composition.",
+      "confidence_score": 0.95
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

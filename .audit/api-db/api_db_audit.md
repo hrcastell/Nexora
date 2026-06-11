@@ -1,0 +1,350 @@
+# Nexora API ? DB Audit (static)
+
+Endpoints catalogued: 279
+Controllers catalogued: 43
+Declared tables/sequences: 83
+
+## Declared tables with no controller reference
+- `<tenant>.dental_notifications` ? declared at Database/04_migrations/20_dental_core_module.sql:275, BackEnd/templates/tenant_schema.sql:919
+- `<tenant>.dental_service_treatments` ? declared at Database/04_migrations/20_dental_core_module.sql:126
+- `<tenant>.dental_services` ? declared at Database/04_migrations/20_dental_core_module.sql:106
+- `<tenant>.modules` ? declared at BackEnd/templates/tenant_schema.sql:68
+- `<tenant>.permissions` ? declared at BackEnd/templates/tenant_schema.sql:32
+- `<tenant>.profile_permissions` ? declared at BackEnd/templates/tenant_schema.sql:126
+- `<tenant>.profile_transaction_permissions` ? declared at BackEnd/templates/tenant_schema.sql:100
+- `<tenant>.profiles` ? declared at BackEnd/templates/tenant_schema.sql:85
+- `<tenant>.role_permissions` ? declared at BackEnd/templates/tenant_schema.sql:41
+- `<tenant>.roles` ? declared at BackEnd/templates/tenant_schema.sql:23
+- `<tenant>.user_profiles` ? declared at BackEnd/templates/tenant_schema.sql:48
+- `<tenant>.user_tenant_profiles` ? declared at BackEnd/templates/tenant_schema.sql:141
+- `IF` ? declared at Database/04_migrations/02_users_profiles_modules_commercial.sql:6, Database/04_migrations/06_profile_transaction_permissions.sql:25, Database/04_migrations/22_dental_consultation_photos.sql:15
+- `hernancius.dental_medical_history` ? declared at Database/04_migrations/23_dental_medical_history.sql:6
+- `hernancius.modules` ? declared at Database/04_migrations/02_users_profiles_modules_commercial.sql:125
+- `hernancius.permissions` ? declared at Database/04_migrations/01_prod_missing_tables.sql:51
+- `hernancius.profile_permissions` ? declared at Database/04_migrations/02_users_profiles_modules_commercial.sql:158
+- `hernancius.profiles` ? declared at Database/04_migrations/02_users_profiles_modules_commercial.sql:144
+- `hernancius.role_permissions` ? declared at Database/04_migrations/01_prod_missing_tables.sql:59
+- `hernancius.roles` ? declared at Database/04_migrations/01_prod_missing_tables.sql:43
+- `hernancius.user_profiles` ? declared at Database/04_migrations/01_prod_missing_tables.sql:65
+- `hernancius.user_tenant_profiles` ? declared at Database/04_migrations/02_users_profiles_modules_commercial.sql:176
+- `public.company_module_transactions` ? declared at Database/04_migrations/05_module_governance.sql:84
+
+## Controller table refs not found in migrations/template
+- `<tenant>.${type}` ? used by 4 endpoint/controller refs
+- `<tenant>.dental_medical_doc_number_seq` ? used by 1 endpoint/controller refs
+- `<tenant>.dental_quote_number_seq` ? used by 1 endpoint/controller refs
+- `SET` ? used by 11 endpoint/controller refs
+- `a` ? used by 1 endpoint/controller refs
+- `actual` ? used by 1 endpoint/controller refs
+- `agreement` ? used by 2 endpoint/controller refs
+- `catalog` ? used by 2 endpoint/controller refs
+- `charge` ? used by 1 endpoint/controller refs
+- `company` ? used by 4 endpoint/controller refs
+- `consultation` ? used by 1 endpoint/controller refs
+- `created_at` ? used by 2 endpoint/controller refs
+- `customer` ? used by 1 endpoint/controller refs
+- `da.scheduled_start` ? used by 1 endpoint/controller refs
+- `disk` ? used by 1 endpoint/controller refs
+- `en_tratamiento` ? used by 1 endpoint/controller refs
+- `error` ? used by 21 endpoint/controller refs
+- `frontend` ? used by 1 endpoint/controller refs
+- `installment` ? used by 1 endpoint/controller refs
+- `installments` ? used by 1 endpoint/controller refs
+- `invoice` ? used by 1 endpoint/controller refs
+- `last_login_at` ? used by 1 endpoint/controller refs
+- `linked` ? used by 1 endpoint/controller refs
+- `middleware` ? used by 1 endpoint/controller refs
+- `para` ? used by 1 endpoint/controller refs
+- `parent` ? used by 1 endpoint/controller refs
+- `plan` ? used by 1 endpoint/controller refs
+- `profile` ? used by 1 endpoint/controller refs
+- `public.companies` ? used by 23 endpoint/controller refs
+- `public.company_users` ? used by 11 endpoint/controller refs
+- `public.solicitudes` ? used by 4 endpoint/controller refs
+- `public.subscriptions` ? used by 6 endpoint/controller refs
+- `public.users` ? used by 16 endpoint/controller refs
+- `quote` ? used by 1 endpoint/controller refs
+- `resolvedCurrentInstallment` ? used by 1 endpoint/controller refs
+- `selected` ? used by 1 endpoint/controller refs
+- `solicitud` ? used by 1 endpoint/controller refs
+- `subscription` ? used by 3 endpoint/controller refs
+- `suspension` ? used by 1 endpoint/controller refs
+- `tenant` ? used by 2 endpoint/controller refs
+- `the` ? used by 3 endpoint/controller refs
+- `to` ? used by 2 endpoint/controller refs
+- `treatment` ? used by 1 endpoint/controller refs
+- `website` ? used by 1 endpoint/controller refs
+
+## Used tables without write API detected
+- `<tenant>.config_company` ? read-only refs: 3
+- `<tenant>.vehicle_body_types` ? read-only refs: 1
+- `<tenant>.vehicle_brands` ? read-only refs: 8
+- `<tenant>.vehicle_colors` ? read-only refs: 2
+- `<tenant>.vehicle_fuel_types` ? read-only refs: 1
+- `<tenant>.vehicle_models` ? read-only refs: 8
+- `<tenant>.vehicle_transmissions` ? read-only refs: 1
+- `<tenant>.vehicle_types` ? read-only refs: 3
+- `config_company` ? read-only refs: 1
+- `da.scheduled_start` ? read-only refs: 1
+
+## Endpoint samples
+- `POST /login` ? `authController.js.login` | ops=SELECT,UPDATE | tables=last_login_at, public.companies, public.company_users, public.users
+- `POST /select-company` ? `authController.js.selectCompany` | ops=SELECT,UPDATE | tables=middleware, public.companies, public.company_users, public.invoices, public.payment_agreements, public.users
+- `GET /me` ? `authController.js.getMe` | ops=SELECT | tables=public.users
+- `GET /visual-config` ? `authController.js.getVisualConfig` | ops=SELECT | tables=public.users
+- `PUT /visual-config` ? `authController.js.updateVisualConfig` | ops=UPDATE | tables=public.users
+- `GET /modules` ? `catalogController.js.getCatalogModules` | ops=SELECT | tables=public.module_catalog
+- `GET /modules/:id` ? `catalogController.js.getCatalogModuleById` | ops=SELECT | tables=public.module_catalog, public.module_transactions
+- `PUT /modules/:id` ? `catalogController.js.updateCatalogModule` | ops=SELECT,UPDATE | tables=catalog, public.module_catalog
+- `GET /transactions` ? `catalogController.js.getCatalogTransactions` | ops=SELECT | tables=public.module_catalog, public.module_transactions
+- `PUT /transactions/:id` ? `catalogController.js.updateCatalogTransaction` | ops=UPDATE | tables=catalog, public.module_transactions
+- `PATCH /commercial-status` ? `commercialController.js.changeCommercialStatus` | ops=SELECT,UPDATE | tables=public.companies, suspension
+- `GET /agreements` ? `commercialController.js.getAgreements` | ops=SELECT | tables=public.payment_agreements, public.users
+- `POST /agreements` ? `commercialController.js.createAgreement` | ops=INSERT INTO,SELECT,UPDATE | tables=public.companies, public.payment_agreements, public.subscription_plans
+- `PUT /agreements/:aId` ? `commercialController.js.updateAgreement` | ops=UPDATE | tables=agreement, public.payment_agreements
+- `POST /agreements/:aId/generate-invoice` ? `commercialController.js.generateInvoiceFromAgreement` | ops=INSERT INTO,SELECT,UPDATE | tables=agreement, company, public.companies, public.invoices, public.payment_agreements
+- `GET /invoices` ? `commercialController.js.getInvoices` | ops=SELECT | tables=public.invoices, public.payment_agreements, public.users
+- `POST /invoices` ? `commercialController.js.createInvoice` | ops=INSERT INTO,SELECT,UPDATE | tables=public.companies, public.invoices
+- `PUT /invoices/:iId` ? `commercialController.js.updateInvoiceStatus` | ops=UPDATE | tables=invoice, public.invoices
+- `POST /invoices/:iId/payment` ? `commercialController.js.registerPayment` | ops=INSERT INTO,SELECT,UPDATE | tables=public.companies, public.invoices, public.payments_history
+- `GET /payments` ? `commercialController.js.getPaymentHistory` | ops=SELECT | tables=public.invoices, public.payments_history, public.users
+- `GET /config` ? `companyConfigController.js.getCompanyConfig` | ops=SELECT,UPDATE | tables=public.companies, tenant
+- `PUT /config` ? `companyConfigController.js.updateCompanyConfig` | ops=INSERT INTO,SELECT,UPDATE | tables=company, public.companies, public.company_users, tenant
+- `GET /roles` ? `companyConfigController.js.getCompanyRoles` | ops=SELECT | tables=public.companies
+- `GET /` ? `companyModulesController.js.getCompanyModules` | ops=SELECT | tables=public.company_modules, public.module_catalog
+- `PUT /:moduleCode` ? `companyModulesController.js.upsertCompanyModule` | ops=INSERT INTO,SELECT,UPDATE | tables=SET, public.company_modules, public.module_catalog
+- `GET /` ? `profilesController.js.getProfilesByCompany` | ops=SELECT | tables=-
+- `POST /` ? `profilesController.js.createProfileByCompany` | ops=INSERT INTO | tables=-
+- `PUT /:profileId` ? `profilesController.js.updateProfileByCompany` | ops=SELECT,UPDATE | tables=-
+- `DELETE /:profileId` ? `profilesController.js.deleteProfileByCompany` | ops=DELETE FROM,SELECT | tables=-
+- `GET /:profileId/permissions-full` ? `profilesController.js.getProfilePermissionsFullByCompany` | ops=SELECT | tables=public.company_modules, public.module_catalog, public.module_transactions
+- `PUT /:profileId/permissions-full` ? `profilesController.js.updateProfilePermissionsFullByCompany` | ops=INSERT INTO,SELECT,UPDATE | tables=SET
+- `GET /` ? `companyController.js.getAllCompanies` | ops=SELECT | tables=public.companies, public.company_users
+- `POST /` ? `companyController.js.createCompany` | ops=INSERT INTO,SELECT,UPDATE | tables=SET, plan, public.companies, public.company_modules, public.company_users, public.users, selected
+- `GET /:id` ? `companyController.js.getCompanyById` | ops=SELECT | tables=public.companies, public.company_users
+- `PUT /:id` ? `companyController.js.updateCompany` | ops=SELECT,UPDATE | tables=company, public.companies
+- `DELETE /:id` ? `companyController.js.deleteCompany` | ops=DELETE FROM,SELECT | tables=public.companies, public.company_users, public.invoices, public.payment_agreements, public.payments_history, public.subscriptions
+- `GET /:companyId/profiles` ? `profilesController.js.getProfilesByCompany` | ops=SELECT | tables=-
+- `POST /:companyId/profiles` ? `profilesController.js.createProfileByCompany` | ops=INSERT INTO | tables=-
+- `PUT /:companyId/profiles/:profileId` ? `profilesController.js.updateProfileByCompany` | ops=SELECT,UPDATE | tables=-
+- `DELETE /:companyId/profiles/:profileId` ? `profilesController.js.deleteProfileByCompany` | ops=DELETE FROM,SELECT | tables=-
+- `GET /:companyId/profiles/:profileId/permissions-full` ? `profilesController.js.getProfilePermissionsFullByCompany` | ops=SELECT | tables=public.company_modules, public.module_catalog, public.module_transactions
+- `PUT /:companyId/profiles/:profileId/permissions-full` ? `profilesController.js.updateProfilePermissionsFullByCompany` | ops=INSERT INTO,SELECT,UPDATE | tables=SET
+- `GET /dashboard` ? `dashboardController.js.getSummary` | ops=SELECT | tables=<tenant>.customers, <tenant>.dental_appointments, <tenant>.dental_charges, <tenant>.dental_consultations, <tenant>.dental_installments, <tenant>.dental_payments
+- `GET /dashboard/today` ? `dashboardController.js.getToday` | ops=SELECT | tables=<tenant>.customers, <tenant>.dental_appointments
+- `GET /dashboard/finance` ? `dashboardController.js.getFinance` | ops=SELECT | tables=<tenant>.dental_charges, <tenant>.dental_payments
+- `GET /company-config` ? `dashboardController.js.getCompanyConfig` | ops=SELECT | tables=<tenant>.config_company, config_company, public.companies
+- `GET /patients` ? `patientsController.js.list` | ops=SELECT | tables=<tenant>.customers, <tenant>.dental_patient_profiles
+- `POST /patients` ? `patientsController.js.create` | ops=INSERT INTO,SELECT,UPDATE | tables=<tenant>.customers, <tenant>.dental_patient_profiles, SET
+- `GET /patients/:id` ? `patientsController.js.getById` | ops=SELECT | tables=<tenant>.customers, <tenant>.dental_patient_profiles
+- `PATCH /patients/:id` ? `patientsController.js.update` | ops=INSERT INTO,SELECT,UPDATE | tables=<tenant>.customers, <tenant>.dental_patient_profiles, SET, customer, error
+- `GET /patients/:id/clinical-history` ? `patientsController.js.getClinicalHistory` | ops=SELECT | tables=<tenant>.dental_clinical_history_entries
+- `GET /patients/:id/medical-history` ? `patientsController.js.getMedicalHistory` | ops=SELECT | tables=<tenant>.dental_medical_history
+- `POST /patients/:id/medical-history` ? `patientsController.js.createMedicalHistory` | ops=INSERT INTO,SELECT | tables=<tenant>.customers, <tenant>.dental_medical_history
+- `POST /patients/:id/photo` ? `patientsController.js.patientPhotoUpload` | ops=- | tables=-
+- `POST /patients/:id/photo` ? `patientsController.js.uploadPhoto` | ops=UPDATE | tables=<tenant>.dental_patient_profiles
+- `DELETE /patients/:id/photo` ? `patientsController.js.deletePhoto` | ops=SELECT,UPDATE | tables=<tenant>.dental_patient_profiles, disk
+- `GET /patients/:id/consultations` ? `patientsController.js.getConsultations` | ops=SELECT | tables=<tenant>.dental_consultations, <tenant>.dental_treatments
+- `GET /patients/:id/payments` ? `patientsController.js.getPayments` | ops=SELECT | tables=<tenant>.dental_charges, <tenant>.dental_payments
+- `GET /patients/:id/debt` ? `patientsController.js.getDebt` | ops=SELECT | tables=<tenant>.dental_charges
+- `GET /treatments` ? `treatmentsController.js.list` | ops=SELECT | tables=<tenant>.dental_treatments
+- `POST /treatments` ? `treatmentsController.js.create` | ops=INSERT INTO | tables=<tenant>.dental_treatments
+- `GET /treatments/:id` ? `treatmentsController.js.getById` | ops=SELECT | tables=<tenant>.dental_treatments
+- `PATCH /treatments/:id` ? `treatmentsController.js.update` | ops=SELECT,UPDATE | tables=<tenant>.dental_treatments, error
+- `DELETE /treatments/:id` ? `treatmentsController.js.remove` | ops=DELETE FROM,SELECT | tables=<tenant>.dental_charges, <tenant>.dental_consultations, <tenant>.dental_treatments
+- `GET /appointments` ? `appointmentsController.js.list` | ops=SELECT | tables=<tenant>.dental_appointments
+- `GET /appointments/day` ? `appointmentsController.js.getByDay` | ops=- | tables=-
+- `GET /appointments/month` ? `appointmentsController.js.getByMonth` | ops=- | tables=da.scheduled_start
+- `POST /appointments` ? `appointmentsController.js.create` | ops=INSERT INTO | tables=<tenant>.dental_appointments
+- `GET /appointments/:id` ? `appointmentsController.js.getById` | ops=- | tables=-
+- `PATCH /appointments/:id` ? `appointmentsController.js.update` | ops=UPDATE | tables=<tenant>.dental_appointments, error
+- `POST /appointments/:id/confirm` ? `appointmentsController.js.confirm` | ops=- | tables=-
+- `POST /appointments/:id/cancel` ? `appointmentsController.js.cancel` | ops=SELECT,UPDATE | tables=<tenant>.dental_appointments
+- `POST /appointments/:id/no-show` ? `appointmentsController.js.noShow` | ops=- | tables=-
+- `POST /appointments/:id/convert-to-consultation` ? `appointmentsController.js.convertToConsultation` | ops=INSERT INTO,SELECT,UPDATE | tables=<tenant>.dental_appointments, <tenant>.dental_consultation_treatments, <tenant>.dental_consultations, <tenant>.dental_treatments
+- `GET /consultations` ? `consultationsController.js.list` | ops=SELECT | tables=<tenant>.customers, <tenant>.dental_consultations, <tenant>.dental_treatments
+- `POST /consultations` ? `consultationsController.js.create` | ops=INSERT INTO,SELECT | tables=<tenant>.dental_consultation_treatments, <tenant>.dental_consultations, <tenant>.dental_treatments, frontend
+- `GET /consultations/:id` ? `consultationsController.js.getById` | ops=SELECT | tables=<tenant>.customers, <tenant>.dental_charges, <tenant>.dental_consultation_sessions, <tenant>.dental_consultation_treatments, <tenant>.dental_consultations, <tenant>.dental_treatments
+- `PATCH /consultations/:id` ? `consultationsController.js.update` | ops=INSERT INTO,SELECT,UPDATE | tables=<tenant>.dental_consultation_treatments, <tenant>.dental_consultations, <tenant>.dental_treatments, error, treatment
+- `POST /consultations/:id/clinical-history` ? `consultationsController.js.addClinicalHistory` | ops=INSERT INTO,SELECT | tables=<tenant>.dental_clinical_history_entries, <tenant>.dental_consultations
+- `POST /consultations/:id/complete` ? `consultationsController.js.complete` | ops=INSERT INTO,SELECT,UPDATE | tables=<tenant>.dental_charges, <tenant>.dental_clinical_history_entries, <tenant>.dental_consultation_treatments, <tenant>.dental_consultations, consultation, en_tratamiento
+- `POST /consultations/:id/cancel` ? `consultationsController.js.cancel` | ops=SELECT,UPDATE | tables=<tenant>.dental_consultations
+- `POST /consultations/:id/create-charge` ? `consultationsController.js.createCharge` | ops=INSERT INTO,SELECT | tables=<tenant>.dental_charges, <tenant>.dental_consultations
+- `GET /consultations/:id/photos` ? `consultationsController.js.listPhotos` | ops=SELECT | tables=<tenant>.dental_consultation_photos, <tenant>.dental_consultations
+- `POST /consultations/:id/photos` ? `consultationsController.js.photoUpload` | ops=- | tables=-
+- `POST /consultations/:id/photos` ? `consultationsController.js.uploadPhoto` | ops=INSERT INTO,SELECT | tables=<tenant>.dental_consultation_photos, <tenant>.dental_consultations
+- `DELETE /consultations/:id/photos/:photoId` ? `consultationsController.js.deletePhoto` | ops=DELETE FROM,SELECT | tables=<tenant>.dental_consultation_photos, <tenant>.dental_consultations
+- `GET /consultations/:id/treatments` ? `consultationTreatmentsController.js.list` | ops=SELECT | tables=<tenant>.dental_consultation_treatments, <tenant>.dental_treatments
+- `GET /consultations/:id/treatments/total` ? `consultationTreatmentsController.js.getTotal` | ops=SELECT | tables=<tenant>.dental_consultation_treatments
+- `POST /consultations/:id/treatments` ? `consultationTreatmentsController.js.add` | ops=INSERT INTO,SELECT | tables=<tenant>.dental_consultation_treatments, <tenant>.dental_treatments
+- `PATCH /consultations/:id/treatments/:sid` ? `consultationTreatmentsController.js.update` | ops=SELECT,UPDATE | tables=<tenant>.dental_consultation_treatments, error
+- `DELETE /consultations/:id/treatments/:sid` ? `consultationTreatmentsController.js.void` | ops=SELECT,UPDATE | tables=<tenant>.dental_charges, <tenant>.dental_consultation_treatments
+- `GET /consultations/:id/sessions` ? `consultationSessionsController.js.list` | ops=SELECT | tables=<tenant>.dental_consultation_sessions
+- `POST /consultations/:id/sessions` ? `consultationSessionsController.js.create` | ops=INSERT INTO,SELECT,UPDATE | tables=<tenant>.dental_appointments, <tenant>.dental_consultation_sessions, <tenant>.dental_consultations, <tenant>.dental_treatments, the
+- `GET /consultations/:id/sessions/:sid` ? `consultationSessionsController.js.getById` | ops=SELECT | tables=<tenant>.dental_consultation_sessions
+- `PATCH /consultations/:id/sessions/:sid` ? `consultationSessionsController.js.update` | ops=INSERT INTO,SELECT,UPDATE | tables=<tenant>.dental_appointments, <tenant>.dental_consultation_sessions, <tenant>.dental_consultations, <tenant>.dental_treatments, error, linked, public.notifications, the
+- `POST /consultations/:id/sessions/:sid/complete` ? `consultationSessionsController.js.complete` | ops=SELECT,UPDATE | tables=<tenant>.dental_consultation_sessions
+- `POST /consultations/:id/sessions/:sid/cancel` ? `consultationSessionsController.js.cancel` | ops=SELECT,UPDATE | tables=<tenant>.dental_appointments, <tenant>.dental_consultation_sessions
+- `GET /consultations/:id/attachments` ? `consultationAttachmentsController.js.list` | ops=SELECT | tables=<tenant>.dental_consultation_attachments, <tenant>.dental_consultations
+- `POST /consultations/:id/attachments` ? `consultationAttachmentsController.js.attachmentUpload` | ops=- | tables=-
+- `POST /consultations/:id/attachments` ? `consultationAttachmentsController.js.upload` | ops=INSERT INTO,SELECT | tables=<tenant>.dental_consultation_attachments, <tenant>.dental_consultations
+- `DELETE /consultations/:id/attachments/:aid` ? `consultationAttachmentsController.js.remove` | ops=DELETE FROM,SELECT | tables=<tenant>.dental_consultation_attachments
+- `POST /consultations/:id/status` ? `consultationsController.js.changeStatus` | ops=SELECT,UPDATE | tables=<tenant>.dental_consultation_treatments, <tenant>.dental_consultations
+- `GET /quotes` ? `quotesController.js.list` | ops=SELECT | tables=<tenant>.customers, <tenant>.dental_quotes
+- `POST /quotes` ? `quotesController.js.create` | ops=INSERT INTO,SELECT | tables=<tenant>.dental_quote_items, <tenant>.dental_quote_number_seq, <tenant>.dental_quotes
+- `GET /quotes/:id` ? `quotesController.js.getById` | ops=- | tables=-
+- `PUT /quotes/:id` ? `quotesController.js.update` | ops=SELECT,UPDATE | tables=<tenant>.dental_quotes, error
+- `POST /quotes/:id/send` ? `quotesController.js.send` | ops=SELECT,UPDATE | tables=<tenant>.dental_quotes
+- `POST /quotes/:id/accept` ? `quotesController.js.accept` | ops=SELECT,UPDATE | tables=<tenant>.dental_quotes
+- `POST /quotes/:id/reject` ? `quotesController.js.reject` | ops=SELECT,UPDATE | tables=<tenant>.dental_quotes, a
+- `POST /quotes/:id/convert` ? `quotesController.js.convertToConsultation` | ops=INSERT INTO,SELECT,UPDATE | tables=<tenant>.dental_consultation_treatments, <tenant>.dental_consultations, <tenant>.dental_quote_items, <tenant>.dental_quotes, quote
+- `GET /quotes/:id/print` ? `quotesController.js.getPrintData` | ops=SELECT | tables=<tenant>.config_company, <tenant>.customers, <tenant>.dental_quote_items, <tenant>.dental_quotes
+- `POST /quotes/:id/items` ? `quotesController.js.addItem` | ops=INSERT INTO,SELECT | tables=<tenant>.dental_quote_items, <tenant>.dental_quotes
+- `PUT /quotes/:id/items/:iid` ? `quotesController.js.updateItem` | ops=SELECT,UPDATE | tables=<tenant>.dental_quote_items, <tenant>.dental_quotes
+- `DELETE /quotes/:id/items/:iid` ? `quotesController.js.removeItem` | ops=DELETE FROM,SELECT | tables=<tenant>.dental_quote_items, <tenant>.dental_quotes
+- `GET /patients/:customerId/quotes` ? `quotesController.js.getForPatient` | ops=SELECT | tables=<tenant>.dental_quotes
+- `GET /charges` ? `chargesController.js.list` | ops=SELECT | tables=<tenant>.customers, <tenant>.dental_charges
+- `POST /charges` ? `chargesController.js.create` | ops=INSERT INTO | tables=<tenant>.dental_charges
+- `GET /charges/:id` ? `chargesController.js.getById` | ops=SELECT | tables=<tenant>.customers, <tenant>.dental_charges, <tenant>.dental_consultations, <tenant>.dental_installments, <tenant>.dental_payments
+- `DELETE /charges/:id` ? `chargesController.js.deleteCharge` | ops=DELETE FROM,SELECT | tables=<tenant>.dental_charges
+- `POST /charges/:id/payments` ? `chargesController.js.registerPayment` | ops=INSERT INTO,SELECT,UPDATE | tables=<tenant>.dental_charges, <tenant>.dental_consultations, <tenant>.dental_payments, charge, to
+- `POST /charges/:id/installments` ? `chargesController.js.createInstallments` | ops=DELETE FROM,INSERT INTO,SELECT | tables=<tenant>.dental_charges, <tenant>.dental_installments
+- `GET /installments/overdue` ? `chargesController.js.getOverdueInstallments` | ops=SELECT | tables=<tenant>.customers, <tenant>.dental_charges, <tenant>.dental_installments
+- `POST /installments/:id/pay` ? `chargesController.js.payInstallment` | ops=INSERT INTO,SELECT,UPDATE | tables=<tenant>.dental_charges, <tenant>.dental_consultations, <tenant>.dental_installments, <tenant>.dental_payments, installment, parent, to
+- `GET /payments` ? `chargesController.js.listPayments` | ops=SELECT | tables=<tenant>.customers, <tenant>.dental_charges, <tenant>.dental_payments
+- `DELETE /payments/:id` ? `chargesController.js.deletePayment` | ops=DELETE FROM,SELECT,UPDATE | tables=<tenant>.dental_charges, <tenant>.dental_consultations, <tenant>.dental_payments, actual
+- `GET /finance/summary` ? `chargesController.js.getFinanceSummary` | ops=SELECT | tables=<tenant>.customers, <tenant>.dental_charges, <tenant>.dental_installments, <tenant>.dental_payments
+- `GET /medical-documents` ? `medicalDocumentsController.js.list` | ops=SELECT | tables=<tenant>.customers, <tenant>.dental_medical_documents
+- `POST /medical-documents` ? `medicalDocumentsController.js.create` | ops=INSERT INTO,SELECT,UPDATE | tables=<tenant>.customers, <tenant>.dental_consultations, <tenant>.dental_medical_doc_number_seq, <tenant>.dental_medical_documents
+- `GET /medical-documents/:id` ? `medicalDocumentsController.js.getById` | ops=SELECT | tables=<tenant>.customers, <tenant>.dental_medical_documents
+- `PATCH /medical-documents/:id` ? `medicalDocumentsController.js.update` | ops=SELECT,UPDATE | tables=<tenant>.dental_medical_documents, error
+- `DELETE /medical-documents/:id` ? `medicalDocumentsController.js.remove` | ops=DELETE FROM | tables=<tenant>.dental_medical_documents
+- `GET /medical-documents/:id/print` ? `medicalDocumentsController.js.getPrintData` | ops=SELECT | tables=<tenant>.config_company, <tenant>.customers, <tenant>.dental_medical_documents, <tenant>.dental_patient_profiles
+- `GET /patients/:customerId/medical-documents` ? `medicalDocumentsController.js.getForPatient` | ops=SELECT | tables=<tenant>.customers, <tenant>.dental_medical_documents
+- `GET /consultations/:consultationId/medical-documents` ? `medicalDocumentsController.js.getForConsultation` | ops=SELECT | tables=<tenant>.customers, <tenant>.dental_consultations, <tenant>.dental_medical_documents
+- `POST /periods` ? `periodsController.js.create` | ops=INSERT INTO,SELECT | tables=<tenant>.financial_periods
+- `GET /periods` ? `periodsController.js.list` | ops=SELECT | tables=<tenant>.financial_periods
+- `GET /periods/current` ? `periodsController.js.getCurrent` | ops=SELECT | tables=<tenant>.financial_periods
+- `GET /periods/:periodId` ? `periodsController.js.getById` | ops=SELECT | tables=<tenant>.financial_periods
+- `POST /periods/:periodId/close` ? `periodsController.js.close` | ops=SELECT,UPDATE | tables=<tenant>.financial_periods
+- `POST /categories/seed` ? `summaryController.js.seedDefaultCategories` | ops=INSERT INTO,SELECT | tables=<tenant>.financial_categories
+- `POST /categories` ? `categoriesController.js.create` | ops=INSERT INTO | tables=<tenant>.financial_categories
+- `GET /categories` ? `categoriesController.js.list` | ops=SELECT | tables=<tenant>.financial_categories
+- `GET /categories/:categoryId` ? `categoriesController.js.getById` | ops=SELECT | tables=<tenant>.financial_categories
+- `PUT /categories/:categoryId` ? `categoriesController.js.update` | ops=UPDATE | tables=<tenant>.financial_categories, error, installments
+- `PATCH /categories/:categoryId/status` ? `categoriesController.js.toggleStatus` | ops=UPDATE | tables=<tenant>.financial_categories
+- `DELETE /categories/:categoryId` ? `categoriesController.js.remove` | ops=DELETE FROM,SELECT | tables=<tenant>.budget_plans, <tenant>.financial_categories, <tenant>.financial_transactions
+- `POST /periods/:periodId/budget-plans` ? `budgetPlansController.js.create` | ops=INSERT INTO,SELECT | tables=<tenant>.budget_plans, <tenant>.financial_categories, <tenant>.financial_periods
+- `GET /periods/:periodId/budget-plans` ? `budgetPlansController.js.listByPeriod` | ops=SELECT | tables=<tenant>.budget_plans, <tenant>.financial_categories, <tenant>.financial_periods
+- `PUT /budget-plans/:budgetPlanId` ? `budgetPlansController.js.update` | ops=SELECT,UPDATE | tables=<tenant>.budget_plans, <tenant>.financial_categories, error, resolvedCurrentInstallment
+- `DELETE /budget-plans/:budgetPlanId` ? `budgetPlansController.js.remove` | ops=DELETE FROM | tables=<tenant>.budget_plans
+- `POST /periods/:periodId/transactions` ? `transactionsController.js.create` | ops=INSERT INTO,SELECT | tables=<tenant>.financial_categories, <tenant>.financial_periods, <tenant>.financial_transactions
+- `GET /periods/:periodId/transactions` ? `transactionsController.js.listByPeriod` | ops=SELECT | tables=<tenant>.financial_categories, <tenant>.financial_periods, <tenant>.financial_transactions
+- `GET /transactions/:transactionId` ? `transactionsController.js.getById` | ops=SELECT | tables=<tenant>.financial_categories, <tenant>.financial_transactions
+- `PATCH /transactions/:transactionId` ? `transactionsController.js.update` | ops=UPDATE | tables=<tenant>.financial_transactions, error
+- `DELETE /transactions/:transactionId` ? `transactionsController.js.remove` | ops=DELETE FROM | tables=<tenant>.financial_transactions
+- `GET /periods/:periodId/summary` ? `summaryController.js.getSummary` | ops=SELECT | tables=<tenant>.budget_plans, <tenant>.financial_categories, <tenant>.financial_transactions
+- `GET /periods/:periodId/breakdown` ? `summaryController.js.getBreakdown` | ops=SELECT | tables=<tenant>.budget_plans, <tenant>.financial_categories, <tenant>.financial_transactions
+- `GET /periods/:periodId/deviations` ? `summaryController.js.getDeviations` | ops=- | tables=-
+- `GET /catalogs/:type` ? `catalogsController.js.list` | ops=SELECT | tables=<tenant>.${type}
+- `POST /catalogs/:type` ? `catalogsController.js.create` | ops=INSERT INTO,SELECT | tables=<tenant>.${type}
+- `PUT /catalogs/:type/:id` ? `catalogsController.js.update` | ops=SELECT,UPDATE | tables=<tenant>.${type}, error
+- `PATCH /catalogs/:type/:id/status` ? `catalogsController.js.toggleStatus` | ops=UPDATE | tables=<tenant>.${type}
+- `GET /customers` ? `customersController.js.list` | ops=SELECT | tables=<tenant>.customers
+- `POST /customers` ? `customersController.js.create` | ops=INSERT INTO | tables=<tenant>.customers
+- `GET /customers/:id` ? `customersController.js.getById` | ops=SELECT | tables=<tenant>.customers
+- `PUT /customers/:id` ? `customersController.js.update` | ops=UPDATE | tables=<tenant>.customers, error
+- `PATCH /customers/:id/status` ? `customersController.js.toggleStatus` | ops=UPDATE | tables=<tenant>.customers
+- `POST /customers/:id/photo` ? `customersController.js.uploadPhoto` | ops=SELECT,UPDATE | tables=<tenant>.customers
+- `DELETE /customers/:id/photo` ? `customersController.js.deletePhoto` | ops=SELECT,UPDATE | tables=<tenant>.customers
+- `GET /customers/:customerId/vehicles` ? `vehiclesController.js.listByCustomer` | ops=SELECT | tables=<tenant>.vehicle_brands, <tenant>.vehicle_models, <tenant>.vehicle_types, <tenant>.vehicles
+- `GET /vehicles` ? `vehiclesController.js.list` | ops=SELECT | tables=<tenant>.customers, <tenant>.vehicle_brands, <tenant>.vehicle_colors, <tenant>.vehicle_models, <tenant>.vehicle_types, <tenant>.vehicles
+- `POST /vehicles` ? `vehiclesController.js.create` | ops=INSERT INTO | tables=<tenant>.vehicles
+- `GET /vehicles/:id` ? `vehiclesController.js.getById` | ops=SELECT | tables=<tenant>.customers, <tenant>.vehicle_body_types, <tenant>.vehicle_brands, <tenant>.vehicle_colors, <tenant>.vehicle_fuel_types, <tenant>.vehicle_models, <tenant>.vehicle_transmissions, <tenant>.vehicle_types, <tenant>.vehicles
+- `PUT /vehicles/:id` ? `vehiclesController.js.update` | ops=INSERT INTO,SELECT,UPDATE | tables=<tenant>.vehicle_ownership_transfers, <tenant>.vehicles, error
+- `PATCH /vehicles/:id/status` ? `vehiclesController.js.toggleStatus` | ops=UPDATE | tables=<tenant>.vehicles
+- `GET /vehicles/:id/history` ? `vehicleHistoryController.js.getVehicleHistory` | ops=SELECT | tables=<tenant>.appointments, <tenant>.customers, <tenant>.employees, <tenant>.vehicle_brands, <tenant>.vehicle_models, <tenant>.vehicles, <tenant>.work_order_service_products, <tenant>.work_order_services, <tenant>.work_orders
+- `GET /vehicles/:id/photos` ? `vehiclesController.js.listPhotos` | ops=SELECT | tables=<tenant>.vehicle_photos
+- `POST /vehicles/:id/photos` ? `vehiclesController.js.uploadPhoto` | ops=INSERT INTO,SELECT | tables=<tenant>.vehicle_photos, <tenant>.vehicles
+- `DELETE /vehicles/:id/photos/:photoId` ? `vehiclesController.js.deletePhoto` | ops=DELETE FROM,SELECT | tables=<tenant>.vehicle_photos
+- `GET /employees` ? `employeesController.js.list` | ops=SELECT | tables=<tenant>.employees
+- `POST /employees` ? `employeesController.js.create` | ops=INSERT INTO | tables=<tenant>.employees
+- `GET /employees/:id` ? `employeesController.js.getById` | ops=SELECT | tables=<tenant>.employees
+- `PUT /employees/:id` ? `employeesController.js.update` | ops=UPDATE | tables=<tenant>.employees, error
+- `PATCH /employees/:id/status` ? `employeesController.js.toggleStatus` | ops=UPDATE | tables=<tenant>.employees
+- `POST /employees/:id/photo` ? `employeesController.js.uploadPhoto` | ops=SELECT,UPDATE | tables=<tenant>.employees
+- `DELETE /employees/:id/photo` ? `employeesController.js.deletePhoto` | ops=SELECT,UPDATE | tables=<tenant>.employees
+- `GET /employees/:employeeId/labor-rates` ? `laborRatesController.js.listByEmployee` | ops=SELECT | tables=<tenant>.employee_labor_rates
+- `GET /labor-rates` ? `laborRatesController.js.list` | ops=SELECT | tables=<tenant>.employee_labor_rates, <tenant>.employees
+- `POST /labor-rates` ? `laborRatesController.js.create` | ops=INSERT INTO,SELECT | tables=<tenant>.employee_labor_rates
+- `GET /labor-rates/:id` ? `laborRatesController.js.getById` | ops=SELECT | tables=<tenant>.employee_labor_rates, <tenant>.employees
+- `PUT /labor-rates/:id` ? `laborRatesController.js.update` | ops=UPDATE | tables=<tenant>.employee_labor_rates, error
+- `PATCH /labor-rates/:id/status` ? `laborRatesController.js.toggleStatus` | ops=UPDATE | tables=<tenant>.employee_labor_rates
+- `GET /products` ? `productsController.js.list` | ops=SELECT | tables=<tenant>.products
+- `POST /products` ? `productsController.js.create` | ops=INSERT INTO,SELECT | tables=<tenant>.products
+- `GET /products/:id` ? `productsController.js.getById` | ops=SELECT | tables=<tenant>.products
+- `PUT /products/:id` ? `productsController.js.update` | ops=SELECT,UPDATE | tables=<tenant>.products, error
+- `PATCH /products/:id/status` ? `productsController.js.toggleStatus` | ops=UPDATE | tables=<tenant>.products
+- `GET /service-templates` ? `serviceTemplatesController.js.list` | ops=SELECT | tables=<tenant>.service_templates
+- `POST /service-templates` ? `serviceTemplatesController.js.create` | ops=INSERT INTO,SELECT | tables=<tenant>.service_templates
+- `GET /service-templates/:id` ? `serviceTemplatesController.js.getById` | ops=SELECT | tables=<tenant>.products, <tenant>.service_template_products, <tenant>.service_templates
+- `PUT /service-templates/:id` ? `serviceTemplatesController.js.update` | ops=SELECT,UPDATE | tables=<tenant>.service_templates, error
+- `PATCH /service-templates/:id/status` ? `serviceTemplatesController.js.toggleStatus` | ops=UPDATE | tables=<tenant>.service_templates
+- `POST /service-templates/:id/products` ? `serviceTemplatesController.js.addProduct` | ops=INSERT INTO,SELECT | tables=<tenant>.products, <tenant>.service_template_products, <tenant>.service_templates
+- `DELETE /service-templates/:id/products/:productId` ? `serviceTemplatesController.js.removeProduct` | ops=DELETE FROM | tables=<tenant>.service_template_products
+- `GET /appointments` ? `appointmentsController.js.list` | ops=SELECT | tables=<tenant>.appointments, <tenant>.customers, <tenant>.employees, <tenant>.vehicle_brands, <tenant>.vehicle_models, <tenant>.vehicles
+- `POST /appointments` ? `appointmentsController.js.create` | ops=INSERT INTO | tables=<tenant>.appointment_services, <tenant>.appointment_status_history, <tenant>.appointments
+- `GET /appointments/:id` ? `appointmentsController.js.getById` | ops=SELECT | tables=<tenant>.appointment_services, <tenant>.appointment_status_history, <tenant>.appointments, <tenant>.customers, <tenant>.employees, <tenant>.vehicle_brands, <tenant>.vehicle_models, <tenant>.vehicles
+- `PUT /appointments/:id` ? `appointmentsController.js.update` | ops=INSERT INTO,SELECT,UPDATE | tables=<tenant>.appointment_status_history, <tenant>.appointments, error
+- `POST /appointments/:id/confirm` ? `appointmentsController.js.confirm` | ops=SELECT | tables=<tenant>.appointments
+- `POST /appointments/:id/mark-arrived` ? `appointmentsController.js.markArrived` | ops=SELECT | tables=<tenant>.appointments
+- `POST /appointments/:id/cancel` ? `appointmentsController.js.cancel` | ops=SELECT | tables=<tenant>.appointments
+- `POST /appointments/:id/reschedule` ? `appointmentsController.js.reschedule` | ops=INSERT INTO,SELECT,UPDATE | tables=<tenant>.appointment_reschedules, <tenant>.appointment_status_history, <tenant>.appointments, para
+- `POST /appointments/:id/convert-to-work-order` ? `appointmentsController.js.convertToWorkOrder` | ops=INSERT INTO,SELECT,UPDATE | tables=<tenant>.appointment_service_products, <tenant>.appointment_services, <tenant>.appointment_status_history, <tenant>.appointments, <tenant>.products, <tenant>.work_order_service_products, <tenant>.work_order_services, <tenant>.work_order_status_history, <tenant>.work_orders, created_at
+- `GET /work-orders` ? `workOrdersController.js.list` | ops=SELECT | tables=<tenant>.customers, <tenant>.employees, <tenant>.vehicle_brands, <tenant>.vehicle_models, <tenant>.vehicle_photos, <tenant>.vehicles, <tenant>.work_orders
+- `POST /work-orders` ? `workOrdersController.js.create` | ops=INSERT INTO,SELECT | tables=<tenant>.work_order_status_history, <tenant>.work_orders, created_at
+- `GET /work-orders/:id` ? `workOrdersController.js.getById` | ops=SELECT | tables=<tenant>.customers, <tenant>.employees, <tenant>.vehicle_brands, <tenant>.vehicle_models, <tenant>.vehicles, <tenant>.work_order_service_products, <tenant>.work_order_services, <tenant>.work_order_status_history, <tenant>.work_orders
+- `PUT /work-orders/:id` ? `workOrdersController.js.update` | ops=UPDATE | tables=<tenant>.work_orders, error
+- `PATCH /work-orders/:id/status` ? `workOrdersController.js.changeStatus` | ops=INSERT INTO,SELECT,UPDATE | tables=<tenant>.work_order_status_history, <tenant>.work_orders
+- `PATCH /work-orders/:id/assign` ? `workOrdersController.js.assign` | ops=UPDATE | tables=<tenant>.work_orders
+- `POST /work-orders/:id/recalculate` ? `workOrdersController.js.recalculate` | ops=- | tables=-
+- `POST /work-orders/:id/close` ? `workOrdersController.js.close` | ops=INSERT INTO,SELECT,UPDATE | tables=<tenant>.work_order_status_history, <tenant>.work_orders
+- `POST /work-orders/:id/cancel` ? `workOrdersController.js.cancel` | ops=INSERT INTO,SELECT,UPDATE | tables=<tenant>.work_order_status_history, <tenant>.work_orders
+- `GET /work-orders/:id/services` ? `workOrderServicesController.js.list` | ops=SELECT | tables=<tenant>.employees, <tenant>.work_order_services
+- `POST /work-orders/:id/services` ? `workOrderServicesController.js.create` | ops=INSERT INTO,SELECT | tables=<tenant>.employee_labor_rates, <tenant>.products, <tenant>.service_template_products, <tenant>.service_templates, <tenant>.work_order_service_products, <tenant>.work_order_services, <tenant>.work_orders
+- `GET /work-orders/:id/services/:serviceId` ? `workOrderServicesController.js.getById` | ops=SELECT | tables=<tenant>.employees, <tenant>.work_order_service_products, <tenant>.work_order_services
+- `PUT /work-orders/:id/services/:serviceId` ? `workOrderServicesController.js.update` | ops=SELECT,UPDATE | tables=<tenant>.employee_labor_rates, <tenant>.work_order_services, error
+- `DELETE /work-orders/:id/services/:serviceId` ? `workOrderServicesController.js.remove` | ops=DELETE FROM | tables=<tenant>.work_order_services
+- `PATCH /work-orders/:id/services/:serviceId/status` ? `workOrderServicesController.js.changeStatus` | ops=UPDATE | tables=<tenant>.work_order_services
+- `POST /work-orders/:id/services/:serviceId/products` ? `workOrderServicesController.js.addProduct` | ops=INSERT INTO,SELECT | tables=<tenant>.products, <tenant>.work_order_service_products
+- `DELETE /work-orders/:id/services/:serviceId/products/:productLineId` ? `workOrderServicesController.js.removeProduct` | ops=DELETE FROM | tables=<tenant>.work_order_service_products
+- `GET /work-orders/:id/photos` ? `workOrdersController.js.listPhotos` | ops=SELECT | tables=<tenant>.vehicle_photos
+- `POST /work-orders/:id/photos` ? `workOrdersController.js.uploadPhoto` | ops=INSERT INTO,SELECT | tables=<tenant>.vehicle_photos, <tenant>.work_orders
+- `DELETE /work-orders/:id/photos/:photoId` ? `workOrdersController.js.deletePhoto` | ops=DELETE FROM,SELECT | tables=<tenant>.vehicle_photos
+- `GET /work-orders/:id/payments` ? `workOrderPaymentsController.js.list` | ops=SELECT | tables=<tenant>.work_order_payments, <tenant>.work_orders
+- `POST /work-orders/:id/payments` ? `workOrderPaymentsController.js.create` | ops=INSERT INTO,SELECT | tables=<tenant>.work_order_payments, <tenant>.work_orders
+- `DELETE /work-orders/:id/payments/:paymentId` ? `workOrderPaymentsController.js.remove` | ops=DELETE FROM | tables=<tenant>.work_order_payments
+- `GET /me` ? `menuController.js.getMyMenu` | ops=SELECT | tables=public.company_modules, public.module_catalog, public.module_transactions
+- `GET /` ? `modulesController.js.getModules` | ops=- | tables=-
+- `GET /:id` ? `modulesController.js.getModuleById` | ops=- | tables=-
+- `POST /` ? `modulesController.js.createModule` | ops=- | tables=-
+- `PUT /:id` ? `modulesController.js.updateModule` | ops=- | tables=-
+- `PATCH /:id/status` ? `modulesController.js.changeModuleStatus` | ops=- | tables=-
+- `DELETE /:id` ? `modulesController.js.deleteModule` | ops=- | tables=-
+- `GET /unread-count` ? `notificationsController.js.getUnreadCount` | ops=SELECT | tables=public.notifications
+- `GET /preferences` ? `notificationsController.js.getPreferences` | ops=SELECT | tables=public.notification_preferences
+- `PUT /preferences` ? `notificationsController.js.savePreferences` | ops=INSERT INTO,UPDATE | tables=SET, public.notification_preferences
+- `GET /` ? `notificationsController.js.getNotifications` | ops=SELECT | tables=public.notifications
+- `PUT /read-all` ? `notificationsController.js.markAllRead` | ops=UPDATE | tables=public.notifications
+- `PUT /:id/read` ? `notificationsController.js.markRead` | ops=UPDATE | tables=public.notifications
+- `DELETE /:id` ? `notificationsController.js.dismiss` | ops=UPDATE | tables=public.notifications
+- `GET /` ? `profilesController.js.getProfiles` | ops=SELECT | tables=-
+- `GET /:id` ? `profilesController.js.getProfileById` | ops=SELECT | tables=-
+- `GET /:id/permissions` ? `profilesController.js.getProfilePermissions` | ops=- | tables=-
+- `PUT /:id/permissions` ? `profilesController.js.updateProfilePermissions` | ops=- | tables=-
+- `GET /:id/permissions-full` ? `profilesController.js.getProfilePermissionsFull` | ops=SELECT | tables=public.company_modules, public.module_catalog, public.module_transactions
+- `PUT /:id/permissions-full` ? `profilesController.js.updateProfilePermissionsFull` | ops=INSERT INTO,UPDATE | tables=SET
+- `POST /` ? `profilesController.js.createProfile` | ops=INSERT INTO | tables=-
+- `PUT /:id` ? `profilesController.js.updateProfile` | ops=SELECT,UPDATE | tables=profile
+- `DELETE /:id` ? `profilesController.js.deleteProfile` | ops=DELETE FROM,SELECT | tables=-
+- `GET /` ? `solicitudesController.js.getAllSolicitudes` | ops=SELECT | tables=public.solicitudes

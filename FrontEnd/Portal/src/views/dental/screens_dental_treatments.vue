@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight, Stethoscope } from 'lucide-vue-next';
+import { ref, computed, onMounted } from 'vue';
+import { Plus, Pencil, Trash2, ToggleLeft, ToggleRight, Tag } from 'lucide-vue-next';
 import { useDentalTreatmentsStore } from '../../stores/dentalTreatments';
 import NxrSlidePanel from '../../components/NxrSlidePanel.vue';
 import AppToast from '../../components/AppToast.vue';
@@ -18,22 +18,36 @@ function askConfirm(title: string, message: string, onConfirm: () => void) {
   confirmModal.value = { open: true, title, message, onConfirm };
 }
 
-const showPanel = ref(false);
-const saving    = ref(false);
-const saveError = ref<string | null>(null);
-const editing   = ref<DentalTreatment | null>(null);
+const showPanel    = ref(false);
+const saving       = ref(false);
+const saveError    = ref<string | null>(null);
+const editing      = ref<DentalTreatment | null>(null);
 
 const defaultForm = (): DentalTreatmentFormData => ({
   name: '',
   description: '',
-  category: '',
+  price_mode: 'manual',
+  supplies_cost: 0,
+  labor_cost: 0,
+  tax_rate: 0,
+  profit_margin: 0,
+  manual_price: 0,
   estimated_duration_minutes: undefined,
-  requires_follow_up: false,
-  requires_multiple_sessions: false,
   is_active: true,
 });
 
 const form = ref<DentalTreatmentFormData>(defaultForm());
+
+function fmt(n: number) {
+  return `$${Math.round(n ?? 0).toLocaleString('es-AR')}`;
+}
+
+// Computed calculated price preview
+const calculatedPreview = computed(() => {
+  const base = (form.value.supplies_cost ?? 0) + (form.value.labor_cost ?? 0);
+  const withTax = base * (1 + (form.value.tax_rate ?? 0) / 100);
+  return withTax * (1 + (form.value.profit_margin ?? 0) / 100);
+});
 
 function openCreate() {
   editing.value = null;
@@ -42,16 +56,19 @@ function openCreate() {
   showPanel.value = true;
 }
 
-function openEdit(t: DentalTreatment) {
-  editing.value = t;
+function openEdit(s: DentalTreatment) {
+  editing.value = s;
   form.value = {
-    name: t.name,
-    description: t.description ?? '',
-    category: t.category ?? '',
-    estimated_duration_minutes: t.estimated_duration_minutes,
-    requires_follow_up: t.requires_follow_up,
-    requires_multiple_sessions: t.requires_multiple_sessions,
-    is_active: t.is_active,
+    name: s.name,
+    description: s.description ?? '',
+    price_mode: s.price_mode,
+    supplies_cost: parseFloat(s.supplies_cost as any) || 0,
+    labor_cost: parseFloat(s.labor_cost as any) || 0,
+    tax_rate: parseFloat(s.tax_rate as any) || 0,
+    profit_margin: parseFloat(s.profit_margin as any) || 0,
+    manual_price: parseFloat(s.manual_price as any) || 0,
+    estimated_duration_minutes: s.estimated_duration_minutes,
+    is_active: s.is_active,
   };
   saveError.value = null;
   showPanel.value = true;
@@ -75,31 +92,33 @@ async function save() {
   }
 }
 
-async function toggleActive(t: DentalTreatment) {
+async function toggleActive(s: DentalTreatment) {
   try {
-    await store.update(t.id, { is_active: !t.is_active });
+    await store.update(s.id, { is_active: !s.is_active });
     triggerToast('Éxito', 'Estado actualizado', 'success');
   } catch (e: any) {
     triggerToast('Error', e?.response?.data?.error || 'Error al actualizar estado', 'error');
   }
 }
 
-async function remove(t: DentalTreatment) {
+async function remove(s: DentalTreatment) {
   askConfirm(
     'Eliminar tratamiento',
-    `¿Eliminar el tratamiento "${t.name}"?`,
+    `¿Eliminar el tratamiento "${s.name}"?`,
     async () => {
       try {
-        await store.remove(t.id);
+        await store.remove(s.id);
         triggerToast('Éxito', 'Tratamiento eliminado', 'success');
       } catch (e: any) {
-        triggerToast('Error', e?.response?.data?.error || 'Error al eliminar tratamiento', 'error');
+        triggerToast('Error', e?.response?.data?.error || 'Error al eliminar. Puede estar en uso.', 'error');
       }
     }
   );
 }
 
-onMounted(() => store.load());
+onMounted(async () => {
+  await store.load();
+});
 </script>
 
 <template>
@@ -124,7 +143,7 @@ onMounted(() => store.load());
 
     <!-- Empty -->
     <div v-else-if="store.items.length === 0" class="flex flex-col items-center gap-4 py-20 text-center">
-      <Stethoscope :size="48" class="text-white/20" />
+      <Tag :size="48" class="text-white/20" />
       <p class="text-white/50 text-sm">No hay tratamientos configurados.</p>
       <button class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold bg-[var(--nexora-primary)] text-white hover:opacity-90" @click="openCreate">
         <Plus :size="15" /> Crear primer tratamiento
@@ -134,52 +153,49 @@ onMounted(() => store.load());
     <!-- List -->
     <div v-else class="flex flex-col gap-2">
       <!-- Desktop header -->
-      <div class="hidden md:grid md:grid-cols-[1fr_140px_100px_80px_80px_80px] gap-4 px-4 py-2 text-xs text-white/30 font-semibold uppercase tracking-wide">
+      <div class="hidden md:grid md:grid-cols-[1fr_100px_100px_80px_120px] gap-4 px-4 py-2 text-xs text-white/30 font-semibold uppercase tracking-wide">
         <span>Nombre</span>
-        <span>Categoría</span>
-        <span class="text-center">Duración</span>
-        <span class="text-center">Seguimiento</span>
+        <span class="text-right">Precio</span>
+        <span class="text-center">Modo</span>
         <span class="text-center">Estado</span>
         <span class="text-center">Acciones</span>
       </div>
 
       <div
-        v-for="t in store.items"
-        :key="t.id"
+        v-for="s in store.items"
+        :key="s.id"
         class="flex items-center gap-3 px-4 py-3 rounded-xl border border-white/10 hover:border-white/20 transition-all"
         :style="{ background: 'var(--nexora-glass-bg)' }"
-        :class="{ 'opacity-50': !t.is_active }"
+        :class="{ 'opacity-50': !s.is_active }"
       >
         <!-- Mobile -->
         <div class="flex-1 min-w-0 md:hidden">
-          <p class="text-sm font-medium text-white truncate">{{ t.name }}</p>
+          <p class="text-sm font-medium text-white truncate">{{ s.name }}</p>
           <div class="flex items-center gap-2 mt-0.5 text-xs text-white/40">
-            <span v-if="t.category">{{ t.category }}</span>
-            <span v-if="t.estimated_duration_minutes">{{ t.estimated_duration_minutes }} min</span>
-            <span v-if="t.requires_follow_up" class="text-blue-400">Seguimiento</span>
+            <span class="font-semibold text-white/70">{{ fmt(s.final_price) }}</span>
+            <span>{{ s.price_mode === 'manual' ? 'Manual' : 'Calculado' }}</span>
           </div>
         </div>
 
         <!-- Desktop -->
-        <div class="hidden md:grid md:grid-cols-[1fr_140px_100px_80px_80px_80px] gap-4 items-center flex-1">
-          <div class="min-w-0">
-            <p class="text-sm text-white truncate">{{ t.name }}</p>
-            <p v-if="t.description" class="text-xs text-white/40 truncate">{{ t.description }}</p>
+        <div class="hidden md:grid md:grid-cols-[1fr_100px_100px_80px_120px] gap-4 items-center flex-1">
+          <div>
+            <p class="text-sm text-white truncate">{{ s.name }}</p>
+            <p v-if="s.description" class="text-xs text-white/40 truncate">{{ s.description }}</p>
           </div>
-          <p class="text-xs text-white/60">{{ t.category || '—' }}</p>
-          <p class="text-xs text-white/60 text-center">{{ t.estimated_duration_minutes ? `${t.estimated_duration_minutes} min` : '—' }}</p>
-          <p class="text-center text-xs" :class="t.requires_follow_up ? 'text-blue-400' : 'text-white/20'">{{ t.requires_follow_up ? 'Sí' : '—' }}</p>
+          <p class="text-sm font-semibold text-white text-right">{{ fmt(s.final_price) }}</p>
+          <p class="text-xs text-white/60 text-center">{{ s.price_mode === 'manual' ? 'Manual' : 'Calculado' }}</p>
           <div class="flex justify-center">
-            <button class="text-white/40 hover:text-white/70 transition-colors" @click="toggleActive(t)">
-              <ToggleRight v-if="t.is_active" :size="20" class="text-green-400" />
+            <button class="text-white/40 hover:text-white/70" @click="toggleActive(s)">
+              <ToggleRight v-if="s.is_active" :size="20" class="text-green-400" />
               <ToggleLeft v-else :size="20" />
             </button>
           </div>
           <div class="flex items-center justify-center gap-2">
-            <button class="text-white/30 hover:text-white/70 transition-colors" @click="openEdit(t)">
+            <button class="text-white/30 hover:text-white/70 transition-colors" @click="openEdit(s)">
               <Pencil :size="14" />
             </button>
-            <button class="text-white/30 hover:text-red-400 transition-colors" @click="remove(t)">
+            <button class="text-white/30 hover:text-red-400 transition-colors" @click="remove(s)">
               <Trash2 :size="14" />
             </button>
           </div>
@@ -187,17 +203,17 @@ onMounted(() => store.load());
 
         <!-- Mobile actions -->
         <div class="flex items-center gap-2 shrink-0 md:hidden">
-          <button class="text-white/30 hover:text-white/70" @click="openEdit(t)"><Pencil :size="14" /></button>
-          <button class="text-white/40 hover:text-white/70" @click="toggleActive(t)">
-            <ToggleRight v-if="t.is_active" :size="18" class="text-green-400" />
+          <button class="text-white/30 hover:text-white/70" @click="openEdit(s)"><Pencil :size="14" /></button>
+          <button class="text-white/40 hover:text-white/70" @click="toggleActive(s)">
+            <ToggleRight v-if="s.is_active" :size="18" class="text-green-400" />
             <ToggleLeft v-else :size="18" />
           </button>
-          <button class="text-white/30 hover:text-red-400" @click="remove(t)"><Trash2 :size="14" /></button>
+          <button class="text-white/30 hover:text-red-400" @click="remove(s)"><Trash2 :size="14" /></button>
         </div>
       </div>
     </div>
 
-    <!-- Panel -->
+    <!-- Create/Edit panel -->
     <NxrSlidePanel
       :open="showPanel"
       :title="editing ? 'Editar tratamiento' : 'Nuevo tratamiento'"
@@ -213,30 +229,76 @@ onMounted(() => store.load());
           <label class="text-xs text-white/50">Descripción</label>
           <textarea v-model="form.description" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none"></textarea>
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div class="flex flex-col gap-1.5">
-            <label class="text-xs text-white/50">Categoría</label>
-            <input v-model="form.category" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" placeholder="Ej: Ortodoncia" />
-          </div>
-          <div class="flex flex-col gap-1.5">
-            <label class="text-xs text-white/50">Duración estimada (min)</label>
-            <input v-model.number="form.estimated_duration_minutes" type="number" min="1" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs text-white/50">Duración estimada (min)</label>
+          <input v-model.number="form.estimated_duration_minutes" type="number" min="1" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label class="text-xs text-white/50">Modo de precio</label>
+          <div class="flex gap-2">
+            <button
+              type="button"
+              class="flex-1 py-2 rounded-xl text-sm font-semibold transition-all border"
+              :class="form.price_mode === 'manual'
+                ? 'bg-[var(--nexora-primary)] text-white border-transparent'
+                : 'text-white/50 border-white/10 hover:border-white/30'"
+              @click="form.price_mode = 'manual'"
+            >
+              Precio manual
+            </button>
+            <button
+              type="button"
+              class="flex-1 py-2 rounded-xl text-sm font-semibold transition-all border"
+              :class="form.price_mode === 'calculated'
+                ? 'bg-[var(--nexora-primary)] text-white border-transparent'
+                : 'text-white/50 border-white/10 hover:border-white/30'"
+              @click="form.price_mode = 'calculated'"
+            >
+              Precio calculado
+            </button>
           </div>
         </div>
-        <div class="flex flex-col gap-3">
-          <label class="flex items-center gap-2 cursor-pointer">
-            <input v-model="form.requires_follow_up" type="checkbox" class="rounded" />
-            <span class="text-sm text-white/70">Requiere seguimiento</span>
-          </label>
-          <label class="flex items-center gap-2 cursor-pointer">
-            <input v-model="form.requires_multiple_sessions" type="checkbox" class="rounded" />
-            <span class="text-sm text-white/70">Requiere múltiples sesiones</span>
-          </label>
-          <label v-if="editing" class="flex items-center gap-2 cursor-pointer">
-            <input v-model="form.is_active" type="checkbox" class="rounded" />
-            <span class="text-sm text-white/70">Activo</span>
-          </label>
+
+        <!-- Manual price -->
+        <div v-if="form.price_mode === 'manual'" class="flex flex-col gap-1.5">
+          <label class="text-xs text-white/50">Precio *</label>
+          <input v-model.number="form.manual_price" type="number" min="0" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" required />
         </div>
+
+        <!-- Calculated price breakdown -->
+        <template v-else>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1.5">
+              <label class="text-xs text-white/50">Costo insumos</label>
+              <input v-model.number="form.supplies_cost" type="number" min="0" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label class="text-xs text-white/50">Costo mano de obra</label>
+              <input v-model.number="form.labor_cost" type="number" min="0" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+            </div>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="flex flex-col gap-1.5">
+              <label class="text-xs text-white/50">IVA (%)</label>
+              <input v-model.number="form.tax_rate" type="number" min="0" max="100" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label class="text-xs text-white/50">Margen ganancia (%)</label>
+              <input v-model.number="form.profit_margin" type="number" min="0" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+            </div>
+          </div>
+          <div class="px-4 py-3 rounded-xl border border-white/10 flex items-center justify-between" :style="{ background: 'var(--nexora-glass-bg)' }">
+            <span class="text-xs text-white/50">Precio estimado</span>
+            <span class="text-sm font-bold text-white">{{ fmt(calculatedPreview) }}</span>
+          </div>
+        </template>
+
+        <label v-if="editing" class="flex items-center gap-2 cursor-pointer">
+          <input v-model="form.is_active" type="checkbox" class="rounded" />
+          <span class="text-sm text-white/70">Activo</span>
+        </label>
+
         <p v-if="saveError" class="text-xs text-red-400">{{ saveError }}</p>
       </form>
       <template #footer>

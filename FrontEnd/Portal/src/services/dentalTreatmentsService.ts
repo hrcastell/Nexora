@@ -10,6 +10,10 @@ export const dentalTreatmentsService = {
     return api.post<DentalTreatment>('/dental/treatments', data);
   },
 
+  getById(id: number | string) {
+    return api.get<DentalTreatment>(`/dental/treatments/${id}`);
+  },
+
   update(id: number | string, data: Partial<DentalTreatmentFormData>) {
     return api.patch<DentalTreatment>(`/dental/treatments/${id}`, data);
   },

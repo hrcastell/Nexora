@@ -136,6 +136,14 @@ onMounted(() => store.load());
         :style="{ background: 'var(--nexora-glass-bg)' }"
         @click="router.push(`/dental/patients/${p.id}`)"
       >
+        <!-- Avatar -->
+        <div class="shrink-0 w-9 h-9 rounded-full overflow-hidden flex items-center justify-center text-sm font-semibold select-none"
+          :class="p.photo_url ? '' : 'bg-blue-500/20 text-blue-300'"
+        >
+          <img v-if="p.photo_url" :src="p.photo_url" :alt="`${p.first_name} ${p.last_name}`" class="w-full h-full object-cover" />
+          <span v-else>{{ (p.first_name?.[0] ?? '').toUpperCase() }}{{ (p.last_name?.[0] ?? '').toUpperCase() }}</span>
+        </div>
+
         <!-- Mobile -->
         <div class="flex-1 min-w-0 md:hidden">
           <p class="text-sm font-medium text-white truncate">{{ p.first_name }} {{ p.last_name }}</p>
