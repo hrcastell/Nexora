@@ -1,0 +1,139 @@
+﻿{
+  "nodes": [
+    {
+      "id": "logo_icon_brand_mark",
+      "label": "Logo Icon Brand Mark",
+      "file_type": "image",
+      "source_file": "FrontEnd/Portal/src/assets/logo_icon.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "logo_icon_metallic_n_monogram",
+      "label": "Metallic N Monogram",
+      "file_type": "image",
+      "source_file": "FrontEnd/Portal/src/assets/logo_icon.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "logo_icon_circular_gradient_ring",
+      "label": "Circular Purple-Gold Gradient Ring",
+      "file_type": "image",
+      "source_file": "FrontEnd/Portal/src/assets/logo_icon.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "logo_icon_metallic_dimensional_style",
+      "label": "Metallic Dimensional Logo Style",
+      "file_type": "image",
+      "source_file": "FrontEnd/Portal/src/assets/logo_icon.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "logo_icon_soft_blurred_background",
+      "label": "Soft Blurred Gray Purple Gold Background",
+      "file_type": "image",
+      "source_file": "FrontEnd/Portal/src/assets/logo_icon.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "logo_icon_brand_mark",
+      "target": "logo_icon_metallic_n_monogram",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "FrontEnd/Portal/src/assets/logo_icon.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "logo_icon_brand_mark",
+      "target": "logo_icon_circular_gradient_ring",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "FrontEnd/Portal/src/assets/logo_icon.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "logo_icon_brand_mark",
+      "target": "logo_icon_metallic_dimensional_style",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "FrontEnd/Portal/src/assets/logo_icon.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "logo_icon_brand_mark",
+      "target": "logo_icon_soft_blurred_background",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "FrontEnd/Portal/src/assets/logo_icon.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "logo_icon_circular_gradient_ring",
+      "target": "logo_icon_metallic_dimensional_style",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "FrontEnd/Portal/src/assets/logo_icon.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "logo_icon_metallic_n_monogram",
+      "target": "logo_icon_metallic_dimensional_style",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "FrontEnd/Portal/src/assets/logo_icon.png",
+      "source_location": null,
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": [
+    {
+      "id": "logo_icon_brand_composition",
+      "label": "Logo Icon Brand Composition",
+      "nodes": [
+        "logo_icon_metallic_n_monogram",
+        "logo_icon_circular_gradient_ring",
+        "logo_icon_metallic_dimensional_style",
+        "logo_icon_soft_blurred_background"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "FrontEnd/Portal/src/assets/logo_icon.png"
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

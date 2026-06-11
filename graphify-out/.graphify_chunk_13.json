@@ -1,0 +1,115 @@
+{
+  "nodes": [
+    {
+      "id": "file:Plan/Logo/logo_icon3.png",
+      "label": "logo_icon3.png",
+      "type": "file",
+      "file_type": "image",
+      "path": "Plan/Logo/logo_icon3.png",
+      "description": "PNG image asset containing the Nexora logo icon."
+    },
+    {
+      "id": "visual:nexora-logo-icon",
+      "label": "Nexora logo icon",
+      "type": "visual_asset",
+      "file_type": "image",
+      "description": "Circular emblem with a metallic uppercase N centered inside a purple-to-gold ring on a transparent background."
+    },
+    {
+      "id": "symbol:uppercase-n",
+      "label": "Uppercase N",
+      "type": "symbol",
+      "file_type": "image",
+      "description": "Large metallic silver uppercase letter N used as the central mark."
+    },
+    {
+      "id": "shape:circular-ring",
+      "label": "Circular ring",
+      "type": "shape",
+      "file_type": "image",
+      "description": "Thick circular border surrounding the central N."
+    },
+    {
+      "id": "color:purple-gold-gradient",
+      "label": "Purple-to-gold gradient",
+      "type": "color_palette",
+      "file_type": "image",
+      "description": "Outer ring gradient dominated by purple with a gold/yellow segment at the lower-right and bottom."
+    },
+    {
+      "id": "color:metallic-silver",
+      "label": "Metallic silver",
+      "type": "color",
+      "file_type": "image",
+      "description": "Silver gradient and bevel styling applied to the central N."
+    },
+    {
+      "id": "style:beveled-3d-logo",
+      "label": "Beveled 3D logo style",
+      "type": "visual_style",
+      "file_type": "image",
+      "description": "Glossy beveled rendering with highlights and shadows that gives the mark depth."
+    },
+    {
+      "id": "background:transparent",
+      "label": "Transparent background",
+      "type": "background",
+      "file_type": "image",
+      "description": "The image background is transparent around the logo."
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:Plan/Logo/logo_icon3.png",
+      "target": "visual:nexora-logo-icon",
+      "type": "CONTAINS",
+      "evidence": "The PNG displays a single logo icon.",
+      "confidence_score": 0.98
+    },
+    {
+      "source": "visual:nexora-logo-icon",
+      "target": "symbol:uppercase-n",
+      "type": "CONTAINS",
+      "evidence": "A prominent uppercase N is centered in the logo.",
+      "confidence_score": 0.99
+    },
+    {
+      "source": "visual:nexora-logo-icon",
+      "target": "shape:circular-ring",
+      "type": "CONTAINS",
+      "evidence": "The central N is enclosed by a thick circular ring.",
+      "confidence_score": 0.99
+    },
+    {
+      "source": "shape:circular-ring",
+      "target": "color:purple-gold-gradient",
+      "type": "USES_COLOR_PALETTE",
+      "evidence": "The ring transitions from purple to gold/yellow.",
+      "confidence_score": 0.95
+    },
+    {
+      "source": "symbol:uppercase-n",
+      "target": "color:metallic-silver",
+      "type": "USES_COLOR",
+      "evidence": "The N is rendered in a silver metallic gradient.",
+      "confidence_score": 0.96
+    },
+    {
+      "source": "visual:nexora-logo-icon",
+      "target": "style:beveled-3d-logo",
+      "type": "USES_STYLE",
+      "evidence": "Both the N and ring show bevels, shadows, and glossy highlights.",
+      "confidence_score": 0.9
+    },
+    {
+      "source": "file:Plan/Logo/logo_icon3.png",
+      "target": "background:transparent",
+      "type": "HAS_BACKGROUND",
+      "evidence": "The area outside and inside the logo ring appears transparent in the PNG preview.",
+      "confidence_score": 0.88
+    }
+  ],
+  "hyperedges": [],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

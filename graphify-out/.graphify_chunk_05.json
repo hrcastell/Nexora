@@ -1,0 +1,139 @@
+﻿{
+  "nodes": [
+    {
+      "id": "logo_sf_nexora_logo_asset",
+      "label": "Nexora Logo Asset",
+      "file_type": "image",
+      "source_file": "FrontEnd/Portal/src/assets/Logo_SF.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "logo_sf_n_monogram",
+      "label": "Metallic N Monogram",
+      "file_type": "image",
+      "source_file": "FrontEnd/Portal/src/assets/Logo_SF.png",
+      "source_location": "center",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "logo_sf_circular_badge",
+      "label": "Circular Badge Frame",
+      "file_type": "image",
+      "source_file": "FrontEnd/Portal/src/assets/Logo_SF.png",
+      "source_location": "center surrounding monogram",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "logo_sf_purple_gold_gradient",
+      "label": "Purple and Gold Gradient Glow",
+      "file_type": "image",
+      "source_file": "FrontEnd/Portal/src/assets/Logo_SF.png",
+      "source_location": "background and ring lighting",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "logo_sf_metallic_3d_style",
+      "label": "Metallic 3D Brand Style",
+      "file_type": "image",
+      "source_file": "FrontEnd/Portal/src/assets/Logo_SF.png",
+      "source_location": "monogram and circular frame",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "logo_sf_nexora_logo_asset",
+      "target": "logo_sf_n_monogram",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "FrontEnd/Portal/src/assets/Logo_SF.png",
+      "source_location": "visible central letterform",
+      "weight": 1.0
+    },
+    {
+      "source": "logo_sf_nexora_logo_asset",
+      "target": "logo_sf_circular_badge",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "FrontEnd/Portal/src/assets/Logo_SF.png",
+      "source_location": "visible circular frame around logo",
+      "weight": 1.0
+    },
+    {
+      "source": "logo_sf_circular_badge",
+      "target": "logo_sf_n_monogram",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "FrontEnd/Portal/src/assets/Logo_SF.png",
+      "source_location": "badge encloses central monogram",
+      "weight": 1.0
+    },
+    {
+      "source": "logo_sf_purple_gold_gradient",
+      "target": "logo_sf_circular_badge",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "FrontEnd/Portal/src/assets/Logo_SF.png",
+      "source_location": "gradient appears on and around ring",
+      "weight": 1.0
+    },
+    {
+      "source": "logo_sf_metallic_3d_style",
+      "target": "logo_sf_n_monogram",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "FrontEnd/Portal/src/assets/Logo_SF.png",
+      "source_location": "beveled metallic monogram rendering",
+      "weight": 1.0
+    },
+    {
+      "source": "logo_sf_metallic_3d_style",
+      "target": "logo_sf_circular_badge",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "FrontEnd/Portal/src/assets/Logo_SF.png",
+      "source_location": "beveled circular frame rendering",
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": [
+    {
+      "id": "logo_sf_brand_mark_composition",
+      "label": "Brand Mark Composition",
+      "nodes": [
+        "logo_sf_n_monogram",
+        "logo_sf_circular_badge",
+        "logo_sf_purple_gold_gradient",
+        "logo_sf_metallic_3d_style"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "FrontEnd/Portal/src/assets/Logo_SF.png"
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

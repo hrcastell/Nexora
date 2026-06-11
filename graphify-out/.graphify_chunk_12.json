@@ -1,0 +1,139 @@
+﻿{
+  "nodes": [
+    {
+      "id": "logo_icon_nexora_logo_icon",
+      "label": "Nexora Logo Icon",
+      "file_type": "image",
+      "source_file": "Plan/Logo/logo_icon.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "logo_icon_n_monogram",
+      "label": "N Monogram",
+      "file_type": "image",
+      "source_file": "Plan/Logo/logo_icon.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "logo_icon_circular_badge",
+      "label": "Circular Badge",
+      "file_type": "image",
+      "source_file": "Plan/Logo/logo_icon.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "logo_icon_purple_gold_gradient",
+      "label": "Purple and Gold Gradient",
+      "file_type": "image",
+      "source_file": "Plan/Logo/logo_icon.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "logo_icon_metallic_3d_style",
+      "label": "Metallic 3D Style",
+      "file_type": "image",
+      "source_file": "Plan/Logo/logo_icon.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "logo_icon_nexora_logo_icon",
+      "target": "logo_icon_n_monogram",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/Logo/logo_icon.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "logo_icon_nexora_logo_icon",
+      "target": "logo_icon_circular_badge",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/Logo/logo_icon.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "logo_icon_nexora_logo_icon",
+      "target": "logo_icon_purple_gold_gradient",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/Logo/logo_icon.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "logo_icon_nexora_logo_icon",
+      "target": "logo_icon_metallic_3d_style",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/Logo/logo_icon.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "logo_icon_n_monogram",
+      "target": "logo_icon_circular_badge",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/Logo/logo_icon.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "logo_icon_purple_gold_gradient",
+      "target": "logo_icon_metallic_3d_style",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "Plan/Logo/logo_icon.png",
+      "source_location": null,
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": [
+    {
+      "id": "logo_icon_brand_mark_composition",
+      "label": "Logo Icon Brand Mark Composition",
+      "nodes": [
+        "logo_icon_n_monogram",
+        "logo_icon_circular_badge",
+        "logo_icon_purple_gold_gradient",
+        "logo_icon_metallic_3d_style"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/Logo/logo_icon.png"
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

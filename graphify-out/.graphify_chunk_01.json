@@ -1,0 +1,1159 @@
+{
+  "nodes": [
+    {
+      "id": "nexora",
+      "label": "Nexora",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "title",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "multi_tenant_saas_platform",
+      "label": "Multi-tenant SaaS Platform",
+      "file_type": "document",
+      "source_file": "CLAUDE.md",
+      "source_location": "Project overview",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "postgresql_schema_isolation",
+      "label": "PostgreSQL Schema Isolation",
+      "file_type": "document",
+      "source_file": "CLAUDE.md",
+      "source_location": "Multi-schema database",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "public_schema",
+      "label": "public Schema",
+      "file_type": "document",
+      "source_file": "CLAUDE.md",
+      "source_location": "Multi-schema database",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "company_schema",
+      "label": "Company Schema",
+      "file_type": "document",
+      "source_file": "CLAUDE.md",
+      "source_location": "Multi-schema database",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "hernancius_schema",
+      "label": "hernancius Master Schema",
+      "file_type": "document",
+      "source_file": "CLAUDE.md",
+      "source_location": "Master schema ? hernancius",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "vue_frontend",
+      "label": "Vue Frontend",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "Stack frontend aprobado",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "fastapi_backend",
+      "label": "FastAPI Backend",
+      "file_type": "document",
+      "source_file": "RULES_AND_SKILLS.md",
+      "source_location": "3.2 FastAPI + Node.js",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "postgresql_10_23",
+      "label": "PostgreSQL 10.23",
+      "file_type": "document",
+      "source_file": "RULES_AND_SKILLS.md",
+      "source_location": "4. Reglas de compatibilidad con PostgreSQL 10.23",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "cpanel_shared_hosting",
+      "label": "cPanel Shared Hosting",
+      "file_type": "document",
+      "source_file": "RULES_AND_SKILLS.md",
+      "source_location": "5. Reglas de despliegue",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "super_admin",
+      "label": "super_admin",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "Ventanas exclusivas del super_admin",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "owner_digital_signature",
+      "label": "Owner Digital Signature",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "Firma digital del propietario",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "window_based_development",
+      "label": "Window-based Development",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "Principios de desarrollo",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "nexora_portal_html",
+      "label": "Nexora Portal HTML Entry",
+      "file_type": "code",
+      "source_file": "FrontEnd/Portal/index.html",
+      "source_location": "title/script",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "vite_main_ts",
+      "label": "Vite main.ts Entry Point",
+      "file_type": "code",
+      "source_file": "FrontEnd/Portal/index.html",
+      "source_location": "script src",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "permission_profile_issue",
+      "label": "Permission/Profile Visibility Issue",
+      "file_type": "document",
+      "source_file": "Plan/error_perfiles.md",
+      "source_location": "Problema actual",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "tenant_default_admin_user",
+      "label": "Tenant Default Admin User",
+      "file_type": "document",
+      "source_file": "Plan/error_perfiles.md",
+      "source_location": "Contexto general",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "company_admin_profile",
+      "label": "Administrador de Empresa Profile",
+      "file_type": "document",
+      "source_file": "Plan/error_perfiles.md",
+      "source_location": "Contexto general",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "profile_permissions",
+      "label": "Profile Permissions",
+      "file_type": "document",
+      "source_file": "Plan/error_perfiles.md",
+      "source_location": "Objetivo de la correcci?n",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "sidebar_visibility",
+      "label": "Sidebar Visibility",
+      "file_type": "document",
+      "source_file": "Plan/error_perfiles.md",
+      "source_location": "3. Ocultar ventanas no permitidas",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "route_permission_guard",
+      "label": "Route Permission Guard",
+      "file_type": "document",
+      "source_file": "Plan/error_perfiles.md",
+      "source_location": "4. Bloquear acceso directo por URL",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "backend_permission_validation",
+      "label": "Backend Permission Validation",
+      "file_type": "document",
+      "source_file": "Plan/error_perfiles.md",
+      "source_location": "5. Validar permisos tambi?n en backend",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "forbidden_403",
+      "label": "403 Forbidden",
+      "file_type": "document",
+      "source_file": "Plan/error_perfiles.md",
+      "source_location": "5. Validar permisos tambi?n en backend",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "unified_agent_system",
+      "label": "Unified Agent System",
+      "file_type": "document",
+      "source_file": ".atl/README.md",
+      "source_location": "title",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "engram_memory",
+      "label": "Engram Persistent Memory",
+      "file_type": "document",
+      "source_file": ".atl/AGENT_SYNC.md",
+      "source_location": "Componentes Compartidos",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "sdd_spec_driven_development",
+      "label": "SDD Spec-Driven Development",
+      "file_type": "document",
+      "source_file": ".atl/AGENT_SYNC.md",
+      "source_location": "Componentes Compartidos",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "graphify_knowledge_graphs",
+      "label": "Graphify Knowledge Graphs",
+      "file_type": "document",
+      "source_file": ".atl/AGENT_SYNC.md",
+      "source_location": "Componentes Compartidos",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "skill_registry",
+      "label": "Skill Registry",
+      "file_type": "document",
+      "source_file": ".atl/skill-registry.md",
+      "source_location": "title",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "skill_resolver_protocol",
+      "label": "Skill Resolver Protocol",
+      "file_type": "document",
+      "source_file": ".atl/AGENT_SYNC.md",
+      "source_location": "Resoluci?n de Skills",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "windsurf_workflows",
+      "label": "Windsurf Workflows",
+      "file_type": "document",
+      "source_file": ".windsurf/workflows/graphify-build.md",
+      "source_location": "Workflow",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "graphify_build_workflow",
+      "label": "Graphify Build Workflow",
+      "file_type": "document",
+      "source_file": ".windsurf/workflows/graphify-build.md",
+      "source_location": "title",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "graphify_query_workflow",
+      "label": "Graphify Query Workflow",
+      "file_type": "document",
+      "source_file": ".windsurf/workflows/graphify-query.md",
+      "source_location": "title",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "sdd_new_workflow",
+      "label": "SDD New Workflow",
+      "file_type": "document",
+      "source_file": ".windsurf/workflows/sdd-new.md",
+      "source_location": "title",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "sdd_status_workflow",
+      "label": "SDD Status Workflow",
+      "file_type": "document",
+      "source_file": ".windsurf/workflows/sdd-status.md",
+      "source_location": "title",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "agent_replication_guide",
+      "label": "Agent Replication Guide",
+      "file_type": "document",
+      "source_file": ".atl/REPLICATION_GUIDE.md",
+      "source_location": "title",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "nexora_dental_core",
+      "label": "Nexora Dental Core",
+      "file_type": "document",
+      "source_file": "Plan/nexora-dental-core-implementation.md",
+      "source_location": "title",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "dental_patient_profile",
+      "label": "DentalPatientProfile",
+      "file_type": "document",
+      "source_file": "Plan/nexora-dental-core-implementation.md",
+      "source_location": "9.1",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "dental_appointment",
+      "label": "DentalAppointment",
+      "file_type": "document",
+      "source_file": "Plan/nexora-dental-core-implementation.md",
+      "source_location": "9.5",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "dental_billing_service",
+      "label": "DentalBillingService",
+      "file_type": "document",
+      "source_file": "Plan/nexora-dental-core-implementation.md",
+      "source_location": "13",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "nexora_financial_core",
+      "label": "Nexora Financial Core",
+      "file_type": "document",
+      "source_file": "Plan/nexora-financial-core-implementation.md",
+      "source_location": "title",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "financial_period",
+      "label": "FinancialPeriod",
+      "file_type": "document",
+      "source_file": "Plan/nexora-financial-core-implementation.md",
+      "source_location": "8",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "budget_plan",
+      "label": "BudgetPlan",
+      "file_type": "document",
+      "source_file": "Plan/nexora-financial-core-implementation.md",
+      "source_location": "8",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "financial_transaction",
+      "label": "FinancialTransaction",
+      "file_type": "document",
+      "source_file": "Plan/nexora-financial-core-implementation.md",
+      "source_location": "8",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "nexora_garage_core",
+      "label": "Nexora Garage Core 1",
+      "file_type": "document",
+      "source_file": "Plan/nexora_garage_core_1_plan.md",
+      "source_location": "title",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "vehicle_history",
+      "label": "Vehicle History",
+      "file_type": "document",
+      "source_file": "Plan/nexora_garage_core_1_plan.md",
+      "source_location": "Core 1",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "garage_appointments",
+      "label": "Garage Appointments / Pre-ingreso",
+      "file_type": "document",
+      "source_file": "Plan/nexora_garage_core_1_plan.md",
+      "source_location": "11",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "visual_configuration",
+      "label": "Visual Configuration",
+      "file_type": "document",
+      "source_file": "Plan/plan-implementacion-config-visual-nexora.md",
+      "source_location": "title",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "configuration_dashboard",
+      "label": "Configuration Dashboard",
+      "file_type": "document",
+      "source_file": "Plan/plan_implementacion_dashboard_config_nexora.md",
+      "source_location": "title",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "dom_elements",
+      "label": "DOM Elements",
+      "file_type": "document",
+      "source_file": "Plan/plan_implementacion_elementos_dom_nexora.md",
+      "source_location": "title",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "base_modal",
+      "label": "Base Modal",
+      "file_type": "document",
+      "source_file": "Plan/plan_implementacion_elementos_dom_nexora.md",
+      "source_location": "1",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "toast_notifications",
+      "label": "Toast Notifications",
+      "file_type": "document",
+      "source_file": "Plan/plan_implementacion_elementos_dom_nexora.md",
+      "source_location": "5",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "master_prompt_nexora",
+      "label": "Nexora Master Prompt v3",
+      "file_type": "document",
+      "source_file": "Plan/nexora_prompt_maestro_v3.md",
+      "source_location": "title",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "nexora",
+      "target": "multi_tenant_saas_platform",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": "Visi?n del proyecto",
+      "weight": 1.0
+    },
+    {
+      "source": "multi_tenant_saas_platform",
+      "target": "postgresql_schema_isolation",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "CLAUDE.md",
+      "source_location": "Project overview",
+      "weight": 1.0
+    },
+    {
+      "source": "postgresql_schema_isolation",
+      "target": "public_schema",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "CLAUDE.md",
+      "source_location": "Project overview",
+      "weight": 1.0
+    },
+    {
+      "source": "postgresql_schema_isolation",
+      "target": "company_schema",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "CLAUDE.md",
+      "source_location": "Project overview",
+      "weight": 1.0
+    },
+    {
+      "source": "company_schema",
+      "target": "hernancius_schema",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "CLAUDE.md",
+      "source_location": "Project overview",
+      "weight": 1.0
+    },
+    {
+      "source": "nexora",
+      "target": "vue_frontend",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": "Stack tecnol?gico oficial",
+      "weight": 1.0
+    },
+    {
+      "source": "nexora",
+      "target": "fastapi_backend",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "RULES_AND_SKILLS.md",
+      "source_location": "3.2",
+      "weight": 1.0
+    },
+    {
+      "source": "nexora",
+      "target": "postgresql_10_23",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "RULES_AND_SKILLS.md",
+      "source_location": "4",
+      "weight": 1.0
+    },
+    {
+      "source": "nexora",
+      "target": "cpanel_shared_hosting",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "RULES_AND_SKILLS.md",
+      "source_location": "1",
+      "weight": 1.0
+    },
+    {
+      "source": "cpanel_shared_hosting",
+      "target": "fastapi_backend",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "RULES_AND_SKILLS.md",
+      "source_location": "3.2",
+      "weight": 1.0
+    },
+    {
+      "source": "cpanel_shared_hosting",
+      "target": "postgresql_10_23",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "RULES_AND_SKILLS.md",
+      "source_location": "Consecuencias pr?cticas",
+      "weight": 1.0
+    },
+    {
+      "source": "super_admin",
+      "target": "owner_digital_signature",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "README.md",
+      "source_location": "Firma digital del propietario",
+      "weight": 1.0
+    },
+    {
+      "source": "nexora_portal_html",
+      "target": "vite_main_ts",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "FrontEnd/Portal/index.html",
+      "source_location": "script src",
+      "weight": 1.0
+    },
+    {
+      "source": "permission_profile_issue",
+      "target": "profile_permissions",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/error_perfiles.md",
+      "source_location": "Problema actual",
+      "weight": 1.0
+    },
+    {
+      "source": "tenant_default_admin_user",
+      "target": "company_admin_profile",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/error_perfiles.md",
+      "source_location": "Contexto general",
+      "weight": 1.0
+    },
+    {
+      "source": "super_admin",
+      "target": "profile_permissions",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/error_perfiles.md",
+      "source_location": "Control total del super_admin",
+      "weight": 1.0
+    },
+    {
+      "source": "company_admin_profile",
+      "target": "profile_permissions",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/error_perfiles.md",
+      "source_location": "2",
+      "weight": 1.0
+    },
+    {
+      "source": "profile_permissions",
+      "target": "sidebar_visibility",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/error_perfiles.md",
+      "source_location": "3",
+      "weight": 1.0
+    },
+    {
+      "source": "profile_permissions",
+      "target": "route_permission_guard",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/error_perfiles.md",
+      "source_location": "4",
+      "weight": 1.0
+    },
+    {
+      "source": "profile_permissions",
+      "target": "backend_permission_validation",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/error_perfiles.md",
+      "source_location": "5",
+      "weight": 1.0
+    },
+    {
+      "source": "backend_permission_validation",
+      "target": "forbidden_403",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/error_perfiles.md",
+      "source_location": "5",
+      "weight": 1.0
+    },
+    {
+      "source": "sidebar_visibility",
+      "target": "route_permission_guard",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "Plan/error_perfiles.md",
+      "source_location": "3-4",
+      "weight": 1.0
+    },
+    {
+      "source": "unified_agent_system",
+      "target": "engram_memory",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".atl/AGENT_SYNC.md",
+      "source_location": "Componentes Compartidos",
+      "weight": 1.0
+    },
+    {
+      "source": "unified_agent_system",
+      "target": "sdd_spec_driven_development",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".atl/AGENT_SYNC.md",
+      "source_location": "Componentes Compartidos",
+      "weight": 1.0
+    },
+    {
+      "source": "unified_agent_system",
+      "target": "graphify_knowledge_graphs",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".atl/AGENT_SYNC.md",
+      "source_location": "Componentes Compartidos",
+      "weight": 1.0
+    },
+    {
+      "source": "unified_agent_system",
+      "target": "skill_registry",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".atl/README.md",
+      "source_location": "Actualizaci?n",
+      "weight": 1.0
+    },
+    {
+      "source": "skill_registry",
+      "target": "skill_resolver_protocol",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".atl/AGENT_SYNC.md",
+      "source_location": "Resoluci?n de Skills",
+      "weight": 1.0
+    },
+    {
+      "source": "graphify_build_workflow",
+      "target": "graphify_knowledge_graphs",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".windsurf/workflows/graphify-build.md",
+      "source_location": "title",
+      "weight": 1.0
+    },
+    {
+      "source": "graphify_query_workflow",
+      "target": "graphify_knowledge_graphs",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".windsurf/workflows/graphify-query.md",
+      "source_location": "title",
+      "weight": 1.0
+    },
+    {
+      "source": "sdd_new_workflow",
+      "target": "sdd_spec_driven_development",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".windsurf/workflows/sdd-new.md",
+      "source_location": "Usage",
+      "weight": 1.0
+    },
+    {
+      "source": "sdd_status_workflow",
+      "target": "sdd_spec_driven_development",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".windsurf/workflows/sdd-status.md",
+      "source_location": "Usage",
+      "weight": 1.0
+    },
+    {
+      "source": "agent_replication_guide",
+      "target": "unified_agent_system",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".atl/REPLICATION_GUIDE.md",
+      "source_location": "title",
+      "weight": 1.0
+    },
+    {
+      "source": "nexora_dental_core",
+      "target": "dental_patient_profile",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora-dental-core-implementation.md",
+      "source_location": "9",
+      "weight": 1.0
+    },
+    {
+      "source": "nexora_dental_core",
+      "target": "dental_appointment",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora-dental-core-implementation.md",
+      "source_location": "9",
+      "weight": 1.0
+    },
+    {
+      "source": "nexora_dental_core",
+      "target": "dental_billing_service",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora-dental-core-implementation.md",
+      "source_location": "13",
+      "weight": 1.0
+    },
+    {
+      "source": "dental_billing_service",
+      "target": "dental_appointment",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.72,
+      "source_file": "Plan/nexora-dental-core-implementation.md",
+      "source_location": "15",
+      "weight": 1.0
+    },
+    {
+      "source": "nexora_financial_core",
+      "target": "financial_period",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora-financial-core-implementation.md",
+      "source_location": "8",
+      "weight": 1.0
+    },
+    {
+      "source": "nexora_financial_core",
+      "target": "budget_plan",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora-financial-core-implementation.md",
+      "source_location": "8",
+      "weight": 1.0
+    },
+    {
+      "source": "nexora_financial_core",
+      "target": "financial_transaction",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora-financial-core-implementation.md",
+      "source_location": "8",
+      "weight": 1.0
+    },
+    {
+      "source": "budget_plan",
+      "target": "financial_transaction",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora-financial-core-implementation.md",
+      "source_location": "11",
+      "weight": 1.0
+    },
+    {
+      "source": "nexora_garage_core",
+      "target": "vehicle_history",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora_garage_core_1_plan.md",
+      "source_location": "Core 1",
+      "weight": 1.0
+    },
+    {
+      "source": "nexora_garage_core",
+      "target": "garage_appointments",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora_garage_core_1_plan.md",
+      "source_location": "11",
+      "weight": 1.0
+    },
+    {
+      "source": "garage_appointments",
+      "target": "dental_appointment",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.78,
+      "source_file": "Plan/nexora_garage_core_1_plan.md",
+      "source_location": "11",
+      "weight": 1.0
+    },
+    {
+      "source": "nexora_garage_core",
+      "target": "nexora_dental_core",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.66,
+      "source_file": "Plan/nexora_garage_core_1_plan.md",
+      "source_location": "domain core plan",
+      "weight": 1.0
+    },
+    {
+      "source": "visual_configuration",
+      "target": "configuration_dashboard",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.82,
+      "source_file": "Plan/plan-implementacion-config-visual-nexora.md",
+      "source_location": "Contexto funcional",
+      "weight": 1.0
+    },
+    {
+      "source": "configuration_dashboard",
+      "target": "profile_permissions",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.68,
+      "source_file": "Plan/plan_implementacion_dashboard_config_nexora.md",
+      "source_location": "M?dulos visibles",
+      "weight": 1.0
+    },
+    {
+      "source": "dom_elements",
+      "target": "base_modal",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/plan_implementacion_elementos_dom_nexora.md",
+      "source_location": "Componentes aprobados",
+      "weight": 1.0
+    },
+    {
+      "source": "dom_elements",
+      "target": "toast_notifications",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/plan_implementacion_elementos_dom_nexora.md",
+      "source_location": "Componentes aprobados",
+      "weight": 1.0
+    },
+    {
+      "source": "master_prompt_nexora",
+      "target": "nexora",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora_prompt_maestro_v3.md",
+      "source_location": "NOMBRE DEL PRODUCTO",
+      "weight": 1.0
+    },
+    {
+      "source": "master_prompt_nexora",
+      "target": "vue_frontend",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora_prompt_maestro_v3.md",
+      "source_location": "STACK TECNOL?GICO OBLIGATORIO",
+      "weight": 1.0
+    },
+    {
+      "source": "master_prompt_nexora",
+      "target": "postgresql_schema_isolation",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora_prompt_maestro_v3.md",
+      "source_location": "ARQUITECTURA MULTICOMPA??A",
+      "weight": 1.0
+    },
+    {
+      "source": "master_prompt_nexora",
+      "target": "super_admin",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora_prompt_maestro_v3.md",
+      "source_location": "VENTANAS EXCLUSIVAS DEL SUPER_ADMIN",
+      "weight": 1.0
+    },
+    {
+      "source": "window_based_development",
+      "target": "configuration_dashboard",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "README.md",
+      "source_location": "Flujo de trabajo por ventana",
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": [
+    {
+      "id": "nexora_platform_architecture",
+      "label": "Nexora Platform Architecture",
+      "nodes": [
+        "nexora",
+        "multi_tenant_saas_platform",
+        "postgresql_schema_isolation",
+        "vue_frontend",
+        "fastapi_backend",
+        "cpanel_shared_hosting"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md"
+    },
+    {
+      "id": "permission_enforcement_flow",
+      "label": "Permission Enforcement Flow",
+      "nodes": [
+        "profile_permissions",
+        "sidebar_visibility",
+        "route_permission_guard",
+        "backend_permission_validation",
+        "forbidden_403"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/error_perfiles.md"
+    },
+    {
+      "id": "agent_tooling_ecosystem",
+      "label": "Agent Tooling Ecosystem",
+      "nodes": [
+        "unified_agent_system",
+        "engram_memory",
+        "sdd_spec_driven_development",
+        "graphify_knowledge_graphs",
+        "skill_registry",
+        "skill_resolver_protocol"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".atl/AGENT_SYNC.md"
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

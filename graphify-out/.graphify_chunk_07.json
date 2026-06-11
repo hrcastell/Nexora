@@ -1,0 +1,167 @@
+﻿{
+  "nodes": [
+    {
+      "id": "logo_full1_full_logo_lockup",
+      "label": "HRCastell Enterprise Core Full Logo Lockup",
+      "file_type": "image",
+      "source_file": "Plan/logo_full1.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "The image presents a complete horizontal brand lockup: a blue geometric icon on the left, the HRCastell wordmark on the right, and the ENTERPRISE CORE descriptor underneath."
+    },
+    {
+      "id": "logo_full1_blue_geometric_icon",
+      "label": "Blue Geometric Octagonal Brand Icon",
+      "file_type": "image",
+      "source_file": "Plan/logo_full1.png",
+      "source_location": "left side of image",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "The icon uses nested octagonal outlines and a right-side connector cutout, suggesting a technology, system, or modular-core identity."
+    },
+    {
+      "id": "logo_full1_hrcastell_wordmark",
+      "label": "HRCastell Wordmark",
+      "file_type": "image",
+      "source_file": "Plan/logo_full1.png",
+      "source_location": "right side, main text",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "The primary brand text reads HRCastell in a bold dark sans-serif style."
+    },
+    {
+      "id": "logo_full1_enterprise_core_tagline",
+      "label": "ENTERPRISE CORE Tagline",
+      "file_type": "image",
+      "source_file": "Plan/logo_full1.png",
+      "source_location": "below wordmark",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "The secondary uppercase descriptor reads ENTERPRISE CORE with wide letter spacing."
+    },
+    {
+      "id": "logo_full1_horizontal_layout",
+      "label": "Horizontal Logo Layout",
+      "file_type": "image",
+      "source_file": "Plan/logo_full1.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "The composition places the symbol to the left and stacked typography to the right, forming a wide horizontal logo suitable for headers or branding surfaces."
+    },
+    {
+      "id": "logo_full1_blue_black_palette",
+      "label": "Blue and Black Brand Palette",
+      "file_type": "image",
+      "source_file": "Plan/logo_full1.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "The visible palette combines a bright cyan-blue icon with dark near-black typography."
+    }
+  ],
+  "edges": [
+    {
+      "source": "logo_full1_full_logo_lockup",
+      "target": "logo_full1_blue_geometric_icon",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/logo_full1.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "logo_full1_full_logo_lockup",
+      "target": "logo_full1_hrcastell_wordmark",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/logo_full1.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "logo_full1_full_logo_lockup",
+      "target": "logo_full1_enterprise_core_tagline",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/logo_full1.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "logo_full1_full_logo_lockup",
+      "target": "logo_full1_horizontal_layout",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/logo_full1.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "logo_full1_blue_geometric_icon",
+      "target": "logo_full1_blue_black_palette",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/logo_full1.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "logo_full1_hrcastell_wordmark",
+      "target": "logo_full1_blue_black_palette",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/logo_full1.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "logo_full1_enterprise_core_tagline",
+      "target": "logo_full1_hrcastell_wordmark",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "Plan/logo_full1.png",
+      "source_location": null,
+      "weight": 0.85
+    }
+  ],
+  "hyperedges": [
+    {
+      "id": "logo_full1_brand_lockup_components",
+      "label": "HRCastell Enterprise Core Brand Lockup Components",
+      "nodes": [
+        "logo_full1_blue_geometric_icon",
+        "logo_full1_hrcastell_wordmark",
+        "logo_full1_enterprise_core_tagline",
+        "logo_full1_horizontal_layout",
+        "logo_full1_blue_black_palette"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/logo_full1.png"
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

@@ -1,0 +1,151 @@
+﻿{
+  "nodes": [
+    {
+      "id": "nexora2_logo_asset",
+      "label": "Nexora Logo Asset",
+      "file_type": "image",
+      "source_file": "Plan/nexora2.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "nexora2_nexora_wordmark",
+      "label": "NEXORA Wordmark",
+      "file_type": "image",
+      "source_file": "Plan/nexora2.png",
+      "source_location": "center-right text",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "nexora2_circular_n_icon",
+      "label": "Circular N Icon",
+      "file_type": "image",
+      "source_file": "Plan/nexora2.png",
+      "source_location": "left emblem",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "nexora2_metallic_lettering",
+      "label": "Metallic Silver Lettering",
+      "file_type": "image",
+      "source_file": "Plan/nexora2.png",
+      "source_location": "wordmark and inner N",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "nexora2_purple_gold_ring",
+      "label": "Purple Gold Gradient Ring",
+      "file_type": "image",
+      "source_file": "Plan/nexora2.png",
+      "source_location": "left emblem outer ring",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "nexora2_black_background",
+      "label": "Black Background",
+      "file_type": "image",
+      "source_file": "Plan/nexora2.png",
+      "source_location": "full canvas background",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "nexora2_logo_asset",
+      "target": "nexora2_nexora_wordmark",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora2.png",
+      "source_location": "visible logo composition",
+      "weight": 1.0
+    },
+    {
+      "source": "nexora2_logo_asset",
+      "target": "nexora2_circular_n_icon",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora2.png",
+      "source_location": "visible logo composition",
+      "weight": 1.0
+    },
+    {
+      "source": "nexora2_nexora_wordmark",
+      "target": "nexora2_metallic_lettering",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora2.png",
+      "source_location": "center-right text styling",
+      "weight": 1.0
+    },
+    {
+      "source": "nexora2_circular_n_icon",
+      "target": "nexora2_metallic_lettering",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora2.png",
+      "source_location": "inner N styling",
+      "weight": 1.0
+    },
+    {
+      "source": "nexora2_circular_n_icon",
+      "target": "nexora2_purple_gold_ring",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora2.png",
+      "source_location": "outer ring styling",
+      "weight": 1.0
+    },
+    {
+      "source": "nexora2_logo_asset",
+      "target": "nexora2_black_background",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora2.png",
+      "source_location": "full image canvas",
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": [
+    {
+      "id": "nexora2_brand_logo_composition",
+      "label": "Nexora Brand Logo Composition",
+      "nodes": [
+        "nexora2_nexora_wordmark",
+        "nexora2_circular_n_icon",
+        "nexora2_metallic_lettering",
+        "nexora2_purple_gold_ring",
+        "nexora2_black_background"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora2.png"
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

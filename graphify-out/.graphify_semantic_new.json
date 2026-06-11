@@ -1,0 +1,3648 @@
+{
+  "nodes": [
+    {
+      "id": "nexora",
+      "label": "Nexora",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "title",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "multi_tenant_saas_platform",
+      "label": "Multi-tenant SaaS Platform",
+      "file_type": "document",
+      "source_file": "CLAUDE.md",
+      "source_location": "Project overview",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "postgresql_schema_isolation",
+      "label": "PostgreSQL Schema Isolation",
+      "file_type": "document",
+      "source_file": "CLAUDE.md",
+      "source_location": "Multi-schema database",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "public_schema",
+      "label": "public Schema",
+      "file_type": "document",
+      "source_file": "CLAUDE.md",
+      "source_location": "Multi-schema database",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "company_schema",
+      "label": "Company Schema",
+      "file_type": "document",
+      "source_file": "CLAUDE.md",
+      "source_location": "Multi-schema database",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "hernancius_schema",
+      "label": "hernancius Master Schema",
+      "file_type": "document",
+      "source_file": "CLAUDE.md",
+      "source_location": "Master schema ? hernancius",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "vue_frontend",
+      "label": "Vue Frontend",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "Stack frontend aprobado",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "fastapi_backend",
+      "label": "FastAPI Backend",
+      "file_type": "document",
+      "source_file": "RULES_AND_SKILLS.md",
+      "source_location": "3.2 FastAPI + Node.js",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "postgresql_10_23",
+      "label": "PostgreSQL 10.23",
+      "file_type": "document",
+      "source_file": "RULES_AND_SKILLS.md",
+      "source_location": "4. Reglas de compatibilidad con PostgreSQL 10.23",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "cpanel_shared_hosting",
+      "label": "cPanel Shared Hosting",
+      "file_type": "document",
+      "source_file": "RULES_AND_SKILLS.md",
+      "source_location": "5. Reglas de despliegue",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "super_admin",
+      "label": "super_admin",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "Ventanas exclusivas del super_admin",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "owner_digital_signature",
+      "label": "Owner Digital Signature",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "Firma digital del propietario",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "window_based_development",
+      "label": "Window-based Development",
+      "file_type": "document",
+      "source_file": "README.md",
+      "source_location": "Principios de desarrollo",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "nexora_portal_html",
+      "label": "Nexora Portal HTML Entry",
+      "file_type": "code",
+      "source_file": "FrontEnd/Portal/index.html",
+      "source_location": "title/script",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "vite_main_ts",
+      "label": "Vite main.ts Entry Point",
+      "file_type": "code",
+      "source_file": "FrontEnd/Portal/index.html",
+      "source_location": "script src",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "permission_profile_issue",
+      "label": "Permission/Profile Visibility Issue",
+      "file_type": "document",
+      "source_file": "Plan/error_perfiles.md",
+      "source_location": "Problema actual",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "tenant_default_admin_user",
+      "label": "Tenant Default Admin User",
+      "file_type": "document",
+      "source_file": "Plan/error_perfiles.md",
+      "source_location": "Contexto general",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "company_admin_profile",
+      "label": "Administrador de Empresa Profile",
+      "file_type": "document",
+      "source_file": "Plan/error_perfiles.md",
+      "source_location": "Contexto general",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "profile_permissions",
+      "label": "Profile Permissions",
+      "file_type": "document",
+      "source_file": "Plan/error_perfiles.md",
+      "source_location": "Objetivo de la correcci?n",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "sidebar_visibility",
+      "label": "Sidebar Visibility",
+      "file_type": "document",
+      "source_file": "Plan/error_perfiles.md",
+      "source_location": "3. Ocultar ventanas no permitidas",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "route_permission_guard",
+      "label": "Route Permission Guard",
+      "file_type": "document",
+      "source_file": "Plan/error_perfiles.md",
+      "source_location": "4. Bloquear acceso directo por URL",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "backend_permission_validation",
+      "label": "Backend Permission Validation",
+      "file_type": "document",
+      "source_file": "Plan/error_perfiles.md",
+      "source_location": "5. Validar permisos tambi?n en backend",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "forbidden_403",
+      "label": "403 Forbidden",
+      "file_type": "document",
+      "source_file": "Plan/error_perfiles.md",
+      "source_location": "5. Validar permisos tambi?n en backend",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "unified_agent_system",
+      "label": "Unified Agent System",
+      "file_type": "document",
+      "source_file": ".atl/README.md",
+      "source_location": "title",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "engram_memory",
+      "label": "Engram Persistent Memory",
+      "file_type": "document",
+      "source_file": ".atl/AGENT_SYNC.md",
+      "source_location": "Componentes Compartidos",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "sdd_spec_driven_development",
+      "label": "SDD Spec-Driven Development",
+      "file_type": "document",
+      "source_file": ".atl/AGENT_SYNC.md",
+      "source_location": "Componentes Compartidos",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "graphify_knowledge_graphs",
+      "label": "Graphify Knowledge Graphs",
+      "file_type": "document",
+      "source_file": ".atl/AGENT_SYNC.md",
+      "source_location": "Componentes Compartidos",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "skill_registry",
+      "label": "Skill Registry",
+      "file_type": "document",
+      "source_file": ".atl/skill-registry.md",
+      "source_location": "title",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "skill_resolver_protocol",
+      "label": "Skill Resolver Protocol",
+      "file_type": "document",
+      "source_file": ".atl/AGENT_SYNC.md",
+      "source_location": "Resoluci?n de Skills",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "windsurf_workflows",
+      "label": "Windsurf Workflows",
+      "file_type": "document",
+      "source_file": ".windsurf/workflows/graphify-build.md",
+      "source_location": "Workflow",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "graphify_build_workflow",
+      "label": "Graphify Build Workflow",
+      "file_type": "document",
+      "source_file": ".windsurf/workflows/graphify-build.md",
+      "source_location": "title",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "graphify_query_workflow",
+      "label": "Graphify Query Workflow",
+      "file_type": "document",
+      "source_file": ".windsurf/workflows/graphify-query.md",
+      "source_location": "title",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "sdd_new_workflow",
+      "label": "SDD New Workflow",
+      "file_type": "document",
+      "source_file": ".windsurf/workflows/sdd-new.md",
+      "source_location": "title",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "sdd_status_workflow",
+      "label": "SDD Status Workflow",
+      "file_type": "document",
+      "source_file": ".windsurf/workflows/sdd-status.md",
+      "source_location": "title",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "agent_replication_guide",
+      "label": "Agent Replication Guide",
+      "file_type": "document",
+      "source_file": ".atl/REPLICATION_GUIDE.md",
+      "source_location": "title",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "nexora_dental_core",
+      "label": "Nexora Dental Core",
+      "file_type": "document",
+      "source_file": "Plan/nexora-dental-core-implementation.md",
+      "source_location": "title",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "dental_patient_profile",
+      "label": "DentalPatientProfile",
+      "file_type": "document",
+      "source_file": "Plan/nexora-dental-core-implementation.md",
+      "source_location": "9.1",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "dental_appointment",
+      "label": "DentalAppointment",
+      "file_type": "document",
+      "source_file": "Plan/nexora-dental-core-implementation.md",
+      "source_location": "9.5",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "dental_billing_service",
+      "label": "DentalBillingService",
+      "file_type": "document",
+      "source_file": "Plan/nexora-dental-core-implementation.md",
+      "source_location": "13",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "nexora_financial_core",
+      "label": "Nexora Financial Core",
+      "file_type": "document",
+      "source_file": "Plan/nexora-financial-core-implementation.md",
+      "source_location": "title",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "financial_period",
+      "label": "FinancialPeriod",
+      "file_type": "document",
+      "source_file": "Plan/nexora-financial-core-implementation.md",
+      "source_location": "8",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "budget_plan",
+      "label": "BudgetPlan",
+      "file_type": "document",
+      "source_file": "Plan/nexora-financial-core-implementation.md",
+      "source_location": "8",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "financial_transaction",
+      "label": "FinancialTransaction",
+      "file_type": "document",
+      "source_file": "Plan/nexora-financial-core-implementation.md",
+      "source_location": "8",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "nexora_garage_core",
+      "label": "Nexora Garage Core 1",
+      "file_type": "document",
+      "source_file": "Plan/nexora_garage_core_1_plan.md",
+      "source_location": "title",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "vehicle_history",
+      "label": "Vehicle History",
+      "file_type": "document",
+      "source_file": "Plan/nexora_garage_core_1_plan.md",
+      "source_location": "Core 1",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "garage_appointments",
+      "label": "Garage Appointments / Pre-ingreso",
+      "file_type": "document",
+      "source_file": "Plan/nexora_garage_core_1_plan.md",
+      "source_location": "11",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "visual_configuration",
+      "label": "Visual Configuration",
+      "file_type": "document",
+      "source_file": "Plan/plan-implementacion-config-visual-nexora.md",
+      "source_location": "title",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "configuration_dashboard",
+      "label": "Configuration Dashboard",
+      "file_type": "document",
+      "source_file": "Plan/plan_implementacion_dashboard_config_nexora.md",
+      "source_location": "title",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "dom_elements",
+      "label": "DOM Elements",
+      "file_type": "document",
+      "source_file": "Plan/plan_implementacion_elementos_dom_nexora.md",
+      "source_location": "title",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "base_modal",
+      "label": "Base Modal",
+      "file_type": "document",
+      "source_file": "Plan/plan_implementacion_elementos_dom_nexora.md",
+      "source_location": "1",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "toast_notifications",
+      "label": "Toast Notifications",
+      "file_type": "document",
+      "source_file": "Plan/plan_implementacion_elementos_dom_nexora.md",
+      "source_location": "5",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "master_prompt_nexora",
+      "label": "Nexora Master Prompt v3",
+      "file_type": "document",
+      "source_file": "Plan/nexora_prompt_maestro_v3.md",
+      "source_location": "title",
+      "source_url": null,
+      "captured_at": "2026-06-05T17:54:59.274901+00:00",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "login_auth01",
+      "label": "AUTH-01 Login multiempresa y multiperfil con onboarding de solicitud",
+      "file_type": "document",
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "?pica",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "login_multi_company_login_flow",
+      "label": "Login multiempresa por pasos",
+      "file_type": "document",
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Objetivo",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "login_discover_companies_endpoint",
+      "label": "POST /auth/discover-companies",
+      "file_type": "document",
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Fase 3 ? Endpoints sugeridos",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "login_validate_password_endpoint",
+      "label": "POST /auth/validate-password",
+      "file_type": "document",
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Fase 3 ? Endpoints sugeridos",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "login_select_profile_endpoint",
+      "label": "POST /auth/select-profile",
+      "file_type": "document",
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Fase 3 ? Endpoints sugeridos",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "login_auth_me_endpoint",
+      "label": "GET /auth/me",
+      "file_type": "document",
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Fase 3 ? Endpoints sugeridos",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "login_onboarding_request",
+      "label": "Onboarding request",
+      "file_type": "document",
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Fase 5",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "login_super_admin_review",
+      "label": "Super admin onboarding review",
+      "file_type": "document",
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Fase 5",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "login_auth_service",
+      "label": "AuthService",
+      "file_type": "document",
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Recomendaci?n t?cnica",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "login_session_context_auth_store",
+      "label": "SessionContext or AuthStore",
+      "file_type": "document",
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Recomendaci?n t?cnica",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "login_state_machine",
+      "label": "Step login state machine",
+      "file_type": "document",
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Recomendaci?n t?cnica",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "login_session_token_context",
+      "label": "Token with schema companyId and profile",
+      "file_type": "document",
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Fase 2/Fase 3",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "login_role_permission_navigation",
+      "label": "Profile-driven modules and navigation",
+      "file_type": "document",
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Fase 6",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "profiles_sec_profiles01",
+      "label": "SEC-PROFILES-01 Perfiles permisos y m?dulos",
+      "file_type": "document",
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "M?dulo",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "profiles_parameterized_access_model",
+      "label": "Parameterized access model",
+      "file_type": "document",
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Objetivo/Rol de esta ventana",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "profiles_module",
+      "label": "M?dulo",
+      "file_type": "document",
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Definiciones funcionales clave ? M?dulo",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "profiles_profile",
+      "label": "Perfil reutilizable",
+      "file_type": "document",
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Definiciones funcionales clave ? Perfil",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "profiles_action_permission",
+      "label": "Permiso por acci?n",
+      "file_type": "document",
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Definiciones funcionales clave ? Permiso por acci?n",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "profiles_profile_scope",
+      "label": "Alcance del perfil",
+      "file_type": "document",
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Definiciones funcionales clave ? Alcance del perfil",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "profiles_profile_module_action_relation",
+      "label": "Relaci?n perfil m?dulo acci?n",
+      "file_type": "document",
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Fase 1",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "profiles_modules_catalog",
+      "label": "Biblioteca de m?dulos",
+      "file_type": "document",
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Componentes funcionales aprobados ? 5",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "profiles_profile_library",
+      "label": "Biblioteca de perfiles",
+      "file_type": "document",
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Componentes funcionales aprobados ? 3",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "profiles_navigation_visibility",
+      "label": "Navigation and visibility integration",
+      "file_type": "document",
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Fase 5",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "profiles_permission_middleware",
+      "label": "Middleware or validation layer",
+      "file_type": "document",
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Fase 5/Recomendaci?n t?cnica",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "users_sec_users01",
+      "label": "SEC-USERS-01 Gesti?n de usuarios accesos y visibilidad",
+      "file_type": "document",
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "M?dulo",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "users_user_management_window",
+      "label": "User management window",
+      "file_type": "document",
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "Objetivo",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "users_user",
+      "label": "Usuario",
+      "file_type": "document",
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "Objetivo/Alcance funcional",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "users_role",
+      "label": "Rol",
+      "file_type": "document",
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "Definiciones funcionales clave ? Rol",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "users_job_position",
+      "label": "Cargo",
+      "file_type": "document",
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "Definiciones funcionales clave ? Cargo",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "users_profile",
+      "label": "Perfil funcional del usuario",
+      "file_type": "document",
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "Definiciones funcionales clave ? Perfil",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "users_access_level",
+      "label": "Nivel de acceso",
+      "file_type": "document",
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "Definiciones funcionales clave ? Nivel de acceso",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "users_enabled_modules",
+      "label": "M?dulos habilitados",
+      "file_type": "document",
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "Alcance funcional/Formulario",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "users_user_company_relation",
+      "label": "Relaci?n usuario empresa",
+      "file_type": "document",
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "Fase 3",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "users_user_profile_relation",
+      "label": "Relaci?n usuario perfil",
+      "file_type": "document",
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "Fase 3",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "users_crud_endpoints",
+      "label": "User CRUD endpoints",
+      "file_type": "document",
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "Fase 4",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "users_advanced_permissions_base",
+      "label": "Base para permisos avanzados",
+      "file_type": "document",
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "Fase 5",
+      "source_url": null,
+      "captured_at": "2026-06-05",
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "logo_icon_brand_mark",
+      "label": "Logo Icon Brand Mark",
+      "file_type": "image",
+      "source_file": "FrontEnd/Portal/src/assets/logo_icon.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "logo_icon_metallic_n_monogram",
+      "label": "Metallic N Monogram",
+      "file_type": "image",
+      "source_file": "FrontEnd/Portal/src/assets/logo_icon.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "logo_icon_circular_gradient_ring",
+      "label": "Circular Purple-Gold Gradient Ring",
+      "file_type": "image",
+      "source_file": "FrontEnd/Portal/src/assets/logo_icon.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "logo_icon_metallic_dimensional_style",
+      "label": "Metallic Dimensional Logo Style",
+      "file_type": "image",
+      "source_file": "FrontEnd/Portal/src/assets/logo_icon.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "logo_icon_soft_blurred_background",
+      "label": "Soft Blurred Gray Purple Gold Background",
+      "file_type": "image",
+      "source_file": "FrontEnd/Portal/src/assets/logo_icon.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "file:FrontEnd/Portal/src/assets/logo_icon3.png",
+      "label": "logo_icon3.png",
+      "type": "file",
+      "file_type": "image",
+      "path": "FrontEnd/Portal/src/assets/logo_icon3.png",
+      "image_dimensions": {
+        "width": 700,
+        "height": 675
+      },
+      "image_mode": "RGBA"
+    },
+    {
+      "id": "image:logo_icon3",
+      "label": "Nexora icon logo",
+      "type": "brand_asset",
+      "file_type": "image",
+      "description": "A centered metallic silver uppercase N inside a thick circular gradient ring on a transparent background."
+    },
+    {
+      "id": "visual:metallic_n_monogram",
+      "label": "Metallic N monogram",
+      "type": "visual_component",
+      "file_type": "image",
+      "description": "Large beveled uppercase N with silver metallic gradient, central placement, and subtle shadow/highlight edges."
+    },
+    {
+      "id": "visual:circular_gradient_ring",
+      "label": "Circular purple-gold ring",
+      "type": "visual_component",
+      "file_type": "image",
+      "description": "Thick circular ring surrounding the monogram, mostly purple with gold/yellow gradient around the lower-right arc."
+    },
+    {
+      "id": "visual:transparent_background",
+      "label": "Transparent background",
+      "type": "visual_property",
+      "file_type": "image",
+      "description": "RGBA image uses transparent/empty background outside the logo mark."
+    },
+    {
+      "id": "color:purple_gradient",
+      "label": "Purple gradient",
+      "type": "color_palette",
+      "file_type": "image"
+    },
+    {
+      "id": "color:gold_gradient",
+      "label": "Gold gradient",
+      "type": "color_palette",
+      "file_type": "image"
+    },
+    {
+      "id": "color:silver_metallic",
+      "label": "Silver metallic gradient",
+      "type": "color_palette",
+      "file_type": "image"
+    },
+    {
+      "id": "layout:centered_logo_composition",
+      "label": "Centered logo composition",
+      "type": "layout",
+      "file_type": "image",
+      "description": "The monogram is visually centered inside the circular ring, forming a compact app/logo icon."
+    },
+    {
+      "id": "logo_sf_nexora_logo_asset",
+      "label": "Nexora Logo Asset",
+      "file_type": "image",
+      "source_file": "FrontEnd/Portal/src/assets/Logo_SF.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "logo_sf_n_monogram",
+      "label": "Metallic N Monogram",
+      "file_type": "image",
+      "source_file": "FrontEnd/Portal/src/assets/Logo_SF.png",
+      "source_location": "center",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "logo_sf_circular_badge",
+      "label": "Circular Badge Frame",
+      "file_type": "image",
+      "source_file": "FrontEnd/Portal/src/assets/Logo_SF.png",
+      "source_location": "center surrounding monogram",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "logo_sf_purple_gold_gradient",
+      "label": "Purple and Gold Gradient Glow",
+      "file_type": "image",
+      "source_file": "FrontEnd/Portal/src/assets/Logo_SF.png",
+      "source_location": "background and ring lighting",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "logo_sf_metallic_3d_style",
+      "label": "Metallic 3D Brand Style",
+      "file_type": "image",
+      "source_file": "FrontEnd/Portal/src/assets/Logo_SF.png",
+      "source_location": "monogram and circular frame",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "file:Plan/logo_full.png",
+      "label": "logo_full.png",
+      "type": "image_file",
+      "file_type": "image",
+      "source_path": "Plan/logo_full.png",
+      "properties": {
+        "format": "PNG",
+        "dimensions": {
+          "width": 1536,
+          "height": 1024
+        },
+        "mode": "RGBA"
+      }
+    },
+    {
+      "id": "brand:HRCastell",
+      "label": "HRCastell",
+      "type": "brand_identity",
+      "file_type": "image",
+      "source_path": "Plan/logo_full.png",
+      "properties": {
+        "visible_text": "HRCastell",
+        "role": "primary brand wordmark"
+      }
+    },
+    {
+      "id": "tagline:Enterprise_Core",
+      "label": "Enterprise Core",
+      "type": "tagline",
+      "file_type": "image",
+      "source_path": "Plan/logo_full.png",
+      "properties": {
+        "visible_text": "ENTERPRISE CORE",
+        "role": "secondary descriptor/tagline",
+        "letter_case": "uppercase"
+      }
+    },
+    {
+      "id": "logo_mark:blue_octagonal_emblem",
+      "label": "Blue octagonal emblem",
+      "type": "logo_mark",
+      "file_type": "image",
+      "source_path": "Plan/logo_full.png",
+      "properties": {
+        "description": "glowing blue geometric octagonal/castle-like emblem with nested outlines and right-side notch",
+        "dominant_color": "blue",
+        "position": "left of wordmark"
+      }
+    },
+    {
+      "id": "layout:horizontal_logo_lockup",
+      "label": "Horizontal logo lockup",
+      "type": "visual_layout",
+      "file_type": "image",
+      "source_path": "Plan/logo_full.png",
+      "properties": {
+        "description": "left icon paired with right-aligned two-line text lockup",
+        "orientation": "horizontal",
+        "background": "dark gray gradient/blurred backdrop"
+      }
+    },
+    {
+      "id": "style:dark_enterprise_tech",
+      "label": "Dark enterprise technology styling",
+      "type": "visual_style",
+      "file_type": "image",
+      "source_path": "Plan/logo_full.png",
+      "properties": {
+        "description": "black bold sans-serif text, blue glow accent, dark gray atmospheric background",
+        "mood": "enterprise technology"
+      }
+    },
+    {
+      "id": "logo_full1_full_logo_lockup",
+      "label": "HRCastell Enterprise Core Full Logo Lockup",
+      "file_type": "image",
+      "source_file": "Plan/logo_full1.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "The image presents a complete horizontal brand lockup: a blue geometric icon on the left, the HRCastell wordmark on the right, and the ENTERPRISE CORE descriptor underneath."
+    },
+    {
+      "id": "logo_full1_blue_geometric_icon",
+      "label": "Blue Geometric Octagonal Brand Icon",
+      "file_type": "image",
+      "source_file": "Plan/logo_full1.png",
+      "source_location": "left side of image",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "The icon uses nested octagonal outlines and a right-side connector cutout, suggesting a technology, system, or modular-core identity."
+    },
+    {
+      "id": "logo_full1_hrcastell_wordmark",
+      "label": "HRCastell Wordmark",
+      "file_type": "image",
+      "source_file": "Plan/logo_full1.png",
+      "source_location": "right side, main text",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "The primary brand text reads HRCastell in a bold dark sans-serif style."
+    },
+    {
+      "id": "logo_full1_enterprise_core_tagline",
+      "label": "ENTERPRISE CORE Tagline",
+      "file_type": "image",
+      "source_file": "Plan/logo_full1.png",
+      "source_location": "below wordmark",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "The secondary uppercase descriptor reads ENTERPRISE CORE with wide letter spacing."
+    },
+    {
+      "id": "logo_full1_horizontal_layout",
+      "label": "Horizontal Logo Layout",
+      "file_type": "image",
+      "source_file": "Plan/logo_full1.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "The composition places the symbol to the left and stacked typography to the right, forming a wide horizontal logo suitable for headers or branding surfaces."
+    },
+    {
+      "id": "logo_full1_blue_black_palette",
+      "label": "Blue and Black Brand Palette",
+      "file_type": "image",
+      "source_file": "Plan/logo_full1.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null,
+      "rationale": "The visible palette combines a bright cyan-blue icon with dark near-black typography."
+    },
+    {
+      "id": "file:Plan/Logo_icon2.png",
+      "label": "Logo_icon2.png",
+      "type": "file",
+      "file_type": "image",
+      "path": "Plan/Logo_icon2.png",
+      "description": "Square image containing the Nexora logo icon on a dark background."
+    },
+    {
+      "id": "image:Logo_icon2:NexoraLogoIcon",
+      "label": "Nexora logo icon",
+      "type": "visual_asset",
+      "file_type": "image",
+      "description": "A 3D-styled logo composed of a metallic silver letter N inside a circular ring."
+    },
+    {
+      "id": "image:Logo_icon2:LetterN",
+      "label": "Metallic letter N",
+      "type": "visual_element",
+      "file_type": "image",
+      "description": "Central uppercase N rendered in silver/white metallic 3D styling."
+    },
+    {
+      "id": "image:Logo_icon2:CircularRing",
+      "label": "Gradient circular ring",
+      "type": "visual_element",
+      "file_type": "image",
+      "description": "Circular border ring around the letter N, rendered with purple and gold gradient segments."
+    },
+    {
+      "id": "image:Logo_icon2:DarkBackground",
+      "label": "Dark navy background",
+      "type": "visual_element",
+      "file_type": "image",
+      "description": "Dark navy/black textured background behind the logo."
+    },
+    {
+      "id": "concept:BrandColor:Purple",
+      "label": "Purple brand color",
+      "type": "color",
+      "file_type": "image",
+      "description": "Prominent purple hue used on the circular ring."
+    },
+    {
+      "id": "concept:BrandColor:Gold",
+      "label": "Gold brand color",
+      "type": "color",
+      "file_type": "image",
+      "description": "Gold/yellow hue used on the lower-right portion of the circular ring."
+    },
+    {
+      "id": "concept:BrandColor:Silver",
+      "label": "Silver metallic color",
+      "type": "color",
+      "file_type": "image",
+      "description": "Silver/white metallic hue used for the central N."
+    },
+    {
+      "id": "nexora1_nexora_wordmark",
+      "label": "Nexora Wordmark",
+      "file_type": "image",
+      "source_file": "Plan/nexora1.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "nexora1_circular_n_emblem",
+      "label": "Circular N Emblem",
+      "file_type": "image",
+      "source_file": "Plan/nexora1.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "nexora1_metallic_3d_logo_style",
+      "label": "Metallic 3D Logo Style",
+      "file_type": "image",
+      "source_file": "Plan/nexora1.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "nexora1_purple_gold_accent_glow",
+      "label": "Purple and Gold Accent Glow",
+      "file_type": "image",
+      "source_file": "Plan/nexora1.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "nexora1_gray_gradient_background",
+      "label": "Gray Gradient Background",
+      "file_type": "image",
+      "source_file": "Plan/nexora1.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "nexora2_logo_asset",
+      "label": "Nexora Logo Asset",
+      "file_type": "image",
+      "source_file": "Plan/nexora2.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "nexora2_nexora_wordmark",
+      "label": "NEXORA Wordmark",
+      "file_type": "image",
+      "source_file": "Plan/nexora2.png",
+      "source_location": "center-right text",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "nexora2_circular_n_icon",
+      "label": "Circular N Icon",
+      "file_type": "image",
+      "source_file": "Plan/nexora2.png",
+      "source_location": "left emblem",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "nexora2_metallic_lettering",
+      "label": "Metallic Silver Lettering",
+      "file_type": "image",
+      "source_file": "Plan/nexora2.png",
+      "source_location": "wordmark and inner N",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "nexora2_purple_gold_ring",
+      "label": "Purple Gold Gradient Ring",
+      "file_type": "image",
+      "source_file": "Plan/nexora2.png",
+      "source_location": "left emblem outer ring",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "nexora2_black_background",
+      "label": "Black Background",
+      "file_type": "image",
+      "source_file": "Plan/nexora2.png",
+      "source_location": "full canvas background",
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "nexora3_logo",
+      "label": "Nexora Logo",
+      "file_type": "image",
+      "source_file": "Plan/nexora3.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "nexora3_wordmark",
+      "label": "NEXORA Wordmark",
+      "file_type": "image",
+      "source_file": "Plan/nexora3.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "nexora3_monogram_n",
+      "label": "N Monogram",
+      "file_type": "image",
+      "source_file": "Plan/nexora3.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "nexora3_circular_emblem",
+      "label": "Circular Emblem",
+      "file_type": "image",
+      "source_file": "Plan/nexora3.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "nexora3_gradient_ring",
+      "label": "Purple-to-Gold Gradient Ring",
+      "file_type": "image",
+      "source_file": "Plan/nexora3.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "nexora3_metallic_style",
+      "label": "Metallic Silver 3D Style",
+      "file_type": "image",
+      "source_file": "Plan/nexora3.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "nexora3_transparent_background",
+      "label": "Transparent Dark-Compatible Background",
+      "file_type": "image",
+      "source_file": "Plan/nexora3.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "logo_icon_nexora_logo_icon",
+      "label": "Nexora Logo Icon",
+      "file_type": "image",
+      "source_file": "Plan/Logo/logo_icon.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "logo_icon_n_monogram",
+      "label": "N Monogram",
+      "file_type": "image",
+      "source_file": "Plan/Logo/logo_icon.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "logo_icon_circular_badge",
+      "label": "Circular Badge",
+      "file_type": "image",
+      "source_file": "Plan/Logo/logo_icon.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "logo_icon_purple_gold_gradient",
+      "label": "Purple and Gold Gradient",
+      "file_type": "image",
+      "source_file": "Plan/Logo/logo_icon.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "logo_icon_metallic_3d_style",
+      "label": "Metallic 3D Style",
+      "file_type": "image",
+      "source_file": "Plan/Logo/logo_icon.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "file:Plan/Logo/logo_icon3.png",
+      "label": "logo_icon3.png",
+      "type": "file",
+      "file_type": "image",
+      "path": "Plan/Logo/logo_icon3.png",
+      "description": "PNG image asset containing the Nexora logo icon."
+    },
+    {
+      "id": "visual:nexora-logo-icon",
+      "label": "Nexora logo icon",
+      "type": "visual_asset",
+      "file_type": "image",
+      "description": "Circular emblem with a metallic uppercase N centered inside a purple-to-gold ring on a transparent background."
+    },
+    {
+      "id": "symbol:uppercase-n",
+      "label": "Uppercase N",
+      "type": "symbol",
+      "file_type": "image",
+      "description": "Large metallic silver uppercase letter N used as the central mark."
+    },
+    {
+      "id": "shape:circular-ring",
+      "label": "Circular ring",
+      "type": "shape",
+      "file_type": "image",
+      "description": "Thick circular border surrounding the central N."
+    },
+    {
+      "id": "color:purple-gold-gradient",
+      "label": "Purple-to-gold gradient",
+      "type": "color_palette",
+      "file_type": "image",
+      "description": "Outer ring gradient dominated by purple with a gold/yellow segment at the lower-right and bottom."
+    },
+    {
+      "id": "color:metallic-silver",
+      "label": "Metallic silver",
+      "type": "color",
+      "file_type": "image",
+      "description": "Silver gradient and bevel styling applied to the central N."
+    },
+    {
+      "id": "style:beveled-3d-logo",
+      "label": "Beveled 3D logo style",
+      "type": "visual_style",
+      "file_type": "image",
+      "description": "Glossy beveled rendering with highlights and shadows that gives the mark depth."
+    },
+    {
+      "id": "background:transparent",
+      "label": "Transparent background",
+      "type": "background",
+      "file_type": "image",
+      "description": "The image background is transparent around the logo."
+    },
+    {
+      "id": "logo_sf_nexora_logo",
+      "label": "Nexora Logo",
+      "file_type": "image",
+      "source_file": "Plan/Logo/Logo_SF.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "logo_sf_metallic_letter_n",
+      "label": "Metallic Letter N",
+      "file_type": "image",
+      "source_file": "Plan/Logo/Logo_SF.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "logo_sf_circular_gradient_ring",
+      "label": "Circular Gradient Ring",
+      "file_type": "image",
+      "source_file": "Plan/Logo/Logo_SF.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "logo_sf_purple_gold_palette",
+      "label": "Purple and Gold Palette",
+      "file_type": "image",
+      "source_file": "Plan/Logo/Logo_SF.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "logo_sf_metallic_embossed_style",
+      "label": "Metallic Embossed Style",
+      "file_type": "image",
+      "source_file": "Plan/Logo/Logo_SF.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "logo_sf_glowing_background",
+      "label": "Soft Glowing Background",
+      "file_type": "image",
+      "source_file": "Plan/Logo/Logo_SF.png",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "nexora",
+      "target": "multi_tenant_saas_platform",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": "Visi?n del proyecto",
+      "weight": 1.0
+    },
+    {
+      "source": "multi_tenant_saas_platform",
+      "target": "postgresql_schema_isolation",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "CLAUDE.md",
+      "source_location": "Project overview",
+      "weight": 1.0
+    },
+    {
+      "source": "postgresql_schema_isolation",
+      "target": "public_schema",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "CLAUDE.md",
+      "source_location": "Project overview",
+      "weight": 1.0
+    },
+    {
+      "source": "postgresql_schema_isolation",
+      "target": "company_schema",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "CLAUDE.md",
+      "source_location": "Project overview",
+      "weight": 1.0
+    },
+    {
+      "source": "company_schema",
+      "target": "hernancius_schema",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "CLAUDE.md",
+      "source_location": "Project overview",
+      "weight": 1.0
+    },
+    {
+      "source": "nexora",
+      "target": "vue_frontend",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md",
+      "source_location": "Stack tecnol?gico oficial",
+      "weight": 1.0
+    },
+    {
+      "source": "nexora",
+      "target": "fastapi_backend",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "RULES_AND_SKILLS.md",
+      "source_location": "3.2",
+      "weight": 1.0
+    },
+    {
+      "source": "nexora",
+      "target": "postgresql_10_23",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "RULES_AND_SKILLS.md",
+      "source_location": "4",
+      "weight": 1.0
+    },
+    {
+      "source": "nexora",
+      "target": "cpanel_shared_hosting",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "RULES_AND_SKILLS.md",
+      "source_location": "1",
+      "weight": 1.0
+    },
+    {
+      "source": "cpanel_shared_hosting",
+      "target": "fastapi_backend",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "RULES_AND_SKILLS.md",
+      "source_location": "3.2",
+      "weight": 1.0
+    },
+    {
+      "source": "cpanel_shared_hosting",
+      "target": "postgresql_10_23",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "RULES_AND_SKILLS.md",
+      "source_location": "Consecuencias pr?cticas",
+      "weight": 1.0
+    },
+    {
+      "source": "super_admin",
+      "target": "owner_digital_signature",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "README.md",
+      "source_location": "Firma digital del propietario",
+      "weight": 1.0
+    },
+    {
+      "source": "nexora_portal_html",
+      "target": "vite_main_ts",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "FrontEnd/Portal/index.html",
+      "source_location": "script src",
+      "weight": 1.0
+    },
+    {
+      "source": "permission_profile_issue",
+      "target": "profile_permissions",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/error_perfiles.md",
+      "source_location": "Problema actual",
+      "weight": 1.0
+    },
+    {
+      "source": "tenant_default_admin_user",
+      "target": "company_admin_profile",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/error_perfiles.md",
+      "source_location": "Contexto general",
+      "weight": 1.0
+    },
+    {
+      "source": "super_admin",
+      "target": "profile_permissions",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/error_perfiles.md",
+      "source_location": "Control total del super_admin",
+      "weight": 1.0
+    },
+    {
+      "source": "company_admin_profile",
+      "target": "profile_permissions",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/error_perfiles.md",
+      "source_location": "2",
+      "weight": 1.0
+    },
+    {
+      "source": "profile_permissions",
+      "target": "sidebar_visibility",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/error_perfiles.md",
+      "source_location": "3",
+      "weight": 1.0
+    },
+    {
+      "source": "profile_permissions",
+      "target": "route_permission_guard",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/error_perfiles.md",
+      "source_location": "4",
+      "weight": 1.0
+    },
+    {
+      "source": "profile_permissions",
+      "target": "backend_permission_validation",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/error_perfiles.md",
+      "source_location": "5",
+      "weight": 1.0
+    },
+    {
+      "source": "backend_permission_validation",
+      "target": "forbidden_403",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/error_perfiles.md",
+      "source_location": "5",
+      "weight": 1.0
+    },
+    {
+      "source": "sidebar_visibility",
+      "target": "route_permission_guard",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "Plan/error_perfiles.md",
+      "source_location": "3-4",
+      "weight": 1.0
+    },
+    {
+      "source": "unified_agent_system",
+      "target": "engram_memory",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".atl/AGENT_SYNC.md",
+      "source_location": "Componentes Compartidos",
+      "weight": 1.0
+    },
+    {
+      "source": "unified_agent_system",
+      "target": "sdd_spec_driven_development",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".atl/AGENT_SYNC.md",
+      "source_location": "Componentes Compartidos",
+      "weight": 1.0
+    },
+    {
+      "source": "unified_agent_system",
+      "target": "graphify_knowledge_graphs",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".atl/AGENT_SYNC.md",
+      "source_location": "Componentes Compartidos",
+      "weight": 1.0
+    },
+    {
+      "source": "unified_agent_system",
+      "target": "skill_registry",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".atl/README.md",
+      "source_location": "Actualizaci?n",
+      "weight": 1.0
+    },
+    {
+      "source": "skill_registry",
+      "target": "skill_resolver_protocol",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".atl/AGENT_SYNC.md",
+      "source_location": "Resoluci?n de Skills",
+      "weight": 1.0
+    },
+    {
+      "source": "graphify_build_workflow",
+      "target": "graphify_knowledge_graphs",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".windsurf/workflows/graphify-build.md",
+      "source_location": "title",
+      "weight": 1.0
+    },
+    {
+      "source": "graphify_query_workflow",
+      "target": "graphify_knowledge_graphs",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".windsurf/workflows/graphify-query.md",
+      "source_location": "title",
+      "weight": 1.0
+    },
+    {
+      "source": "sdd_new_workflow",
+      "target": "sdd_spec_driven_development",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".windsurf/workflows/sdd-new.md",
+      "source_location": "Usage",
+      "weight": 1.0
+    },
+    {
+      "source": "sdd_status_workflow",
+      "target": "sdd_spec_driven_development",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".windsurf/workflows/sdd-status.md",
+      "source_location": "Usage",
+      "weight": 1.0
+    },
+    {
+      "source": "agent_replication_guide",
+      "target": "unified_agent_system",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".atl/REPLICATION_GUIDE.md",
+      "source_location": "title",
+      "weight": 1.0
+    },
+    {
+      "source": "nexora_dental_core",
+      "target": "dental_patient_profile",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora-dental-core-implementation.md",
+      "source_location": "9",
+      "weight": 1.0
+    },
+    {
+      "source": "nexora_dental_core",
+      "target": "dental_appointment",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora-dental-core-implementation.md",
+      "source_location": "9",
+      "weight": 1.0
+    },
+    {
+      "source": "nexora_dental_core",
+      "target": "dental_billing_service",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora-dental-core-implementation.md",
+      "source_location": "13",
+      "weight": 1.0
+    },
+    {
+      "source": "dental_billing_service",
+      "target": "dental_appointment",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.72,
+      "source_file": "Plan/nexora-dental-core-implementation.md",
+      "source_location": "15",
+      "weight": 1.0
+    },
+    {
+      "source": "nexora_financial_core",
+      "target": "financial_period",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora-financial-core-implementation.md",
+      "source_location": "8",
+      "weight": 1.0
+    },
+    {
+      "source": "nexora_financial_core",
+      "target": "budget_plan",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora-financial-core-implementation.md",
+      "source_location": "8",
+      "weight": 1.0
+    },
+    {
+      "source": "nexora_financial_core",
+      "target": "financial_transaction",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora-financial-core-implementation.md",
+      "source_location": "8",
+      "weight": 1.0
+    },
+    {
+      "source": "budget_plan",
+      "target": "financial_transaction",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora-financial-core-implementation.md",
+      "source_location": "11",
+      "weight": 1.0
+    },
+    {
+      "source": "nexora_garage_core",
+      "target": "vehicle_history",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora_garage_core_1_plan.md",
+      "source_location": "Core 1",
+      "weight": 1.0
+    },
+    {
+      "source": "nexora_garage_core",
+      "target": "garage_appointments",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora_garage_core_1_plan.md",
+      "source_location": "11",
+      "weight": 1.0
+    },
+    {
+      "source": "garage_appointments",
+      "target": "dental_appointment",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.78,
+      "source_file": "Plan/nexora_garage_core_1_plan.md",
+      "source_location": "11",
+      "weight": 1.0
+    },
+    {
+      "source": "nexora_garage_core",
+      "target": "nexora_dental_core",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.66,
+      "source_file": "Plan/nexora_garage_core_1_plan.md",
+      "source_location": "domain core plan",
+      "weight": 1.0
+    },
+    {
+      "source": "visual_configuration",
+      "target": "configuration_dashboard",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.82,
+      "source_file": "Plan/plan-implementacion-config-visual-nexora.md",
+      "source_location": "Contexto funcional",
+      "weight": 1.0
+    },
+    {
+      "source": "configuration_dashboard",
+      "target": "profile_permissions",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.68,
+      "source_file": "Plan/plan_implementacion_dashboard_config_nexora.md",
+      "source_location": "M?dulos visibles",
+      "weight": 1.0
+    },
+    {
+      "source": "dom_elements",
+      "target": "base_modal",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/plan_implementacion_elementos_dom_nexora.md",
+      "source_location": "Componentes aprobados",
+      "weight": 1.0
+    },
+    {
+      "source": "dom_elements",
+      "target": "toast_notifications",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/plan_implementacion_elementos_dom_nexora.md",
+      "source_location": "Componentes aprobados",
+      "weight": 1.0
+    },
+    {
+      "source": "master_prompt_nexora",
+      "target": "nexora",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora_prompt_maestro_v3.md",
+      "source_location": "NOMBRE DEL PRODUCTO",
+      "weight": 1.0
+    },
+    {
+      "source": "master_prompt_nexora",
+      "target": "vue_frontend",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora_prompt_maestro_v3.md",
+      "source_location": "STACK TECNOL?GICO OBLIGATORIO",
+      "weight": 1.0
+    },
+    {
+      "source": "master_prompt_nexora",
+      "target": "postgresql_schema_isolation",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora_prompt_maestro_v3.md",
+      "source_location": "ARQUITECTURA MULTICOMPA??A",
+      "weight": 1.0
+    },
+    {
+      "source": "master_prompt_nexora",
+      "target": "super_admin",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora_prompt_maestro_v3.md",
+      "source_location": "VENTANAS EXCLUSIVAS DEL SUPER_ADMIN",
+      "weight": 1.0
+    },
+    {
+      "source": "window_based_development",
+      "target": "configuration_dashboard",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "README.md",
+      "source_location": "Flujo de trabajo por ventana",
+      "weight": 1.0
+    },
+    {
+      "source": "login_auth01",
+      "target": "login_multi_company_login_flow",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Objetivo",
+      "weight": 1.0
+    },
+    {
+      "source": "login_multi_company_login_flow",
+      "target": "login_discover_companies_endpoint",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Fase 4",
+      "weight": 1.0
+    },
+    {
+      "source": "login_multi_company_login_flow",
+      "target": "login_validate_password_endpoint",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Fase 4",
+      "weight": 1.0
+    },
+    {
+      "source": "login_multi_company_login_flow",
+      "target": "login_select_profile_endpoint",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Fase 3",
+      "weight": 1.0
+    },
+    {
+      "source": "login_select_profile_endpoint",
+      "target": "login_session_token_context",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Fase 3",
+      "weight": 1.0
+    },
+    {
+      "source": "login_auth_me_endpoint",
+      "target": "login_session_token_context",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Fase 3",
+      "weight": 1.0
+    },
+    {
+      "source": "login_onboarding_request",
+      "target": "login_super_admin_review",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Objetivo/Fase 5",
+      "weight": 1.0
+    },
+    {
+      "source": "login_auth_service",
+      "target": "login_multi_company_login_flow",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Recomendaci?n t?cnica",
+      "weight": 1.0
+    },
+    {
+      "source": "login_session_context_auth_store",
+      "target": "login_session_token_context",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Recomendaci?n t?cnica",
+      "weight": 1.0
+    },
+    {
+      "source": "login_state_machine",
+      "target": "login_multi_company_login_flow",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Recomendaci?n t?cnica",
+      "weight": 1.0
+    },
+    {
+      "source": "login_role_permission_navigation",
+      "target": "login_select_profile_endpoint",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Fase 6",
+      "weight": 1.0
+    },
+    {
+      "source": "profiles_sec_profiles01",
+      "target": "profiles_parameterized_access_model",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Objetivo",
+      "weight": 1.0
+    },
+    {
+      "source": "profiles_parameterized_access_model",
+      "target": "profiles_module",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Rol de esta ventana",
+      "weight": 1.0
+    },
+    {
+      "source": "profiles_parameterized_access_model",
+      "target": "profiles_profile",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Rol de esta ventana",
+      "weight": 1.0
+    },
+    {
+      "source": "profiles_profile",
+      "target": "profiles_module",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Relaci?n con la ventana de usuarios",
+      "weight": 1.0
+    },
+    {
+      "source": "profiles_profile",
+      "target": "profiles_action_permission",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Definiciones funcionales clave",
+      "weight": 1.0
+    },
+    {
+      "source": "profiles_profile",
+      "target": "profiles_profile_scope",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Definiciones funcionales clave",
+      "weight": 1.0
+    },
+    {
+      "source": "profiles_profile_module_action_relation",
+      "target": "profiles_profile",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Fase 1",
+      "weight": 1.0
+    },
+    {
+      "source": "profiles_profile_module_action_relation",
+      "target": "profiles_module",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Fase 1",
+      "weight": 1.0
+    },
+    {
+      "source": "profiles_profile_module_action_relation",
+      "target": "profiles_action_permission",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Fase 1",
+      "weight": 1.0
+    },
+    {
+      "source": "profiles_modules_catalog",
+      "target": "profiles_module",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Componentes funcionales aprobados",
+      "weight": 1.0
+    },
+    {
+      "source": "profiles_profile_library",
+      "target": "profiles_profile",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Componentes funcionales aprobados",
+      "weight": 1.0
+    },
+    {
+      "source": "profiles_navigation_visibility",
+      "target": "profiles_parameterized_access_model",
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Fase 5",
+      "weight": 1.0
+    },
+    {
+      "source": "profiles_permission_middleware",
+      "target": "profiles_action_permission",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.82,
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Fase 5",
+      "weight": 1.0
+    },
+    {
+      "source": "users_sec_users01",
+      "target": "users_user_management_window",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "Objetivo",
+      "weight": 1.0
+    },
+    {
+      "source": "users_user_management_window",
+      "target": "users_user",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "Alcance funcional",
+      "weight": 1.0
+    },
+    {
+      "source": "users_user",
+      "target": "users_role",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "Objetivo",
+      "weight": 1.0
+    },
+    {
+      "source": "users_user",
+      "target": "users_job_position",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "Objetivo",
+      "weight": 1.0
+    },
+    {
+      "source": "users_user",
+      "target": "users_profile",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "Objetivo",
+      "weight": 1.0
+    },
+    {
+      "source": "users_user",
+      "target": "users_access_level",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "Definiciones funcionales clave",
+      "weight": 1.0
+    },
+    {
+      "source": "users_user",
+      "target": "users_enabled_modules",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "Alcance funcional",
+      "weight": 1.0
+    },
+    {
+      "source": "users_user_company_relation",
+      "target": "users_user",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "Fase 3",
+      "weight": 1.0
+    },
+    {
+      "source": "users_user_profile_relation",
+      "target": "users_user",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "Fase 3",
+      "weight": 1.0
+    },
+    {
+      "source": "users_user_profile_relation",
+      "target": "users_profile",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "Fase 3",
+      "weight": 1.0
+    },
+    {
+      "source": "users_crud_endpoints",
+      "target": "users_user_management_window",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "Fase 4",
+      "weight": 1.0
+    },
+    {
+      "source": "users_advanced_permissions_base",
+      "target": "users_enabled_modules",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md",
+      "source_location": "Fase 5",
+      "weight": 1.0
+    },
+    {
+      "source": "login_role_permission_navigation",
+      "target": "profiles_navigation_visibility",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.88,
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Fase 6",
+      "weight": 1.0
+    },
+    {
+      "source": "login_select_profile_endpoint",
+      "target": "profiles_profile",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.84,
+      "source_file": "Plan/plan_implementacion_login_nexora.md",
+      "source_location": "Fase 3/Fase 6",
+      "weight": 1.0
+    },
+    {
+      "source": "profiles_sec_profiles01",
+      "target": "users_sec_users01",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Relaci?n con la ventana de usuarios",
+      "weight": 1.0
+    },
+    {
+      "source": "profiles_profile",
+      "target": "users_profile",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.93,
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Definiciones funcionales clave",
+      "weight": 1.0
+    },
+    {
+      "source": "profiles_module",
+      "target": "users_enabled_modules",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Relaci?n con la ventana de usuarios",
+      "weight": 1.0
+    },
+    {
+      "source": "profiles_parameterized_access_model",
+      "target": "users_advanced_permissions_base",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.86,
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Beneficio t?cnico/Recomendaci?n t?cnica",
+      "weight": 1.0
+    },
+    {
+      "source": "profiles_permission_middleware",
+      "target": "users_advanced_permissions_base",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.78,
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md",
+      "source_location": "Fase 5",
+      "weight": 1.0
+    },
+    {
+      "source": "logo_icon_brand_mark",
+      "target": "logo_icon_metallic_n_monogram",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "FrontEnd/Portal/src/assets/logo_icon.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "logo_icon_brand_mark",
+      "target": "logo_icon_circular_gradient_ring",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "FrontEnd/Portal/src/assets/logo_icon.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "logo_icon_brand_mark",
+      "target": "logo_icon_metallic_dimensional_style",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "FrontEnd/Portal/src/assets/logo_icon.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "logo_icon_brand_mark",
+      "target": "logo_icon_soft_blurred_background",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "FrontEnd/Portal/src/assets/logo_icon.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "logo_icon_circular_gradient_ring",
+      "target": "logo_icon_metallic_dimensional_style",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "FrontEnd/Portal/src/assets/logo_icon.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "logo_icon_metallic_n_monogram",
+      "target": "logo_icon_metallic_dimensional_style",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "FrontEnd/Portal/src/assets/logo_icon.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "file:FrontEnd/Portal/src/assets/logo_icon3.png",
+      "target": "image:logo_icon3",
+      "type": "CONTAINS_IMAGE_ASSET",
+      "evidence": "The PNG file displays the full icon logo.",
+      "confidence_score": 0.99
+    },
+    {
+      "source": "image:logo_icon3",
+      "target": "visual:metallic_n_monogram",
+      "type": "COMPOSED_OF",
+      "evidence": "The center of the icon is a prominent uppercase N.",
+      "confidence_score": 0.98
+    },
+    {
+      "source": "image:logo_icon3",
+      "target": "visual:circular_gradient_ring",
+      "type": "COMPOSED_OF",
+      "evidence": "A thick circular ring surrounds the monogram.",
+      "confidence_score": 0.98
+    },
+    {
+      "source": "image:logo_icon3",
+      "target": "visual:transparent_background",
+      "type": "HAS_PROPERTY",
+      "evidence": "The RGBA image has transparent empty space outside the mark.",
+      "confidence_score": 0.95
+    },
+    {
+      "source": "visual:circular_gradient_ring",
+      "target": "color:purple_gradient",
+      "type": "USES_COLOR",
+      "evidence": "Most of the ring appears purple/violet.",
+      "confidence_score": 0.97
+    },
+    {
+      "source": "visual:circular_gradient_ring",
+      "target": "color:gold_gradient",
+      "type": "USES_COLOR",
+      "evidence": "The lower-right portion of the ring transitions into gold/yellow.",
+      "confidence_score": 0.96
+    },
+    {
+      "source": "visual:metallic_n_monogram",
+      "target": "color:silver_metallic",
+      "type": "USES_COLOR",
+      "evidence": "The N uses silver gradients and beveled highlights.",
+      "confidence_score": 0.97
+    },
+    {
+      "source": "layout:centered_logo_composition",
+      "target": "visual:metallic_n_monogram",
+      "type": "POSITIONS_CENTER",
+      "evidence": "The N is centered within the surrounding ring.",
+      "confidence_score": 0.94
+    },
+    {
+      "source": "layout:centered_logo_composition",
+      "target": "visual:circular_gradient_ring",
+      "type": "ARRANGES_AROUND",
+      "evidence": "The ring wraps around the central N monogram.",
+      "confidence_score": 0.95
+    },
+    {
+      "source": "logo_sf_nexora_logo_asset",
+      "target": "logo_sf_n_monogram",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "FrontEnd/Portal/src/assets/Logo_SF.png",
+      "source_location": "visible central letterform",
+      "weight": 1.0
+    },
+    {
+      "source": "logo_sf_nexora_logo_asset",
+      "target": "logo_sf_circular_badge",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "FrontEnd/Portal/src/assets/Logo_SF.png",
+      "source_location": "visible circular frame around logo",
+      "weight": 1.0
+    },
+    {
+      "source": "logo_sf_circular_badge",
+      "target": "logo_sf_n_monogram",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "FrontEnd/Portal/src/assets/Logo_SF.png",
+      "source_location": "badge encloses central monogram",
+      "weight": 1.0
+    },
+    {
+      "source": "logo_sf_purple_gold_gradient",
+      "target": "logo_sf_circular_badge",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "FrontEnd/Portal/src/assets/Logo_SF.png",
+      "source_location": "gradient appears on and around ring",
+      "weight": 1.0
+    },
+    {
+      "source": "logo_sf_metallic_3d_style",
+      "target": "logo_sf_n_monogram",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "FrontEnd/Portal/src/assets/Logo_SF.png",
+      "source_location": "beveled metallic monogram rendering",
+      "weight": 1.0
+    },
+    {
+      "source": "logo_sf_metallic_3d_style",
+      "target": "logo_sf_circular_badge",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "FrontEnd/Portal/src/assets/Logo_SF.png",
+      "source_location": "beveled circular frame rendering",
+      "weight": 1.0
+    },
+    {
+      "source": "file:Plan/logo_full.png",
+      "target": "layout:horizontal_logo_lockup",
+      "type": "DEPICTS",
+      "confidence_score": 0.98,
+      "evidence": "The image is a composed logo with a left emblem and right text lockup."
+    },
+    {
+      "source": "layout:horizontal_logo_lockup",
+      "target": "logo_mark:blue_octagonal_emblem",
+      "type": "CONTAINS",
+      "confidence_score": 0.99,
+      "evidence": "A blue glowing emblem appears on the left side of the lockup."
+    },
+    {
+      "source": "layout:horizontal_logo_lockup",
+      "target": "brand:HRCastell",
+      "type": "CONTAINS",
+      "confidence_score": 0.99,
+      "evidence": "The primary wordmark text reads HRCastell."
+    },
+    {
+      "source": "layout:horizontal_logo_lockup",
+      "target": "tagline:Enterprise_Core",
+      "type": "CONTAINS",
+      "confidence_score": 0.99,
+      "evidence": "The secondary line reads ENTERPRISE CORE below the wordmark."
+    },
+    {
+      "source": "tagline:Enterprise_Core",
+      "target": "brand:HRCastell",
+      "type": "DESCRIBES",
+      "confidence_score": 0.92,
+      "evidence": "ENTERPRISE CORE is positioned directly beneath HRCastell as a descriptor."
+    },
+    {
+      "source": "style:dark_enterprise_tech",
+      "target": "layout:horizontal_logo_lockup",
+      "type": "STYLES",
+      "confidence_score": 0.9,
+      "evidence": "Dark background, black typography, and blue glow define the visual treatment."
+    },
+    {
+      "source": "logo_mark:blue_octagonal_emblem",
+      "target": "brand:HRCastell",
+      "type": "BRAND_MARK_FOR",
+      "confidence_score": 0.86,
+      "evidence": "The emblem is spatially paired with the HRCastell wordmark in the same logo composition."
+    },
+    {
+      "source": "logo_full1_full_logo_lockup",
+      "target": "logo_full1_blue_geometric_icon",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/logo_full1.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "logo_full1_full_logo_lockup",
+      "target": "logo_full1_hrcastell_wordmark",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/logo_full1.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "logo_full1_full_logo_lockup",
+      "target": "logo_full1_enterprise_core_tagline",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/logo_full1.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "logo_full1_full_logo_lockup",
+      "target": "logo_full1_horizontal_layout",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/logo_full1.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "logo_full1_blue_geometric_icon",
+      "target": "logo_full1_blue_black_palette",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/logo_full1.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "logo_full1_hrcastell_wordmark",
+      "target": "logo_full1_blue_black_palette",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/logo_full1.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "logo_full1_enterprise_core_tagline",
+      "target": "logo_full1_hrcastell_wordmark",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "Plan/logo_full1.png",
+      "source_location": null,
+      "weight": 0.85
+    },
+    {
+      "source": "file:Plan/Logo_icon2.png",
+      "target": "image:Logo_icon2:NexoraLogoIcon",
+      "relation": "CONTAINS",
+      "evidence": "The image file visibly contains a single logo icon composition.",
+      "confidence_score": 0.98
+    },
+    {
+      "source": "image:Logo_icon2:NexoraLogoIcon",
+      "target": "image:Logo_icon2:LetterN",
+      "relation": "HAS_ELEMENT",
+      "evidence": "A large uppercase N appears at the center of the logo.",
+      "confidence_score": 0.99
+    },
+    {
+      "source": "image:Logo_icon2:NexoraLogoIcon",
+      "target": "image:Logo_icon2:CircularRing",
+      "relation": "HAS_ELEMENT",
+      "evidence": "A circular ring surrounds the central letter N.",
+      "confidence_score": 0.99
+    },
+    {
+      "source": "image:Logo_icon2:NexoraLogoIcon",
+      "target": "image:Logo_icon2:DarkBackground",
+      "relation": "HAS_BACKGROUND",
+      "evidence": "The logo is displayed against a dark navy/black background.",
+      "confidence_score": 0.97
+    },
+    {
+      "source": "image:Logo_icon2:CircularRing",
+      "target": "concept:BrandColor:Purple",
+      "relation": "USES_COLOR",
+      "evidence": "The upper and left portions of the circular ring are purple.",
+      "confidence_score": 0.96
+    },
+    {
+      "source": "image:Logo_icon2:CircularRing",
+      "target": "concept:BrandColor:Gold",
+      "relation": "USES_COLOR",
+      "evidence": "The lower-right portion of the circular ring is gold/yellow.",
+      "confidence_score": 0.95
+    },
+    {
+      "source": "image:Logo_icon2:LetterN",
+      "target": "concept:BrandColor:Silver",
+      "relation": "USES_COLOR",
+      "evidence": "The central N is rendered in silver/white metallic tones.",
+      "confidence_score": 0.97
+    },
+    {
+      "source": "nexora1_nexora_wordmark",
+      "target": "nexora1_circular_n_emblem",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora1.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "nexora1_circular_n_emblem",
+      "target": "nexora1_nexora_wordmark",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora1.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "nexora1_metallic_3d_logo_style",
+      "target": "nexora1_nexora_wordmark",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora1.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "nexora1_metallic_3d_logo_style",
+      "target": "nexora1_circular_n_emblem",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora1.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "nexora1_purple_gold_accent_glow",
+      "target": "nexora1_circular_n_emblem",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora1.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "nexora1_gray_gradient_background",
+      "target": "nexora1_nexora_wordmark",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora1.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "nexora2_logo_asset",
+      "target": "nexora2_nexora_wordmark",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora2.png",
+      "source_location": "visible logo composition",
+      "weight": 1.0
+    },
+    {
+      "source": "nexora2_logo_asset",
+      "target": "nexora2_circular_n_icon",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora2.png",
+      "source_location": "visible logo composition",
+      "weight": 1.0
+    },
+    {
+      "source": "nexora2_nexora_wordmark",
+      "target": "nexora2_metallic_lettering",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora2.png",
+      "source_location": "center-right text styling",
+      "weight": 1.0
+    },
+    {
+      "source": "nexora2_circular_n_icon",
+      "target": "nexora2_metallic_lettering",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora2.png",
+      "source_location": "inner N styling",
+      "weight": 1.0
+    },
+    {
+      "source": "nexora2_circular_n_icon",
+      "target": "nexora2_purple_gold_ring",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora2.png",
+      "source_location": "outer ring styling",
+      "weight": 1.0
+    },
+    {
+      "source": "nexora2_logo_asset",
+      "target": "nexora2_black_background",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora2.png",
+      "source_location": "full image canvas",
+      "weight": 1.0
+    },
+    {
+      "source": "nexora3_logo",
+      "target": "nexora3_wordmark",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora3.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "nexora3_logo",
+      "target": "nexora3_circular_emblem",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora3.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "nexora3_circular_emblem",
+      "target": "nexora3_monogram_n",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora3.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "nexora3_circular_emblem",
+      "target": "nexora3_gradient_ring",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora3.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "nexora3_wordmark",
+      "target": "nexora3_metallic_style",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora3.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "nexora3_monogram_n",
+      "target": "nexora3_metallic_style",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora3.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "nexora3_logo",
+      "target": "nexora3_transparent_background",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora3.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "nexora3_wordmark",
+      "target": "nexora3_monogram_n",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora3.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "logo_icon_nexora_logo_icon",
+      "target": "logo_icon_n_monogram",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/Logo/logo_icon.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "logo_icon_nexora_logo_icon",
+      "target": "logo_icon_circular_badge",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/Logo/logo_icon.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "logo_icon_nexora_logo_icon",
+      "target": "logo_icon_purple_gold_gradient",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/Logo/logo_icon.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "logo_icon_nexora_logo_icon",
+      "target": "logo_icon_metallic_3d_style",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/Logo/logo_icon.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "logo_icon_n_monogram",
+      "target": "logo_icon_circular_badge",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/Logo/logo_icon.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "logo_icon_purple_gold_gradient",
+      "target": "logo_icon_metallic_3d_style",
+      "relation": "conceptually_related_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "Plan/Logo/logo_icon.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "file:Plan/Logo/logo_icon3.png",
+      "target": "visual:nexora-logo-icon",
+      "type": "CONTAINS",
+      "evidence": "The PNG displays a single logo icon.",
+      "confidence_score": 0.98
+    },
+    {
+      "source": "visual:nexora-logo-icon",
+      "target": "symbol:uppercase-n",
+      "type": "CONTAINS",
+      "evidence": "A prominent uppercase N is centered in the logo.",
+      "confidence_score": 0.99
+    },
+    {
+      "source": "visual:nexora-logo-icon",
+      "target": "shape:circular-ring",
+      "type": "CONTAINS",
+      "evidence": "The central N is enclosed by a thick circular ring.",
+      "confidence_score": 0.99
+    },
+    {
+      "source": "shape:circular-ring",
+      "target": "color:purple-gold-gradient",
+      "type": "USES_COLOR_PALETTE",
+      "evidence": "The ring transitions from purple to gold/yellow.",
+      "confidence_score": 0.95
+    },
+    {
+      "source": "symbol:uppercase-n",
+      "target": "color:metallic-silver",
+      "type": "USES_COLOR",
+      "evidence": "The N is rendered in a silver metallic gradient.",
+      "confidence_score": 0.96
+    },
+    {
+      "source": "visual:nexora-logo-icon",
+      "target": "style:beveled-3d-logo",
+      "type": "USES_STYLE",
+      "evidence": "Both the N and ring show bevels, shadows, and glossy highlights.",
+      "confidence_score": 0.9
+    },
+    {
+      "source": "file:Plan/Logo/logo_icon3.png",
+      "target": "background:transparent",
+      "type": "HAS_BACKGROUND",
+      "evidence": "The area outside and inside the logo ring appears transparent in the PNG preview.",
+      "confidence_score": 0.88
+    },
+    {
+      "source": "logo_sf_nexora_logo",
+      "target": "logo_sf_metallic_letter_n",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/Logo/Logo_SF.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "logo_sf_nexora_logo",
+      "target": "logo_sf_circular_gradient_ring",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/Logo/Logo_SF.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "logo_sf_circular_gradient_ring",
+      "target": "logo_sf_purple_gold_palette",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/Logo/Logo_SF.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "logo_sf_metallic_letter_n",
+      "target": "logo_sf_metallic_embossed_style",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/Logo/Logo_SF.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "logo_sf_circular_gradient_ring",
+      "target": "logo_sf_metallic_embossed_style",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/Logo/Logo_SF.png",
+      "source_location": null,
+      "weight": 1.0
+    },
+    {
+      "source": "logo_sf_glowing_background",
+      "target": "logo_sf_purple_gold_palette",
+      "relation": "conceptually_related_to",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/Logo/Logo_SF.png",
+      "source_location": null,
+      "weight": 1.0
+    }
+  ],
+  "hyperedges": [
+    {
+      "id": "nexora_platform_architecture",
+      "label": "Nexora Platform Architecture",
+      "nodes": [
+        "nexora",
+        "multi_tenant_saas_platform",
+        "postgresql_schema_isolation",
+        "vue_frontend",
+        "fastapi_backend",
+        "cpanel_shared_hosting"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "README.md"
+    },
+    {
+      "id": "permission_enforcement_flow",
+      "label": "Permission Enforcement Flow",
+      "nodes": [
+        "profile_permissions",
+        "sidebar_visibility",
+        "route_permission_guard",
+        "backend_permission_validation",
+        "forbidden_403"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/error_perfiles.md"
+    },
+    {
+      "id": "agent_tooling_ecosystem",
+      "label": "Agent Tooling Ecosystem",
+      "nodes": [
+        "unified_agent_system",
+        "engram_memory",
+        "sdd_spec_driven_development",
+        "graphify_knowledge_graphs",
+        "skill_registry",
+        "skill_resolver_protocol"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": ".atl/AGENT_SYNC.md"
+    },
+    {
+      "id": "multi_company_login_flow_components",
+      "label": "Multi-company login flow components",
+      "nodes": [
+        "login_discover_companies_endpoint",
+        "login_validate_password_endpoint",
+        "login_select_profile_endpoint",
+        "login_auth_me_endpoint",
+        "login_session_token_context"
+      ],
+      "relation": "participate_in",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/plan_implementacion_login_nexora.md"
+    },
+    {
+      "id": "parameterized_permission_model",
+      "label": "Parameterized permission model",
+      "nodes": [
+        "profiles_profile",
+        "profiles_module",
+        "profiles_action_permission",
+        "profiles_profile_scope",
+        "profiles_profile_module_action_relation"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-PROFILES-01 ? Perfiles, permisos y definici?n de m?dulos para Nexora.md"
+    },
+    {
+      "id": "user_access_identity_model",
+      "label": "User access identity model",
+      "nodes": [
+        "users_user",
+        "users_role",
+        "users_job_position",
+        "users_profile",
+        "users_access_level",
+        "users_enabled_modules"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/SEC-USERS-01 ? Gesti?n de usuarios, accesos y visibilidad para Nexora.md"
+    },
+    {
+      "id": "logo_icon_brand_composition",
+      "label": "Logo Icon Brand Composition",
+      "nodes": [
+        "logo_icon_metallic_n_monogram",
+        "logo_icon_circular_gradient_ring",
+        "logo_icon_metallic_dimensional_style",
+        "logo_icon_soft_blurred_background"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "FrontEnd/Portal/src/assets/logo_icon.png"
+    },
+    {
+      "id": "hyperedge:logo_icon3_brand_mark_composition",
+      "type": "BRAND_MARK_COMPOSITION",
+      "nodes": [
+        "image:logo_icon3",
+        "visual:metallic_n_monogram",
+        "visual:circular_gradient_ring",
+        "layout:centered_logo_composition",
+        "color:purple_gradient",
+        "color:gold_gradient",
+        "color:silver_metallic"
+      ],
+      "description": "The brand mark combines a metallic N monogram, a purple-to-gold circular ring, and centered icon composition.",
+      "confidence_score": 0.95
+    },
+    {
+      "id": "logo_sf_brand_mark_composition",
+      "label": "Brand Mark Composition",
+      "nodes": [
+        "logo_sf_n_monogram",
+        "logo_sf_circular_badge",
+        "logo_sf_purple_gold_gradient",
+        "logo_sf_metallic_3d_style"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "FrontEnd/Portal/src/assets/Logo_SF.png"
+    },
+    {
+      "id": "hyperedge:hrcastell_logo_identity",
+      "type": "LOGO_IDENTITY_COMPOSITION",
+      "nodes": [
+        "logo_mark:blue_octagonal_emblem",
+        "brand:HRCastell",
+        "tagline:Enterprise_Core",
+        "style:dark_enterprise_tech"
+      ],
+      "confidence_score": 0.94,
+      "evidence": "These visible elements form a single brand logo composition in the image."
+    },
+    {
+      "id": "logo_full1_brand_lockup_components",
+      "label": "HRCastell Enterprise Core Brand Lockup Components",
+      "nodes": [
+        "logo_full1_blue_geometric_icon",
+        "logo_full1_hrcastell_wordmark",
+        "logo_full1_enterprise_core_tagline",
+        "logo_full1_horizontal_layout",
+        "logo_full1_blue_black_palette"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/logo_full1.png"
+    },
+    {
+      "id": "nexora1_brand_logo_composition",
+      "label": "Nexora Brand Logo Composition",
+      "nodes": [
+        "nexora1_nexora_wordmark",
+        "nexora1_circular_n_emblem",
+        "nexora1_metallic_3d_logo_style",
+        "nexora1_purple_gold_accent_glow",
+        "nexora1_gray_gradient_background"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora1.png"
+    },
+    {
+      "id": "nexora2_brand_logo_composition",
+      "label": "Nexora Brand Logo Composition",
+      "nodes": [
+        "nexora2_nexora_wordmark",
+        "nexora2_circular_n_icon",
+        "nexora2_metallic_lettering",
+        "nexora2_purple_gold_ring",
+        "nexora2_black_background"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora2.png"
+    },
+    {
+      "id": "nexora3_brand_identity_composition",
+      "label": "Nexora Brand Identity Composition",
+      "nodes": [
+        "nexora3_wordmark",
+        "nexora3_monogram_n",
+        "nexora3_circular_emblem",
+        "nexora3_gradient_ring",
+        "nexora3_metallic_style"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/nexora3.png"
+    },
+    {
+      "id": "logo_icon_brand_mark_composition",
+      "label": "Logo Icon Brand Mark Composition",
+      "nodes": [
+        "logo_icon_n_monogram",
+        "logo_icon_circular_badge",
+        "logo_icon_purple_gold_gradient",
+        "logo_icon_metallic_3d_style"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/Logo/logo_icon.png"
+    },
+    {
+      "id": "logo_sf_brand_mark_composition",
+      "label": "Brand Mark Composition",
+      "nodes": [
+        "logo_sf_metallic_letter_n",
+        "logo_sf_circular_gradient_ring",
+        "logo_sf_purple_gold_palette",
+        "logo_sf_metallic_embossed_style",
+        "logo_sf_glowing_background"
+      ],
+      "relation": "form",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "Plan/Logo/Logo_SF.png"
+    }
+  ],
+  "input_tokens": 0,
+  "output_tokens": 0
+}
