@@ -11,6 +11,11 @@ BEGIN
     WHERE schema_name IS NOT NULL
       AND schema_name != 'public'
   LOOP
+    IF to_regclass(format('%I.dental_consultations', r.schema_name)) IS NULL THEN
+      RAISE NOTICE 'Skipping %.dental_consultation_attachments: dental_consultations table does not exist', r.schema_name;
+      CONTINUE;
+    END IF;
+
     EXECUTE format($s$
       CREATE TABLE IF NOT EXISTS %I.dental_consultation_attachments (
           id               SERIAL PRIMARY KEY,

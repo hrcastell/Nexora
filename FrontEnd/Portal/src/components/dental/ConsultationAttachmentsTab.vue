@@ -36,6 +36,10 @@ const CATEGORY_OPTIONS = (Object.keys(ATTACHMENT_CATEGORY_LABELS) as AttachmentC
   label: ATTACHMENT_CATEGORY_LABELS[k],
 }))
 
+function normalizeAttachments(value: unknown): DentalConsultationAttachment[] {
+  return Array.isArray(value) ? value : []
+}
+
 // ── Toast helpers ─────────────────────────────────────────────
 let toastTimer: ReturnType<typeof setTimeout> | null = null
 function showSuccess(msg: string) {
@@ -57,7 +61,7 @@ async function loadAttachments() {
   error.value   = null
   try {
     const { data } = await dentalConsultationAttachmentsService.list(props.consultationId)
-    attachments.value = data.data
+    attachments.value = normalizeAttachments(data?.data)
   } catch (e: unknown) {
     const err = e as { response?: { data?: { error?: string } }; message?: string }
     showError(err?.response?.data?.error || err?.message || 'Error al cargar los adjuntos')
@@ -85,7 +89,7 @@ async function handleUpload() {
       uploadCategory.value,
       uploadDescription.value || undefined
     )
-    attachments.value.unshift(data.data)
+    if (data?.data) attachments.value.unshift(data.data)
     selectedFile.value = null
     uploadCategory.value    = 'general'
     uploadDescription.value = ''

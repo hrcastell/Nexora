@@ -253,10 +253,10 @@ async function save() {
   try {
     if (isEditing.value && editingAppointmentId.value) {
       await store.update(editingAppointmentId.value, form.value);
-      triggerToast('?xito', 'Cita actualizada', 'success');
+      triggerToast('Éxito', 'Cita actualizada', 'success');
     } else {
       await store.create(form.value);
-      triggerToast('?xito', 'Cita creada', 'success');
+      triggerToast('Éxito', 'Cita creada', 'success');
     }
     showPanel.value = false;
     await refreshActiveTab();
@@ -294,7 +294,7 @@ async function doAction(action: 'confirm' | 'check_in' | 'cancel' | 'no_show' | 
       await refreshActiveTab();
     } else if (action === 'check_in') {
       await store.update(apt.id, { status: 'checked_in' } as any);
-      triggerToast('?xito', 'Paciente marcado como presente', 'success');
+      triggerToast('Éxito', 'Paciente marcado como presente', 'success');
       await refreshActiveTab();
     } else if (action === 'no_show') {
       await store.noShow(apt.id);
@@ -461,7 +461,7 @@ onMounted(() => {
         </div>
 
         <div v-if="selectedCalendarDate" class="flex items-center justify-between rounded-xl border border-[var(--nexora-primary)]/30 bg-[var(--nexora-primary)]/10 px-4 py-2 text-xs text-white/70">
-          <span>Mostrando citas del d?a seleccionado</span>
+          <span>Mostrando citas del día seleccionado</span>
           <button class="text-white/50 hover:text-white" @click="selectedCalendarDate = null">Ver todo el mes</button>
         </div>
 

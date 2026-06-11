@@ -730,8 +730,7 @@ exports.getPrintData = async (req, res) => {
         );
 
         const configResult = await db.query(
-            `SELECT * FROM ${schema}.config_company WHERE tenant_id = $1 LIMIT 1`,
-            [companyId]
+            `SELECT * FROM ${schema}.config_company LIMIT 1`
         );
 
         // Extract customer fields for a clean response object

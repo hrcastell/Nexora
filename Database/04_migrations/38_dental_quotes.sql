@@ -12,6 +12,13 @@ BEGIN
       AND schema_name != 'public'
   LOOP
 
+    IF to_regclass(format('%I.customers', r.schema_name)) IS NULL
+       OR to_regclass(format('%I.dental_consultations', r.schema_name)) IS NULL
+       OR to_regclass(format('%I.dental_treatments', r.schema_name)) IS NULL THEN
+      RAISE NOTICE 'Skipping %.dental_quotes: required dental base tables do not exist', r.schema_name;
+      CONTINUE;
+    END IF;
+
     -- Sequence for quote number generation
     EXECUTE format($s$
       CREATE SEQUENCE IF NOT EXISTS %I.dental_quote_number_seq START 1

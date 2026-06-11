@@ -91,7 +91,7 @@ async function saveInlinePatient() {
     const patient = await patientsStore.create(inlinePatientForm.value);
     selectPatient(patient);
     showInlinePatientForm.value = false;
-    triggerToast('?xito', 'Paciente creado y seleccionado', 'success');
+    triggerToast('Éxito', 'Paciente creado y seleccionado', 'success');
   } catch (e: any) {
     saveError.value = e?.response?.data?.error || 'Error al crear paciente';
   } finally {
@@ -372,14 +372,14 @@ onMounted(() => {
           <div v-if="patientSearch && !selectedPatient && showPatientDrop && patientsStore.items.length === 0" class="rounded-xl border border-yellow-500/20 bg-yellow-500/10 p-3 text-xs text-yellow-100">
             <p>No encontramos ese paciente.</p>
             <button type="button" class="mt-2 rounded-lg bg-yellow-500/20 px-3 py-1.5 text-yellow-50 hover:bg-yellow-500/30" @mousedown.prevent="openInlinePatientForm">
-              Crear paciente ac?
+              Crear paciente acá
             </button>
           </div>
           <div v-if="showInlinePatientForm" class="grid gap-3 rounded-xl border border-white/10 bg-white/5 p-3 sm:grid-cols-2">
             <input v-model="inlinePatientForm.first_name" type="text" placeholder="Nombre" class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30" />
             <input v-model="inlinePatientForm.last_name" type="text" placeholder="Apellido" class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30" />
             <input v-model="inlinePatientForm.document_number" type="text" placeholder="Documento" class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30" />
-            <input v-model="inlinePatientForm.phone" type="text" placeholder="Tel?fono" class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30" />
+            <input v-model="inlinePatientForm.phone" type="text" placeholder="Teléfono" class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30" />
             <button type="button" class="rounded-xl bg-[var(--nexora-primary)] px-3 py-2 text-sm font-semibold text-white disabled:opacity-50 sm:col-span-2" :disabled="savingInlinePatient" @mousedown.prevent="saveInlinePatient">
               {{ savingInlinePatient ? 'Creando...' : 'Crear y seleccionar paciente' }}
             </button>

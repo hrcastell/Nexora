@@ -239,15 +239,21 @@ END $$;
 -- SECTION B: Public schema — update module_transactions codes
 -- ─────────────────────────────────────────────────────────────────────────────
 
--- Rename dental_services transaction to dental_treatments
-UPDATE public.module_transactions
-SET code  = REPLACE(code,  'service', 'treatment'),
-    name  = REPLACE(name,  'Servicios', 'Tratamientos'),
-    route = REPLACE(route, '/services', '/treatments')
-WHERE module_code = 'dental_core'
-  AND code LIKE '%service%';
+-- Rename dental_services transaction to dental_treatments.
+-- Step 1: delete 'service' rows where the 'treatment' equivalent already exists
+--         (avoids unique constraint violation on module_id + code).
+DELETE FROM public.module_transactions mt
+USING public.module_catalog mc
+WHERE mt.module_id = mc.id
+  AND mc.code = 'dental_core'
+  AND mt.code LIKE '%service%'
+  AND EXISTS (
+      SELECT 1 FROM public.module_transactions dup
+      WHERE dup.module_id = mt.module_id
+        AND dup.code = REPLACE(mt.code, 'service', 'treatment')
+  );
 
--- Also handle the column via module_id join (for older schemas where module_code column may not exist)
+-- Step 2: rename remaining 'service' rows that don't yet have a 'treatment' equivalent.
 UPDATE public.module_transactions mt
 SET code  = REPLACE(mt.code,  'service', 'treatment'),
     name  = REPLACE(mt.name,  'Servicios', 'Tratamientos'),

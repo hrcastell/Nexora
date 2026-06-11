@@ -11,6 +11,11 @@ BEGIN
     WHERE schema_name IS NOT NULL
       AND schema_name != 'public'
   LOOP
+    IF to_regclass(format('%I.dental_patient_profiles', r.schema_name)) IS NULL THEN
+      RAISE NOTICE 'Skipping %.dental_patient_profiles: table does not exist', r.schema_name;
+      CONTINUE;
+    END IF;
+
     EXECUTE format($s$
       ALTER TABLE %I.dental_patient_profiles ADD COLUMN IF NOT EXISTS photo_url TEXT
     $s$, r.schema_name);
