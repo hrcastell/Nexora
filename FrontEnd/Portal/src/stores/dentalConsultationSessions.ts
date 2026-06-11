@@ -20,7 +20,7 @@ export const useDentalConsultationSessionsStore = defineStore('dentalConsultatio
     error.value = null;
     try {
       const res = await dentalConsultationSessionsService.list(consultationId);
-      items.value = unwrapData<DentalConsultationSession[]>(res.data);
+      items.value = unwrapData<DentalConsultationSession[]>(res.data) ?? [];
     } catch (e: any) {
       error.value = e?.response?.data?.error || 'Error al cargar sesiones';
     } finally {

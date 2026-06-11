@@ -385,7 +385,7 @@ async function confirmStatusChange() {
 }
 
 function onServiceSelect(treatmentId: string | number) {
-  const trt = treatmentsStore.items.find(t => String(t.id) === String(treatmentId))
+  const trt = (treatmentsStore.items ?? []).find(t => String(t.id) === String(treatmentId))
   selectedServiceForAdd.value = trt || null
   if (trt) {
     addServiceForm.value.treatment_name_snapshot = trt.name
@@ -752,7 +752,7 @@ onMounted(async () => {
         :consultation="consultation"
         v-model:follow-up-form="followUpForm"
         v-model:session-schedule-dates="sessionScheduleDates"
-        :sessions-count="sessionsStore.items.length"
+        :sessions-count="(sessionsStore.items ?? []).length"
         :scheduling-sessions="schedulingSessions"
         :saving-follow-up="savingFollowUp"
         :fmt-currency="fmtCurrency"

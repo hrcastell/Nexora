@@ -166,18 +166,18 @@ async function loadTabData(tab: typeof activeTab.value) {
   activeTab.value = tab;
   if (tab === 'history') {
     if (clinicalHistory.value.length === 0) {
-      clinicalHistory.value = await store.getClinicalHistory(route.params.id as string);
+      clinicalHistory.value = await store.getClinicalHistory(route.params.id as string) ?? [];
     }
     if (medicalHistory.value.length === 0) {
-      medicalHistory.value = await store.fetchMedicalHistory(route.params.id as string);
+      medicalHistory.value = await store.fetchMedicalHistory(route.params.id as string) ?? [];
     }
   }
   if (tab === 'consultations' && consultations.value.length === 0) {
-    consultations.value = await store.getConsultations(route.params.id as string);
+    consultations.value = await store.getConsultations(route.params.id as string) ?? [];
   }
   if (tab === 'payments' && payments.value.length === 0) {
-    payments.value = await store.getPayments(route.params.id as string);
-    debt.value = await store.getDebt(route.params.id as string);
+    payments.value = await store.getPayments(route.params.id as string) ?? [];
+    debt.value = await store.getDebt(route.params.id as string) ?? 0;
   }
   if (tab === 'appointments' && appointments.value.length === 0) {
     await appointmentsStore.load({ customer_id: route.params.id as string });
@@ -186,7 +186,7 @@ async function loadTabData(tab: typeof activeTab.value) {
     quotesLoading.value = true;
     try {
       const res = await dentalQuotesService.getForPatient(Number(route.params.id));
-      patientQuotes.value = res.data.data;
+      patientQuotes.value = res.data.data ?? [];
     } catch {
       // non-critical
     } finally {
@@ -197,7 +197,7 @@ async function loadTabData(tab: typeof activeTab.value) {
     docsLoading.value = true;
     try {
       const res = await dentalMedicalDocumentsService.getForPatient(Number(route.params.id));
-      patientDocs.value = res.data.data;
+      patientDocs.value = res.data.data ?? [];
     } catch {
       // non-critical
     } finally {

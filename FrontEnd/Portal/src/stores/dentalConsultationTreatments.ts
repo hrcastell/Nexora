@@ -25,7 +25,7 @@ export const useDentalConsultationTreatmentsStore = defineStore('dentalConsultat
     error.value = null;
     try {
       const res = await dentalConsultationTreatmentsService.list(consultationId);
-      items.value = unwrapData<DentalConsultationTreatment[]>(res.data);
+      items.value = unwrapData<DentalConsultationTreatment[]>(res.data) ?? [];
     } catch (e: any) {
       error.value = e?.response?.data?.error || 'Error al cargar tratamientos de consulta';
     } finally {
