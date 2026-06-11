@@ -730,7 +730,7 @@ onMounted(async () => {
         v-if="activeTab === 'summary'"
         :consultation="consultation"
         :patient-name="patientName"
-        :treatments="consultationTreatmentsStore.items"
+        :treatments="consultationTreatmentsStore.items ?? []"
         :total="consultationTreatmentsStore.total"
         :charge-detail="chargeDetail"
         :status-class="STATUS_CLASS"
