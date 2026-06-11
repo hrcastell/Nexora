@@ -92,8 +92,8 @@ async function load() {
     const qCustomerId = route.query.customer_id;
     if (qCustomerId) params.customer_id = Number(qCustomerId);
     const res = await dentalQuotesService.list(params as { customer_id?: number; status?: string; page?: number; limit?: number });
-    quotes.value = res.data.data;
-    total.value  = res.data.total;
+    quotes.value = res.data.data ?? [];
+    total.value  = res.data.total ?? 0;
   } catch (e: any) {
     loadError.value = e?.response?.data?.error || 'Error al cargar presupuestos';
   } finally {

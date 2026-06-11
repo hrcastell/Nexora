@@ -21,7 +21,7 @@ export const useDentalPatientsStore = defineStore('dentalPatients', () => {
     error.value = null;
     try {
       const res = await dentalPatientsService.list(params);
-      items.value = unwrapData<DentalPatient[]>(res.data);
+      items.value = unwrapData<DentalPatient[]>(res.data) ?? [];
     } catch (e: any) {
       error.value = e?.response?.data?.error || 'Error al cargar pacientes';
     } finally {
@@ -62,22 +62,22 @@ export const useDentalPatientsStore = defineStore('dentalPatients', () => {
 
   async function getClinicalHistory(id: number | string) {
     const res = await dentalPatientsService.getClinicalHistory(id);
-    return unwrapData<DentalClinicalHistoryEntry[]>(res.data);
+    return unwrapData<DentalClinicalHistoryEntry[]>(res.data) ?? [];
   }
 
   async function getConsultations(id: number | string) {
     const res = await dentalPatientsService.getConsultations(id);
-    return unwrapData<DentalConsultation[]>(res.data);
+    return unwrapData<DentalConsultation[]>(res.data) ?? [];
   }
 
   async function getPayments(id: number | string) {
     const res = await dentalPatientsService.getPayments(id);
-    return unwrapData<DentalPayment[]>(res.data);
+    return unwrapData<DentalPayment[]>(res.data) ?? [];
   }
 
   async function getDebt(id: number | string) {
     const res = await dentalPatientsService.getDebt(id);
-    return unwrapData<DentalCharge[]>(res.data);
+    return unwrapData<DentalCharge[]>(res.data) ?? [];
   }
 
   async function fetchMedicalHistory(patientId: number | string) {
