@@ -84,6 +84,7 @@ router.post('/consultations/:id/sessions',                         consultationS
 router.get('/consultations/:id/sessions/:sid',                     consultationSessionsCtrl.getById);
 router.patch('/consultations/:id/sessions/:sid',                   consultationSessionsCtrl.update);
 router.post('/consultations/:id/sessions/:sid/complete',           consultationSessionsCtrl.complete);
+router.post('/consultations/:id/sessions/:sid/cancel',             consultationSessionsCtrl.cancel);
 
 // ─── CONSULTATION ATTACHMENTS ─────────────────────────────────────────────
 router.get('/consultations/:id/attachments',       consultationAttachmentsController.list);

@@ -313,3 +313,53 @@ exports.complete = async (req, res) => {
         res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al completar sesión') });
     }
 };
+
+/**
+ * POST /dental/consultations/:id/sessions/:sid/cancel
+ */
+exports.cancel = async (req, res) => {
+    try {
+        if (req.user?.read_only) return res.status(403).json({ error: 'Operación no permitida en modo solo lectura' });
+
+        const { schema, companyId } = await resolveSchema(req);
+
+        const existing = await db.query(
+            `SELECT * FROM ${schema}.dental_consultation_sessions
+             WHERE id = $1 AND consultation_id = $2 AND tenant_id = $3`,
+            [req.params.sid, req.params.id, companyId]
+        );
+        if (existing.rows.length === 0) {
+            return res.status(404).json({ code: 'DENTAL_SESSION_NOT_FOUND', error: 'Sesión no encontrada' });
+        }
+
+        const row = existing.rows[0];
+        if (row.status === 'completed') {
+            return res.status(400).json({ code: 'DENTAL_SESSION_ALREADY_COMPLETED', error: 'No se puede cancelar una sesión completada' });
+        }
+        if (row.status === 'cancelled') {
+            return res.status(400).json({ code: 'DENTAL_SESSION_ALREADY_CANCELLED', error: 'La sesión ya está cancelada' });
+        }
+
+        const updateResult = await db.query(
+            `UPDATE ${schema}.dental_consultation_sessions
+             SET status = 'cancelled', updated_at = NOW()
+             WHERE id = $1 AND consultation_id = $2 AND tenant_id = $3
+             RETURNING *`,
+            [req.params.sid, req.params.id, companyId]
+        );
+
+        db.query(
+            `UPDATE ${schema}.dental_appointments
+             SET status = 'cancelled', updated_at = NOW()
+             WHERE session_id = $1 AND tenant_id = $2 AND status NOT IN ('completed', 'cancelled')`,
+            [req.params.sid, companyId]
+        ).catch((err) => {
+            console.warn('consultationSessionsController.cancel: appointment sync failed:', err.message);
+        });
+
+        res.json(updateResult.rows[0]);
+    } catch (err) {
+        console.error('consultationSessionsController.cancel error:', err.message);
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al cancelar sesión') });
+    }
+};

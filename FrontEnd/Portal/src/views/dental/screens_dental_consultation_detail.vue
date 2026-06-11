@@ -2,8 +2,8 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
-  ArrowLeft, CheckCircle2, CreditCard, Edit2, Plus, Trash2,
-  Stethoscope, Calendar, ClipboardList, DollarSign, Camera, BookOpen, AlertCircle, Paperclip, FileText
+  ArrowLeft, Stethoscope, Calendar, ClipboardList, DollarSign,
+  Camera, BookOpen, AlertCircle, Paperclip, FileText
 } from 'lucide-vue-next'
 import { useDentalConsultationsStore } from '../../stores/dentalConsultations'
 import { useDentalPatientsStore } from '../../stores/dentalPatients'
@@ -17,6 +17,11 @@ import ConfirmActionModal from '../../components/admin/ConfirmActionModal.vue'
 import WidgetsDentalPhotoGallery from '../../components/widgets_dental_photo_gallery.vue'
 import ConsultationAttachmentsTab from '../../components/dental/ConsultationAttachmentsTab.vue'
 import ConsultationDocumentsSection from '../../components/dental/ConsultationDocumentsSection.vue'
+import ConsultationSessionsTab from '../../components/dental/ConsultationSessionsTab.vue'
+import ConsultationSummaryTab from '../../components/dental/ConsultationSummaryTab.vue'
+import ConsultationTreatmentsTab from '../../components/dental/ConsultationTreatmentsTab.vue'
+import ConsultationHistoryTab from '../../components/dental/ConsultationHistoryTab.vue'
+import ConsultationPaymentsTab from '../../components/dental/ConsultationPaymentsTab.vue'
 import { useToast } from '../../composables/useToast'
 import type {
   DentalCharge, DentalInstallment, DentalMedicalHistory,
@@ -227,7 +232,7 @@ async function scheduleAllSessions() {
       sessionScheduleDates.value = []
       activeTab.value = 'sessions'
     } else if (successCount > 0) {
-      triggerToast('Éxito', `${successCount} sesiones programadas y agendadas`, 'success')
+      triggerToast('Éxito', `${successCount} sesiones programadas. Las citas en agenda se procesarán en breve.`, 'success')
       sessionScheduleDates.value = []
       activeTab.value = 'sessions'
     } else {
@@ -458,7 +463,7 @@ async function createSession() {
   sessionError.value = null
   try {
     await sessionsStore.create(id, sessionForm.value)
-    triggerToast('Éxito', 'Sesión creada y cita agendada', 'success')
+    triggerToast('Éxito', 'Sesión creada. La cita en agenda se procesará en breve.', 'success')
     showSessionPanel.value = false
     activeTab.value = 'sessions'
     sessionForm.value = { session_date: new Date().toISOString().slice(0, 16), notes: '', evolution: '', next_session_date: '' }
@@ -480,6 +485,19 @@ async function completeSession(s: DentalConsultationSession) {
   })
 }
 
+async function cancelSession(s: DentalConsultationSession) {
+  askConfirm('Cancelar sesión', `¿Cancelar sesión ${s.session_number}?`, async () => {
+    try {
+      await sessionsStore.cancel(id, s.id)
+      triggerToast('Éxito', 'Sesión cancelada. La cita en agenda se actualizará en breve.', 'success')
+      await store.loadOne(id)
+    } catch (e: any) {
+      triggerToast('Error', e?.response?.data?.error || 'Error al cancelar sesión', 'error')
+    }
+  })
+}
+
+
 async function loadCharge() {
   const charges = (consultation.value as any)?.charges
   if (!charges?.length) { chargeDetail.value = null; return }
@@ -487,7 +505,9 @@ async function loadCharge() {
   try {
     const res = await dentalChargesService.getById(charges[0].id)
     chargeDetail.value = (res.data as any)?.data ?? res.data
-  } catch { } finally { loadingCharge.value = false }
+  } catch {
+    triggerToast('Error', 'No se pudo cargar la información de pagos', 'error')
+  } finally { loadingCharge.value = false }
 }
 
 async function saveInstallments() {
@@ -706,453 +726,62 @@ onMounted(async () => {
     <div class="mx-auto max-w-6xl px-4 py-6">
 
       <!-- ═══════════ TAB: RESUMEN ═══════════ -->
-      <div v-if="activeTab === 'summary'" class="space-y-5">
-
-        <!-- Patient + status card -->
-        <div class="rounded-xl border border-white/10 bg-white/5 p-5">
-          <div class="mb-4 flex items-center justify-between">
-            <h2 class="text-sm font-semibold text-white/70">Información de la consulta</h2>
-            <button
-              class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition"
-              :style="{ background: 'var(--nexora-primary)' }"
-              @click="openEdit"
-            >
-              <Edit2 class="h-3.5 w-3.5" />
-              Editar información
-            </button>
-          </div>
-
-          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div>
-              <p class="mb-0.5 text-xs text-white/40">Paciente</p>
-              <router-link
-                :to="`/dental/patients/${(consultation as any)?.customer_id ?? (consultation as any)?.customer?.id}`"
-                class="text-sm font-medium text-[var(--nexora-primary)] hover:underline"
-              >
-                {{ patientName }}
-              </router-link>
-            </div>
-            <div>
-              <p class="mb-0.5 text-xs text-white/40">Fecha de consulta</p>
-              <p class="text-sm">{{ fmtDate((consultation as any)?.consultation_date) }}</p>
-            </div>
-            <div>
-              <p class="mb-0.5 text-xs text-white/40">Estado clínico</p>
-              <span
-                class="rounded-full px-2 py-0.5 text-xs font-medium"
-                :class="STATUS_CLASS[consultation?.status ?? ''] ?? 'bg-white/10 text-white/40'"
-              >
-                {{ STATUS_LABEL[consultation?.status ?? ''] ?? '—' }}
-              </span>
-            </div>
-            <div>
-              <p class="mb-0.5 text-xs text-white/40">Estado de pago</p>
-              <span
-                class="rounded-full px-2 py-0.5 text-xs font-medium"
-                :class="ADMIN_STATUS_CLASS[consultation?.administrative_status ?? ''] ?? 'bg-white/10 text-white/40'"
-              >
-                {{ ADMIN_STATUS_LABEL[consultation?.administrative_status ?? ''] ?? '—' }}
-              </span>
-            </div>
-          </div>
-
-          <!-- Clinical fields -->
-          <div v-if="(consultation as any)?.reason || (consultation as any)?.diagnosis" class="mt-4 grid gap-3 border-t border-white/10 pt-4 sm:grid-cols-2">
-            <div v-if="(consultation as any)?.reason">
-              <p class="mb-0.5 text-xs text-white/40">Motivo de consulta</p>
-              <p class="text-sm leading-relaxed text-white/80">{{ (consultation as any).reason }}</p>
-            </div>
-            <div v-if="(consultation as any)?.diagnosis">
-              <p class="mb-0.5 text-xs text-white/40">Diagnóstico</p>
-              <p class="text-sm leading-relaxed text-white/80">{{ (consultation as any).diagnosis }}</p>
-            </div>
-            <div v-if="(consultation as any)?.clinical_notes" class="sm:col-span-2">
-              <p class="mb-0.5 text-xs text-white/40">Notas clínicas</p>
-              <p class="text-sm leading-relaxed text-white/80">{{ (consultation as any).clinical_notes }}</p>
-            </div>
-            <div v-if="(consultation as any)?.indications" class="sm:col-span-2">
-              <p class="mb-0.5 text-xs text-white/40">Indicaciones</p>
-              <p class="text-sm leading-relaxed text-white/80">{{ (consultation as any).indications }}</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Financial summary -->
-        <div class="grid gap-4 sm:grid-cols-3">
-          <div class="rounded-xl border border-white/10 bg-white/5 p-4">
-            <p class="mb-1 text-xs text-white/40">Total servicios</p>
-            <p class="text-2xl font-bold">{{ fmtCurrency(consultationTreatmentsStore.total) }}</p>
-          </div>
-          <div class="rounded-xl border border-white/10 bg-white/5 p-4">
-            <p class="mb-1 text-xs text-white/40">Total pagado</p>
-            <p class="text-2xl font-bold text-green-400">{{ fmtCurrency(chargeDetail?.paid_amount ?? 0) }}</p>
-          </div>
-          <div class="rounded-xl border border-white/10 bg-white/5 p-4">
-            <p class="mb-1 text-xs text-white/40">Saldo pendiente</p>
-            <p class="text-2xl font-bold text-yellow-400">
-              {{ fmtCurrency(consultationTreatmentsStore.total - Number(chargeDetail?.paid_amount ?? 0)) }}
-            </p>
-          </div>
-        </div>
-
-        <!-- Follow-up indicators -->
-        <div
-          v-if="(consultation as any)?.requires_follow_up || (consultation as any)?.requires_multiple_sessions"
-          class="flex flex-wrap gap-2"
-        >
-          <span
-            v-if="(consultation as any)?.requires_follow_up"
-            class="flex items-center gap-1.5 rounded-full bg-indigo-500/20 px-3 py-1.5 text-xs font-medium text-indigo-300"
-          >
-            <CheckCircle2 class="h-3.5 w-3.5" /> Requiere seguimiento
-          </span>
-          <span
-            v-if="(consultation as any)?.requires_multiple_sessions"
-            class="flex items-center gap-1.5 rounded-full bg-cyan-500/20 px-3 py-1.5 text-xs font-medium text-cyan-300"
-          >
-            <Calendar class="h-3.5 w-3.5" />
-            Múltiples sesiones
-            <template v-if="(consultation as any)?.estimated_sessions">
-              ({{ (consultation as any).estimated_sessions }} est.)
-            </template>
-          </span>
-          <span
-            v-if="(consultation as any)?.next_session_date"
-            class="flex items-center gap-1.5 rounded-full bg-purple-500/20 px-3 py-1.5 text-xs font-medium text-purple-300"
-          >
-            <Calendar class="h-3.5 w-3.5" />
-            Próxima sesión: {{ fmtDate((consultation as any).next_session_date) }}
-          </span>
-        </div>
-
-        <!-- Services summary -->
-        <div class="rounded-xl border border-white/10 bg-white/5 p-5">
-          <h2 class="mb-4 text-sm font-semibold text-white/70">Servicios aplicados</h2>
-          <div v-if="!consultationTreatmentsStore.items.length" class="py-6 text-center text-sm text-white/30">
-            Sin servicios registrados
-          </div>
-          <div v-else class="space-y-2">
-            <div
-              v-for="svc in consultationTreatmentsStore.items"
-              :key="svc.id"
-              class="flex items-center justify-between rounded-lg border border-white/5 bg-white/5 px-4 py-2.5"
-              :class="{ 'opacity-40': svc.status === 'voided' }"
-            >
-              <div class="flex items-center gap-3">
-                <span class="text-sm">{{ svc.treatment_name_snapshot }}</span>
-                <span v-if="svc.tooth_reference" class="rounded bg-white/10 px-1.5 py-0.5 text-xs text-white/50">
-                  Diente {{ svc.tooth_reference }}
-                </span>
-                <span v-if="svc.status === 'voided'" class="rounded-full bg-red-900/30 px-2 py-0.5 text-xs text-red-300">
-                  Anulado
-                </span>
-              </div>
-              <span class="text-sm font-medium">
-                {{ fmtCurrency(Number(svc.unit_price) * Number(svc.quantity)) }}
-              </span>
-            </div>
-            <div class="flex justify-end border-t border-white/10 pt-2">
-              <span class="text-sm font-semibold">Total: {{ fmtCurrency(consultationTreatmentsStore.total) }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
+      <ConsultationSummaryTab
+        v-if="activeTab === 'summary'"
+        :consultation="consultation"
+        :patient-name="patientName"
+        :treatments="consultationTreatmentsStore.items"
+        :total="consultationTreatmentsStore.total"
+        :charge-detail="chargeDetail"
+        :status-class="STATUS_CLASS"
+        :status-label="STATUS_LABEL"
+        :admin-status-class="ADMIN_STATUS_CLASS"
+        :admin-status-label="ADMIN_STATUS_LABEL"
+        :fmt-date="fmtDate"
+        :fmt-currency="fmtCurrency"
+        @edit-info="openEdit"
+      />
 
       <!-- ═══════════ TAB: TRATAMIENTO ═══════════ -->
-      <div v-else-if="activeTab === 'treatments'" class="space-y-6">
-
-        <!-- Services section -->
-        <div class="rounded-xl border border-white/10 bg-white/5 p-5">
-          <div class="mb-4 flex items-center justify-between">
-            <h2 class="text-sm font-semibold text-white/70">Servicios aplicados</h2>
-            <button
-              class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition hover:opacity-90"
-              :style="{ background: 'var(--nexora-primary)' }"
-              @click="showAddServicePanel = true"
-            >
-              <Plus class="h-3.5 w-3.5" />
-              Agregar servicio
-            </button>
-          </div>
-
-          <div v-if="!consultationTreatmentsStore.items.length" class="py-8 text-center text-sm text-white/30">
-            Sin servicios registrados
-          </div>
-
-          <div v-else>
-            <!-- Table header -->
-            <div class="mb-2 hidden grid-cols-6 gap-3 px-2 text-xs text-white/30 sm:grid">
-              <span class="col-span-2">Servicio</span>
-              <span>Diente</span>
-              <span class="text-right">Cant.</span>
-              <span class="text-right">Precio unit.</span>
-              <span class="text-right">Subtotal</span>
-            </div>
-
-            <!-- Active services -->
-            <div class="space-y-1.5">
-              <div
-                v-for="svc in activeServices"
-                :key="svc.id"
-                class="grid grid-cols-2 gap-3 rounded-lg border border-white/5 bg-white/5 px-3 py-2.5 sm:grid-cols-6"
-              >
-                <span class="col-span-2 text-sm sm:col-span-2">{{ svc.treatment_name_snapshot }}</span>
-                <span class="text-sm text-white/50 sm:col-span-1">{{ svc.tooth_reference || '—' }}</span>
-                <span class="text-right text-sm sm:col-span-1">{{ svc.quantity }}</span>
-                <span class="text-right text-sm sm:col-span-1">{{ fmtCurrency(svc.unit_price) }}</span>
-                <div class="flex items-center justify-end gap-2 sm:col-span-1">
-                  <span class="text-sm font-medium">{{ fmtCurrency(Number(svc.unit_price) * Number(svc.quantity)) }}</span>
-                  <button
-                    v-if="!hasClosedPayments"
-                    class="rounded p-1 text-white/30 transition hover:bg-red-500/20 hover:text-red-400"
-                    title="Anular servicio"
-                    @click="voidService(svc)"
-                  >
-                    <Trash2 class="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <!-- Voided services -->
-            <div v-if="voidedServices.length" class="mt-3 space-y-1.5 opacity-40">
-              <p class="px-2 text-xs text-white/30">Anulados</p>
-              <div
-                v-for="svc in voidedServices"
-                :key="svc.id"
-                class="grid grid-cols-2 gap-3 rounded-lg border border-white/5 bg-white/5 px-3 py-2.5 line-through sm:grid-cols-6"
-              >
-                <span class="col-span-2 text-sm sm:col-span-2">{{ svc.treatment_name_snapshot }}</span>
-                <span class="text-sm sm:col-span-1">{{ svc.tooth_reference || '—' }}</span>
-                <span class="text-right text-sm sm:col-span-1">{{ svc.quantity }}</span>
-                <span class="text-right text-sm sm:col-span-1">{{ fmtCurrency(svc.unit_price) }}</span>
-                <span class="text-right text-sm sm:col-span-1">{{ fmtCurrency(Number(svc.unit_price) * Number(svc.quantity)) }}</span>
-              </div>
-            </div>
-
-            <!-- Total -->
-            <div class="mt-3 flex justify-end border-t border-white/10 pt-3">
-              <span class="text-base font-semibold">Total: {{ fmtCurrency(consultationTreatmentsStore.total) }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Follow-up section -->
-        <div class="rounded-xl border border-white/10 bg-white/5 p-5">
-          <h2 class="mb-4 text-sm font-semibold text-white/70">Seguimiento del tratamiento</h2>
-
-          <div class="space-y-4">
-            <label class="flex cursor-pointer items-center gap-3">
-              <input
-                v-model="followUpForm.requires_follow_up"
-                type="checkbox"
-                class="h-4 w-4 rounded border-white/20 accent-[var(--nexora-primary)]"
-              />
-              <span class="text-sm">Requiere seguimiento</span>
-            </label>
-
-            <label class="flex cursor-pointer items-center gap-3">
-              <input
-                v-model="followUpForm.requires_multiple_sessions"
-                type="checkbox"
-                class="h-4 w-4 rounded border-white/20 accent-[var(--nexora-primary)]"
-              />
-              <span class="text-sm">Requiere múltiples sesiones</span>
-            </label>
-
-            <div v-if="followUpForm.requires_multiple_sessions" class="space-y-4 border-t border-white/10 pt-4">
-              <div class="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label class="mb-1.5 block text-xs text-white/50">Sesiones estimadas</label>
-                  <input
-                    v-model.number="followUpForm.estimated_sessions"
-                    type="number"
-                    min="1"
-                    class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
-                  />
-                </div>
-                <div>
-                  <label class="mb-1.5 block text-xs text-white/50">Fecha próxima sesión</label>
-                  <input
-                    v-model="followUpForm.next_session_date"
-                    type="date"
-                    class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
-                  />
-                </div>
-              </div>
-
-              <!-- Session date scheduler — only shown before any sessions are created -->
-              <div
-                v-if="sessionScheduleDates.length > 0 && sessionsStore.items.length === 0"
-                class="rounded-xl border border-white/10 bg-white/5 p-4 space-y-3"
-              >
-                <p class="text-xs font-semibold text-white/50 uppercase tracking-wide">Programar fechas de sesiones</p>
-                <div
-                  v-for="(_, i) in sessionScheduleDates"
-                  :key="i"
-                  class="flex items-center gap-3"
-                >
-                  <span class="shrink-0 text-xs text-white/40 w-16">Sesión {{ i + 1 }}</span>
-                  <input
-                    v-model="sessionScheduleDates[i]"
-                    type="datetime-local"
-                    class="flex-1 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
-                  />
-                </div>
-                <button
-                  class="w-full rounded-xl py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50"
-                  :style="{ background: 'var(--nexora-primary)' }"
-                  :disabled="schedulingSessions || !sessionScheduleDates.some(d => d)"
-                  @click="scheduleAllSessions"
-                >
-                  {{ schedulingSessions ? 'Programando...' : `Programar ${sessionScheduleDates.length} sesiones y crear citas` }}
-                </button>
-              </div>
-
-              <!-- Already has sessions -->
-              <div
-                v-else-if="sessionScheduleDates.length > 0 && sessionsStore.items.length > 0"
-                class="flex items-center gap-2 text-xs text-white/40 px-1"
-              >
-                <CheckCircle2 class="h-3.5 w-3.5 text-green-400" />
-                {{ sessionsStore.items.length }} sesiones programadas. Modificá las fechas desde el tab Sesiones.
-              </div>
-            </div>
-
-            <div v-if="followUpForm.requires_follow_up" :class="{ 'border-t border-white/10 pt-4': !followUpForm.requires_multiple_sessions }">
-              <label class="mb-1.5 block text-xs text-white/50">Notas de seguimiento</label>
-              <textarea
-                v-model="followUpForm.follow_up_notes"
-                rows="3"
-                class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
-                placeholder="Indicaciones para el seguimiento..."
-              />
-            </div>
-
-            <div class="flex justify-end pt-2">
-              <button
-                class="rounded-xl px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50"
-                :style="{ background: 'var(--nexora-primary)' }"
-                :disabled="savingFollowUp"
-                @click="saveFollowUp"
-              >
-                {{ savingFollowUp ? 'Guardando...' : 'Guardar seguimiento' }}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <ConsultationTreatmentsTab
+        v-else-if="activeTab === 'treatments'"
+        :active-services="activeServices"
+        :voided-services="voidedServices"
+        :total="consultationTreatmentsStore.total"
+        :has-closed-payments="hasClosedPayments"
+        :consultation="consultation"
+        v-model:follow-up-form="followUpForm"
+        v-model:session-schedule-dates="sessionScheduleDates"
+        :sessions-count="sessionsStore.items.length"
+        :scheduling-sessions="schedulingSessions"
+        :saving-follow-up="savingFollowUp"
+        :fmt-currency="fmtCurrency"
+        @add-service="showAddServicePanel = true"
+        @void-service="voidService"
+        @save-follow-up="saveFollowUp"
+        @schedule-sessions="scheduleAllSessions"
+      />
 
       <!-- ═══════════ TAB: SESIONES ═══════════ -->
-      <div v-else-if="activeTab === 'sessions'" class="space-y-4">
+      <ConsultationSessionsTab
+        v-else-if="activeTab === 'sessions'"
+        :consultation="consultation"
+        :sessions="sessionsStore.items"
+        :status-class="STATUS_CLASS"
+        :status-label="STATUS_LABEL"
+        :editing-session-id="editingSessionId"
+        v-model:edit-session-date="editSessionDate"
+        :saving-edit-session="savingEditSession"
+        :fmt-date="fmtDate"
+        :fmt-date-time="fmtDateTime"
+        @new-session="showSessionPanel = true"
+        @start-edit-session="startEditSession"
+        @save-edit-session="saveEditSession"
+        @cancel-edit-session="cancelEditSession"
+        @complete-session="completeSession"
+        @cancel-session="cancelSession"
+      />
 
-        <div class="flex items-center justify-between">
-          <h2 class="text-sm font-semibold text-white/70">Sesiones de tratamiento</h2>
-          <button
-            v-if="(consultation as any)?.requires_multiple_sessions"
-            class="flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
-            :style="{ background: 'var(--nexora-primary)' }"
-            @click="showSessionPanel = true"
-          >
-            <Plus class="h-4 w-4" />
-            Nueva sesión
-          </button>
-        </div>
-
-        <!-- No multiple sessions configured -->
-        <div
-          v-if="!(consultation as any)?.requires_multiple_sessions"
-          class="rounded-xl border border-white/10 bg-white/5 p-10 text-center"
-        >
-          <AlertCircle class="mx-auto mb-3 h-8 w-8 text-white/20" />
-          <p class="text-sm text-white/40">Esta consulta no tiene sesiones múltiples configuradas.</p>
-          <p class="mt-1 text-xs text-white/30">Activá la opción en la pestaña Tratamiento.</p>
-        </div>
-
-        <!-- Empty sessions -->
-        <div
-          v-else-if="!sessionsStore.items.length"
-          class="rounded-xl border border-white/10 bg-white/5 p-10 text-center"
-        >
-          <Calendar class="mx-auto mb-3 h-8 w-8 text-white/20" />
-          <p class="text-sm text-white/40">No hay sesiones registradas aún.</p>
-        </div>
-
-        <!-- Sessions list -->
-        <div v-else class="space-y-3">
-          <div
-            v-for="session in sessionsStore.items"
-            :key="session.id"
-            class="rounded-xl border border-white/10 bg-white/5 p-4"
-          >
-            <div class="flex items-start justify-between gap-3">
-              <div class="flex-1 min-w-0">
-                <div class="mb-2 flex flex-wrap items-center gap-2">
-                  <span class="text-sm font-semibold">Sesión #{{ session.session_number }}</span>
-                  <span
-                    class="rounded-full px-2 py-0.5 text-xs font-medium"
-                    :class="STATUS_CLASS[session.status ?? ''] ?? 'bg-white/10 text-white/40'"
-                  >
-                    {{ STATUS_LABEL[session.status ?? ''] ?? session.status }}
-                  </span>
-                  <span class="text-xs text-white/40">{{ fmtDateTime(session.session_date) }}</span>
-                </div>
-                <p v-if="session.notes" class="line-clamp-2 text-sm text-white/60">{{ session.notes }}</p>
-                <p v-if="session.next_session_date" class="mt-1 text-xs text-white/40">
-                  Próxima: {{ fmtDate(session.next_session_date) }}
-                </p>
-
-                <!-- Inline date edit -->
-                <div
-                  v-if="editingSessionId === session.id"
-                  class="mt-3 flex flex-wrap items-center gap-2"
-                >
-                  <input
-                    v-model="editSessionDate"
-                    type="datetime-local"
-                    class="rounded-xl border border-white/20 bg-white/5 px-3 py-1.5 text-sm text-white outline-none focus:border-white/40"
-                  />
-                  <button
-                    class="rounded-lg px-3 py-1.5 text-xs font-medium text-white transition hover:opacity-90 disabled:opacity-50"
-                    :style="{ background: 'var(--nexora-primary)' }"
-                    :disabled="savingEditSession || !editSessionDate"
-                    @click="saveEditSession(session)"
-                  >
-                    {{ savingEditSession ? '...' : 'Guardar' }}
-                  </button>
-                  <button
-                    class="rounded-lg border border-white/10 px-3 py-1.5 text-xs text-white/50 hover:text-white transition"
-                    @click="cancelEditSession"
-                  >
-                    Cancelar
-                  </button>
-                </div>
-              </div>
-
-              <div class="shrink-0 flex flex-col items-end gap-1.5">
-                <button
-                  v-if="!['completed', 'cancelled'].includes(session.status ?? '')"
-                  class="flex items-center gap-1 rounded-lg bg-green-500/20 px-3 py-1.5 text-xs font-medium text-green-400 transition hover:bg-green-500/30"
-                  @click="completeSession(session)"
-                >
-                  <CheckCircle2 class="h-3.5 w-3.5" />
-                  Completar
-                </button>
-                <button
-                  v-if="editingSessionId !== session.id && !['completed', 'cancelled'].includes(session.status ?? '')"
-                  class="flex items-center gap-1 rounded-lg border border-white/10 px-3 py-1.5 text-xs text-white/50 transition hover:border-white/20 hover:text-white"
-                  @click="startEditSession(session)"
-                >
-                  <Edit2 class="h-3 w-3" />
-                  Editar fecha
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ═══════════ TAB: FOTOS ═══════════ -->
       <div v-else-if="activeTab === 'photos'">
         <WidgetsDentalPhotoGallery :consultationId="id" />
       </div>
@@ -1172,217 +801,34 @@ onMounted(async () => {
       </div>
 
       <!-- ═══════════ TAB: HISTORIA ═══════════ -->
-      <div v-else-if="activeTab === 'history'" class="space-y-4">
-
-        <div class="flex items-center justify-between">
-          <h2 class="text-sm font-semibold text-white/70">Historia clínica del paciente</h2>
-          <div class="flex items-center gap-2">
-            <router-link
-              :to="`/dental/patients/${(consultation as any)?.customer_id ?? (consultation as any)?.customer?.id}`"
-              class="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/70 transition hover:bg-white/10"
-            >
-              Ver historial completo
-            </router-link>
-            <button
-              class="flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
-              :style="{ background: 'var(--nexora-primary)' }"
-              @click="showMedHistPanel = true"
-            >
-              <Plus class="h-4 w-4" />
-              Agregar registro
-            </button>
-          </div>
-        </div>
-
-        <div v-if="!medicalHistory.length" class="rounded-xl border border-white/10 bg-white/5 p-10 text-center">
-          <BookOpen class="mx-auto mb-3 h-8 w-8 text-white/20" />
-          <p class="text-sm text-white/40">Sin registros médicos cargados.</p>
-        </div>
-
-        <div v-else class="space-y-3">
-          <div
-            v-for="entry in medicalHistory"
-            :key="entry.id"
-            class="rounded-xl border border-white/10 bg-white/5 p-4"
-          >
-            <div class="mb-3 flex items-center justify-between">
-              <span class="text-xs text-white/40">{{ fmtDate(entry.entry_date) }}</span>
-              <span v-if="entry.blood_type" class="rounded bg-red-900/30 px-2 py-0.5 text-xs font-medium text-red-300">
-                {{ entry.blood_type }}
-              </span>
-            </div>
-            <div class="grid gap-3 sm:grid-cols-2">
-              <div v-if="entry.allergies">
-                <p class="mb-0.5 text-xs text-white/40">Alergias</p>
-                <p class="text-sm text-white/80">{{ entry.allergies }}</p>
-              </div>
-              <div v-if="entry.current_medications">
-                <p class="mb-0.5 text-xs text-white/40">Medicamentos actuales</p>
-                <p class="text-sm text-white/80">{{ entry.current_medications }}</p>
-              </div>
-              <div v-if="entry.chronic_conditions">
-                <p class="mb-0.5 text-xs text-white/40">Condiciones crónicas</p>
-                <p class="text-sm text-white/80">{{ entry.chronic_conditions }}</p>
-              </div>
-              <div v-if="entry.medical_background">
-                <p class="mb-0.5 text-xs text-white/40">Antecedentes</p>
-                <p class="text-sm text-white/80">{{ entry.medical_background }}</p>
-              </div>
-              <div v-if="entry.dental_observations" class="sm:col-span-2">
-                <p class="mb-0.5 text-xs text-white/40">Observaciones dentales</p>
-                <p class="text-sm text-white/80">{{ entry.dental_observations }}</p>
-              </div>
-              <div v-if="entry.notes" class="sm:col-span-2">
-                <p class="mb-0.5 text-xs text-white/40">Notas</p>
-                <p class="text-sm text-white/80">{{ entry.notes }}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <ConsultationHistoryTab
+        v-else-if="activeTab === 'history'"
+        :consultation="consultation"
+        :medical-history="medicalHistory"
+        :fmt-date="fmtDate"
+        @add-record="showMedHistPanel = true"
+      />
 
       <!-- ═══════════ TAB: PAGOS ═══════════ -->
-      <div v-else-if="activeTab === 'payments'" class="space-y-5">
-
-        <!-- Loading -->
-        <div v-if="loadingCharge" class="py-12 text-center text-sm text-white/40">
-          Cargando información de pagos...
-        </div>
-
-        <!-- No charge -->
-        <div v-else-if="!chargeDetail" class="rounded-xl border border-white/10 bg-white/5 p-10 text-center">
-          <CreditCard class="mx-auto mb-4 h-10 w-10 text-white/20" />
-          <p class="mb-1 text-sm text-white/50">No hay cargo generado para esta consulta</p>
-          <p v-if="!consultationTreatmentsStore.total" class="mb-4 text-xs text-white/30">
-            Agregá al menos un servicio en la pestaña Tratamiento para habilitar el cargo.
-          </p>
-          <p v-else-if="!canCreateCharge" class="mb-4 text-xs text-white/30">
-            El cargo ya existe o el estado de pago no lo permite.
-          </p>
-          <button
-            v-if="canCreateCharge"
-            class="mx-auto flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50"
-            :style="{ background: 'var(--nexora-primary)' }"
-            :disabled="actionLoading"
-            @click="generateCharge"
-          >
-            <CreditCard class="h-4 w-4" />
-            {{ actionLoading ? 'Generando...' : 'Generar cargo' }}
-          </button>
-        </div>
-
-        <!-- Charge detail -->
-        <template v-else>
-
-          <!-- Summary card -->
-          <div class="rounded-xl border border-white/10 bg-white/5 p-5">
-            <div class="mb-4 flex items-center justify-between">
-              <h2 class="text-sm font-semibold text-white/70">Resumen del cargo</h2>
-              <span
-                class="rounded-full px-3 py-1 text-xs font-medium"
-                :class="ADMIN_STATUS_CLASS[chargeDetail.administrative_status ?? ''] ?? 'bg-white/10 text-white/40'"
-              >
-                {{ ADMIN_STATUS_LABEL[chargeDetail.administrative_status ?? ''] ?? chargeDetail.administrative_status }}
-              </span>
-            </div>
-            <div class="grid gap-4 sm:grid-cols-3">
-              <div>
-                <p class="mb-0.5 text-xs text-white/40">Total</p>
-                <p class="text-xl font-bold">{{ fmtCurrency(chargeDetail.total_amount) }}</p>
-              </div>
-              <div>
-                <p class="mb-0.5 text-xs text-white/40">Pagado</p>
-                <p class="text-xl font-bold text-green-400">{{ fmtCurrency(chargeDetail.paid_amount) }}</p>
-              </div>
-              <div>
-                <p class="mb-0.5 text-xs text-white/40">Pendiente</p>
-                <p class="text-xl font-bold text-yellow-400">
-                  {{ fmtCurrency(Number(chargeDetail.total_amount) - Number(chargeDetail.paid_amount)) }}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Actions row -->
-          <div class="flex flex-wrap gap-2">
-            <button
-              v-if="!(chargeDetail.installments as any)?.length"
-              class="flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/70 transition hover:bg-white/10"
-              @click="showInstallPanel = true"
-            >
-              <Calendar class="h-4 w-4" />
-              Plan de cuotas
-            </button>
-            <button
-              v-if="chargeDetail.administrative_status !== 'paid'"
-              class="flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
-              :style="{ background: 'var(--nexora-primary)' }"
-              @click="payForm.amount = Number(chargeDetail.total_amount) - Number(chargeDetail.paid_amount); showPayPanel = true"
-            >
-              <DollarSign class="h-4 w-4" />
-              Registrar pago
-            </button>
-          </div>
-
-          <!-- Installments -->
-          <div v-if="(chargeDetail.installments as any)?.length" class="rounded-xl border border-white/10 bg-white/5 p-5">
-            <h3 class="mb-4 text-sm font-semibold text-white/70">Plan de cuotas</h3>
-            <div class="space-y-2">
-              <div
-                v-for="inst in (chargeDetail.installments as any)"
-                :key="inst.id"
-                class="flex items-center justify-between rounded-lg border border-white/5 bg-white/5 px-4 py-3"
-              >
-                <div class="flex items-center gap-3">
-                  <span class="text-sm font-medium">Cuota {{ inst.installment_number }}</span>
-                  <span class="text-xs text-white/40">Vence: {{ fmtDate(inst.due_date) }}</span>
-                  <span
-                    class="rounded-full px-2 py-0.5 text-xs font-medium"
-                    :class="ADMIN_STATUS_CLASS[inst.status ?? ''] ?? 'bg-white/10 text-white/40'"
-                  >
-                    {{ ADMIN_STATUS_LABEL[inst.status ?? ''] ?? inst.status }}
-                  </span>
-                </div>
-                <div class="flex items-center gap-3">
-                  <div class="text-right">
-                    <p class="text-sm font-medium">{{ fmtCurrency(inst.amount) }}</p>
-                    <p v-if="Number(inst.paid_amount) > 0" class="text-xs text-green-400">
-                      Pagado: {{ fmtCurrency(inst.paid_amount) }}
-                    </p>
-                  </div>
-                  <button
-                    v-if="inst.status !== 'paid' && inst.status !== 'cancelled'"
-                    class="rounded-lg bg-green-500/20 px-3 py-1.5 text-xs font-medium text-green-400 transition hover:bg-green-500/30"
-                    @click="openInstPayPanel(inst)"
-                  >
-                    Pagar
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Payment history -->
-          <div v-if="(chargeDetail.payments as any)?.length" class="rounded-xl border border-white/10 bg-white/5 p-5">
-            <h3 class="mb-4 text-sm font-semibold text-white/70">Historial de pagos</h3>
-            <div class="space-y-2">
-              <div
-                v-for="pmt in (chargeDetail.payments as any)"
-                :key="pmt.id"
-                class="flex items-center justify-between rounded-lg border border-white/5 bg-white/5 px-4 py-3"
-              >
-                <div>
-                  <p class="text-sm">{{ PAYMENT_METHOD_LABEL[pmt.payment_method] ?? pmt.payment_method }}</p>
-                  <p class="text-xs text-white/40">{{ fmtDateTime(pmt.payment_date) }}</p>
-                  <p v-if="pmt.notes" class="mt-0.5 text-xs text-white/40">{{ pmt.notes }}</p>
-                </div>
-                <span class="text-sm font-semibold text-green-400">{{ fmtCurrency(pmt.amount) }}</span>
-              </div>
-            </div>
-          </div>
-
-        </template>
-      </div>
+      <ConsultationPaymentsTab
+        v-else-if="activeTab === 'payments'"
+        :consultation="consultation"
+        :charge-detail="chargeDetail"
+        :loading-charge="loadingCharge"
+        :can-create-charge="canCreateCharge"
+        :action-loading="actionLoading"
+        :total="consultationTreatmentsStore.total"
+        :admin-status-class="ADMIN_STATUS_CLASS"
+        :admin-status-label="ADMIN_STATUS_LABEL"
+        :payment-method-label="PAYMENT_METHOD_LABEL"
+        :fmt-currency="fmtCurrency"
+        :fmt-date="fmtDate"
+        :fmt-date-time="fmtDateTime"
+        @generate-charge="generateCharge"
+        @show-installments="showInstallPanel = true"
+        @register-payment="(amount) => { payForm.amount = amount; showPayPanel = true }"
+        @pay-installment="openInstPayPanel"
+      />
 
     </div>
 

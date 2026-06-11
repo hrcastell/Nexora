@@ -52,11 +52,19 @@ export const useDentalConsultationSessionsStore = defineStore('dentalConsultatio
     return updated;
   }
 
+  async function cancel(consultationId: number | string, sessionId: number | string) {
+    const res = await dentalConsultationSessionsService.cancel(consultationId, sessionId);
+    const updated = unwrapData<DentalConsultationSession>(res.data);
+    const idx = items.value.findIndex(s => s.id === updated.id);
+    if (idx !== -1) items.value[idx] = updated;
+    return updated;
+  }
+
   function reset() {
     items.value = [];
     current.value = null;
     error.value = null;
   }
 
-  return { items, current, loading, error, load, create, update, complete, reset };
+  return { items, current, loading, error, load, create, update, complete, cancel, reset };
 });
