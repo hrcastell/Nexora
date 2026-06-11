@@ -319,10 +319,10 @@ const canCreateCharge = computed(() =>
 )
 
 const activeServices = computed(() =>
-  (consultationTreatmentsStore.items as DentalConsultationTreatment[]).filter(t => t.status !== 'voided')
+  (consultationTreatmentsStore.items ?? []).filter(t => t.status !== 'voided')
 )
 const voidedServices = computed(() =>
-  (consultationTreatmentsStore.items as DentalConsultationTreatment[]).filter(t => t.status === 'voided')
+  (consultationTreatmentsStore.items ?? []).filter(t => t.status === 'voided')
 )
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

@@ -357,7 +357,7 @@ async function loadDocuments() {
   loading.value = true;
   try {
     const res = await dentalMedicalDocumentsService.getForConsultation(props.consultationId);
-    documents.value = res.data.data;
+    documents.value = res.data.data ?? [];
   } catch {
     // silently ignore initial load errors — already in a tab panel
   } finally {
