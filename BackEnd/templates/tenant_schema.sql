@@ -1155,3 +1155,16 @@ CREATE INDEX IF NOT EXISTS idx_dental_medical_docs_customer
     ON {schema_name}.dental_medical_documents (tenant_id, customer_id);
 CREATE INDEX IF NOT EXISTS idx_dental_medical_docs_consultation
     ON {schema_name}.dental_medical_documents (tenant_id, consultation_id);
+
+-- Optional phpPgAdmin browse access for the hosting login.
+-- This block is additive: it only GRANTs privileges when the PostgreSQL role exists.
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'hernanci') THEN
+        EXECUTE 'GRANT USAGE ON SCHEMA "{schema_name}" TO "hernanci"';
+        EXECUTE 'GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA "{schema_name}" TO "hernanci"';
+        EXECUTE 'GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA "{schema_name}" TO "hernanci"';
+        EXECUTE 'ALTER DEFAULT PRIVILEGES IN SCHEMA "{schema_name}" GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO "hernanci"';
+        EXECUTE 'ALTER DEFAULT PRIVILEGES IN SCHEMA "{schema_name}" GRANT USAGE, SELECT ON SEQUENCES TO "hernanci"';
+    END IF;
+END $$;

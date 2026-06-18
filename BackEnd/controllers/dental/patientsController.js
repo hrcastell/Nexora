@@ -111,7 +111,7 @@ exports.create = async (req, res) => {
                  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
                  RETURNING *`,
                 [companyId, first_name, last_name, document_type || null, document_number || null,
-                 phone || null, mobile, email || null, birth_date, address, city, customer_notes]
+                 phone || null, mobile, email || null, birth_date || null, address, city, customer_notes]
             );
             resolvedCustomerId = customerResult.rows[0].id;
         } else {
@@ -275,7 +275,7 @@ exports.update = async (req, res) => {
                 phone !== undefined ? phone : null,
                 mobile !== undefined ? mobile : null,
                 email !== undefined ? email : null,
-                birth_date !== undefined ? birth_date : null,
+                birth_date || null,
                 address !== undefined ? address : null,
                 city !== undefined ? city : null,
                 customer_notes !== undefined ? customer_notes : null,
