@@ -354,9 +354,9 @@ onMounted(() => {
 
       <!-- Month nav -->
       <template v-if="activeTab === 'month'">
-        <button class="ml-0 min-h-10 min-w-10 rounded-lg border border-white/10 px-2 py-1 text-xs text-white/50 hover:text-white sm:ml-2" @click="goPreviousMonth">‹</button>
+        <button class="ml-0 min-h-10 min-w-10 rounded-lg border border-white/10 px-2 py-1 text-xs text-white/50 hover:text-white sm:ml-2" aria-label="Mes anterior" @click="goPreviousMonth">‹</button>
         <span class="min-w-0 text-xs text-white/60">{{ MONTHS[currentMonth - 1] }} {{ currentYear }}</span>
-        <button class="min-h-10 min-w-10 rounded-lg border border-white/10 px-2 py-1 text-xs text-white/50 hover:text-white" @click="goNextMonth">›</button>
+        <button class="min-h-10 min-w-10 rounded-lg border border-white/10 px-2 py-1 text-xs text-white/50 hover:text-white" aria-label="Mes siguiente" @click="goNextMonth">›</button>
       </template>
     </div>
 
@@ -564,12 +564,12 @@ onMounted(() => {
             <p class="truncate text-xs text-white/60">{{ apt.treatment?.name ?? apt.reason ?? '—' }}</p>
             <span class="w-fit rounded-full px-2 py-0.5 text-xs" :class="STATUS_CLASS[apt.status]">{{ STATUS_LABEL[apt.status] }}</span>
             <div class="flex items-center justify-end gap-1">
-              <button v-if="apt.status === 'scheduled'" type="button" class="text-green-400 hover:opacity-70" title="Confirmar" @click="doAction('confirm', apt)"><CheckCircle2 :size="14" /></button>
-              <button v-if="apt.status === 'confirmed'" type="button" class="text-cyan-300 hover:opacity-70" title="Marcar presente" @click="doAction('check_in', apt)"><LogIn :size="14" /></button>
-              <button v-if="!['completed','cancelled','no_show'].includes(apt.status)" type="button" class="text-white/50 hover:text-white" title="Editar/reprogramar" @click="openEditAppointment(apt)"><Edit2 :size="14" /></button>
-              <button v-if="['scheduled','confirmed'].includes(apt.status)" type="button" class="text-cyan-400 hover:opacity-70" title="Consulta" @click="doAction('convert', apt)"><ArrowRightCircle :size="14" /></button>
+              <button v-if="apt.status === 'scheduled'" type="button" class="text-green-400 hover:opacity-70" title="Confirmar" aria-label="Confirmar cita" @click="doAction('confirm', apt)"><CheckCircle2 :size="14" /></button>
+              <button v-if="apt.status === 'confirmed'" type="button" class="text-cyan-300 hover:opacity-70" title="Marcar presente" aria-label="Marcar paciente presente" @click="doAction('check_in', apt)"><LogIn :size="14" /></button>
+              <button v-if="!['completed','cancelled','no_show'].includes(apt.status)" type="button" class="text-white/50 hover:text-white" title="Editar/reprogramar" aria-label="Editar o reprogramar cita" @click="openEditAppointment(apt)"><Edit2 :size="14" /></button>
+              <button v-if="['scheduled','confirmed'].includes(apt.status)" type="button" class="text-cyan-400 hover:opacity-70" title="Consulta" aria-label="Convertir cita en consulta" @click="doAction('convert', apt)"><ArrowRightCircle :size="14" /></button>
               <button v-if="['scheduled','confirmed'].includes(apt.status)" type="button" class="text-orange-400 hover:opacity-70" title="No asistió" @click="doAction('no_show', apt)"><UserX :size="14" /></button>
-              <button v-if="['scheduled','confirmed'].includes(apt.status)" type="button" class="text-red-400 hover:opacity-70" title="Cancelar" @click="doAction('cancel', apt)"><XCircle :size="14" /></button>
+              <button v-if="['scheduled','confirmed'].includes(apt.status)" type="button" class="text-red-400 hover:opacity-70" title="Cancelar" aria-label="Cancelar cita" @click="doAction('cancel', apt)"><XCircle :size="14" /></button>
             </div>
           </div>
         </div>
