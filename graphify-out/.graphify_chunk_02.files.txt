@@ -1,0 +1,3 @@
+C:\Users\Hernan Ricardo\Documents\GitHub\Nexora\Nexora\Plan\plan_implementacion_login_nexora.md
+C:\Users\Hernan Ricardo\Documents\GitHub\Nexora\Nexora\Plan\SEC-PROFILES-01 · Perfiles, permisos y definición de módulos para Nexora.md
+C:\Users\Hernan Ricardo\Documents\GitHub\Nexora\Nexora\Plan\SEC-USERS-01 · Gestión de usuarios, accesos y visibilidad para Nexora.md

@@ -1,0 +1,115 @@
+﻿{
+  "nodes": [
+    {
+      "id": "file:Plan/Logo_icon2.png",
+      "label": "Logo_icon2.png",
+      "type": "file",
+      "file_type": "image",
+      "path": "Plan/Logo_icon2.png",
+      "description": "Square image containing the Nexora logo icon on a dark background."
+    },
+    {
+      "id": "image:Logo_icon2:NexoraLogoIcon",
+      "label": "Nexora logo icon",
+      "type": "visual_asset",
+      "file_type": "image",
+      "description": "A 3D-styled logo composed of a metallic silver letter N inside a circular ring."
+    },
+    {
+      "id": "image:Logo_icon2:LetterN",
+      "label": "Metallic letter N",
+      "type": "visual_element",
+      "file_type": "image",
+      "description": "Central uppercase N rendered in silver/white metallic 3D styling."
+    },
+    {
+      "id": "image:Logo_icon2:CircularRing",
+      "label": "Gradient circular ring",
+      "type": "visual_element",
+      "file_type": "image",
+      "description": "Circular border ring around the letter N, rendered with purple and gold gradient segments."
+    },
+    {
+      "id": "image:Logo_icon2:DarkBackground",
+      "label": "Dark navy background",
+      "type": "visual_element",
+      "file_type": "image",
+      "description": "Dark navy/black textured background behind the logo."
+    },
+    {
+      "id": "concept:BrandColor:Purple",
+      "label": "Purple brand color",
+      "type": "color",
+      "file_type": "image",
+      "description": "Prominent purple hue used on the circular ring."
+    },
+    {
+      "id": "concept:BrandColor:Gold",
+      "label": "Gold brand color",
+      "type": "color",
+      "file_type": "image",
+      "description": "Gold/yellow hue used on the lower-right portion of the circular ring."
+    },
+    {
+      "id": "concept:BrandColor:Silver",
+      "label": "Silver metallic color",
+      "type": "color",
+      "file_type": "image",
+      "description": "Silver/white metallic hue used for the central N."
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:Plan/Logo_icon2.png",
+      "target": "image:Logo_icon2:NexoraLogoIcon",
+      "relation": "CONTAINS",
+      "evidence": "The image file visibly contains a single logo icon composition.",
+      "confidence_score": 0.98
+    },
+    {
+      "source": "image:Logo_icon2:NexoraLogoIcon",
+      "target": "image:Logo_icon2:LetterN",
+      "relation": "HAS_ELEMENT",
+      "evidence": "A large uppercase N appears at the center of the logo.",
+      "confidence_score": 0.99
+    },
+    {
+      "source": "image:Logo_icon2:NexoraLogoIcon",
+      "target": "image:Logo_icon2:CircularRing",
+      "relation": "HAS_ELEMENT",
+      "evidence": "A circular ring surrounds the central letter N.",
+      "confidence_score": 0.99
+    },
+    {
+      "source": "image:Logo_icon2:NexoraLogoIcon",
+      "target": "image:Logo_icon2:DarkBackground",
+      "relation": "HAS_BACKGROUND",
+      "evidence": "The logo is displayed against a dark navy/black background.",
+      "confidence_score": 0.97
+    },
+    {
+      "source": "image:Logo_icon2:CircularRing",
+      "target": "concept:BrandColor:Purple",
+      "relation": "USES_COLOR",
+      "evidence": "The upper and left portions of the circular ring are purple.",
+      "confidence_score": 0.96
+    },
+    {
+      "source": "image:Logo_icon2:CircularRing",
+      "target": "concept:BrandColor:Gold",
+      "relation": "USES_COLOR",
+      "evidence": "The lower-right portion of the circular ring is gold/yellow.",
+      "confidence_score": 0.95
+    },
+    {
+      "source": "image:Logo_icon2:LetterN",
+      "target": "concept:BrandColor:Silver",
+      "relation": "USES_COLOR",
+      "evidence": "The central N is rendered in silver/white metallic tones.",
+      "confidence_score": 0.97
+    }
+  ],
+  "hyperedges": [],
+  "input_tokens": 1,
+  "output_tokens": 612
+}

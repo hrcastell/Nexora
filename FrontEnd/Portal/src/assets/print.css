@@ -1,0 +1,63 @@
+/* ── Nexora Dental — Print Styles ───────────────────────────────────────── */
+
+@media print {
+  /* Hide everything except the print target */
+  body > * {
+    display: none !important;
+  }
+
+  #dental-print-target {
+    display: block !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 9999;
+    background: white;
+    color: black;
+    font-family: 'Arial', sans-serif;
+    font-size: 11pt;
+    line-height: 1.4;
+  }
+
+  /* Page setup */
+  @page {
+    size: A4 portrait;
+    margin: 15mm 20mm;
+  }
+
+  /* Prevent page break inside key blocks */
+  .print-no-break {
+    page-break-inside: avoid;
+  }
+
+  /* Tables */
+  table {
+    border-collapse: collapse;
+    width: 100%;
+  }
+
+  th, td {
+    border: 1px solid #ccc;
+    padding: 4pt 6pt;
+    text-align: left;
+  }
+
+  th {
+    background-color: #f0f0f0;
+    font-weight: bold;
+  }
+
+  /* Signature line */
+  .print-signature-line {
+    display: inline-block;
+    width: 180px;
+    border-bottom: 1px solid #000;
+    margin-bottom: 4pt;
+  }
+}
+
+/* Visible only when printing */
+#dental-print-target {
+  display: none;
+}

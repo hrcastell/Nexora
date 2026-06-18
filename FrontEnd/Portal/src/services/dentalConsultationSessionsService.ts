@@ -17,4 +17,7 @@ export const dentalConsultationSessionsService = {
   complete(consultationId: number | string, sessionId: number | string) {
     return api.post<DentalConsultationSession>(`/dental/consultations/${consultationId}/sessions/${sessionId}/complete`, {});
   },
+  cancel(consultationId: number | string, sessionId: number | string) {
+    return api.post<DentalConsultationSession>(`/dental/consultations/${consultationId}/sessions/${sessionId}/cancel`, {});
+  },
 };

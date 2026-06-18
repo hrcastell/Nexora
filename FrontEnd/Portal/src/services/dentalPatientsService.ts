@@ -41,4 +41,14 @@ export const dentalPatientsService = {
   createMedicalHistory(patientId: number | string, data: Partial<DentalMedicalHistory>) {
     return api.post<{ data: DentalMedicalHistory }>(`/dental/patients/${patientId}/medical-history`, data);
   },
+
+  uploadPhoto(id: number | string, file: File): Promise<{ photo_url: string }> {
+    const form = new FormData();
+    form.append('photo', file);
+    return api.post(`/dental/patients/${id}/photo`, form).then(r => r.data);
+  },
+
+  deletePhoto(id: number | string): Promise<void> {
+    return api.delete(`/dental/patients/${id}/photo`);
+  },
 };

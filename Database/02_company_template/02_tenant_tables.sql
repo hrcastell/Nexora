@@ -492,3 +492,16 @@ CREATE TABLE IF NOT EXISTS {schema_name}.work_order_status_history (
 );
 
 CREATE INDEX IF NOT EXISTS idx_wosh_work_order ON {schema_name}.work_order_status_history(work_order_id);
+
+-- Optional phpPgAdmin browse access for the hosting login.
+-- This block is additive: it only GRANTs privileges when the PostgreSQL role exists.
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'hernanci') THEN
+        EXECUTE 'GRANT USAGE ON SCHEMA "{schema_name}" TO "hernanci"';
+        EXECUTE 'GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA "{schema_name}" TO "hernanci"';
+        EXECUTE 'GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA "{schema_name}" TO "hernanci"';
+        EXECUTE 'ALTER DEFAULT PRIVILEGES IN SCHEMA "{schema_name}" GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO "hernanci"';
+        EXECUTE 'ALTER DEFAULT PRIVILEGES IN SCHEMA "{schema_name}" GRANT USAGE, SELECT ON SEQUENCES TO "hernanci"';
+    END IF;
+END $$;

@@ -7,12 +7,18 @@ const api = axios.create({
   },
 });
 
-// Interceptor to add token to requests
+// Interceptor to add token and fix Content-Type for FormData uploads
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
     if (token) {
       config.headers['x-auth-token'] = token;
+    }
+    // Let the browser/Axios set Content-Type automatically for FormData
+    // (multipart/form-data with correct boundary). Deleting it here overrides
+    // the 'application/json' default set in axios.create() above.
+    if (config.data instanceof FormData) {
+      delete config.headers['Content-Type'];
     }
     return config;
   },

@@ -1,3 +1,5 @@
+const fs   = require('fs');
+const path = require('path');
 const db = require('../../config/db');
 const { resolveSchema } = require('../../utils/tenantResolver');
 
@@ -38,6 +40,7 @@ exports.list = async (req, res) => {
                     dpp.dental_observations,
                     dpp.emergency_contact_name,
                     dpp.emergency_contact_phone,
+                    dpp.photo_url,
                     dpp.notes AS dental_notes,
                     dpp.created_at AS dental_profile_created_at
              FROM ${schema}.customers c
@@ -108,7 +111,7 @@ exports.create = async (req, res) => {
                  VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
                  RETURNING *`,
                 [companyId, first_name, last_name, document_type || null, document_number || null,
-                 phone || null, mobile, email || null, birth_date, address, city, customer_notes]
+                 phone || null, mobile, email || null, birth_date || null, address, city, customer_notes]
             );
             resolvedCustomerId = customerResult.rows[0].id;
         } else {
@@ -152,6 +155,7 @@ exports.create = async (req, res) => {
                     dpp.dental_observations,
                     dpp.emergency_contact_name,
                     dpp.emergency_contact_phone,
+                    dpp.photo_url,
                     dpp.notes AS dental_notes,
                     dpp.created_at AS dental_profile_created_at,
                     dpp.updated_at AS dental_profile_updated_at
@@ -186,6 +190,7 @@ exports.getById = async (req, res) => {
                     dpp.dental_observations,
                     dpp.emergency_contact_name,
                     dpp.emergency_contact_phone,
+                    dpp.photo_url,
                     dpp.notes AS dental_notes,
                     dpp.created_at AS dental_profile_created_at,
                     dpp.updated_at AS dental_profile_updated_at
@@ -270,7 +275,7 @@ exports.update = async (req, res) => {
                 phone !== undefined ? phone : null,
                 mobile !== undefined ? mobile : null,
                 email !== undefined ? email : null,
-                birth_date !== undefined ? birth_date : null,
+                birth_date || null,
                 address !== undefined ? address : null,
                 city !== undefined ? city : null,
                 customer_notes !== undefined ? customer_notes : null,
@@ -322,6 +327,7 @@ exports.update = async (req, res) => {
                     dpp.dental_observations,
                     dpp.emergency_contact_name,
                     dpp.emergency_contact_phone,
+                    dpp.photo_url,
                     dpp.notes AS dental_notes,
                     dpp.created_at AS dental_profile_created_at,
                     dpp.updated_at AS dental_profile_updated_at
@@ -372,9 +378,9 @@ exports.getConsultations = async (req, res) => {
 
         const result = await db.query(
             `SELECT dc.*,
-                    ds.name AS service_name
+                    dt.name AS treatment_name
              FROM ${schema}.dental_consultations dc
-             LEFT JOIN ${schema}.dental_services ds ON ds.id = dc.service_id
+             LEFT JOIN ${schema}.dental_treatments dt ON dt.id = dc.treatment_id
              WHERE dc.tenant_id = $1 AND dc.customer_id = $2
              ORDER BY dc.consultation_date DESC`,
             [companyId, req.params.id]
@@ -458,6 +464,83 @@ exports.getMedicalHistory = async (req, res) => {
         res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al obtener historial médico') });
     }
 };
+
+/**
+ * POST /dental/patients/:id/photo
+ */
+exports.uploadPhoto = async (req, res) => {
+    try {
+        if (req.user?.read_only) return res.status(403).json({ error: 'Operación no permitida en modo solo lectura' });
+        const { schema, companyId } = await resolveSchema(req);
+        if (!req.file) return res.status(400).json({ error: 'No se proporcionó archivo' });
+
+        const baseUrl = process.env.API_URL || `${req.protocol}://${req.get('host')}`;
+        const photoUrl = `${baseUrl}/uploads/dental/patient-photos/${req.user.schema_name}/${req.file.filename}`;
+
+        const result = await db.query(
+            `UPDATE ${schema}.dental_patient_profiles
+             SET photo_url = $1, updated_at = NOW()
+             WHERE customer_id = $2 AND tenant_id = $3
+             RETURNING photo_url`,
+            [photoUrl, req.params.id, companyId]
+        );
+
+        if (result.rows.length === 0) {
+            if (req.file) {
+                fs.unlink(req.file.path, () => {}); // best-effort cleanup — patient not found
+            }
+            return res.status(404).json({ error: 'Perfil de paciente no encontrado' });
+        }
+
+        res.json({ photo_url: result.rows[0].photo_url });
+    } catch (err) {
+        if (req.file?.path) fs.unlink(req.file.path, () => {});
+        console.error('patientsController.uploadPhoto error:', err.message);
+        res.status(500).json({ error: 'Error al subir foto' });
+    }
+};
+
+/**
+ * DELETE /dental/patients/:id/photo
+ */
+exports.deletePhoto = async (req, res) => {
+    try {
+        if (req.user?.read_only) return res.status(403).json({ error: 'Operación no permitida en modo solo lectura' });
+        const { schema, companyId } = await resolveSchema(req);
+
+        // Read current photo_url before nullifying so we can delete the file from disk
+        const current = await db.query(
+            `SELECT photo_url FROM ${schema}.dental_patient_profiles WHERE customer_id = $1 AND tenant_id = $2`,
+            [req.params.id, companyId]
+        );
+        const oldUrl = current.rows[0]?.photo_url;
+        if (oldUrl) {
+            try {
+                const urlPath = new URL(oldUrl).pathname; // e.g. /uploads/dental/patient-photos/schema/file.jpg
+                if (urlPath.startsWith('/uploads/dental/')) {
+                    const filePath = path.join(__dirname, '../../', urlPath);
+                    fs.unlink(filePath, () => {}); // best-effort, ignore errors
+                }
+            } catch (_) { /* malformed URL — skip file deletion */ }
+        }
+
+        await db.query(
+            `UPDATE ${schema}.dental_patient_profiles
+             SET photo_url = NULL, updated_at = NOW()
+             WHERE customer_id = $1 AND tenant_id = $2`,
+            [req.params.id, companyId]
+        );
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error('patientsController.deletePhoto error:', err.message);
+        res.status(500).json({ error: 'Error al eliminar foto' });
+    }
+};
+
+// Multer instance for patient photos (3 MB max, images only)
+const { makeDentalUpload } = require('../../utils/upload');
+exports.patientPhotoUpload = makeDentalUpload('patient-photos', 3);
 
 /**
  * POST /dental/patients/:id/medical-history

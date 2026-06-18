@@ -1,25 +1,32 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
-  ArrowLeft, CheckCircle2, CreditCard, Edit2, Plus, Trash2,
-  Stethoscope, Calendar, ClipboardList, DollarSign, Camera, BookOpen, AlertCircle
+  ArrowLeft, Stethoscope, Calendar, ClipboardList, DollarSign,
+  Camera, BookOpen, AlertCircle, Paperclip, FileText
 } from 'lucide-vue-next'
 import { useDentalConsultationsStore } from '../../stores/dentalConsultations'
 import { useDentalPatientsStore } from '../../stores/dentalPatients'
-import { useDentalConsultationServicesStore } from '../../stores/dentalConsultationServices'
+import { useDentalConsultationTreatmentsStore } from '../../stores/dentalConsultationTreatments'
 import { useDentalConsultationSessionsStore } from '../../stores/dentalConsultationSessions'
-import { useDentalServicesStore } from '../../stores/dentalServices'
+import { useDentalTreatmentsStore } from '../../stores/dentalTreatments'
 import { dentalChargesService } from '../../services/dentalChargesService'
 import NxrSlidePanel from '../../components/NxrSlidePanel.vue'
 import AppToast from '../../components/AppToast.vue'
 import ConfirmActionModal from '../../components/admin/ConfirmActionModal.vue'
 import WidgetsDentalPhotoGallery from '../../components/widgets_dental_photo_gallery.vue'
+import ConsultationAttachmentsTab from '../../components/dental/ConsultationAttachmentsTab.vue'
+import ConsultationDocumentsSection from '../../components/dental/ConsultationDocumentsSection.vue'
+import ConsultationSessionsTab from '../../components/dental/ConsultationSessionsTab.vue'
+import ConsultationSummaryTab from '../../components/dental/ConsultationSummaryTab.vue'
+import ConsultationTreatmentsTab from '../../components/dental/ConsultationTreatmentsTab.vue'
+import ConsultationHistoryTab from '../../components/dental/ConsultationHistoryTab.vue'
+import ConsultationPaymentsTab from '../../components/dental/ConsultationPaymentsTab.vue'
 import { useToast } from '../../composables/useToast'
 import type {
   DentalCharge, DentalInstallment, DentalMedicalHistory,
-  DentalConsultationService, DentalConsultationSession,
-  DentalConsultationServiceFormData, DentalConsultationSessionFormData
+  DentalConsultationTreatment, DentalConsultationSession,
+  DentalConsultationTreatmentFormData, DentalConsultationSessionFormData
 } from '../../types/dental'
 
 // ── Route / Router ────────────────────────────────────────────────────────────
@@ -31,23 +38,25 @@ const { toasts, triggerToast, removeToast } = useToast()
 // ── Stores ────────────────────────────────────────────────────────────────────
 const store                    = useDentalConsultationsStore()
 const patientStore             = useDentalPatientsStore()
-const consultationServicesStore = useDentalConsultationServicesStore()
-const sessionsStore            = useDentalConsultationSessionsStore()
-const servicesStore            = useDentalServicesStore()
+const consultationTreatmentsStore = useDentalConsultationTreatmentsStore()
+const sessionsStore               = useDentalConsultationSessionsStore()
+const treatmentsStore             = useDentalTreatmentsStore()
 
 const consultation = computed(() => store.current)
 
 // ── Tabs ──────────────────────────────────────────────────────────────────────
-type TabKey = 'summary' | 'treatments' | 'sessions' | 'photos' | 'history' | 'payments'
+type TabKey = 'summary' | 'treatments' | 'sessions' | 'photos' | 'history' | 'payments' | 'attachments' | 'documents'
 const activeTab = ref<TabKey>('summary')
 
 const tabs: { key: TabKey; label: string; icon: any }[] = [
-  { key: 'summary',    label: 'Resumen',     icon: ClipboardList },
-  { key: 'treatments', label: 'Tratamiento', icon: Stethoscope   },
-  { key: 'sessions',   label: 'Sesiones',    icon: Calendar       },
-  { key: 'photos',     label: 'Fotos',       icon: Camera         },
-  { key: 'history',    label: 'Historia',    icon: BookOpen       },
-  { key: 'payments',   label: 'Pagos',       icon: DollarSign     },
+  { key: 'summary',     label: 'Resumen',     icon: ClipboardList },
+  { key: 'treatments',  label: 'Tratamiento', icon: Stethoscope   },
+  { key: 'sessions',    label: 'Sesiones',    icon: Calendar       },
+  { key: 'photos',      label: 'Fotos',       icon: Camera         },
+  { key: 'history',     label: 'Historia',    icon: BookOpen       },
+  { key: 'payments',    label: 'Pagos',       icon: DollarSign     },
+  { key: 'attachments', label: 'Adjuntos',    icon: Paperclip      },
+  { key: 'documents',   label: 'Documentos',  icon: FileText       },
 ]
 
 function selectTab(key: TabKey) {
@@ -58,24 +67,38 @@ function selectTab(key: TabKey) {
 
 // ── Status maps ───────────────────────────────────────────────────────────────
 const STATUS_LABEL: Record<string, string> = {
-  draft:        'Borrador',
-  created:      'Creada',
-  in_progress:  'En curso',
-  in_treatment: 'En tratamiento',
-  completed:    'Completada',
-  cancelled:    'Cancelada',
-  no_show:      'No asistió',
-  voided:       'Anulada',
+  borrador:                'Borrador',
+  creada:                  'Creada',
+  en_evaluacion:           'En Evaluación',
+  cotizada:                'Cotizada',
+  propuesta_pendiente:     'Propuesta Pendiente',
+  aceptada:                'Aceptada',
+  en_tratamiento:          'En Tratamiento',
+  sesion_pendiente:        'Sesión Pendiente',
+  finalizada_clinicamente: 'Finalizada',
+  pendiente_pago:          'Pendiente Pago',
+  cerrada:                 'Cerrada',
+  rechazada:               'Rechazada',
+  cancelled:               'Cancelada',
+  no_show:                 'No Asistió',
+  voided:                  'Anulada',
 }
 const STATUS_CLASS: Record<string, string> = {
-  draft:        'bg-white/10 text-white/40',
-  created:      'bg-purple-500/20 text-purple-400',
-  in_progress:  'bg-cyan-500/20 text-cyan-400',
-  in_treatment: 'bg-indigo-500/20 text-indigo-400',
-  completed:    'bg-green-500/20 text-green-400',
-  cancelled:    'bg-red-500/20 text-red-400',
-  no_show:      'bg-orange-500/20 text-orange-400',
-  voided:       'bg-red-900/30 text-red-300',
+  borrador:                'bg-white/10 text-white/40',
+  creada:                  'bg-blue-500/20 text-blue-400',
+  en_evaluacion:           'bg-indigo-500/20 text-indigo-400',
+  cotizada:                'bg-violet-500/20 text-violet-400',
+  propuesta_pendiente:     'bg-amber-500/20 text-amber-400',
+  aceptada:                'bg-cyan-500/20 text-cyan-400',
+  en_tratamiento:          'bg-green-500/20 text-green-400',
+  sesion_pendiente:        'bg-yellow-500/20 text-yellow-400',
+  finalizada_clinicamente: 'bg-teal-500/20 text-teal-400',
+  pendiente_pago:          'bg-orange-500/20 text-orange-400',
+  cerrada:                 'bg-slate-500/20 text-slate-400',
+  rechazada:               'bg-red-500/20 text-red-400',
+  cancelled:               'bg-red-500/20 text-red-400',
+  no_show:                 'bg-zinc-500/20 text-zinc-400',
+  voided:                  'bg-red-900/30 text-red-300',
 }
 const ADMIN_STATUS_LABEL: Record<string, string> = {
   unpaid:         'Sin pagar',
@@ -102,14 +125,21 @@ const PAYMENT_METHOD_LABEL: Record<string, string> = {
 
 // ── Allowed transitions ───────────────────────────────────────────────────────
 const ALLOWED_TRANSITIONS: Record<string, string[]> = {
-  draft:        ['created', 'cancelled'],
-  created:      ['in_progress', 'cancelled'],
-  in_progress:  ['in_treatment', 'completed', 'cancelled'],
-  in_treatment: ['completed', 'in_progress'],
-  completed:    ['voided'],
-  cancelled:    [],
-  no_show:      [],
-  voided:       [],
+  borrador:                ['creada'],
+  creada:                  ['en_evaluacion', 'cancelled'],
+  en_evaluacion:           ['cotizada', 'en_tratamiento', 'cancelled'],
+  cotizada:                ['propuesta_pendiente', 'en_tratamiento', 'cancelled'],
+  propuesta_pendiente:     ['aceptada', 'rechazada'],
+  aceptada:                ['en_tratamiento'],
+  en_tratamiento:          ['sesion_pendiente', 'finalizada_clinicamente'],
+  sesion_pendiente:        ['en_tratamiento'],
+  finalizada_clinicamente: ['pendiente_pago', 'cerrada'],
+  pendiente_pago:          ['cerrada'],
+  rechazada:               ['cerrada'],
+  cerrada:                 [],
+  cancelled:               [],
+  no_show:                 [],
+  voided:                  [],
 }
 
 // ── State ─────────────────────────────────────────────────────────────────────
@@ -132,15 +162,86 @@ const statusReason     = ref('')
 const showStatusPanel  = ref(false)
 const targetStatus     = ref('')
 
-// Add service
+// Add treatment
 const showAddServicePanel  = ref(false)
-const addServiceForm       = ref<DentalConsultationServiceFormData>({
-  service_id: null, service_name_snapshot: '', unit_price: 0,
+const addServiceForm       = ref<DentalConsultationTreatmentFormData>({
+  treatment_id: null, treatment_name_snapshot: '', unit_price: 0,
   quantity: 1, tooth_reference: '', clinical_notes: ''
 })
 const savingService        = ref(false)
 const addServiceError      = ref<string | null>(null)
 const selectedServiceForAdd = ref<any>(null)
+
+// Session scheduling (bulk — from treatment tab)
+const sessionScheduleDates  = ref<string[]>([])
+const schedulingSessions    = ref(false)
+
+// Session edit (inline date change in sessions tab)
+const editingSessionId  = ref<number | string | null>(null)
+const editSessionDate   = ref('')
+const savingEditSession = ref(false)
+
+async function startEditSession(s: DentalConsultationSession) {
+  editingSessionId.value = s.id
+  editSessionDate.value  = s.session_date
+    ? new Date(s.session_date).toISOString().slice(0, 16)
+    : new Date().toISOString().slice(0, 16)
+}
+
+function cancelEditSession() {
+  editingSessionId.value = null
+  editSessionDate.value  = ''
+}
+
+async function saveEditSession(s: DentalConsultationSession) {
+  if (!editSessionDate.value) return
+  savingEditSession.value = true
+  try {
+    await sessionsStore.update(id, s.id, { session_date: editSessionDate.value })
+    triggerToast('Éxito', `Sesión #${s.session_number} reprogramada. La cita en agenda fue actualizada.`, 'success')
+    editingSessionId.value = null
+  } catch (e: any) {
+    triggerToast('Error', e?.response?.data?.error || 'Error al guardar', 'error')
+  } finally {
+    savingEditSession.value = false
+  }
+}
+
+async function scheduleAllSessions() {
+  if (!sessionScheduleDates.value.some(d => d)) return
+  schedulingSessions.value = true
+  let successCount = 0
+  let failCount = 0
+  try {
+    for (let i = 0; i < sessionScheduleDates.value.length; i++) {
+      const date = sessionScheduleDates.value[i]
+      try {
+        await sessionsStore.create(id, {
+          session_date: date || undefined,
+          notes: undefined,
+          evolution: undefined,
+          next_session_date: undefined,
+        })
+        successCount++
+      } catch {
+        failCount++
+      }
+    }
+    if (successCount > 0 && failCount > 0) {
+      triggerToast('Advertencia', `${successCount} sesiones creadas, ${failCount} fallaron`, 'warning')
+      sessionScheduleDates.value = []
+      activeTab.value = 'sessions'
+    } else if (successCount > 0) {
+      triggerToast('Éxito', `${successCount} sesiones programadas. Las citas en agenda se procesarán en breve.`, 'success')
+      sessionScheduleDates.value = []
+      activeTab.value = 'sessions'
+    } else {
+      triggerToast('Error', 'No se pudo crear ninguna sesión', 'error')
+    }
+  } finally {
+    schedulingSessions.value = false
+  }
+}
 
 // Session
 const showSessionPanel = ref(false)
@@ -160,6 +261,12 @@ const followUpForm = ref({
   follow_up_notes: ''
 })
 const savingFollowUp = ref(false)
+
+watch(() => followUpForm.value.estimated_sessions, (n) => {
+  const count = Math.max(0, n ?? 0)
+  const current = sessionScheduleDates.value
+  sessionScheduleDates.value = Array.from({ length: count }, (_, i) => current[i] ?? '')
+}, { immediate: true })
 
 // Payments
 const chargeDetail      = ref<DentalCharge | null>(null)
@@ -207,15 +314,15 @@ const hasClosedPayments = computed(() =>
 
 const canCreateCharge = computed(() =>
   consultation.value?.administrative_status === 'unpaid' &&
-  consultationServicesStore.total > 0 &&
+  consultationTreatmentsStore.total > 0 &&
   !chargeDetail.value
 )
 
 const activeServices = computed(() =>
-  (consultationServicesStore.items as DentalConsultationService[]).filter(s => s.status !== 'voided')
+  (consultationTreatmentsStore.items ?? []).filter(t => t.status !== 'voided')
 )
 const voidedServices = computed(() =>
-  (consultationServicesStore.items as DentalConsultationService[]).filter(s => s.status === 'voided')
+  (consultationTreatmentsStore.items ?? []).filter(t => t.status === 'voided')
 )
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -277,12 +384,12 @@ async function confirmStatusChange() {
   }
 }
 
-function onServiceSelect(serviceId: string | number) {
-  const svc = servicesStore.items.find(s => String(s.id) === String(serviceId))
-  selectedServiceForAdd.value = svc || null
-  if (svc) {
-    addServiceForm.value.service_name_snapshot = svc.name
-    addServiceForm.value.unit_price = parseFloat(svc.final_price as any) || 0
+function onServiceSelect(treatmentId: string | number) {
+  const trt = (treatmentsStore.items ?? []).find(t => String(t.id) === String(treatmentId))
+  selectedServiceForAdd.value = trt || null
+  if (trt) {
+    addServiceForm.value.treatment_name_snapshot = trt.name
+    addServiceForm.value.unit_price = parseFloat(trt.final_price as any) || 0
   }
 }
 
@@ -294,27 +401,43 @@ async function addService() {
   savingService.value = true
   addServiceError.value = null
   try {
-    await consultationServicesStore.add(id, addServiceForm.value)
-    triggerToast('Éxito', 'Servicio agregado', 'success')
+    await consultationTreatmentsStore.add(id, addServiceForm.value)
+    triggerToast('Éxito', 'Tratamiento agregado', 'success')
     showAddServicePanel.value = false
-    addServiceForm.value = { service_id: null, service_name_snapshot: '', unit_price: 0, quantity: 1, tooth_reference: '', clinical_notes: '' }
+    addServiceForm.value = { treatment_id: null, treatment_name_snapshot: '', unit_price: 0, quantity: 1, tooth_reference: '', clinical_notes: '' }
     selectedServiceForAdd.value = null
   } catch (e: any) {
-    addServiceError.value = e?.response?.data?.error || 'Error al agregar servicio'
+    addServiceError.value = e?.response?.data?.error || 'Error al agregar tratamiento'
   } finally {
     savingService.value = false
   }
 }
 
-async function voidService(s: DentalConsultationService) {
-  askConfirm('Anular servicio', `¿Anular "${s.service_name_snapshot}"?`, async () => {
-    try {
-      await consultationServicesStore.voidService(id, s.id)
-      triggerToast('Éxito', 'Servicio anulado', 'success')
-    } catch (e: any) {
-      triggerToast('Error', e?.response?.data?.error || 'Error al anular servicio', 'error')
+async function voidService(s: DentalConsultationTreatment) {
+  const adminStatus = (consultation.value as any)?.administrative_status
+  const hasPayments = adminStatus && ['partially_paid', 'paid', 'overdue'].includes(adminStatus)
+
+  if (hasPayments) {
+    triggerToast(
+      'No permitido',
+      'No se puede eliminar este tratamiento porque la consulta tiene pagos registrados. Para modificar los tratamientos, primero revertí los pagos existentes.',
+      'error'
+    )
+    return
+  }
+
+  askConfirm(
+    'Eliminar tratamiento',
+    `¿Eliminar "${s.treatment_name_snapshot}" de la consulta? Esta acción no se puede deshacer.`,
+    async () => {
+      try {
+        await consultationTreatmentsStore.voidTreatment(id, s.id)
+        triggerToast('Éxito', 'Tratamiento eliminado', 'success')
+      } catch (e: any) {
+        triggerToast('Error', e?.response?.data?.error || 'Error al eliminar tratamiento', 'error')
+      }
     }
-  })
+  )
 }
 
 async function saveFollowUp() {
@@ -340,8 +463,9 @@ async function createSession() {
   sessionError.value = null
   try {
     await sessionsStore.create(id, sessionForm.value)
-    triggerToast('Éxito', 'Sesión creada', 'success')
+    triggerToast('Éxito', 'Sesión creada. La cita en agenda se procesará en breve.', 'success')
     showSessionPanel.value = false
+    activeTab.value = 'sessions'
     sessionForm.value = { session_date: new Date().toISOString().slice(0, 16), notes: '', evolution: '', next_session_date: '' }
   } catch (e: any) {
     sessionError.value = e?.response?.data?.error || 'Error al crear sesión'
@@ -361,6 +485,19 @@ async function completeSession(s: DentalConsultationSession) {
   })
 }
 
+async function cancelSession(s: DentalConsultationSession) {
+  askConfirm('Cancelar sesión', `¿Cancelar sesión ${s.session_number}?`, async () => {
+    try {
+      await sessionsStore.cancel(id, s.id)
+      triggerToast('Éxito', 'Sesión cancelada. La cita en agenda se actualizará en breve.', 'success')
+      await store.loadOne(id)
+    } catch (e: any) {
+      triggerToast('Error', e?.response?.data?.error || 'Error al cancelar sesión', 'error')
+    }
+  })
+}
+
+
 async function loadCharge() {
   const charges = (consultation.value as any)?.charges
   if (!charges?.length) { chargeDetail.value = null; return }
@@ -368,7 +505,9 @@ async function loadCharge() {
   try {
     const res = await dentalChargesService.getById(charges[0].id)
     chargeDetail.value = (res.data as any)?.data ?? res.data
-  } catch { } finally { loadingCharge.value = false }
+  } catch {
+    triggerToast('Error', 'No se pudo cargar la información de pagos', 'error')
+  } finally { loadingCharge.value = false }
 }
 
 async function saveInstallments() {
@@ -466,7 +605,7 @@ async function saveMedHist() {
 async function generateCharge() {
   actionLoading.value = true
   try {
-    await store.createCharge(id, consultationServicesStore.total)
+    await store.createCharge(id, consultationTreatmentsStore.total)
     await store.loadOne(id)
     await loadCharge()
     triggerToast('Éxito', 'Cargo generado', 'success')
@@ -479,9 +618,9 @@ async function generateCharge() {
 onMounted(async () => {
   await store.loadOne(id)
   await Promise.all([
-    consultationServicesStore.load(id),
+    consultationTreatmentsStore.load(id),
     sessionsStore.load(id),
-    servicesStore.load(),
+    treatmentsStore.load(),
   ])
   const c = consultation.value as any
   if (c) {
@@ -489,7 +628,7 @@ onMounted(async () => {
       requires_follow_up: c.requires_follow_up ?? false,
       requires_multiple_sessions: c.requires_multiple_sessions ?? false,
       estimated_sessions: c.estimated_sessions ?? undefined,
-      next_session_date: c.next_session_date ?? '',
+      next_session_date: c.next_session_date ? (c.next_session_date as string).slice(0, 10) : '',
       follow_up_notes: c.follow_up_notes ?? '',
     }
   }
@@ -543,7 +682,7 @@ onMounted(async () => {
 
             <!-- Total -->
             <span class="rounded-full bg-white/5 px-3 py-1 text-xs font-semibold text-white/70">
-              {{ fmtCurrency(consultationServicesStore.total) }}
+              {{ fmtCurrency(consultationTreatmentsStore.total) }}
             </span>
 
             <!-- Status transition dropdown -->
@@ -565,8 +704,21 @@ onMounted(async () => {
 
     <!-- ── Tabs ────────────────────────────────────────────────────────────── -->
     <div class="sticky top-[73px] z-10 border-b border-white/10 bg-black/30 backdrop-blur-md">
-      <div class="mx-auto max-w-6xl overflow-x-auto px-4">
-        <div class="flex gap-1 py-2">
+      <div class="mx-auto max-w-6xl px-4">
+        <!-- Mobile: dropdown -->
+        <div class="py-2 md:hidden">
+          <select
+            :value="activeTab"
+            @change="selectTab(($event.target as HTMLSelectElement).value as TabKey)"
+            class="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-white focus:outline-none focus:ring-1 focus:ring-[var(--nexora-primary)]"
+          >
+            <option v-for="tab in tabs" :key="tab.key" :value="tab.key" class="bg-gray-900 text-white">
+              {{ tab.label }}
+            </option>
+          </select>
+        </div>
+        <!-- Desktop: horizontal tabs -->
+        <div class="hidden gap-1 py-2 md:flex">
           <button
             v-for="tab in tabs"
             :key="tab.key"
@@ -587,593 +739,109 @@ onMounted(async () => {
     <div class="mx-auto max-w-6xl px-4 py-6">
 
       <!-- ═══════════ TAB: RESUMEN ═══════════ -->
-      <div v-if="activeTab === 'summary'" class="space-y-5">
-
-        <!-- Patient + status card -->
-        <div class="rounded-xl border border-white/10 bg-white/5 p-5">
-          <div class="mb-4 flex items-center justify-between">
-            <h2 class="text-sm font-semibold text-white/70">Información de la consulta</h2>
-            <button
-              class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition"
-              :style="{ background: 'var(--nexora-primary)' }"
-              @click="openEdit"
-            >
-              <Edit2 class="h-3.5 w-3.5" />
-              Editar información
-            </button>
-          </div>
-
-          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <div>
-              <p class="mb-0.5 text-xs text-white/40">Paciente</p>
-              <router-link
-                :to="`/dental/patients/${(consultation as any)?.customer_id ?? (consultation as any)?.customer?.id}`"
-                class="text-sm font-medium text-[var(--nexora-primary)] hover:underline"
-              >
-                {{ patientName }}
-              </router-link>
-            </div>
-            <div>
-              <p class="mb-0.5 text-xs text-white/40">Fecha de consulta</p>
-              <p class="text-sm">{{ fmtDate((consultation as any)?.consultation_date) }}</p>
-            </div>
-            <div>
-              <p class="mb-0.5 text-xs text-white/40">Estado clínico</p>
-              <span
-                class="rounded-full px-2 py-0.5 text-xs font-medium"
-                :class="STATUS_CLASS[consultation?.status ?? ''] ?? 'bg-white/10 text-white/40'"
-              >
-                {{ STATUS_LABEL[consultation?.status ?? ''] ?? '—' }}
-              </span>
-            </div>
-            <div>
-              <p class="mb-0.5 text-xs text-white/40">Estado de pago</p>
-              <span
-                class="rounded-full px-2 py-0.5 text-xs font-medium"
-                :class="ADMIN_STATUS_CLASS[consultation?.administrative_status ?? ''] ?? 'bg-white/10 text-white/40'"
-              >
-                {{ ADMIN_STATUS_LABEL[consultation?.administrative_status ?? ''] ?? '—' }}
-              </span>
-            </div>
-          </div>
-
-          <!-- Clinical fields -->
-          <div v-if="(consultation as any)?.reason || (consultation as any)?.diagnosis" class="mt-4 grid gap-3 border-t border-white/10 pt-4 sm:grid-cols-2">
-            <div v-if="(consultation as any)?.reason">
-              <p class="mb-0.5 text-xs text-white/40">Motivo de consulta</p>
-              <p class="text-sm leading-relaxed text-white/80">{{ (consultation as any).reason }}</p>
-            </div>
-            <div v-if="(consultation as any)?.diagnosis">
-              <p class="mb-0.5 text-xs text-white/40">Diagnóstico</p>
-              <p class="text-sm leading-relaxed text-white/80">{{ (consultation as any).diagnosis }}</p>
-            </div>
-            <div v-if="(consultation as any)?.clinical_notes" class="sm:col-span-2">
-              <p class="mb-0.5 text-xs text-white/40">Notas clínicas</p>
-              <p class="text-sm leading-relaxed text-white/80">{{ (consultation as any).clinical_notes }}</p>
-            </div>
-            <div v-if="(consultation as any)?.indications" class="sm:col-span-2">
-              <p class="mb-0.5 text-xs text-white/40">Indicaciones</p>
-              <p class="text-sm leading-relaxed text-white/80">{{ (consultation as any).indications }}</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Financial summary -->
-        <div class="grid gap-4 sm:grid-cols-3">
-          <div class="rounded-xl border border-white/10 bg-white/5 p-4">
-            <p class="mb-1 text-xs text-white/40">Total servicios</p>
-            <p class="text-2xl font-bold">{{ fmtCurrency(consultationServicesStore.total) }}</p>
-          </div>
-          <div class="rounded-xl border border-white/10 bg-white/5 p-4">
-            <p class="mb-1 text-xs text-white/40">Total pagado</p>
-            <p class="text-2xl font-bold text-green-400">{{ fmtCurrency(chargeDetail?.paid_amount ?? 0) }}</p>
-          </div>
-          <div class="rounded-xl border border-white/10 bg-white/5 p-4">
-            <p class="mb-1 text-xs text-white/40">Saldo pendiente</p>
-            <p class="text-2xl font-bold text-yellow-400">
-              {{ fmtCurrency(consultationServicesStore.total - Number(chargeDetail?.paid_amount ?? 0)) }}
-            </p>
-          </div>
-        </div>
-
-        <!-- Follow-up indicators -->
-        <div
-          v-if="(consultation as any)?.requires_follow_up || (consultation as any)?.requires_multiple_sessions"
-          class="flex flex-wrap gap-2"
-        >
-          <span
-            v-if="(consultation as any)?.requires_follow_up"
-            class="flex items-center gap-1.5 rounded-full bg-indigo-500/20 px-3 py-1.5 text-xs font-medium text-indigo-300"
-          >
-            <CheckCircle2 class="h-3.5 w-3.5" /> Requiere seguimiento
-          </span>
-          <span
-            v-if="(consultation as any)?.requires_multiple_sessions"
-            class="flex items-center gap-1.5 rounded-full bg-cyan-500/20 px-3 py-1.5 text-xs font-medium text-cyan-300"
-          >
-            <Calendar class="h-3.5 w-3.5" />
-            Múltiples sesiones
-            <template v-if="(consultation as any)?.estimated_sessions">
-              ({{ (consultation as any).estimated_sessions }} est.)
-            </template>
-          </span>
-          <span
-            v-if="(consultation as any)?.next_session_date"
-            class="flex items-center gap-1.5 rounded-full bg-purple-500/20 px-3 py-1.5 text-xs font-medium text-purple-300"
-          >
-            <Calendar class="h-3.5 w-3.5" />
-            Próxima sesión: {{ fmtDate((consultation as any).next_session_date) }}
-          </span>
-        </div>
-
-        <!-- Services summary -->
-        <div class="rounded-xl border border-white/10 bg-white/5 p-5">
-          <h2 class="mb-4 text-sm font-semibold text-white/70">Servicios aplicados</h2>
-          <div v-if="!consultationServicesStore.items.length" class="py-6 text-center text-sm text-white/30">
-            Sin servicios registrados
-          </div>
-          <div v-else class="space-y-2">
-            <div
-              v-for="svc in consultationServicesStore.items"
-              :key="svc.id"
-              class="flex items-center justify-between rounded-lg border border-white/5 bg-white/5 px-4 py-2.5"
-              :class="{ 'opacity-40': svc.status === 'voided' }"
-            >
-              <div class="flex items-center gap-3">
-                <span class="text-sm">{{ svc.service_name_snapshot }}</span>
-                <span v-if="svc.tooth_reference" class="rounded bg-white/10 px-1.5 py-0.5 text-xs text-white/50">
-                  Diente {{ svc.tooth_reference }}
-                </span>
-                <span v-if="svc.status === 'voided'" class="rounded-full bg-red-900/30 px-2 py-0.5 text-xs text-red-300">
-                  Anulado
-                </span>
-              </div>
-              <span class="text-sm font-medium">
-                {{ fmtCurrency(Number(svc.unit_price) * Number(svc.quantity)) }}
-              </span>
-            </div>
-            <div class="flex justify-end border-t border-white/10 pt-2">
-              <span class="text-sm font-semibold">Total: {{ fmtCurrency(consultationServicesStore.total) }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
+      <ConsultationSummaryTab
+        v-if="activeTab === 'summary'"
+        :consultation="consultation"
+        :patient-name="patientName"
+        :treatments="consultationTreatmentsStore.items ?? []"
+        :total="consultationTreatmentsStore.total"
+        :charge-detail="chargeDetail"
+        :status-class="STATUS_CLASS"
+        :status-label="STATUS_LABEL"
+        :admin-status-class="ADMIN_STATUS_CLASS"
+        :admin-status-label="ADMIN_STATUS_LABEL"
+        :fmt-date="fmtDate"
+        :fmt-currency="fmtCurrency"
+        @edit-info="openEdit"
+      />
 
       <!-- ═══════════ TAB: TRATAMIENTO ═══════════ -->
-      <div v-else-if="activeTab === 'treatments'" class="space-y-6">
-
-        <!-- Services section -->
-        <div class="rounded-xl border border-white/10 bg-white/5 p-5">
-          <div class="mb-4 flex items-center justify-between">
-            <h2 class="text-sm font-semibold text-white/70">Servicios aplicados</h2>
-            <button
-              class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition hover:opacity-90"
-              :style="{ background: 'var(--nexora-primary)' }"
-              @click="showAddServicePanel = true"
-            >
-              <Plus class="h-3.5 w-3.5" />
-              Agregar servicio
-            </button>
-          </div>
-
-          <div v-if="!consultationServicesStore.items.length" class="py-8 text-center text-sm text-white/30">
-            Sin servicios registrados
-          </div>
-
-          <div v-else>
-            <!-- Table header -->
-            <div class="mb-2 hidden grid-cols-6 gap-3 px-2 text-xs text-white/30 sm:grid">
-              <span class="col-span-2">Servicio</span>
-              <span>Diente</span>
-              <span class="text-right">Cant.</span>
-              <span class="text-right">Precio unit.</span>
-              <span class="text-right">Subtotal</span>
-            </div>
-
-            <!-- Active services -->
-            <div class="space-y-1.5">
-              <div
-                v-for="svc in activeServices"
-                :key="svc.id"
-                class="grid grid-cols-2 gap-3 rounded-lg border border-white/5 bg-white/5 px-3 py-2.5 sm:grid-cols-6"
-              >
-                <span class="col-span-2 text-sm sm:col-span-2">{{ svc.service_name_snapshot }}</span>
-                <span class="text-sm text-white/50 sm:col-span-1">{{ svc.tooth_reference || '—' }}</span>
-                <span class="text-right text-sm sm:col-span-1">{{ svc.quantity }}</span>
-                <span class="text-right text-sm sm:col-span-1">{{ fmtCurrency(svc.unit_price) }}</span>
-                <div class="flex items-center justify-end gap-2 sm:col-span-1">
-                  <span class="text-sm font-medium">{{ fmtCurrency(Number(svc.unit_price) * Number(svc.quantity)) }}</span>
-                  <button
-                    v-if="!hasClosedPayments"
-                    class="rounded p-1 text-white/30 transition hover:bg-red-500/20 hover:text-red-400"
-                    title="Anular servicio"
-                    @click="voidService(svc)"
-                  >
-                    <Trash2 class="h-3.5 w-3.5" />
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <!-- Voided services -->
-            <div v-if="voidedServices.length" class="mt-3 space-y-1.5 opacity-40">
-              <p class="px-2 text-xs text-white/30">Anulados</p>
-              <div
-                v-for="svc in voidedServices"
-                :key="svc.id"
-                class="grid grid-cols-2 gap-3 rounded-lg border border-white/5 bg-white/5 px-3 py-2.5 line-through sm:grid-cols-6"
-              >
-                <span class="col-span-2 text-sm sm:col-span-2">{{ svc.service_name_snapshot }}</span>
-                <span class="text-sm sm:col-span-1">{{ svc.tooth_reference || '—' }}</span>
-                <span class="text-right text-sm sm:col-span-1">{{ svc.quantity }}</span>
-                <span class="text-right text-sm sm:col-span-1">{{ fmtCurrency(svc.unit_price) }}</span>
-                <span class="text-right text-sm sm:col-span-1">{{ fmtCurrency(Number(svc.unit_price) * Number(svc.quantity)) }}</span>
-              </div>
-            </div>
-
-            <!-- Total -->
-            <div class="mt-3 flex justify-end border-t border-white/10 pt-3">
-              <span class="text-base font-semibold">Total: {{ fmtCurrency(consultationServicesStore.total) }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Follow-up section -->
-        <div class="rounded-xl border border-white/10 bg-white/5 p-5">
-          <h2 class="mb-4 text-sm font-semibold text-white/70">Seguimiento del tratamiento</h2>
-
-          <div class="space-y-4">
-            <label class="flex cursor-pointer items-center gap-3">
-              <input
-                v-model="followUpForm.requires_follow_up"
-                type="checkbox"
-                class="h-4 w-4 rounded border-white/20 accent-[var(--nexora-primary)]"
-              />
-              <span class="text-sm">Requiere seguimiento</span>
-            </label>
-
-            <label class="flex cursor-pointer items-center gap-3">
-              <input
-                v-model="followUpForm.requires_multiple_sessions"
-                type="checkbox"
-                class="h-4 w-4 rounded border-white/20 accent-[var(--nexora-primary)]"
-              />
-              <span class="text-sm">Requiere múltiples sesiones</span>
-            </label>
-
-            <div v-if="followUpForm.requires_multiple_sessions" class="grid gap-4 border-t border-white/10 pt-4 sm:grid-cols-2">
-              <div>
-                <label class="mb-1.5 block text-xs text-white/50">Sesiones estimadas</label>
-                <input
-                  v-model.number="followUpForm.estimated_sessions"
-                  type="number"
-                  min="1"
-                  class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
-                />
-              </div>
-              <div>
-                <label class="mb-1.5 block text-xs text-white/50">Fecha próxima sesión</label>
-                <input
-                  v-model="followUpForm.next_session_date"
-                  type="date"
-                  class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
-                />
-              </div>
-            </div>
-
-            <div v-if="followUpForm.requires_follow_up" :class="{ 'border-t border-white/10 pt-4': !followUpForm.requires_multiple_sessions }">
-              <label class="mb-1.5 block text-xs text-white/50">Notas de seguimiento</label>
-              <textarea
-                v-model="followUpForm.follow_up_notes"
-                rows="3"
-                class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
-                placeholder="Indicaciones para el seguimiento..."
-              />
-            </div>
-
-            <div class="flex justify-end pt-2">
-              <button
-                class="rounded-xl px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50"
-                :style="{ background: 'var(--nexora-primary)' }"
-                :disabled="savingFollowUp"
-                @click="saveFollowUp"
-              >
-                {{ savingFollowUp ? 'Guardando...' : 'Guardar seguimiento' }}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <ConsultationTreatmentsTab
+        v-else-if="activeTab === 'treatments'"
+        :active-services="activeServices"
+        :voided-services="voidedServices"
+        :total="consultationTreatmentsStore.total"
+        :has-closed-payments="hasClosedPayments"
+        :consultation="consultation"
+        v-model:follow-up-form="followUpForm"
+        v-model:session-schedule-dates="sessionScheduleDates"
+        :sessions-count="(sessionsStore.items ?? []).length"
+        :scheduling-sessions="schedulingSessions"
+        :saving-follow-up="savingFollowUp"
+        :fmt-currency="fmtCurrency"
+        @add-service="showAddServicePanel = true"
+        @void-service="voidService"
+        @save-follow-up="saveFollowUp"
+        @schedule-sessions="scheduleAllSessions"
+      />
 
       <!-- ═══════════ TAB: SESIONES ═══════════ -->
-      <div v-else-if="activeTab === 'sessions'" class="space-y-4">
+      <ConsultationSessionsTab
+        v-else-if="activeTab === 'sessions'"
+        :consultation="consultation"
+        :sessions="sessionsStore.items"
+        :status-class="STATUS_CLASS"
+        :status-label="STATUS_LABEL"
+        :editing-session-id="editingSessionId"
+        v-model:edit-session-date="editSessionDate"
+        :saving-edit-session="savingEditSession"
+        :fmt-date="fmtDate"
+        :fmt-date-time="fmtDateTime"
+        @new-session="showSessionPanel = true"
+        @start-edit-session="startEditSession"
+        @save-edit-session="saveEditSession"
+        @cancel-edit-session="cancelEditSession"
+        @complete-session="completeSession"
+        @cancel-session="cancelSession"
+      />
 
-        <div class="flex items-center justify-between">
-          <h2 class="text-sm font-semibold text-white/70">Sesiones de tratamiento</h2>
-          <button
-            v-if="(consultation as any)?.requires_multiple_sessions"
-            class="flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
-            :style="{ background: 'var(--nexora-primary)' }"
-            @click="showSessionPanel = true"
-          >
-            <Plus class="h-4 w-4" />
-            Nueva sesión
-          </button>
-        </div>
-
-        <!-- No multiple sessions configured -->
-        <div
-          v-if="!(consultation as any)?.requires_multiple_sessions"
-          class="rounded-xl border border-white/10 bg-white/5 p-10 text-center"
-        >
-          <AlertCircle class="mx-auto mb-3 h-8 w-8 text-white/20" />
-          <p class="text-sm text-white/40">Esta consulta no tiene sesiones múltiples configuradas.</p>
-          <p class="mt-1 text-xs text-white/30">Activá la opción en la pestaña Tratamiento.</p>
-        </div>
-
-        <!-- Empty sessions -->
-        <div
-          v-else-if="!sessionsStore.items.length"
-          class="rounded-xl border border-white/10 bg-white/5 p-10 text-center"
-        >
-          <Calendar class="mx-auto mb-3 h-8 w-8 text-white/20" />
-          <p class="text-sm text-white/40">No hay sesiones registradas aún.</p>
-        </div>
-
-        <!-- Sessions list -->
-        <div v-else class="space-y-3">
-          <div
-            v-for="session in sessionsStore.items"
-            :key="session.id"
-            class="rounded-xl border border-white/10 bg-white/5 p-4"
-          >
-            <div class="flex items-start justify-between gap-3">
-              <div class="flex-1">
-                <div class="mb-2 flex flex-wrap items-center gap-2">
-                  <span class="text-sm font-semibold">Sesión #{{ session.session_number }}</span>
-                  <span
-                    class="rounded-full px-2 py-0.5 text-xs font-medium"
-                    :class="STATUS_CLASS[session.status ?? ''] ?? 'bg-white/10 text-white/40'"
-                  >
-                    {{ STATUS_LABEL[session.status ?? ''] ?? session.status }}
-                  </span>
-                  <span class="text-xs text-white/40">{{ fmtDateTime(session.session_date) }}</span>
-                </div>
-                <p v-if="session.notes" class="line-clamp-2 text-sm text-white/60">{{ session.notes }}</p>
-                <p v-if="session.next_session_date" class="mt-1 text-xs text-white/40">
-                  Próxima: {{ fmtDate(session.next_session_date) }}
-                </p>
-              </div>
-              <button
-                v-if="!['completed', 'cancelled'].includes(session.status ?? '')"
-                class="shrink-0 flex items-center gap-1 rounded-lg bg-green-500/20 px-3 py-1.5 text-xs font-medium text-green-400 transition hover:bg-green-500/30"
-                @click="completeSession(session)"
-              >
-                <CheckCircle2 class="h-3.5 w-3.5" />
-                Completar
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ═══════════ TAB: FOTOS ═══════════ -->
       <div v-else-if="activeTab === 'photos'">
         <WidgetsDentalPhotoGallery :consultationId="id" />
       </div>
 
-      <!-- ═══════════ TAB: HISTORIA ═══════════ -->
-      <div v-else-if="activeTab === 'history'" class="space-y-4">
-
-        <div class="flex items-center justify-between">
-          <h2 class="text-sm font-semibold text-white/70">Historia clínica del paciente</h2>
-          <div class="flex items-center gap-2">
-            <router-link
-              :to="`/dental/patients/${(consultation as any)?.customer_id ?? (consultation as any)?.customer?.id}`"
-              class="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/70 transition hover:bg-white/10"
-            >
-              Ver historial completo
-            </router-link>
-            <button
-              class="flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
-              :style="{ background: 'var(--nexora-primary)' }"
-              @click="showMedHistPanel = true"
-            >
-              <Plus class="h-4 w-4" />
-              Agregar registro
-            </button>
-          </div>
-        </div>
-
-        <div v-if="!medicalHistory.length" class="rounded-xl border border-white/10 bg-white/5 p-10 text-center">
-          <BookOpen class="mx-auto mb-3 h-8 w-8 text-white/20" />
-          <p class="text-sm text-white/40">Sin registros médicos cargados.</p>
-        </div>
-
-        <div v-else class="space-y-3">
-          <div
-            v-for="entry in medicalHistory"
-            :key="entry.id"
-            class="rounded-xl border border-white/10 bg-white/5 p-4"
-          >
-            <div class="mb-3 flex items-center justify-between">
-              <span class="text-xs text-white/40">{{ fmtDate(entry.entry_date) }}</span>
-              <span v-if="entry.blood_type" class="rounded bg-red-900/30 px-2 py-0.5 text-xs font-medium text-red-300">
-                {{ entry.blood_type }}
-              </span>
-            </div>
-            <div class="grid gap-3 sm:grid-cols-2">
-              <div v-if="entry.allergies">
-                <p class="mb-0.5 text-xs text-white/40">Alergias</p>
-                <p class="text-sm text-white/80">{{ entry.allergies }}</p>
-              </div>
-              <div v-if="entry.current_medications">
-                <p class="mb-0.5 text-xs text-white/40">Medicamentos actuales</p>
-                <p class="text-sm text-white/80">{{ entry.current_medications }}</p>
-              </div>
-              <div v-if="entry.chronic_conditions">
-                <p class="mb-0.5 text-xs text-white/40">Condiciones crónicas</p>
-                <p class="text-sm text-white/80">{{ entry.chronic_conditions }}</p>
-              </div>
-              <div v-if="entry.medical_background">
-                <p class="mb-0.5 text-xs text-white/40">Antecedentes</p>
-                <p class="text-sm text-white/80">{{ entry.medical_background }}</p>
-              </div>
-              <div v-if="entry.dental_observations" class="sm:col-span-2">
-                <p class="mb-0.5 text-xs text-white/40">Observaciones dentales</p>
-                <p class="text-sm text-white/80">{{ entry.dental_observations }}</p>
-              </div>
-              <div v-if="entry.notes" class="sm:col-span-2">
-                <p class="mb-0.5 text-xs text-white/40">Notas</p>
-                <p class="text-sm text-white/80">{{ entry.notes }}</p>
-              </div>
-            </div>
-          </div>
-        </div>
+      <!-- ═══════════ TAB: ADJUNTOS ═══════════ -->
+      <div v-else-if="activeTab === 'attachments'">
+        <ConsultationAttachmentsTab :consultationId="Number(id)" />
       </div>
+
+      <!-- ═══════════ TAB: DOCUMENTOS ═══════════ -->
+      <div v-else-if="activeTab === 'documents'">
+        <ConsultationDocumentsSection
+          :consultation-id="Number(id)"
+          :customer-id="Number(consultation?.customer_id ?? 0)"
+          :read-only="consultation?.status === 'voided' || consultation?.status === 'cancelled'"
+        />
+      </div>
+
+      <!-- ═══════════ TAB: HISTORIA ═══════════ -->
+      <ConsultationHistoryTab
+        v-else-if="activeTab === 'history'"
+        :consultation="consultation"
+        :medical-history="medicalHistory"
+        :fmt-date="fmtDate"
+        @add-record="showMedHistPanel = true"
+      />
 
       <!-- ═══════════ TAB: PAGOS ═══════════ -->
-      <div v-else-if="activeTab === 'payments'" class="space-y-5">
-
-        <!-- Loading -->
-        <div v-if="loadingCharge" class="py-12 text-center text-sm text-white/40">
-          Cargando información de pagos...
-        </div>
-
-        <!-- No charge -->
-        <div v-else-if="!chargeDetail" class="rounded-xl border border-white/10 bg-white/5 p-10 text-center">
-          <CreditCard class="mx-auto mb-4 h-10 w-10 text-white/20" />
-          <p class="mb-1 text-sm text-white/50">No hay cargo generado para esta consulta</p>
-          <p v-if="!consultationServicesStore.total" class="mb-4 text-xs text-white/30">
-            Agregá al menos un servicio en la pestaña Tratamiento para habilitar el cargo.
-          </p>
-          <p v-else-if="!canCreateCharge" class="mb-4 text-xs text-white/30">
-            El cargo ya existe o el estado de pago no lo permite.
-          </p>
-          <button
-            v-if="canCreateCharge"
-            class="mx-auto flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50"
-            :style="{ background: 'var(--nexora-primary)' }"
-            :disabled="actionLoading"
-            @click="generateCharge"
-          >
-            <CreditCard class="h-4 w-4" />
-            {{ actionLoading ? 'Generando...' : 'Generar cargo' }}
-          </button>
-        </div>
-
-        <!-- Charge detail -->
-        <template v-else>
-
-          <!-- Summary card -->
-          <div class="rounded-xl border border-white/10 bg-white/5 p-5">
-            <div class="mb-4 flex items-center justify-between">
-              <h2 class="text-sm font-semibold text-white/70">Resumen del cargo</h2>
-              <span
-                class="rounded-full px-3 py-1 text-xs font-medium"
-                :class="ADMIN_STATUS_CLASS[chargeDetail.administrative_status ?? ''] ?? 'bg-white/10 text-white/40'"
-              >
-                {{ ADMIN_STATUS_LABEL[chargeDetail.administrative_status ?? ''] ?? chargeDetail.administrative_status }}
-              </span>
-            </div>
-            <div class="grid gap-4 sm:grid-cols-3">
-              <div>
-                <p class="mb-0.5 text-xs text-white/40">Total</p>
-                <p class="text-xl font-bold">{{ fmtCurrency(chargeDetail.total_amount) }}</p>
-              </div>
-              <div>
-                <p class="mb-0.5 text-xs text-white/40">Pagado</p>
-                <p class="text-xl font-bold text-green-400">{{ fmtCurrency(chargeDetail.paid_amount) }}</p>
-              </div>
-              <div>
-                <p class="mb-0.5 text-xs text-white/40">Pendiente</p>
-                <p class="text-xl font-bold text-yellow-400">
-                  {{ fmtCurrency(Number(chargeDetail.total_amount) - Number(chargeDetail.paid_amount)) }}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Actions row -->
-          <div class="flex flex-wrap gap-2">
-            <button
-              v-if="!(chargeDetail.installments as any)?.length"
-              class="flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/70 transition hover:bg-white/10"
-              @click="showInstallPanel = true"
-            >
-              <Calendar class="h-4 w-4" />
-              Plan de cuotas
-            </button>
-            <button
-              v-if="chargeDetail.administrative_status !== 'paid'"
-              class="flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
-              :style="{ background: 'var(--nexora-primary)' }"
-              @click="payForm.amount = Number(chargeDetail.total_amount) - Number(chargeDetail.paid_amount); showPayPanel = true"
-            >
-              <DollarSign class="h-4 w-4" />
-              Registrar pago
-            </button>
-          </div>
-
-          <!-- Installments -->
-          <div v-if="(chargeDetail.installments as any)?.length" class="rounded-xl border border-white/10 bg-white/5 p-5">
-            <h3 class="mb-4 text-sm font-semibold text-white/70">Plan de cuotas</h3>
-            <div class="space-y-2">
-              <div
-                v-for="inst in (chargeDetail.installments as any)"
-                :key="inst.id"
-                class="flex items-center justify-between rounded-lg border border-white/5 bg-white/5 px-4 py-3"
-              >
-                <div class="flex items-center gap-3">
-                  <span class="text-sm font-medium">Cuota {{ inst.installment_number }}</span>
-                  <span class="text-xs text-white/40">Vence: {{ fmtDate(inst.due_date) }}</span>
-                  <span
-                    class="rounded-full px-2 py-0.5 text-xs font-medium"
-                    :class="ADMIN_STATUS_CLASS[inst.status ?? ''] ?? 'bg-white/10 text-white/40'"
-                  >
-                    {{ ADMIN_STATUS_LABEL[inst.status ?? ''] ?? inst.status }}
-                  </span>
-                </div>
-                <div class="flex items-center gap-3">
-                  <div class="text-right">
-                    <p class="text-sm font-medium">{{ fmtCurrency(inst.amount) }}</p>
-                    <p v-if="Number(inst.paid_amount) > 0" class="text-xs text-green-400">
-                      Pagado: {{ fmtCurrency(inst.paid_amount) }}
-                    </p>
-                  </div>
-                  <button
-                    v-if="inst.status !== 'paid' && inst.status !== 'cancelled'"
-                    class="rounded-lg bg-green-500/20 px-3 py-1.5 text-xs font-medium text-green-400 transition hover:bg-green-500/30"
-                    @click="openInstPayPanel(inst)"
-                  >
-                    Pagar
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Payment history -->
-          <div v-if="(chargeDetail.payments as any)?.length" class="rounded-xl border border-white/10 bg-white/5 p-5">
-            <h3 class="mb-4 text-sm font-semibold text-white/70">Historial de pagos</h3>
-            <div class="space-y-2">
-              <div
-                v-for="pmt in (chargeDetail.payments as any)"
-                :key="pmt.id"
-                class="flex items-center justify-between rounded-lg border border-white/5 bg-white/5 px-4 py-3"
-              >
-                <div>
-                  <p class="text-sm">{{ PAYMENT_METHOD_LABEL[pmt.payment_method] ?? pmt.payment_method }}</p>
-                  <p class="text-xs text-white/40">{{ fmtDateTime(pmt.payment_date) }}</p>
-                  <p v-if="pmt.notes" class="mt-0.5 text-xs text-white/40">{{ pmt.notes }}</p>
-                </div>
-                <span class="text-sm font-semibold text-green-400">{{ fmtCurrency(pmt.amount) }}</span>
-              </div>
-            </div>
-          </div>
-
-        </template>
-      </div>
+      <ConsultationPaymentsTab
+        v-else-if="activeTab === 'payments'"
+        :consultation="consultation"
+        :charge-detail="chargeDetail"
+        :loading-charge="loadingCharge"
+        :can-create-charge="canCreateCharge"
+        :action-loading="actionLoading"
+        :total="consultationTreatmentsStore.total"
+        :admin-status-class="ADMIN_STATUS_CLASS"
+        :admin-status-label="ADMIN_STATUS_LABEL"
+        :payment-method-label="PAYMENT_METHOD_LABEL"
+        :fmt-currency="fmtCurrency"
+        :fmt-date="fmtDate"
+        :fmt-date-time="fmtDateTime"
+        @generate-charge="generateCharge"
+        @show-installments="showInstallPanel = true"
+        @register-payment="(amount) => { payForm.amount = amount; showPayPanel = true }"
+        @pay-installment="openInstPayPanel"
+      />
 
     </div>
 
@@ -1264,14 +932,25 @@ onMounted(async () => {
     <!-- 3. Add service -->
     <NxrSlidePanel :open="showAddServicePanel" title="Agregar servicio" @close="showAddServicePanel = false">
       <div class="space-y-4">
+        <!-- Warning: consultation already has payments -->
+        <div
+          v-if="(consultation as any)?.administrative_status && !['unpaid', 'cancelled'].includes((consultation as any).administrative_status)"
+          class="flex gap-3 rounded-xl border border-yellow-500/30 bg-yellow-500/10 px-4 py-3"
+        >
+          <AlertCircle class="mt-0.5 h-4 w-4 shrink-0 text-yellow-400" />
+          <div class="text-xs text-yellow-300">
+            <p class="font-semibold">Esta consulta ya tiene pagos registrados.</p>
+            <p class="mt-1 text-yellow-300/70">Agregar un servicio modificará el total. Si existen cuotas, deberás recalcularlas manualmente desde el tab de Pagos.</p>
+          </div>
+        </div>
         <div>
-          <label class="mb-1.5 block text-xs text-white/50">Servicio</label>
+          <label class="mb-1.5 block text-xs text-white/50">Tratamiento</label>
           <select
             class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
-            @change="onServiceSelect(($event.target as HTMLSelectElement).value); addServiceForm.service_id = ($event.target as HTMLSelectElement).value as any"
+            @change="onServiceSelect(($event.target as HTMLSelectElement).value); addServiceForm.treatment_id = ($event.target as HTMLSelectElement).value as any"
           >
-            <option value="">Seleccioná un servicio...</option>
-            <option v-for="svc in servicesStore.items" :key="svc.id" :value="svc.id">
+            <option value="">Seleccioná un tratamiento...</option>
+            <option v-for="svc in treatmentsStore.items" :key="svc.id" :value="svc.id">
               {{ svc.name }}
             </option>
           </select>

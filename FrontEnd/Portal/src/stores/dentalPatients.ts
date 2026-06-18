@@ -21,7 +21,7 @@ export const useDentalPatientsStore = defineStore('dentalPatients', () => {
     error.value = null;
     try {
       const res = await dentalPatientsService.list(params);
-      items.value = unwrapData<DentalPatient[]>(res.data);
+      items.value = unwrapData<DentalPatient[]>(res.data) ?? [];
     } catch (e: any) {
       error.value = e?.response?.data?.error || 'Error al cargar pacientes';
     } finally {
@@ -62,22 +62,22 @@ export const useDentalPatientsStore = defineStore('dentalPatients', () => {
 
   async function getClinicalHistory(id: number | string) {
     const res = await dentalPatientsService.getClinicalHistory(id);
-    return unwrapData<DentalClinicalHistoryEntry[]>(res.data);
+    return unwrapData<DentalClinicalHistoryEntry[]>(res.data) ?? [];
   }
 
   async function getConsultations(id: number | string) {
     const res = await dentalPatientsService.getConsultations(id);
-    return unwrapData<DentalConsultation[]>(res.data);
+    return unwrapData<DentalConsultation[]>(res.data) ?? [];
   }
 
   async function getPayments(id: number | string) {
     const res = await dentalPatientsService.getPayments(id);
-    return unwrapData<DentalPayment[]>(res.data);
+    return unwrapData<DentalPayment[]>(res.data) ?? [];
   }
 
   async function getDebt(id: number | string) {
     const res = await dentalPatientsService.getDebt(id);
-    return unwrapData<DentalCharge[]>(res.data);
+    return unwrapData<DentalCharge[]>(res.data) ?? [];
   }
 
   async function fetchMedicalHistory(patientId: number | string) {
@@ -93,11 +93,32 @@ export const useDentalPatientsStore = defineStore('dentalPatients', () => {
     return entry as DentalMedicalHistory;
   }
 
+  async function uploadPhoto(id: number | string, file: File): Promise<string> {
+    const res = await dentalPatientsService.uploadPhoto(id, file);
+    const photoUrl = res.photo_url;
+    // Patch local state so UI updates without a full reload
+    if (current.value && String(current.value.id) === String(id)) {
+      (current.value as any).photo_url = photoUrl;
+    }
+    const idx = items.value.findIndex(p => String(p.id) === String(id));
+    if (idx !== -1) (items.value[idx] as any).photo_url = photoUrl;
+    return photoUrl;
+  }
+
+  async function deletePhoto(id: number | string): Promise<void> {
+    await dentalPatientsService.deletePhoto(id);
+    if (current.value && String(current.value.id) === String(id)) {
+      (current.value as any).photo_url = null;
+    }
+    const idx = items.value.findIndex(p => String(p.id) === String(id));
+    if (idx !== -1) (items.value[idx] as any).photo_url = null;
+  }
+
   function reset() {
     items.value = [];
     current.value = null;
     error.value = null;
   }
 
-  return { items, current, medicalHistory, loading, error, load, loadOne, create, update, getClinicalHistory, getConsultations, getPayments, getDebt, fetchMedicalHistory, addMedicalHistory, reset };
+  return { items, current, medicalHistory, loading, error, load, loadOne, create, update, getClinicalHistory, getConsultations, getPayments, getDebt, fetchMedicalHistory, addMedicalHistory, uploadPhoto, deletePhoto, reset };
 });
