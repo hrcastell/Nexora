@@ -357,7 +357,29 @@ onMounted(async () => {
 
     <template v-else-if="patient">
       <!-- Tabs -->
-      <div class="flex items-center gap-1 overflow-x-auto pb-1 scrollbar-hide">
+      <!-- Mobile: dropdown -->
+      <div class="md:hidden">
+        <select
+          :value="activeTab"
+          @change="loadTabData(($event.target as HTMLSelectElement).value as any)"
+          class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold text-white focus:outline-none focus:ring-1 focus:ring-[var(--nexora-primary)]"
+        >
+          <option v-for="tab in [
+            { key: 'summary',       label: 'Resumen' },
+            { key: 'personal',      label: 'Datos' },
+            { key: 'history',       label: 'Historia' },
+            { key: 'consultations', label: 'Consultas' },
+            { key: 'payments',      label: 'Pagos' },
+            { key: 'appointments',  label: 'Citas' },
+            { key: 'quotes',        label: 'Presupuestos' },
+            { key: 'documents',     label: 'Documentos' },
+          ]" :key="tab.key" :value="tab.key" class="bg-gray-900 text-white">
+            {{ tab.label }}
+          </option>
+        </select>
+      </div>
+      <!-- Desktop: horizontal tabs -->
+      <div class="hidden items-center gap-1 pb-1 md:flex">
         <button
           v-for="tab in [
             { key: 'summary',       label: 'Resumen',       icon: User },
@@ -366,8 +388,8 @@ onMounted(async () => {
             { key: 'consultations', label: 'Consultas',     icon: Stethoscope },
             { key: 'payments',      label: 'Pagos',         icon: CreditCard },
             { key: 'appointments',  label: 'Citas',         icon: CalendarDays },
-            { key: 'quotes',     label: 'Presupuestos', icon: Receipt   },
-            { key: 'documents',  label: 'Documentos',   icon: BookOpen  },
+            { key: 'quotes',        label: 'Presupuestos',  icon: Receipt   },
+            { key: 'documents',     label: 'Documentos',    icon: BookOpen  },
           ]"
           :key="tab.key"
           class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all"

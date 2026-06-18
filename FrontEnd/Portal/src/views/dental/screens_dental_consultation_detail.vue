@@ -704,8 +704,21 @@ onMounted(async () => {
 
     <!-- ── Tabs ────────────────────────────────────────────────────────────── -->
     <div class="sticky top-[73px] z-10 border-b border-white/10 bg-black/30 backdrop-blur-md">
-      <div class="mx-auto max-w-6xl overflow-x-auto px-4">
-        <div class="flex gap-1 py-2">
+      <div class="mx-auto max-w-6xl px-4">
+        <!-- Mobile: dropdown -->
+        <div class="py-2 md:hidden">
+          <select
+            :value="activeTab"
+            @change="selectTab(($event.target as HTMLSelectElement).value as TabKey)"
+            class="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-white focus:outline-none focus:ring-1 focus:ring-[var(--nexora-primary)]"
+          >
+            <option v-for="tab in tabs" :key="tab.key" :value="tab.key" class="bg-gray-900 text-white">
+              {{ tab.label }}
+            </option>
+          </select>
+        </div>
+        <!-- Desktop: horizontal tabs -->
+        <div class="hidden gap-1 py-2 md:flex">
           <button
             v-for="tab in tabs"
             :key="tab.key"

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import api from '../../utils/axios';
-import { Plus, Search, Building2, Trash2 } from 'lucide-vue-next';
+import { Plus, Search, Building2, Trash2, RefreshCw } from 'lucide-vue-next';
 import CreateCompanyModal from '../../components/admin/CreateCompanyModal.vue';
 import ConfirmDeleteModal from '../../components/admin/ConfirmDeleteModal.vue';
 import AppToast, { type ToastItem, type ToastType } from '../../components/AppToast.vue';
@@ -25,6 +25,7 @@ const companies = ref<Company[]>([]);
 const isLoading = ref(true);
 const searchQuery = ref('');
 const showCreateModal = ref(false);
+const isSyncingDbPermissions = ref(false);
 
 const perms = usePermissions();
 const authStore = useAuthStore();
@@ -66,6 +67,27 @@ const handleDeleteConfirmed = async () => {
 const handleCompanyCreated = async () => {
   triggerToast('Empresa creada', 'La empresa y su schema fueron creados exitosamente.', 'success');
   await fetchCompanies();
+};
+
+const syncDbPermissions = async () => {
+  if (isSyncingDbPermissions.value) return;
+
+  try {
+    isSyncingDbPermissions.value = true;
+    const response = await api.post('/maintenance/grant-browse-access');
+    const appliedCount = response.data?.aplicados?.length ?? 0;
+    const skippedCount = response.data?.omitidos?.length ?? 0;
+
+    triggerToast(
+      'Permisos sincronizados',
+      `${appliedCount} schema(s) aplicados, ${skippedCount} omitidos.`,
+      skippedCount > 0 ? 'warning' : 'success'
+    );
+  } catch (error: any) {
+    triggerToast('Error', error.response?.data?.error || 'No se pudieron sincronizar los permisos BD.', 'error');
+  } finally {
+    isSyncingDbPermissions.value = false;
+  }
 };
 
 // Theme-aware styling
@@ -132,15 +154,27 @@ const filteredList = computed(() => {
         </div>
       </div>
       
-      <button
-        v-if="perms.isSuperAdmin.value"
-        type="button"
-        @click="showCreateModal = true"
-        class="flex items-center justify-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-medium text-white transition nxr-btn-primary w-full sm:w-auto"
-      >
-        <Plus class="h-4 w-4" />
-        <span>Nueva Empresa</span>
-      </button>
+      <div v-if="perms.isSuperAdmin.value" class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+        <button
+          type="button"
+          @click="syncDbPermissions"
+          :disabled="isSyncingDbPermissions"
+          class="flex items-center justify-center gap-2 rounded-2xl border px-5 py-2.5 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-60"
+          :style="{ color: headerTextColor, borderColor: cardBorder, backgroundColor: smallCardBg }"
+        >
+          <RefreshCw class="h-4 w-4" :class="{ 'animate-spin': isSyncingDbPermissions }" />
+          <span>{{ isSyncingDbPermissions ? 'Sincronizando...' : 'Sincronizar permisos BD' }}</span>
+        </button>
+
+        <button
+          type="button"
+          @click="showCreateModal = true"
+          class="flex items-center justify-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-medium text-white transition nxr-btn-primary"
+        >
+          <Plus class="h-4 w-4" />
+          <span>Nueva Empresa</span>
+        </button>
+      </div>
     </div>
 
     <!-- Search Bar - Nexora Input Style -->
