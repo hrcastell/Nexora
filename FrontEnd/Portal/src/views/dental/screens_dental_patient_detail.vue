@@ -12,6 +12,7 @@ import NxrSlidePanel from '../../components/NxrSlidePanel.vue';
 import AppToast from '../../components/AppToast.vue';
 import { useToast } from '../../composables/useToast';
 import type { DentalClinicalHistoryEntry, DentalConsultation, DentalPayment, DentalCharge, DentalMedicalHistory } from '../../types/dental';
+import PatientOdontogramSection from '../../components/dental/PatientOdontogramSection.vue';
 
 const route  = useRoute();
 const router = useRouter();
@@ -479,6 +480,12 @@ onMounted(async () => {
             <div><p class="text-xs text-white/40">Enfermedades crónicas</p><p class="text-sm text-white/80">{{ patient.chronic_conditions || '—' }}</p></div>
           </div>
         </div>
+
+        <!-- Odontogram (read-only) -->
+        <PatientOdontogramSection
+          v-if="patient"
+          :patient-id="Number(patient.id)"
+        />
 
         <!-- Medical history timeline -->
         <div class="flex items-center justify-between">

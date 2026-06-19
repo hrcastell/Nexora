@@ -12,11 +12,11 @@ const buildGrantBrowseStatements = (schemaName, roleName = BROWSE_ROLE) => {
   const role = quoteIdent(roleName);
 
   return [
-    `GRANT USAGE ON SCHEMA ${schema} TO ${role}`,
-    `GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA ${schema} TO ${role}`,
-    `GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA ${schema} TO ${role}`,
-    `ALTER DEFAULT PRIVILEGES IN SCHEMA ${schema} GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO ${role}`,
-    `ALTER DEFAULT PRIVILEGES IN SCHEMA ${schema} GRANT USAGE, SELECT ON SEQUENCES TO ${role}`,
+    `GRANT ALL PRIVILEGES ON SCHEMA ${schema} TO ${role}`,
+    `GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA ${schema} TO ${role}`,
+    `GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA ${schema} TO ${role}`,
+    `ALTER DEFAULT PRIVILEGES IN SCHEMA ${schema} GRANT ALL PRIVILEGES ON TABLES TO ${role}`,
+    `ALTER DEFAULT PRIVILEGES IN SCHEMA ${schema} GRANT ALL PRIVILEGES ON SEQUENCES TO ${role}`,
   ];
 };
 

@@ -13,6 +13,10 @@ const consultationSessionsCtrl = require('../../controllers/dental/consultationS
 const consultationAttachmentsController = require('../../controllers/dental/consultationAttachmentsController');
 const quotesController = require('../../controllers/dental/quotesController');
 const medicalDocumentsCtrl = require('../../controllers/dental/medicalDocumentsController');
+const anamnesisCtrl        = require('../../controllers/dental/anamnesisController');
+const prescriptionsCtrl    = require('../../controllers/dental/prescriptionsController');
+const odontogramCtrl       = require('../../controllers/dental/odontogramController');
+const diagnosesCtrl        = require('../../controllers/dental/diagnosesController');
 
 // All dental routes require authentication
 router.use(authMiddleware);
@@ -107,7 +111,8 @@ router.get('/quotes/:id/print',              quotesController.getPrintData);
 router.post('/quotes/:id/items',             quotesController.addItem);
 router.put('/quotes/:id/items/:iid',         quotesController.updateItem);
 router.delete('/quotes/:id/items/:iid',      quotesController.removeItem);
-router.get('/patients/:customerId/quotes',   quotesController.getForPatient);
+router.get('/patients/:customerId/quotes',              quotesController.getForPatient);
+router.get('/consultations/:consultationId/quotes',    quotesController.getForConsultation);
 
 // ─── FINANCE: CHARGES ─────────────────────────────────────────
 router.get('/charges',                   chargesCtrl.list);
@@ -127,6 +132,29 @@ router.delete('/payments/:id', chargesCtrl.deletePayment);
 
 // ─── FINANCE: SUMMARY ─────────────────────────────────────────
 router.get('/finance/summary', chargesCtrl.getFinanceSummary);
+
+// ─── ANAMNESIS ────────────────────────────────────────────────
+router.get('/consultations/:consultationId/anamnesis',  anamnesisCtrl.getByConsultation);
+router.post('/consultations/:consultationId/anamnesis', anamnesisCtrl.upsert);
+
+// ─── PRESCRIPTIONS ────────────────────────────────────────────
+router.get('/consultations/:consultationId/prescriptions',                      prescriptionsCtrl.listByConsultation);
+router.post('/consultations/:consultationId/prescriptions',                     prescriptionsCtrl.create);
+router.delete('/consultations/:consultationId/prescriptions/:prescriptionId',   prescriptionsCtrl.remove);
+
+// ─── DIAGNOSES ────────────────────────────────────────────────
+router.get('/consultations/:consultationId/diagnoses',          diagnosesCtrl.listByConsultation);
+router.post('/consultations/:consultationId/diagnoses',         diagnosesCtrl.create);
+router.delete('/consultations/:consultationId/diagnoses/:id',   diagnosesCtrl.remove);
+
+// ─── GENERATE TREATMENT PLAN ──────────────────────────────────
+router.post('/consultations/:consultationId/generate-treatment-plan', consultationsCtrl.generateTreatmentPlan);
+
+// ─── ODONTOGRAM ───────────────────────────────────────────────
+router.get('/patients/:patientId/odontogram',                              odontogramCtrl.getPatientOdontogram);
+router.get('/consultations/:consultationId/odontogram',                    odontogramCtrl.getConsultationOdontogram);
+router.post('/consultations/:consultationId/odontogram',                   odontogramCtrl.upsertEntry);
+router.delete('/consultations/:consultationId/odontogram/:entryId',        odontogramCtrl.deleteEntry);
 
 // ─── MEDICAL DOCUMENTS ────────────────────────────────────────
 router.get('/medical-documents',                              medicalDocumentsCtrl.list);

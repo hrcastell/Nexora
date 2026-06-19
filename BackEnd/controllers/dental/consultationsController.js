@@ -806,6 +806,85 @@ exports.changeStatus = async (req, res) => {
 };
 
 /**
+ * POST /dental/consultations/:consultationId/generate-treatment-plan
+ * Reads odontogram entries for this consultation and creates dental_consultation_treatments
+ * rows for known finding_type → procedure mappings that do not already exist.
+ */
+exports.generateTreatmentPlan = async (req, res) => {
+    try {
+        if (req.user?.read_only) return res.status(403).json({ error: 'Operación no permitida en modo solo lectura' });
+
+        const { schema, companyId } = await resolveSchema(req);
+        const { consultationId } = req.params;
+
+        const cons = await db.query(
+            `SELECT id FROM ${schema}.dental_consultations WHERE id = $1 AND tenant_id = $2`,
+            [consultationId, companyId]
+        );
+        if (cons.rows.length === 0) {
+            return res.status(404).json({ code: 'DENTAL_CONSULTATION_NOT_FOUND', error: 'Consulta no encontrada' });
+        }
+
+        const FINDING_TO_PROCEDURE = {
+            caries:     'Obturación dental',
+            fracture:   'Restauración por fractura',
+            extraction: 'Extracción dental',
+            sealant:    'Aplicación de sellador',
+            crown:      'Corona dental',
+            implant:    'Implante dental',
+        };
+
+        const txClient = await db.getClient();
+        let generated = 0;
+        try {
+            await txClient.query('BEGIN');
+
+            const entries = await txClient.query(
+                `SELECT id, tooth_number, finding_type
+                 FROM ${schema}.dental_odontogram_entries
+                 WHERE consultation_id = $1`,
+                [consultationId]
+            );
+
+            const existing = await txClient.query(
+                `SELECT treatment_name_snapshot, tooth_reference FROM ${schema}.dental_consultation_treatments
+                 WHERE consultation_id = $1 AND tenant_id = $2 AND status != 'voided'`,
+                [consultationId, companyId]
+            );
+            const existingSet = new Set(existing.rows.map(r => `${r.treatment_name_snapshot}|${r.tooth_reference}`));
+
+            for (const entry of entries.rows) {
+                const procedure = FINDING_TO_PROCEDURE[entry.finding_type];
+                if (!procedure) continue;
+
+                if (existingSet.has(`${procedure}|${String(entry.tooth_number)}`)) continue;
+
+                await txClient.query(
+                    `INSERT INTO ${schema}.dental_consultation_treatments
+                     (tenant_id, consultation_id, treatment_name_snapshot, tooth_reference, unit_price, quantity, subtotal, status, created_by)
+                     VALUES ($1, $2, $3, $4, 0, 1, 0, 'active', $5)`,
+                    [companyId, consultationId, procedure, String(entry.tooth_number), req.user?.id || null]
+                );
+
+                generated++;
+            }
+
+            await txClient.query('COMMIT');
+        } catch (txErr) {
+            await txClient.query('ROLLBACK');
+            throw txErr;
+        } finally {
+            txClient.release();
+        }
+
+        res.json({ generated, message: `${generated} tratamiento(s) generado(s) desde el odontograma` });
+    } catch (err) {
+        console.error('consultationsController.generateTreatmentPlan error:', err.message);
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al generar plan de tratamiento') });
+    }
+};
+
+/**
  * DELETE /dental/consultations/:id/photos/:photoId
  */
 exports.deletePhoto = async (req, res) => {
