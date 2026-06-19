@@ -62,8 +62,7 @@ const cancelSession = (session: DentalConsultationSession) => emit('cancel-sessi
           <h2 class="text-sm font-semibold text-white/70">Sesiones de tratamiento</h2>
           <button
             v-if="(consultation as any)?.requires_multiple_sessions"
-            class="flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
-            :style="{ background: 'var(--nexora-primary)' }"
+            class="flex items-center gap-1.5 rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary"
             @click="$emit('new-session')"
           >
             <Plus class="h-4 w-4" />
@@ -125,8 +124,7 @@ const cancelSession = (session: DentalConsultationSession) => emit('cancel-sessi
                     class="rounded-xl border border-white/20 bg-white/5 px-3 py-1.5 text-sm text-white outline-none focus:border-white/40"
                   />
                   <button
-                    class="rounded-lg px-3 py-1.5 text-xs font-medium text-white transition hover:opacity-90 disabled:opacity-50"
-                    :style="{ background: 'var(--nexora-primary)' }"
+                    class="rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary disabled:opacity-50"
                     :disabled="savingEditSession || !editSessionDate"
                     @click="saveEditSession(session)"
                   >

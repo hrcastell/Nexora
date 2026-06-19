@@ -542,7 +542,7 @@ onMounted(async () => {
         <p v-if="addItemError" class="text-xs text-red-400">{{ addItemError }}</p>
         <div class="flex gap-3 pt-2">
           <button type="button" class="flex-1 py-2.5 rounded-xl text-sm text-white/60 border border-white/10 hover:border-white/30" @click="showAddItem = false">Cancelar</button>
-          <button type="submit" class="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-[var(--nexora-primary)] text-white hover:opacity-90 disabled:opacity-50" :disabled="savingItem">
+          <button type="submit" class="flex-1 rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary disabled:opacity-50" :disabled="savingItem">
             {{ savingItem ? 'Guardando...' : 'Agregar' }}
           </button>
         </div>
@@ -571,7 +571,7 @@ onMounted(async () => {
         <p v-if="editError" class="text-xs text-red-400">{{ editError }}</p>
         <div class="flex gap-3 pt-2">
           <button type="button" class="flex-1 py-2.5 rounded-xl text-sm text-white/60 border border-white/10 hover:border-white/30" @click="showEdit = false">Cancelar</button>
-          <button type="submit" class="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-[var(--nexora-primary)] text-white hover:opacity-90 disabled:opacity-50" :disabled="savingEdit">
+          <button type="submit" class="flex-1 rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary disabled:opacity-50" :disabled="savingEdit">
             {{ savingEdit ? 'Guardando...' : 'Guardar' }}
           </button>
         </div>
@@ -592,7 +592,7 @@ onMounted(async () => {
         <p v-if="acceptError" class="text-xs text-red-400">{{ acceptError }}</p>
         <div class="flex gap-3 pt-2">
           <button type="button" class="flex-1 py-2.5 rounded-xl text-sm text-white/60 border border-white/10 hover:border-white/30" @click="showAccept = false">Cancelar</button>
-          <button type="submit" class="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-green-600 text-white hover:opacity-90 disabled:opacity-50" :disabled="savingAccept">
+          <button type="submit" class="flex-1 rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary disabled:opacity-50" :disabled="savingAccept">
             {{ savingAccept ? 'Procesando...' : 'Confirmar aceptación' }}
           </button>
         </div>

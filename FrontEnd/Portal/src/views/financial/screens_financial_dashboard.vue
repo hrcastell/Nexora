@@ -96,7 +96,7 @@ const BUDGET_STATUS_COLOR: Record<string, string> = {
       <Wallet :size="48" class="text-white/20" />
       <p class="text-white/50 text-sm">No hay un período financiero activo para este mes.</p>
       <button
-        class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold bg-[var(--nexora-primary)] text-white hover:opacity-90"
+        class="flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-medium text-white transition nxr-btn-primary"
         @click="showCreate = true"
       >
         <Plus :size="15" /> Crear período
@@ -251,7 +251,7 @@ const BUDGET_STATUS_COLOR: Record<string, string> = {
       </form>
       <template #footer>
         <button type="button" class="flex-1 px-4 py-2 rounded-xl text-sm text-white/60 border border-white/10 hover:bg-white/5" @click="showCreate = false">Cancelar</button>
-        <button type="button" class="flex-1 px-4 py-2 rounded-xl text-sm font-semibold bg-[var(--nexora-primary)] text-white hover:opacity-90 disabled:opacity-50" :disabled="saving" @click="createPeriod">
+        <button type="button" class="flex-1 rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary disabled:opacity-50" :disabled="saving" @click="createPeriod">
           {{ saving ? 'Creando...' : 'Crear período' }}
         </button>
       </template>

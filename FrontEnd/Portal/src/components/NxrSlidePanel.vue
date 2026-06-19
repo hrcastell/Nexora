@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { computed } from 'vue'
 import { X as XIcon } from 'lucide-vue-next'
 
 interface Props {
@@ -9,7 +8,7 @@ interface Props {
   size?: 'sm' | 'md' | 'lg' | 'xl'
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   size: 'md'
 })
 
@@ -17,19 +16,10 @@ const emit = defineEmits<{
   close: []
 }>()
 
-const panelClasses = computed(() => {
-  const sizeMap = {
-    sm: 'max-w-md',
-    md: 'max-w-2xl',
-    lg: 'max-w-4xl',
-    xl: 'max-w-6xl'
-  }
-
-  return [
-    'h-full border-l border-white/10 shadow-2xl overflow-y-auto flex flex-col',
-    'max-w-full sm:' + sizeMap[props.size]
-  ].join(' ')
-})
+const panelClasses = [
+  'h-full border-l border-white/10 shadow-2xl overflow-y-auto flex flex-col',
+  'w-[80vw] max-w-[80vw] lg:w-[40vw] lg:max-w-[40vw]'
+].join(' ')
 </script>
 
 <template>
@@ -60,7 +50,7 @@ const panelClasses = computed(() => {
           </header>
 
           <!-- Body (scrollable) -->
-          <div class="flex-1 overflow-y-auto px-6 py-6">
+          <div class="nxr-slide-panel-body flex-1 overflow-y-auto px-6 py-6">
             <slot />
           </div>
 
@@ -78,6 +68,29 @@ const panelClasses = computed(() => {
 </template>
 
 <style scoped>
+.nxr-slide-panel-body :deep(.grid:not(.nxr-garage-form-grid)) {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+.nxr-slide-panel-body :deep(.nxr-garage-form-grid) {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+.nxr-slide-panel-body :deep(.nxr-garage-form-grid > *) {
+  grid-column: auto !important;
+  min-width: 0;
+}
+
+.nxr-slide-panel-body :deep(.nxr-garage-form-grid > .nxr-garage-form-section) {
+  grid-column: 1 / -1 !important;
+}
+
+@media (min-width: 768px) {
+  .nxr-slide-panel-body :deep(.nxr-garage-form-grid) {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
 .slide-panel-enter-active,
 .slide-panel-leave-active {
   transition: all 0.3s ease;

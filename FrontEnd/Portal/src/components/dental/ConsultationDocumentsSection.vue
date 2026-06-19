@@ -6,7 +6,7 @@
       <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Documentos médicos</p>
       <button
         v-if="!readOnly"
-        class="flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold text-white bg-[var(--nexora-primary)] hover:opacity-90 transition"
+        class="flex items-center gap-1.5 rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary"
         @click="toggleForm"
       >
         <Plus class="h-3.5 w-3.5" />
@@ -190,7 +190,7 @@
         <button
           type="button"
           :disabled="saving"
-          class="px-4 py-2 rounded-xl text-xs font-semibold text-white bg-[var(--nexora-primary)] hover:opacity-90 transition disabled:opacity-50"
+          class="rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary disabled:opacity-50"
           @click="saveDocument"
         >
           {{ saving ? 'Guardando...' : 'Guardar documento' }}

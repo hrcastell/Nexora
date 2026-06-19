@@ -164,7 +164,7 @@ onMounted(() => {
     <div class="flex items-center justify-between flex-wrap gap-3">
       <h1 class="text-xl font-semibold text-white">Presupuestos</h1>
       <button
-        class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold bg-[var(--nexora-primary)] text-white hover:opacity-90"
+        class="flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-medium text-white transition nxr-btn-primary"
         @click="openCreate"
       >
         <Plus :size="15" /> Nuevo Presupuesto
@@ -202,7 +202,7 @@ onMounted(() => {
       <FileText :size="48" class="text-white/20" />
       <p class="text-white/50 text-sm">No hay presupuestos registrados.</p>
       <button
-        class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold bg-[var(--nexora-primary)] text-white hover:opacity-90"
+        class="flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-medium text-white transition nxr-btn-primary"
         @click="openCreate"
       >
         <Plus :size="15" /> Crear primer presupuesto
@@ -344,7 +344,7 @@ onMounted(() => {
           </button>
           <button
             type="submit"
-            class="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-[var(--nexora-primary)] text-white hover:opacity-90 disabled:opacity-50"
+            class="flex-1 rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary disabled:opacity-50"
             :disabled="saving"
           >
             {{ saving ? 'Creando...' : 'Crear presupuesto' }}

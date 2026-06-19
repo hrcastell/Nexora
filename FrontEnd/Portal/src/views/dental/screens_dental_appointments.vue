@@ -9,7 +9,7 @@ import NxrSlidePanel from '../../components/NxrSlidePanel.vue';
 import AppToast from '../../components/AppToast.vue';
 import ConfirmActionModal from '../../components/admin/ConfirmActionModal.vue';
 import { useToast } from '../../composables/useToast';
-import type { DentalAppointment, DentalAppointmentFormData } from '../../types/dental';
+import type { DentalAppointment, DentalAppointmentFormData, DentalPatientFormData } from '../../types/dental';
 
 const router = useRouter();
 const store = useDentalAppointmentsStore();
@@ -17,26 +17,70 @@ const patientsStore = useDentalPatientsStore();
 const treatmentsStore = useDentalTreatmentsStore();
 const { toasts, triggerToast, removeToast } = useToast();
 
-const confirmModal = ref<{ open: boolean; title: string; message: string; onConfirm: () => void }>({
-  open: false, title: '', message: '', onConfirm: () => {}
+const confirmModal = ref<{
+  open: boolean;
+  title: string;
+  message: string;
+  onConfirm: () => void;
+  variant: 'danger' | 'warning' | 'info';
+  confirmText: string;
+  cancelText: string;
+}>({
+  open: false,
+  title: '',
+  message: '',
+  onConfirm: () => {},
+  variant: 'warning',
+  confirmText: 'Confirmar',
+  cancelText: 'Cancelar',
 });
-function askConfirm(title: string, message: string, onConfirm: () => void) {
-  confirmModal.value = { open: true, title, message, onConfirm };
+function askConfirm(
+  title: string,
+  message: string,
+  onConfirm: () => void,
+  options: { variant?: 'danger' | 'warning' | 'info'; confirmText?: string; cancelText?: string } = {}
+) {
+  confirmModal.value = {
+    open: true,
+    title,
+    message,
+    onConfirm,
+    variant: options.variant ?? 'warning',
+    confirmText: options.confirmText ?? 'Confirmar',
+    cancelText: options.cancelText ?? 'Cancelar',
+  };
 }
 
 const patientSearch = ref('');
 const selectedPatient = ref<any>(null);
 const showPatientDrop = ref(false);
+const lastNoPatientPromptQuery = ref('');
 
 let patientSearchTimer: ReturnType<typeof setTimeout> | null = null;
 
 function onPatientInput() {
+  const query = patientSearch.value.trim();
   selectedPatient.value = null;
   form.value.customer_id = '';
+  if (query !== lastNoPatientPromptQuery.value) lastNoPatientPromptQuery.value = '';
   if (patientSearchTimer) clearTimeout(patientSearchTimer);
-  if (!patientSearch.value.trim()) { showPatientDrop.value = false; return; }
+  if (!query) { showPatientDrop.value = false; lastNoPatientPromptQuery.value = ''; return; }
   patientSearchTimer = setTimeout(async () => {
-    await patientsStore.load({ search: patientSearch.value });
+    await patientsStore.load({ search: query });
+    if (patientSearch.value.trim() !== query) return;
+    if (patientsStore.items.length === 0) {
+      showPatientDrop.value = false;
+      if (lastNoPatientPromptQuery.value !== query) {
+        lastNoPatientPromptQuery.value = query;
+        askConfirm(
+          'Paciente no encontrado',
+          `No existe un paciente para "${query}". ¿Querés crear un nuevo paciente con esta búsqueda?`,
+          () => openInlinePatientCreate(query),
+          { variant: 'info', confirmText: 'Crear paciente', cancelText: 'Seguir buscando' }
+        );
+      }
+      return;
+    }
     showPatientDrop.value = true;
   }, 300);
 }
@@ -60,6 +104,70 @@ function clearPatient() {
   selectedPatient.value = null;
   form.value.customer_id = '';
   patientSearch.value = '';
+}
+
+const showPatientPanel = ref(false);
+const patientSaving = ref(false);
+const patientSaveError = ref<string | null>(null);
+
+const defaultPatientForm = (): DentalPatientFormData => ({
+  first_name: '',
+  last_name: '',
+  document_type: 'DNI',
+  document_number: '',
+  phone: '',
+  mobile: '',
+  email: '',
+  birth_date: '',
+  address: '',
+  city: '',
+  customer_notes: '',
+  medical_background: '',
+  allergies: '',
+  blood_type: '',
+  current_medications: '',
+  chronic_conditions: '',
+  dental_observations: '',
+  emergency_contact_name: '',
+  emergency_contact_phone: '',
+});
+
+const patientForm = ref<DentalPatientFormData>(defaultPatientForm());
+
+function splitPatientSearchName(query: string) {
+  const parts = query.trim().split(/\s+/).filter(Boolean);
+  return {
+    first_name: parts[0] ?? '',
+    last_name: parts.slice(1).join(' '),
+  };
+}
+
+function openInlinePatientCreate(query = patientSearch.value) {
+  const name = splitPatientSearchName(query);
+  patientForm.value = {
+    ...defaultPatientForm(),
+    ...name,
+  };
+  patientSaveError.value = null;
+  showPatientDrop.value = false;
+  showPatientPanel.value = true;
+}
+
+async function saveInlinePatient() {
+  patientSaving.value = true;
+  patientSaveError.value = null;
+  try {
+    const createdPatient = await patientsStore.create(patientForm.value);
+    triggerToast('Éxito', 'Paciente creado', 'success');
+    showPatientPanel.value = false;
+    selectPatient(createdPatient);
+  } catch (e: any) {
+    const message = e?.response?.data?.error || 'Error al guardar paciente';
+    patientSaveError.value = message;
+    triggerToast('Error', message, 'error');
+  } finally {
+    patientSaving.value = false;
+  }
 }
 
 type ViewTab = 'today' | 'month' | 'all';
@@ -282,7 +390,8 @@ async function doAction(action: 'confirm' | 'check_in' | 'cancel' | 'no_show' | 
         } catch (e: any) {
           triggerToast('Error', e?.response?.data?.error || 'Error al cancelar cita', 'error');
         }
-      }
+      },
+      { variant: 'danger', confirmText: 'Confirmar' }
     );
     return;
   }
@@ -323,11 +432,11 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="flex flex-col gap-5 p-6">
+  <div class="flex flex-col gap-5 p-4 md:p-6">
     <div class="flex items-center justify-between flex-wrap gap-3">
       <h1 class="text-xl font-semibold text-white">Citas</h1>
       <button
-        class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold bg-[var(--nexora-primary)] text-white hover:opacity-90"
+        class="flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-medium text-white transition nxr-btn-primary sm:w-auto"
         @click="openCreate"
       >
         <Plus :size="15" /> Nueva cita
@@ -335,7 +444,7 @@ onMounted(() => {
     </div>
 
     <!-- Tab switcher -->
-    <div class="flex items-center gap-2">
+    <div class="flex flex-wrap items-center gap-2">
       <button
         v-for="tab in [
           { key: 'today', label: 'Hoy',   icon: CalendarDays },
@@ -343,7 +452,7 @@ onMounted(() => {
           { key: 'all',   label: 'Todas', icon: List },
         ]"
         :key="tab.key"
-        class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all"
+        class="flex min-h-10 items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition-all"
         :class="activeTab === tab.key
           ? 'bg-[var(--nexora-primary)] text-white'
           : 'text-white/50 border border-white/10 hover:border-white/30 hover:text-white'"
@@ -354,9 +463,9 @@ onMounted(() => {
 
       <!-- Month nav -->
       <template v-if="activeTab === 'month'">
-        <button class="ml-2 px-2 py-1 rounded-lg border border-white/10 text-xs text-white/50 hover:text-white" @click="goPreviousMonth">‹</button>
-        <span class="text-xs text-white/60">{{ MONTHS[currentMonth - 1] }} {{ currentYear }}</span>
-        <button class="px-2 py-1 rounded-lg border border-white/10 text-xs text-white/50 hover:text-white" @click="goNextMonth">›</button>
+        <button class="ml-0 min-h-10 min-w-10 rounded-lg border border-white/10 px-2 py-1 text-xs text-white/50 hover:text-white sm:ml-2" aria-label="Mes anterior" @click="goPreviousMonth">‹</button>
+        <span class="min-w-0 text-xs text-white/60">{{ MONTHS[currentMonth - 1] }} {{ currentYear }}</span>
+        <button class="min-h-10 min-w-10 rounded-lg border border-white/10 px-2 py-1 text-xs text-white/50 hover:text-white" aria-label="Mes siguiente" @click="goNextMonth">›</button>
       </template>
     </div>
 
@@ -375,7 +484,7 @@ onMounted(() => {
       <div v-if="store.today.length === 0" class="flex flex-col items-center gap-4 py-20 text-center">
         <CalendarDays :size="48" class="text-white/20" />
         <p class="text-white/50 text-sm">No hay citas para hoy.</p>
-        <button class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold bg-[var(--nexora-primary)] text-white hover:opacity-90" @click="openCreate">
+        <button class="flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-medium text-white transition nxr-btn-primary" @click="openCreate">
           <Plus :size="15" /> Agendar cita
         </button>
       </div>
@@ -383,38 +492,41 @@ onMounted(() => {
         <div
           v-for="apt in store.today"
           :key="apt.id"
-          class="flex items-center gap-3 px-4 py-3 rounded-xl border border-white/10"
+          class="flex flex-col gap-3 rounded-xl border border-white/10 px-4 py-3 sm:flex-row sm:items-center"
           :style="{ background: 'var(--nexora-glass-bg)' }"
         >
-          <div class="flex flex-col items-center w-14 shrink-0 text-center">
-            <p class="text-sm font-bold text-white">{{ fmtTime(apt.scheduled_start) }}</p>
-            <p class="text-xs text-white/30">{{ fmtTime(apt.scheduled_end) }}</p>
+          <div class="flex min-w-0 flex-1 items-start gap-3">
+            <div class="flex w-14 shrink-0 flex-col items-center text-center">
+              <p class="text-sm font-bold text-white">{{ fmtTime(apt.scheduled_start) }}</p>
+              <p class="text-xs text-white/30">{{ fmtTime(apt.scheduled_end) }}</p>
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="text-sm font-medium text-white sm:truncate">{{ patientDisplayName(apt) }}</p>
+              <p class="text-xs text-white/40 sm:truncate">{{ apt.treatment?.name ?? apt.reason ?? '—' }}</p>
+            </div>
           </div>
-          <div class="flex-1 min-w-0">
-            <p class="text-sm font-medium text-white truncate">{{ apt.customer?.first_name }} {{ apt.customer?.last_name }}</p>
-            <p class="text-xs text-white/40 truncate">{{ apt.treatment?.name ?? apt.reason ?? '—' }}</p>
-          </div>
-          <span class="px-2 py-0.5 rounded-full text-xs shrink-0" :class="STATUS_CLASS[apt.status]">{{ STATUS_LABEL[apt.status] }}</span>
-          <!-- Action buttons -->
-          <div class="flex items-center gap-1 shrink-0">
-            <button v-if="apt.status === 'scheduled'" class="text-green-400 hover:opacity-70 transition-opacity" title="Confirmar" @click="doAction('confirm', apt)">
-              <CheckCircle2 :size="16" />
-            </button>
-            <button v-if="apt.status === 'confirmed'" class="text-cyan-300 hover:opacity-70 transition-opacity" title="Marcar presente" @click="doAction('check_in', apt)">
-              <LogIn :size="16" />
-            </button>
-            <button v-if="!['completed','cancelled','no_show'].includes(apt.status)" class="text-white/50 hover:text-white transition-opacity" title="Editar/reprogramar" @click="openEditAppointment(apt)">
-              <Edit2 :size="16" />
-            </button>
-            <button v-if="['scheduled','confirmed'].includes(apt.status)" class="text-cyan-400 hover:opacity-70 transition-opacity" title="Convertir en consulta" @click="doAction('convert', apt)">
-              <ArrowRightCircle :size="16" />
-            </button>
-            <button v-if="['scheduled','confirmed'].includes(apt.status)" class="text-orange-400 hover:opacity-70 transition-opacity" title="No asistió" @click="doAction('no_show', apt)">
-              <UserX :size="16" />
-            </button>
-            <button v-if="['scheduled','confirmed'].includes(apt.status)" class="text-red-400 hover:opacity-70 transition-opacity" title="Cancelar" @click="doAction('cancel', apt)">
-              <XCircle :size="16" />
-            </button>
+          <div class="flex flex-col gap-3 sm:items-end sm:shrink-0">
+            <span class="w-fit shrink-0 rounded-full px-2 py-0.5 text-xs" :class="STATUS_CLASS[apt.status]">{{ STATUS_LABEL[apt.status] }}</span>
+            <div class="flex w-full items-center gap-1.5 overflow-x-auto pb-1 sm:w-auto sm:justify-end sm:overflow-visible sm:pb-0">
+              <button v-if="apt.status === 'scheduled'" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-green-500/10 text-green-400 transition-opacity hover:opacity-70" title="Confirmar" aria-label="Confirmar cita" @click="doAction('confirm', apt)">
+                <CheckCircle2 :size="16" />
+              </button>
+              <button v-if="apt.status === 'confirmed'" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-cyan-500/10 text-cyan-300 transition-opacity hover:opacity-70" title="Marcar presente" aria-label="Marcar paciente presente" @click="doAction('check_in', apt)">
+                <LogIn :size="16" />
+              </button>
+              <button v-if="!['completed','cancelled','no_show'].includes(apt.status)" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/5 text-white/60 transition-opacity hover:text-white" title="Editar/reprogramar" aria-label="Editar o reprogramar cita" @click="openEditAppointment(apt)">
+                <Edit2 :size="16" />
+              </button>
+              <button v-if="['scheduled','confirmed'].includes(apt.status)" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-cyan-500/10 text-cyan-400 transition-opacity hover:opacity-70" title="Convertir en consulta" aria-label="Convertir cita en consulta" @click="doAction('convert', apt)">
+                <ArrowRightCircle :size="16" />
+              </button>
+              <button v-if="['scheduled','confirmed'].includes(apt.status)" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-orange-500/10 text-orange-400 transition-opacity hover:opacity-70" title="No asistió" aria-label="Marcar como no asistió" @click="doAction('no_show', apt)">
+                <UserX :size="16" />
+              </button>
+              <button v-if="['scheduled','confirmed'].includes(apt.status)" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-red-500/10 text-red-400 transition-opacity hover:opacity-70" title="Cancelar" aria-label="Cancelar cita" @click="doAction('cancel', apt)">
+                <XCircle :size="16" />
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -426,7 +538,7 @@ onMounted(() => {
         No hay citas en {{ MONTHS[currentMonth - 1] }} {{ currentYear }}.
       </div>
       <div v-else class="flex flex-col gap-5">
-        <div class="grid grid-cols-7 gap-2 rounded-2xl border border-white/10 p-3" :style="{ background: 'var(--nexora-glass-bg)' }">
+        <div class="hidden grid-cols-7 gap-2 rounded-2xl border border-white/10 p-3 md:grid" :style="{ background: 'var(--nexora-glass-bg)' }">
           <div v-for="dayName in ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']" :key="dayName" class="px-2 py-1 text-center text-[11px] font-semibold uppercase tracking-wide text-white/35">
             {{ dayName }}
           </div>
@@ -460,23 +572,55 @@ onMounted(() => {
           </div>
         </div>
 
-        <div v-if="selectedCalendarDate" class="flex items-center justify-between rounded-xl border border-[var(--nexora-primary)]/30 bg-[var(--nexora-primary)]/10 px-4 py-2 text-xs text-white/70">
+        <div class="flex flex-col gap-3 md:hidden">
+          <div class="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-xs text-white/50">
+            Vista optimizada para móvil: las citas se muestran por día para evitar desbordes del calendario mensual.
+          </div>
+
+          <div v-for="[day, apts] in monthGrouped" :key="day" class="flex flex-col gap-2">
+            <p class="text-xs font-semibold uppercase tracking-wide text-white/40">{{ day }}</p>
+            <div
+              v-for="apt in apts"
+              :key="apt.id"
+              class="flex flex-col gap-3 rounded-xl border border-white/10 px-4 py-3"
+              :style="{ background: 'var(--nexora-glass-bg)' }"
+            >
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0 flex-1">
+                  <p class="text-sm font-semibold text-white">{{ fmtTime(apt.scheduled_start) }} · {{ patientDisplayName(apt) }}</p>
+                  <p class="mt-0.5 text-xs text-white/40">{{ apt.treatment?.name ?? apt.reason ?? 'Sin tratamiento' }}</p>
+                </div>
+                <span class="w-fit shrink-0 rounded-full px-2 py-0.5 text-xs" :class="STATUS_CLASS[apt.status]">{{ STATUS_LABEL[apt.status] }}</span>
+              </div>
+              <div class="flex w-full items-center gap-1.5 overflow-x-auto pb-1">
+                <button v-if="apt.status === 'scheduled'" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-green-500/10 text-green-400" title="Confirmar" aria-label="Confirmar cita" @click="doAction('confirm', apt)"><CheckCircle2 :size="16" /></button>
+                <button v-if="apt.status === 'confirmed'" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-cyan-500/10 text-cyan-300" title="Marcar presente" aria-label="Marcar paciente presente" @click="doAction('check_in', apt)"><LogIn :size="16" /></button>
+                <button v-if="!['completed','cancelled','no_show'].includes(apt.status)" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/5 text-white/60" title="Editar/reprogramar" aria-label="Editar o reprogramar cita" @click="openEditAppointment(apt)"><Edit2 :size="16" /></button>
+                <button v-if="['scheduled','confirmed'].includes(apt.status)" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-cyan-500/10 text-cyan-400" title="Convertir en consulta" aria-label="Convertir cita en consulta" @click="doAction('convert', apt)"><ArrowRightCircle :size="16" /></button>
+                <button v-if="['scheduled','confirmed'].includes(apt.status)" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-orange-500/10 text-orange-400" title="No asistió" aria-label="Marcar como no asistió" @click="doAction('no_show', apt)"><UserX :size="16" /></button>
+                <button v-if="['scheduled','confirmed'].includes(apt.status)" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-red-500/10 text-red-400" title="Cancelar" aria-label="Cancelar cita" @click="doAction('cancel', apt)"><XCircle :size="16" /></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="selectedCalendarDate" class="hidden items-center justify-between rounded-xl border border-[var(--nexora-primary)]/30 bg-[var(--nexora-primary)]/10 px-4 py-2 text-xs text-white/70 md:flex">
           <span>Mostrando citas del día seleccionado</span>
           <button class="text-white/50 hover:text-white" @click="selectedCalendarDate = null">Ver todo el mes</button>
         </div>
 
-        <div v-for="[day, apts] in monthGrouped" :key="day">
-          <p class="text-xs text-white/40 uppercase tracking-wide font-semibold mb-2">{{ day }}</p>
+        <div v-for="[day, apts] in monthGrouped" :key="day" class="hidden md:block">
+          <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-white/40">{{ day }}</p>
           <div class="flex flex-col gap-1.5">
             <div
               v-for="apt in apts"
               :key="apt.id"
-              class="flex items-center gap-3 px-4 py-2.5 rounded-xl border border-white/10"
+              class="flex items-center gap-3 rounded-xl border border-white/10 px-4 py-2.5"
               :style="{ background: 'var(--nexora-glass-bg)' }"
             >
-              <p class="text-xs text-white/50 w-12 shrink-0">{{ fmtTime(apt.scheduled_start) }}</p>
-              <p class="text-sm text-white flex-1 truncate">{{ apt.customer?.first_name }} {{ apt.customer?.last_name }}</p>
-              <span class="px-2 py-0.5 rounded-full text-xs shrink-0" :class="STATUS_CLASS[apt.status]">{{ STATUS_LABEL[apt.status] }}</span>
+              <p class="w-12 shrink-0 text-xs text-white/50">{{ fmtTime(apt.scheduled_start) }}</p>
+              <p class="flex-1 truncate text-sm text-white">{{ patientDisplayName(apt) }}</p>
+              <span class="shrink-0 rounded-full px-2 py-0.5 text-xs" :class="STATUS_CLASS[apt.status]">{{ STATUS_LABEL[apt.status] }}</span>
             </div>
           </div>
         </div>
@@ -500,39 +644,49 @@ onMounted(() => {
         <div
           v-for="apt in store.items"
           :key="apt.id"
-          class="flex items-center gap-3 px-4 py-3 rounded-xl border border-white/10"
+          class="flex flex-col gap-3 rounded-xl border border-white/10 px-4 py-3 md:flex-row md:items-center"
           :style="{ background: 'var(--nexora-glass-bg)' }"
         >
           <!-- Mobile -->
-          <div class="flex-1 min-w-0 md:hidden">
-            <p class="text-sm font-medium text-white truncate">{{ apt.customer?.first_name }} {{ apt.customer?.last_name }}</p>
-            <p class="text-xs text-white/40">{{ fmtDate(apt.scheduled_start) }} {{ fmtTime(apt.scheduled_start) }}</p>
-          </div>
-          <!-- Desktop -->
-          <div class="hidden md:grid md:grid-cols-[140px_1fr_1fr_120px_100px] gap-4 items-center flex-1">
-            <p class="text-xs text-white/60">{{ fmtDate(apt.scheduled_start) }}<br />{{ fmtTime(apt.scheduled_start) }}</p>
-            <p class="text-sm text-white truncate">{{ apt.customer?.first_name }} {{ apt.customer?.last_name }}</p>
-            <p class="text-xs text-white/60 truncate">{{ apt.treatment?.name ?? apt.reason ?? '—' }}</p>
-            <span class="px-2 py-0.5 rounded-full text-xs w-fit" :class="STATUS_CLASS[apt.status]">{{ STATUS_LABEL[apt.status] }}</span>
-            <div class="flex items-center justify-end gap-1">
-              <button v-if="apt.status === 'scheduled'" class="text-green-400 hover:opacity-70" title="Confirmar" @click="doAction('confirm', apt)"><CheckCircle2 :size="14" /></button>
-              <button v-if="apt.status === 'confirmed'" class="text-cyan-300 hover:opacity-70" title="Marcar presente" @click="doAction('check_in', apt)"><LogIn :size="14" /></button>
-              <button v-if="!['completed','cancelled','no_show'].includes(apt.status)" class="text-white/50 hover:text-white" title="Editar/reprogramar" @click="openEditAppointment(apt)"><Edit2 :size="14" /></button>
-              <button v-if="['scheduled','confirmed'].includes(apt.status)" class="text-cyan-400 hover:opacity-70" title="Consulta" @click="doAction('convert', apt)"><ArrowRightCircle :size="14" /></button>
-              <button v-if="['scheduled','confirmed'].includes(apt.status)" class="text-orange-400 hover:opacity-70" title="No asistió" @click="doAction('no_show', apt)"><UserX :size="14" /></button>
-              <button v-if="['scheduled','confirmed'].includes(apt.status)" class="text-red-400 hover:opacity-70" title="Cancelar" @click="doAction('cancel', apt)"><XCircle :size="14" /></button>
+          <div class="min-w-0 md:hidden">
+            <div class="flex items-start justify-between gap-3">
+              <div class="min-w-0 flex-1">
+                <p class="text-sm font-medium text-white">{{ patientDisplayName(apt) }}</p>
+                <p class="text-xs text-white/40">{{ fmtDate(apt.scheduled_start) }} {{ fmtTime(apt.scheduled_start) }}</p>
+                <p class="mt-1 text-xs text-white/40">{{ apt.treatment?.name ?? apt.reason ?? 'Sin tratamiento' }}</p>
+              </div>
+              <span class="w-fit shrink-0 rounded-full px-2 py-0.5 text-xs" :class="STATUS_CLASS[apt.status]">{{ STATUS_LABEL[apt.status] }}</span>
+            </div>
+            <div class="mt-3 flex w-full items-center gap-1.5 overflow-x-auto pb-1">
+              <button v-if="apt.status === 'scheduled'" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-green-500/10 text-green-400" title="Confirmar" aria-label="Confirmar cita" @click="doAction('confirm', apt)"><CheckCircle2 :size="16" /></button>
+              <button v-if="apt.status === 'confirmed'" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-cyan-500/10 text-cyan-300" title="Marcar presente" aria-label="Marcar paciente presente" @click="doAction('check_in', apt)"><LogIn :size="16" /></button>
+              <button v-if="!['completed','cancelled','no_show'].includes(apt.status)" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/5 text-white/60" title="Editar/reprogramar" aria-label="Editar o reprogramar cita" @click="openEditAppointment(apt)"><Edit2 :size="16" /></button>
+              <button v-if="['scheduled','confirmed'].includes(apt.status)" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-cyan-500/10 text-cyan-400" title="Convertir en consulta" aria-label="Convertir cita en consulta" @click="doAction('convert', apt)"><ArrowRightCircle :size="16" /></button>
+              <button v-if="['scheduled','confirmed'].includes(apt.status)" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-orange-500/10 text-orange-400" title="No asistió" aria-label="Marcar como no asistió" @click="doAction('no_show', apt)"><UserX :size="16" /></button>
+              <button v-if="['scheduled','confirmed'].includes(apt.status)" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-red-500/10 text-red-400" title="Cancelar" aria-label="Cancelar cita" @click="doAction('cancel', apt)"><XCircle :size="16" /></button>
             </div>
           </div>
-          <!-- Mobile status + actions -->
-          <div class="flex items-center gap-2 shrink-0 md:hidden">
-            <span class="px-2 py-0.5 rounded-full text-xs" :class="STATUS_CLASS[apt.status]">{{ STATUS_LABEL[apt.status] }}</span>
+          <!-- Desktop -->
+          <div class="hidden flex-1 items-center gap-4 md:grid md:grid-cols-[140px_1fr_1fr_120px_100px]">
+            <p class="text-xs text-white/60">{{ fmtDate(apt.scheduled_start) }}<br />{{ fmtTime(apt.scheduled_start) }}</p>
+            <p class="truncate text-sm text-white">{{ patientDisplayName(apt) }}</p>
+            <p class="truncate text-xs text-white/60">{{ apt.treatment?.name ?? apt.reason ?? '—' }}</p>
+            <span class="w-fit rounded-full px-2 py-0.5 text-xs" :class="STATUS_CLASS[apt.status]">{{ STATUS_LABEL[apt.status] }}</span>
+            <div class="flex items-center justify-end gap-1">
+              <button v-if="apt.status === 'scheduled'" type="button" class="text-green-400 hover:opacity-70" title="Confirmar" aria-label="Confirmar cita" @click="doAction('confirm', apt)"><CheckCircle2 :size="14" /></button>
+              <button v-if="apt.status === 'confirmed'" type="button" class="text-cyan-300 hover:opacity-70" title="Marcar presente" aria-label="Marcar paciente presente" @click="doAction('check_in', apt)"><LogIn :size="14" /></button>
+              <button v-if="!['completed','cancelled','no_show'].includes(apt.status)" type="button" class="text-white/50 hover:text-white" title="Editar/reprogramar" aria-label="Editar o reprogramar cita" @click="openEditAppointment(apt)"><Edit2 :size="14" /></button>
+              <button v-if="['scheduled','confirmed'].includes(apt.status)" type="button" class="text-cyan-400 hover:opacity-70" title="Consulta" aria-label="Convertir cita en consulta" @click="doAction('convert', apt)"><ArrowRightCircle :size="14" /></button>
+              <button v-if="['scheduled','confirmed'].includes(apt.status)" type="button" class="text-orange-400 hover:opacity-70" title="No asistió" @click="doAction('no_show', apt)"><UserX :size="14" /></button>
+              <button v-if="['scheduled','confirmed'].includes(apt.status)" type="button" class="text-red-400 hover:opacity-70" title="Cancelar" aria-label="Cancelar cita" @click="doAction('cancel', apt)"><XCircle :size="14" /></button>
+            </div>
           </div>
         </div>
       </div>
     </template>
 
     <!-- Create panel -->
-    <NxrSlidePanel :open="showPanel" :title="isEditing ? 'Editar/reprogramar cita' : 'Nueva cita'" eyebrow="Dental" @close="showPanel = false">
+    <NxrSlidePanel :open="showPanel" :title="isEditing ? 'Editar/reprogramar cita' : 'Nueva cita'" eyebrow="Dental" size="lg" @close="showPanel = false">
       <form class="flex flex-col gap-5" @submit.prevent="save">
         <div class="flex flex-col gap-1.5 relative">
           <label class="text-xs text-white/50">Paciente *</label>
@@ -594,8 +748,56 @@ onMounted(() => {
       </form>
       <template #footer>
         <button type="button" class="flex-1 px-4 py-2 rounded-xl text-sm text-white/60 border border-white/10 hover:bg-white/5" @click="showPanel = false">Cancelar</button>
-        <button type="button" class="flex-1 px-4 py-2 rounded-xl text-sm font-semibold bg-[var(--nexora-primary)] text-white hover:opacity-90 disabled:opacity-50" :disabled="saving" @click="save">
+        <button type="button" class="flex-1 rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary disabled:opacity-50" :disabled="saving" @click="save">
           {{ saving ? 'Guardando...' : (isEditing ? 'Guardar cambios' : 'Agendar cita') }}
+        </button>
+      </template>
+    </NxrSlidePanel>
+
+    <!-- Inline patient creation panel -->
+    <NxrSlidePanel :open="showPatientPanel" title="Nuevo paciente" eyebrow="Dental" size="lg" @close="showPatientPanel = false">
+      <form id="inline-patient-create-form" class="flex flex-col gap-5" @submit.prevent="saveInlinePatient">
+        <p class="text-xs font-semibold uppercase tracking-wide text-white/40">Datos personales</p>
+
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs text-white/50">Nombre *</label>
+            <input v-model="patientForm.first_name" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" required />
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs text-white/50">Apellido *</label>
+            <input v-model="patientForm.last_name" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" required />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs text-white/50">Tipo documento</label>
+            <input v-model="patientForm.document_type" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs text-white/50">Documento</label>
+            <input v-model="patientForm.document_number" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs text-white/50">Teléfono</label>
+            <input v-model="patientForm.phone" type="tel" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs text-white/50">Email</label>
+            <input v-model="patientForm.email" type="email" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+          </div>
+        </div>
+
+        <p v-if="patientSaveError" class="text-xs text-red-400">{{ patientSaveError }}</p>
+      </form>
+      <template #footer>
+        <button type="button" class="flex-1 px-4 py-2 rounded-xl text-sm text-white/60 border border-white/10 hover:bg-white/5" @click="showPatientPanel = false">Cancelar</button>
+        <button type="submit" form="inline-patient-create-form" class="flex-1 rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary disabled:opacity-50" :disabled="patientSaving">
+          {{ patientSaving ? 'Guardando...' : 'Crear paciente' }}
         </button>
       </template>
     </NxrSlidePanel>
@@ -609,9 +811,9 @@ onMounted(() => {
       :isOpen="confirmModal.open"
       :title="confirmModal.title"
       :message="confirmModal.message"
-      variant="danger"
-      confirmText="Confirmar"
-      cancelText="Cancelar"
+      :variant="confirmModal.variant"
+      :confirmText="confirmModal.confirmText"
+      :cancelText="confirmModal.cancelText"
       @confirmed="() => { confirmModal.open = false; confirmModal.onConfirm(); }"
       @cancelled="confirmModal.open = false"
     />

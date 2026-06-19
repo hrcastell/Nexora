@@ -109,7 +109,7 @@ function fmtDate(d: string | null) {
 
       <div v-if="activeTab === 'vehicles'">
         <div class="flex justify-end mb-3">
-          <button class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm bg-[var(--nexora-primary)] text-white hover:opacity-90" @click="showNewVehicle = true">
+          <button class="flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-medium text-white transition nxr-btn-primary" @click="showNewVehicle = true">
             <Car :size="14" /> Agregar vehículo
           </button>
         </div>
