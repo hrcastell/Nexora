@@ -46,8 +46,7 @@ defineEmits<{
     </p>
     <button
       v-if="canCreateCharge"
-      class="mx-auto flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50"
-      :style="{ background: 'var(--nexora-primary)' }"
+      class="mx-auto flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-medium text-white transition nxr-btn-primary disabled:opacity-50"
       :disabled="actionLoading"
       @click="$emit('generate-charge')"
     >
@@ -100,8 +99,7 @@ defineEmits<{
       </button>
       <button
         v-if="chargeDetail.administrative_status !== 'paid'"
-        class="flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
-        :style="{ background: 'var(--nexora-primary)' }"
+        class="flex items-center gap-1.5 rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary"
         @click="$emit('register-payment', Number(chargeDetail.total_amount) - Number(chargeDetail.paid_amount))"
       >
         <DollarSign class="h-4 w-4" />

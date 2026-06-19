@@ -238,7 +238,7 @@ onMounted(() => {
     <div class="flex items-center justify-between flex-wrap gap-3">
       <h1 class="text-xl font-semibold text-white">Consultas</h1>
       <button
-        class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold bg-[var(--nexora-primary)] text-white hover:opacity-90"
+        class="flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-medium text-white transition nxr-btn-primary"
         @click="openCreate"
       >
         <Plus :size="15" /> Nueva consulta
@@ -287,7 +287,7 @@ onMounted(() => {
     <div v-else-if="store.items.length === 0" class="flex flex-col items-center gap-4 py-20 text-center">
       <Stethoscope :size="48" class="text-white/20" />
       <p class="text-white/50 text-sm">No hay consultas registradas.</p>
-      <button class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold bg-[var(--nexora-primary)] text-white hover:opacity-90" @click="openCreate">
+      <button class="flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-medium text-white transition nxr-btn-primary" @click="openCreate">
         <Plus :size="15" /> Crear primera consulta
       </button>
     </div>
@@ -380,7 +380,7 @@ onMounted(() => {
             <input v-model="inlinePatientForm.last_name" type="text" placeholder="Apellido" class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30" />
             <input v-model="inlinePatientForm.document_number" type="text" placeholder="Documento" class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30" />
             <input v-model="inlinePatientForm.phone" type="text" placeholder="Teléfono" class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30" />
-            <button type="button" class="rounded-xl bg-[var(--nexora-primary)] px-3 py-2 text-sm font-semibold text-white disabled:opacity-50 sm:col-span-2" :disabled="savingInlinePatient" @mousedown.prevent="saveInlinePatient">
+            <button type="button" class="rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary disabled:opacity-50 sm:col-span-2" :disabled="savingInlinePatient" @mousedown.prevent="saveInlinePatient">
               {{ savingInlinePatient ? 'Creando...' : 'Crear y seleccionar paciente' }}
             </button>
           </div>
@@ -456,7 +456,7 @@ onMounted(() => {
       </form>
       <template #footer>
         <button type="button" class="flex-1 px-4 py-2 rounded-xl text-sm text-white/60 border border-white/10 hover:bg-white/5" @click="showPanel = false">Cancelar</button>
-        <button type="button" class="flex-1 px-4 py-2 rounded-xl text-sm font-semibold bg-[var(--nexora-primary)] text-white hover:opacity-90 disabled:opacity-50" :disabled="saving || !form.customer_id" @click="save">
+        <button type="button" class="flex-1 rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary disabled:opacity-50" :disabled="saving || !form.customer_id" @click="save">
           {{ saving ? 'Guardando...' : 'Crear consulta' }}
         </button>
       </template>

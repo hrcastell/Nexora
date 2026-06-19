@@ -9,7 +9,7 @@ import NxrSlidePanel from '../../components/NxrSlidePanel.vue';
 import AppToast from '../../components/AppToast.vue';
 import ConfirmActionModal from '../../components/admin/ConfirmActionModal.vue';
 import { useToast } from '../../composables/useToast';
-import type { DentalAppointment, DentalAppointmentFormData } from '../../types/dental';
+import type { DentalAppointment, DentalAppointmentFormData, DentalPatientFormData } from '../../types/dental';
 
 const router = useRouter();
 const store = useDentalAppointmentsStore();
@@ -17,26 +17,70 @@ const patientsStore = useDentalPatientsStore();
 const treatmentsStore = useDentalTreatmentsStore();
 const { toasts, triggerToast, removeToast } = useToast();
 
-const confirmModal = ref<{ open: boolean; title: string; message: string; onConfirm: () => void }>({
-  open: false, title: '', message: '', onConfirm: () => {}
+const confirmModal = ref<{
+  open: boolean;
+  title: string;
+  message: string;
+  onConfirm: () => void;
+  variant: 'danger' | 'warning' | 'info';
+  confirmText: string;
+  cancelText: string;
+}>({
+  open: false,
+  title: '',
+  message: '',
+  onConfirm: () => {},
+  variant: 'warning',
+  confirmText: 'Confirmar',
+  cancelText: 'Cancelar',
 });
-function askConfirm(title: string, message: string, onConfirm: () => void) {
-  confirmModal.value = { open: true, title, message, onConfirm };
+function askConfirm(
+  title: string,
+  message: string,
+  onConfirm: () => void,
+  options: { variant?: 'danger' | 'warning' | 'info'; confirmText?: string; cancelText?: string } = {}
+) {
+  confirmModal.value = {
+    open: true,
+    title,
+    message,
+    onConfirm,
+    variant: options.variant ?? 'warning',
+    confirmText: options.confirmText ?? 'Confirmar',
+    cancelText: options.cancelText ?? 'Cancelar',
+  };
 }
 
 const patientSearch = ref('');
 const selectedPatient = ref<any>(null);
 const showPatientDrop = ref(false);
+const lastNoPatientPromptQuery = ref('');
 
 let patientSearchTimer: ReturnType<typeof setTimeout> | null = null;
 
 function onPatientInput() {
+  const query = patientSearch.value.trim();
   selectedPatient.value = null;
   form.value.customer_id = '';
+  if (query !== lastNoPatientPromptQuery.value) lastNoPatientPromptQuery.value = '';
   if (patientSearchTimer) clearTimeout(patientSearchTimer);
-  if (!patientSearch.value.trim()) { showPatientDrop.value = false; return; }
+  if (!query) { showPatientDrop.value = false; lastNoPatientPromptQuery.value = ''; return; }
   patientSearchTimer = setTimeout(async () => {
-    await patientsStore.load({ search: patientSearch.value });
+    await patientsStore.load({ search: query });
+    if (patientSearch.value.trim() !== query) return;
+    if (patientsStore.items.length === 0) {
+      showPatientDrop.value = false;
+      if (lastNoPatientPromptQuery.value !== query) {
+        lastNoPatientPromptQuery.value = query;
+        askConfirm(
+          'Paciente no encontrado',
+          `No existe un paciente para "${query}". ¿Querés crear un nuevo paciente con esta búsqueda?`,
+          () => openInlinePatientCreate(query),
+          { variant: 'info', confirmText: 'Crear paciente', cancelText: 'Seguir buscando' }
+        );
+      }
+      return;
+    }
     showPatientDrop.value = true;
   }, 300);
 }
@@ -60,6 +104,70 @@ function clearPatient() {
   selectedPatient.value = null;
   form.value.customer_id = '';
   patientSearch.value = '';
+}
+
+const showPatientPanel = ref(false);
+const patientSaving = ref(false);
+const patientSaveError = ref<string | null>(null);
+
+const defaultPatientForm = (): DentalPatientFormData => ({
+  first_name: '',
+  last_name: '',
+  document_type: 'DNI',
+  document_number: '',
+  phone: '',
+  mobile: '',
+  email: '',
+  birth_date: '',
+  address: '',
+  city: '',
+  customer_notes: '',
+  medical_background: '',
+  allergies: '',
+  blood_type: '',
+  current_medications: '',
+  chronic_conditions: '',
+  dental_observations: '',
+  emergency_contact_name: '',
+  emergency_contact_phone: '',
+});
+
+const patientForm = ref<DentalPatientFormData>(defaultPatientForm());
+
+function splitPatientSearchName(query: string) {
+  const parts = query.trim().split(/\s+/).filter(Boolean);
+  return {
+    first_name: parts[0] ?? '',
+    last_name: parts.slice(1).join(' '),
+  };
+}
+
+function openInlinePatientCreate(query = patientSearch.value) {
+  const name = splitPatientSearchName(query);
+  patientForm.value = {
+    ...defaultPatientForm(),
+    ...name,
+  };
+  patientSaveError.value = null;
+  showPatientDrop.value = false;
+  showPatientPanel.value = true;
+}
+
+async function saveInlinePatient() {
+  patientSaving.value = true;
+  patientSaveError.value = null;
+  try {
+    const createdPatient = await patientsStore.create(patientForm.value);
+    triggerToast('Éxito', 'Paciente creado', 'success');
+    showPatientPanel.value = false;
+    selectPatient(createdPatient);
+  } catch (e: any) {
+    const message = e?.response?.data?.error || 'Error al guardar paciente';
+    patientSaveError.value = message;
+    triggerToast('Error', message, 'error');
+  } finally {
+    patientSaving.value = false;
+  }
 }
 
 type ViewTab = 'today' | 'month' | 'all';
@@ -282,7 +390,8 @@ async function doAction(action: 'confirm' | 'check_in' | 'cancel' | 'no_show' | 
         } catch (e: any) {
           triggerToast('Error', e?.response?.data?.error || 'Error al cancelar cita', 'error');
         }
-      }
+      },
+      { variant: 'danger', confirmText: 'Confirmar' }
     );
     return;
   }
@@ -327,7 +436,7 @@ onMounted(() => {
     <div class="flex items-center justify-between flex-wrap gap-3">
       <h1 class="text-xl font-semibold text-white">Citas</h1>
       <button
-        class="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[var(--nexora-primary)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90 sm:w-auto"
+        class="flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-medium text-white transition nxr-btn-primary sm:w-auto"
         @click="openCreate"
       >
         <Plus :size="15" /> Nueva cita
@@ -375,7 +484,7 @@ onMounted(() => {
       <div v-if="store.today.length === 0" class="flex flex-col items-center gap-4 py-20 text-center">
         <CalendarDays :size="48" class="text-white/20" />
         <p class="text-white/50 text-sm">No hay citas para hoy.</p>
-        <button class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold bg-[var(--nexora-primary)] text-white hover:opacity-90" @click="openCreate">
+        <button class="flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-medium text-white transition nxr-btn-primary" @click="openCreate">
           <Plus :size="15" /> Agendar cita
         </button>
       </div>
@@ -577,7 +686,7 @@ onMounted(() => {
     </template>
 
     <!-- Create panel -->
-    <NxrSlidePanel :open="showPanel" :title="isEditing ? 'Editar/reprogramar cita' : 'Nueva cita'" eyebrow="Dental" @close="showPanel = false">
+    <NxrSlidePanel :open="showPanel" :title="isEditing ? 'Editar/reprogramar cita' : 'Nueva cita'" eyebrow="Dental" size="lg" @close="showPanel = false">
       <form class="flex flex-col gap-5" @submit.prevent="save">
         <div class="flex flex-col gap-1.5 relative">
           <label class="text-xs text-white/50">Paciente *</label>
@@ -639,8 +748,56 @@ onMounted(() => {
       </form>
       <template #footer>
         <button type="button" class="flex-1 px-4 py-2 rounded-xl text-sm text-white/60 border border-white/10 hover:bg-white/5" @click="showPanel = false">Cancelar</button>
-        <button type="button" class="flex-1 px-4 py-2 rounded-xl text-sm font-semibold bg-[var(--nexora-primary)] text-white hover:opacity-90 disabled:opacity-50" :disabled="saving" @click="save">
+        <button type="button" class="flex-1 rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary disabled:opacity-50" :disabled="saving" @click="save">
           {{ saving ? 'Guardando...' : (isEditing ? 'Guardar cambios' : 'Agendar cita') }}
+        </button>
+      </template>
+    </NxrSlidePanel>
+
+    <!-- Inline patient creation panel -->
+    <NxrSlidePanel :open="showPatientPanel" title="Nuevo paciente" eyebrow="Dental" size="lg" @close="showPatientPanel = false">
+      <form id="inline-patient-create-form" class="flex flex-col gap-5" @submit.prevent="saveInlinePatient">
+        <p class="text-xs font-semibold uppercase tracking-wide text-white/40">Datos personales</p>
+
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs text-white/50">Nombre *</label>
+            <input v-model="patientForm.first_name" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" required />
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs text-white/50">Apellido *</label>
+            <input v-model="patientForm.last_name" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" required />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs text-white/50">Tipo documento</label>
+            <input v-model="patientForm.document_type" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs text-white/50">Documento</label>
+            <input v-model="patientForm.document_number" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs text-white/50">Teléfono</label>
+            <input v-model="patientForm.phone" type="tel" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+          </div>
+          <div class="flex flex-col gap-1.5">
+            <label class="text-xs text-white/50">Email</label>
+            <input v-model="patientForm.email" type="email" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+          </div>
+        </div>
+
+        <p v-if="patientSaveError" class="text-xs text-red-400">{{ patientSaveError }}</p>
+      </form>
+      <template #footer>
+        <button type="button" class="flex-1 px-4 py-2 rounded-xl text-sm text-white/60 border border-white/10 hover:bg-white/5" @click="showPatientPanel = false">Cancelar</button>
+        <button type="submit" form="inline-patient-create-form" class="flex-1 rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary disabled:opacity-50" :disabled="patientSaving">
+          {{ patientSaving ? 'Guardando...' : 'Crear paciente' }}
         </button>
       </template>
     </NxrSlidePanel>
@@ -654,9 +811,9 @@ onMounted(() => {
       :isOpen="confirmModal.open"
       :title="confirmModal.title"
       :message="confirmModal.message"
-      variant="danger"
-      confirmText="Confirmar"
-      cancelText="Cancelar"
+      :variant="confirmModal.variant"
+      :confirmText="confirmModal.confirmText"
+      :cancelText="confirmModal.cancelText"
       @confirmed="() => { confirmModal.open = false; confirmModal.onConfirm(); }"
       @cancelled="confirmModal.open = false"
     />

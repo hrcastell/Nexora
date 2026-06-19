@@ -109,7 +109,7 @@ async function toggleStatus(item: CatalogItem) {
   <div class="flex flex-col gap-5 p-6">
     <div class="flex items-center justify-between">
       <h1 class="text-xl font-semibold text-white">Catálogos de Vehículos</h1>
-      <button class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold bg-[var(--nexora-primary)] text-white hover:opacity-90" @click="openCreate">
+      <button class="flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-medium text-white transition nxr-btn-primary" @click="openCreate">
         <Plus :size="15" /> Nuevo
       </button>
     </div>

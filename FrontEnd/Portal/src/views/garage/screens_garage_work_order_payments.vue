@@ -115,7 +115,7 @@ const statusConfig = computed(() => {
       <h1 class="text-xl font-semibold text-white flex-1">Cobros y Pagos</h1>
       <button
         v-if="summary.payment_status !== 'paid'"
-        class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold bg-[var(--nexora-primary)] text-white hover:opacity-90"
+        class="flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-medium text-white transition nxr-btn-primary"
         @click="showForm = !showForm"
       >
         <Plus :size="14" /> Registrar pago
@@ -209,7 +209,7 @@ const statusConfig = computed(() => {
           <button type="button" class="px-4 py-2 rounded-xl text-sm text-white/60 hover:text-white" @click="showForm = false">Cancelar</button>
           <button
             type="button"
-            class="px-5 py-2 rounded-xl text-sm font-semibold bg-[var(--nexora-primary)] text-white hover:opacity-90 disabled:opacity-50"
+            class="rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary disabled:opacity-50"
             :disabled="saving"
             @click="registerPayment"
           >

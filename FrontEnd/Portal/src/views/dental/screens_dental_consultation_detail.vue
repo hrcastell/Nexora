@@ -883,8 +883,7 @@ onMounted(async () => {
           />
         </div>
         <button
-          class="w-full rounded-xl py-2.5 text-sm font-medium text-white transition hover:opacity-90"
-          :style="{ background: 'var(--nexora-primary)' }"
+          class="w-full rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary"
           @click="saveEdit"
         >
           Guardar cambios
@@ -995,8 +994,7 @@ onMounted(async () => {
         </div>
         <p v-if="addServiceError" class="text-xs text-red-400">{{ addServiceError }}</p>
         <button
-          class="w-full rounded-xl py-2.5 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50"
-          :style="{ background: 'var(--nexora-primary)' }"
+          class="w-full rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary disabled:opacity-50"
           :disabled="savingService"
           @click="addService"
         >
@@ -1042,8 +1040,7 @@ onMounted(async () => {
         </div>
         <p v-if="sessionError" class="text-xs text-red-400">{{ sessionError }}</p>
         <button
-          class="w-full rounded-xl py-2.5 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50"
-          :style="{ background: 'var(--nexora-primary)' }"
+          class="w-full rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary disabled:opacity-50"
           :disabled="savingSession"
           @click="createSession"
         >
@@ -1081,8 +1078,7 @@ onMounted(async () => {
         </div>
         <p v-if="installError" class="text-xs text-red-400">{{ installError }}</p>
         <button
-          class="w-full rounded-xl py-2.5 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50"
-          :style="{ background: 'var(--nexora-primary)' }"
+          class="w-full rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary disabled:opacity-50"
           :disabled="savingInstall"
           @click="saveInstallments"
         >
@@ -1123,8 +1119,7 @@ onMounted(async () => {
         </div>
         <p v-if="payError" class="text-xs text-red-400">{{ payError }}</p>
         <button
-          class="w-full rounded-xl py-2.5 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50"
-          :style="{ background: 'var(--nexora-primary)' }"
+          class="w-full rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary disabled:opacity-50"
           :disabled="savingPay || !payForm.amount"
           @click="saveDirectPayment"
         >
@@ -1157,8 +1152,7 @@ onMounted(async () => {
         </div>
         <p v-if="instPayError" class="text-xs text-red-400">{{ instPayError }}</p>
         <button
-          class="w-full rounded-xl py-2.5 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50"
-          :style="{ background: 'var(--nexora-primary)' }"
+          class="w-full rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary disabled:opacity-50"
           :disabled="savingInstPay || !instPayForm.amount"
           @click="saveInstallmentPayment"
         >
@@ -1237,8 +1231,7 @@ onMounted(async () => {
         </div>
         <p v-if="medHistError" class="text-xs text-red-400">{{ medHistError }}</p>
         <button
-          class="w-full rounded-xl py-2.5 text-sm font-medium text-white transition hover:opacity-90 disabled:opacity-50"
-          :style="{ background: 'var(--nexora-primary)' }"
+          class="w-full rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary disabled:opacity-50"
           :disabled="savingMedHist"
           @click="saveMedHist"
         >

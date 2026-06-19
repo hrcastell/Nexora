@@ -752,7 +752,7 @@ onMounted(async () => {
         <p v-if="medHistError" class="text-red-400 text-sm">{{ medHistError }}</p>
         <div class="flex justify-end gap-2 pt-1">
           <button type="button" class="rounded-xl bg-white/10 hover:bg-white/20 transition px-4 py-2 text-sm text-white/70" @click="showMedHistPanel = false">Cancelar</button>
-          <button type="submit" :disabled="savingMedHist" class="rounded-xl px-4 py-2 text-sm text-white font-medium transition disabled:opacity-50" :style="{ background: 'var(--nexora-primary)' }">
+          <button type="submit" :disabled="savingMedHist" class="rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary disabled:opacity-50">
             {{ savingMedHist ? 'Guardando...' : 'Guardar' }}
           </button>
         </div>
@@ -870,7 +870,7 @@ onMounted(async () => {
       </form>
       <template #footer>
         <button type="button" class="flex-1 px-4 py-2 rounded-xl text-sm text-white/60 border border-white/10 hover:bg-white/5" @click="showEditPanel = false">Cancelar</button>
-        <button type="button" class="flex-1 px-4 py-2 rounded-xl text-sm font-semibold bg-[var(--nexora-primary)] text-white hover:opacity-90 disabled:opacity-50" :disabled="saving" @click="saveEdit">
+        <button type="button" class="flex-1 rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary disabled:opacity-50" :disabled="saving" @click="saveEdit">
           {{ saving ? 'Guardando...' : 'Guardar cambios' }}
         </button>
       </template>

@@ -25,8 +25,7 @@ defineEmits<{ (e: 'add-record'): void }>()
         Ver historial completo
       </router-link>
       <button
-        class="flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
-        :style="{ background: 'var(--nexora-primary)' }"
+        class="flex items-center gap-1.5 rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary"
         @click="$emit('add-record')"
       >
         <Plus class="h-4 w-4" />

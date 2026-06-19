@@ -28,8 +28,7 @@ defineEmits<{ (e: 'edit-info'): void }>()
     <div class="mb-4 flex items-center justify-between">
       <h2 class="text-sm font-semibold text-white/70">Información de la consulta</h2>
       <button
-        class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition"
-        :style="{ background: 'var(--nexora-primary)' }"
+        class="flex items-center gap-1.5 rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary"
         @click="$emit('edit-info')"
       >
         <Edit2 class="h-3.5 w-3.5" />

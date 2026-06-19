@@ -79,7 +79,7 @@ onMounted(() => store.load());
     <div class="flex items-center justify-between flex-wrap gap-3">
       <h1 class="text-xl font-semibold text-white">Pacientes</h1>
       <button
-        class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold bg-[var(--nexora-primary)] text-white hover:opacity-90"
+        class="flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-medium text-white transition nxr-btn-primary"
         @click="openCreate"
       >
         <Plus :size="15" /> Nuevo paciente
@@ -111,7 +111,7 @@ onMounted(() => store.load());
       <UserRound :size="48" class="text-white/20" />
       <p class="text-white/50 text-sm">No se encontraron pacientes.</p>
       <button
-        class="flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold bg-[var(--nexora-primary)] text-white hover:opacity-90"
+        class="flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-medium text-white transition nxr-btn-primary"
         @click="openCreate"
       >
         <Plus :size="15" /> Registrar primer paciente
@@ -300,7 +300,7 @@ onMounted(() => store.load());
       </form>
       <template #footer>
         <button type="button" class="flex-1 px-4 py-2 rounded-xl text-sm text-white/60 border border-white/10 hover:bg-white/5" @click="showPanel = false">Cancelar</button>
-        <button type="button" class="flex-1 px-4 py-2 rounded-xl text-sm font-semibold bg-[var(--nexora-primary)] text-white hover:opacity-90 disabled:opacity-50" :disabled="saving" @click="save">
+        <button type="button" class="flex-1 rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary disabled:opacity-50" :disabled="saving" @click="save">
           {{ saving ? 'Guardando...' : 'Registrar paciente' }}
         </button>
       </template>
