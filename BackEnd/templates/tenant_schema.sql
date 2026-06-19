@@ -1156,15 +1156,106 @@ CREATE INDEX IF NOT EXISTS idx_dental_medical_docs_customer
 CREATE INDEX IF NOT EXISTS idx_dental_medical_docs_consultation
     ON {schema_name}.dental_medical_documents (tenant_id, consultation_id);
 
+-- ─── dental_anamnesis (migration 40) ─────────────────────────────────────────
+-- One anamnesis record per consultation (UNIQUE constraint enables upsert)
+CREATE TABLE IF NOT EXISTS {schema_name}.dental_anamnesis (
+  id SERIAL PRIMARY KEY,
+  consultation_id INTEGER NOT NULL REFERENCES {schema_name}.dental_consultations(id) ON DELETE CASCADE,
+  has_diabetes BOOLEAN DEFAULT FALSE,
+  has_hypertension BOOLEAN DEFAULT FALSE,
+  has_heart_disease BOOLEAN DEFAULT FALSE,
+  has_respiratory_disease BOOLEAN DEFAULT FALSE,
+  has_kidney_disease BOOLEAN DEFAULT FALSE,
+  has_epilepsy BOOLEAN DEFAULT FALSE,
+  has_hepatitis BOOLEAN DEFAULT FALSE,
+  has_hiv BOOLEAN DEFAULT FALSE,
+  other_systemic_conditions TEXT,
+  has_penicillin_allergy BOOLEAN DEFAULT FALSE,
+  has_aspirin_allergy BOOLEAN DEFAULT FALSE,
+  has_latex_allergy BOOLEAN DEFAULT FALSE,
+  has_anesthesia_allergy BOOLEAN DEFAULT FALSE,
+  other_allergies TEXT,
+  current_medications TEXT,
+  takes_anticoagulants BOOLEAN DEFAULT FALSE,
+  takes_bisphosphonates BOOLEAN DEFAULT FALSE,
+  previous_dental_treatments TEXT,
+  previous_complications TEXT,
+  last_dental_visit DATE,
+  smokes BOOLEAN DEFAULT FALSE,
+  alcohol_consumption VARCHAR(20),
+  bruxism BOOLEAN DEFAULT FALSE,
+  additional_notes TEXT,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(consultation_id)
+);
+
+-- ─── dental_prescriptions (migration 41) ──────────────────────────────────────
+CREATE TABLE IF NOT EXISTS {schema_name}.dental_prescriptions (
+  id SERIAL PRIMARY KEY,
+  consultation_id INTEGER NOT NULL REFERENCES {schema_name}.dental_consultations(id) ON DELETE CASCADE,
+  medication   VARCHAR(200) NOT NULL,
+  dosage       VARCHAR(100) NOT NULL,
+  frequency    VARCHAR(100) NOT NULL,
+  duration     VARCHAR(100) NOT NULL,
+  route        VARCHAR(50),
+  instructions TEXT,
+  created_at   TIMESTAMP DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_dental_prescriptions_consultation
+    ON {schema_name}.dental_prescriptions(consultation_id);
+
+-- ─── dental_odontogram_entries + attachments (migration 42) ───────────────────
+CREATE TABLE IF NOT EXISTS {schema_name}.dental_odontogram_entries (
+  id SERIAL PRIMARY KEY,
+  patient_id INTEGER NOT NULL REFERENCES {schema_name}.customers(id) ON DELETE CASCADE,
+  consultation_id INTEGER NOT NULL REFERENCES {schema_name}.dental_consultations(id) ON DELETE CASCADE,
+  tooth_number INTEGER NOT NULL,
+  surface VARCHAR(20),
+  finding_type VARCHAR(50) NOT NULL,
+  finding_status VARCHAR(30) DEFAULT 'active',
+  priority VARCHAR(20) DEFAULT 'normal',
+  observation TEXT,
+  procedure_suggestion_id INTEGER,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+CREATE TABLE IF NOT EXISTS {schema_name}.dental_odontogram_attachments (
+  id SERIAL PRIMARY KEY,
+  entry_id INTEGER NOT NULL REFERENCES {schema_name}.dental_odontogram_entries(id) ON DELETE CASCADE,
+  file_url VARCHAR(500) NOT NULL,
+  file_name VARCHAR(200),
+  file_type VARCHAR(100),
+  uploaded_at TIMESTAMP DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_odontogram_patient
+    ON {schema_name}.dental_odontogram_entries(patient_id);
+CREATE INDEX IF NOT EXISTS idx_odontogram_consultation
+    ON {schema_name}.dental_odontogram_entries(consultation_id);
+
+-- ─── dental_diagnoses (migration 43) ──────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS {schema_name}.dental_diagnoses (
+  id                  SERIAL PRIMARY KEY,
+  consultation_id     INTEGER NOT NULL REFERENCES {schema_name}.dental_consultations(id) ON DELETE CASCADE,
+  odontogram_entry_id INTEGER REFERENCES {schema_name}.dental_odontogram_entries(id) ON DELETE SET NULL,
+  diagnosis_code      VARCHAR(20),
+  diagnosis_text      VARCHAR(500) NOT NULL,
+  severity            VARCHAR(20) DEFAULT 'moderate',
+  notes               TEXT,
+  created_at          TIMESTAMP DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_dental_diagnoses_consultation
+    ON {schema_name}.dental_diagnoses(consultation_id);
+
 -- Optional phpPgAdmin browse access for the hosting login.
 -- This block is additive: it only GRANTs privileges when the PostgreSQL role exists.
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'hernanci') THEN
-        EXECUTE 'GRANT USAGE ON SCHEMA "{schema_name}" TO "hernanci"';
-        EXECUTE 'GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA "{schema_name}" TO "hernanci"';
-        EXECUTE 'GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA "{schema_name}" TO "hernanci"';
-        EXECUTE 'ALTER DEFAULT PRIVILEGES IN SCHEMA "{schema_name}" GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO "hernanci"';
-        EXECUTE 'ALTER DEFAULT PRIVILEGES IN SCHEMA "{schema_name}" GRANT USAGE, SELECT ON SEQUENCES TO "hernanci"';
+        EXECUTE 'GRANT ALL PRIVILEGES ON SCHEMA "{schema_name}" TO "hernanci"';
+        EXECUTE 'GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA "{schema_name}" TO "hernanci"';
+        EXECUTE 'GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA "{schema_name}" TO "hernanci"';
+        EXECUTE 'ALTER DEFAULT PRIVILEGES IN SCHEMA "{schema_name}" GRANT ALL PRIVILEGES ON TABLES TO "hernanci"';
+        EXECUTE 'ALTER DEFAULT PRIVILEGES IN SCHEMA "{schema_name}" GRANT ALL PRIVILEGES ON SEQUENCES TO "hernanci"';
     END IF;
 END $$;

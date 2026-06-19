@@ -59,4 +59,10 @@ export const dentalConsultationsService = {
   changeStatus(id: number | string, status: string, reason?: string) {
     return api.post(`/dental/consultations/${id}/status`, { status, reason });
   },
+
+  generateTreatmentPlan(consultationId: number | string) {
+    return api
+      .post<{ generated: number; message: string }>(`/dental/consultations/${consultationId}/generate-treatment-plan`)
+      .then(r => r.data);
+  },
 };

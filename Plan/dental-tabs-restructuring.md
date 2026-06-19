@@ -166,9 +166,11 @@ Tab Historia clinica
 - PDF generation for print
 - API: `GET/POST /api/dental/consultations/:id/prescriptions`
 
-### Phase 3: Odontogram
+### Phase 3: Odontogram (Patient-Level Entity, Dual Visibility)
 
-**Odontogram interaction flow:**
+**Core principle**: The odontogram belongs to the PATIENT, not to a consultation. Each `dental_odontogram_entry` links to both `patient_id` and `consultation_id` for traceability. From the patient file it is read-only; findings are always registered from a consultation.
+
+**Odontogram interaction flow** (from consultation, edit mode):
 ```
 Select dentition type → Render dental pieces → User selects tooth
   → Open tooth side panel (FDI number, piece name, arch)
@@ -185,19 +187,48 @@ Select dentition type → Render dental pieces → User selects tooth
   → Update patient clinical history
 ```
 
-**Database:**
-- New `dental_odontogram_entries` table (tooth_number FDI, surface, finding_type, finding_status, priority, observation, procedure_suggestion_id)
-- New `dental_odontogram_attachments` table (entry_id FK, file reference)
+**Component architecture**:
 
-**Component:**
-- Interactive SVG tooth chart (permanent 32 / deciduous 20 / mixed dentition)
-- Per-tooth click → slide panel with surface selector → finding type dropdown
-- Color-coded teeth based on findings (healthy/caries/restoration/extraction/etc.)
+| Component | Purpose |
+|-----------|---------|
+| `DentalOdontogram.vue` | **Reusable** interactive SVG tooth chart (permanent 32 / deciduous 20 / mixed). Props: `patientId`, `consultationId?`, `readonly: boolean`. Readonly disables all interaction except viewing. Color-coded teeth by finding status. |
+| `PatientOdontogramSection.vue` | Patient detail wrapper. Renders `DentalOdontogram` readonly=true + "Registrar hallazgo" button → navigates to most recent active consultation or prompts to create one. |
+| `ConsultationOdontogramSubTab.vue` | Consultation Historia sub-tab wrapper. Renders `DentalOdontogram` readonly=false with consultationId. Shows full patient odontogram, highlights entries from current consultation. |
 
-**API:**
-- `GET /api/dental/patients/:id/odontogram` — latest odontogram state
-- `POST /api/dental/consultations/:id/odontogram` — save/update entries
-- `GET /api/dental/consultations/:id/odontogram` — entries for this consultation
+**Dual visibility**:
+
+| Location | File | Component | Mode |
+|----------|------|-----------|------|
+| Patient detail → Historia tab | `screens_dental_patient_detail.vue` | `PatientOdontogramSection` | Read-only + "Registrar hallazgo" link to consultation |
+| Consultation → Historia → Odontodiagrama | `ConsultationClinicalHistoryTab.vue` | `ConsultationOdontogramSubTab` | Full edit, entries linked to consultation_id |
+
+**Database**:
+- `dental_odontogram_entries`: `id`, `patient_id` (FK), `consultation_id` (FK), `tooth_number` (FDI), `surface`, `finding_type`, `finding_status`, `priority`, `observation`, `procedure_suggestion_id`, `created_at`, `updated_at`
+- `dental_odontogram_attachments`: `id`, `entry_id` (FK), file reference fields
+
+**API**:
+- `GET /api/dental/patients/:patientId/odontogram` — full cumulative odontogram (all consultations, used by both views)
+- `POST /api/dental/consultations/:consultationId/odontogram` — create/update entries (always linked to consultation)
+- `GET /api/dental/consultations/:consultationId/odontogram` — entries filtered to this consultation only
+
+**Files to create (Phase 3)**:
+
+| File | Action |
+|------|--------|
+| `components/dental/DentalOdontogram.vue` | CREATE — reusable SVG chart with readonly prop |
+| `components/dental/PatientOdontogramSection.vue` | CREATE — patient detail readonly wrapper |
+| `components/dental/ConsultationOdontogramSubTab.vue` | CREATE — consultation edit wrapper |
+| `services/dentalOdontogramService.ts` | CREATE — API calls |
+| `stores/dentalOdontogram.ts` | CREATE — Pinia store for odontogram state |
+| Backend controller + routes | CREATE — 3 endpoints |
+| `Database/04_migrations/xxx_dental_odontogram.sql` | CREATE — tables |
+
+**Files to modify (Phase 3)**:
+
+| File | Change |
+|------|--------|
+| `views/dental/screens_dental_patient_detail.vue` | Add `PatientOdontogramSection` inside Historia tab (after "Perfil medico actual", before "Registros medicos"). Lazy-load odontogram data when Historia tab activates. |
+| `components/dental/ConsultationClinicalHistoryTab.vue` | Activate `odontogram` sub-tab (currently Phase 3 placeholder) → render `ConsultationOdontogramSubTab` |
 
 ### Phase 4: Diagnosis + Treatment Plan Generation + Evolutions + Final Report
 

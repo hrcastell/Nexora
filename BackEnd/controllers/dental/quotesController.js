@@ -759,6 +759,28 @@ exports.getPrintData = async (req, res) => {
 };
 
 /**
+ * GET /dental/consultations/:consultationId/quotes
+ */
+exports.getForConsultation = async (req, res) => {
+    try {
+        const { schema, companyId } = await resolveSchema(req);
+        const { consultationId } = req.params;
+
+        const result = await db.query(
+            `SELECT * FROM ${schema}.dental_quotes
+             WHERE consultation_id = $1 AND tenant_id = $2
+             ORDER BY created_at DESC`,
+            [consultationId, companyId]
+        );
+
+        res.json({ data: result.rows });
+    } catch (err) {
+        console.error('quotesController.getForConsultation error:', err.message);
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error fetching consultation quotes') });
+    }
+};
+
+/**
  * GET /dental/patients/:customerId/quotes
  */
 exports.getForPatient = async (req, res) => {

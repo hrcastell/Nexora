@@ -2,8 +2,8 @@
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
-  ArrowLeft, Stethoscope, Calendar, ClipboardList, DollarSign,
-  Camera, BookOpen, AlertCircle, Paperclip, FileText
+  ArrowLeft, ClipboardList,
+  Camera, BookOpen, AlertCircle, Receipt
 } from 'lucide-vue-next'
 import { useDentalConsultationsStore } from '../../stores/dentalConsultations'
 import { useDentalPatientsStore } from '../../stores/dentalPatients'
@@ -15,16 +15,12 @@ import NxrSlidePanel from '../../components/NxrSlidePanel.vue'
 import AppToast from '../../components/AppToast.vue'
 import ConfirmActionModal from '../../components/admin/ConfirmActionModal.vue'
 import WidgetsDentalPhotoGallery from '../../components/widgets_dental_photo_gallery.vue'
-import ConsultationAttachmentsTab from '../../components/dental/ConsultationAttachmentsTab.vue'
-import ConsultationDocumentsSection from '../../components/dental/ConsultationDocumentsSection.vue'
-import ConsultationSessionsTab from '../../components/dental/ConsultationSessionsTab.vue'
 import ConsultationSummaryTab from '../../components/dental/ConsultationSummaryTab.vue'
-import ConsultationTreatmentsTab from '../../components/dental/ConsultationTreatmentsTab.vue'
-import ConsultationHistoryTab from '../../components/dental/ConsultationHistoryTab.vue'
-import ConsultationPaymentsTab from '../../components/dental/ConsultationPaymentsTab.vue'
+import ConsultationClinicalHistoryTab from '../../components/dental/ConsultationClinicalHistoryTab.vue'
+import ConsultationQuotesTab from '../../components/dental/ConsultationQuotesTab.vue'
 import { useToast } from '../../composables/useToast'
 import type {
-  DentalCharge, DentalInstallment, DentalMedicalHistory,
+  DentalCharge, DentalMedicalHistory,
   DentalConsultationTreatment, DentalConsultationSession,
   DentalConsultationTreatmentFormData, DentalConsultationSessionFormData
 } from '../../types/dental'
@@ -45,24 +41,19 @@ const treatmentsStore             = useDentalTreatmentsStore()
 const consultation = computed(() => store.current)
 
 // ── Tabs ──────────────────────────────────────────────────────────────────────
-type TabKey = 'summary' | 'treatments' | 'sessions' | 'photos' | 'history' | 'payments' | 'attachments' | 'documents'
+type TabKey = 'summary' | 'history' | 'photos' | 'quotes'
 const activeTab = ref<TabKey>('summary')
 
 const tabs: { key: TabKey; label: string; icon: any }[] = [
-  { key: 'summary',     label: 'Resumen',     icon: ClipboardList },
-  { key: 'treatments',  label: 'Tratamiento', icon: Stethoscope   },
-  { key: 'sessions',    label: 'Sesiones',    icon: Calendar       },
-  { key: 'photos',      label: 'Fotos',       icon: Camera         },
-  { key: 'history',     label: 'Historia',    icon: BookOpen       },
-  { key: 'payments',    label: 'Pagos',       icon: DollarSign     },
-  { key: 'attachments', label: 'Adjuntos',    icon: Paperclip      },
-  { key: 'documents',   label: 'Documentos',  icon: FileText       },
+  { key: 'summary', label: 'Resumen',     icon: ClipboardList },
+  { key: 'history', label: 'Historia',    icon: BookOpen      },
+  { key: 'photos',  label: 'Fotos',       icon: Camera        },
+  { key: 'quotes',  label: 'Presupuesto', icon: Receipt       },
 ]
 
 function selectTab(key: TabKey) {
   activeTab.value = key
-  if (key === 'payments') loadCharge()
-  if (key === 'history')  loadMedicalHistory()
+  if (key === 'history') loadMedicalHistory()
 }
 
 // ── Status maps ───────────────────────────────────────────────────────────────
@@ -126,12 +117,12 @@ const PAYMENT_METHOD_LABEL: Record<string, string> = {
 // ── Allowed transitions ───────────────────────────────────────────────────────
 const ALLOWED_TRANSITIONS: Record<string, string[]> = {
   borrador:                ['creada'],
-  creada:                  ['en_evaluacion', 'cancelled'],
-  en_evaluacion:           ['cotizada', 'en_tratamiento', 'cancelled'],
+  creada:                  ['en_evaluacion', 'cancelled', 'no_show', 'voided'],
+  en_evaluacion:           ['cotizada', 'en_tratamiento', 'cancelled', 'no_show', 'voided'],
   cotizada:                ['propuesta_pendiente', 'en_tratamiento', 'cancelled'],
   propuesta_pendiente:     ['aceptada', 'rechazada'],
   aceptada:                ['en_tratamiento'],
-  en_tratamiento:          ['sesion_pendiente', 'finalizada_clinicamente'],
+  en_tratamiento:          ['sesion_pendiente', 'finalizada_clinicamente', 'voided'],
   sesion_pendiente:        ['en_tratamiento'],
   finalizada_clinicamente: ['pendiente_pago', 'cerrada'],
   pendiente_pago:          ['cerrada'],
@@ -230,11 +221,11 @@ async function scheduleAllSessions() {
     if (successCount > 0 && failCount > 0) {
       triggerToast('Advertencia', `${successCount} sesiones creadas, ${failCount} fallaron`, 'warning')
       sessionScheduleDates.value = []
-      activeTab.value = 'sessions'
+      activeTab.value = 'history'
     } else if (successCount > 0) {
       triggerToast('Éxito', `${successCount} sesiones programadas. Las citas en agenda se procesarán en breve.`, 'success')
       sessionScheduleDates.value = []
-      activeTab.value = 'sessions'
+      activeTab.value = 'history'
     } else {
       triggerToast('Error', 'No se pudo crear ninguna sesión', 'error')
     }
@@ -323,6 +314,14 @@ const activeServices = computed(() =>
 )
 const voidedServices = computed(() =>
   (consultationTreatmentsStore.items ?? []).filter(t => t.status === 'voided')
+)
+
+const consultationId = computed(() => Number(id))
+const customerId     = computed(() =>
+  Number((consultation.value as any)?.customer_id ?? (consultation.value as any)?.customer?.id ?? 0)
+)
+const isReadOnly = computed(() =>
+  consultation.value?.status === 'voided' || consultation.value?.status === 'cancelled'
 )
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -465,7 +464,7 @@ async function createSession() {
     await sessionsStore.create(id, sessionForm.value)
     triggerToast('Éxito', 'Sesión creada. La cita en agenda se procesará en breve.', 'success')
     showSessionPanel.value = false
-    activeTab.value = 'sessions'
+    activeTab.value = 'history'
     sessionForm.value = { session_date: new Date().toISOString().slice(0, 16), notes: '', evolution: '', next_session_date: '' }
   } catch (e: any) {
     sessionError.value = e?.response?.data?.error || 'Error al crear sesión'
@@ -548,15 +547,6 @@ async function saveDirectPayment() {
   } finally { savingPay.value = false }
 }
 
-function openInstPayPanel(inst: DentalInstallment) {
-  instPayForm.value = {
-    installment_id: Number(inst.id),
-    amount: Number(inst.amount) - Number(inst.paid_amount),
-    payment_method: 'cash'
-  }
-  instPayError.value = null
-  showInstPayPanel.value = true
-}
 
 async function saveInstallmentPayment() {
   savingInstPay.value = true
@@ -632,6 +622,8 @@ onMounted(async () => {
       follow_up_notes: c.follow_up_notes ?? '',
     }
   }
+  // Load charge data upfront so the summary tab can show payment info
+  await loadCharge()
 })
 </script>
 
@@ -739,54 +731,119 @@ onMounted(async () => {
     <div class="mx-auto max-w-6xl px-4 py-6">
 
       <!-- ═══════════ TAB: RESUMEN ═══════════ -->
-      <ConsultationSummaryTab
-        v-if="activeTab === 'summary'"
-        :consultation="consultation"
-        :patient-name="patientName"
-        :treatments="consultationTreatmentsStore.items ?? []"
-        :total="consultationTreatmentsStore.total"
-        :charge-detail="chargeDetail"
-        :status-class="STATUS_CLASS"
-        :status-label="STATUS_LABEL"
-        :admin-status-class="ADMIN_STATUS_CLASS"
-        :admin-status-label="ADMIN_STATUS_LABEL"
-        :fmt-date="fmtDate"
-        :fmt-currency="fmtCurrency"
-        @edit-info="openEdit"
-      />
+      <div v-if="activeTab === 'summary'" class="space-y-5">
+        <ConsultationSummaryTab
+          :consultation="consultation"
+          :patient-name="patientName"
+          :treatments="consultationTreatmentsStore.items ?? []"
+          :total="consultationTreatmentsStore.total"
+          :charge-detail="chargeDetail"
+          :status-class="STATUS_CLASS"
+          :status-label="STATUS_LABEL"
+          :admin-status-class="ADMIN_STATUS_CLASS"
+          :admin-status-label="ADMIN_STATUS_LABEL"
+          :fmt-date="fmtDate"
+          :fmt-currency="fmtCurrency"
+          @edit-info="openEdit"
+        />
 
-      <!-- ═══════════ TAB: TRATAMIENTO ═══════════ -->
-      <ConsultationTreatmentsTab
-        v-else-if="activeTab === 'treatments'"
+        <!-- Payment summary card -->
+        <div class="rounded-xl border border-white/10 bg-white/5 p-5 space-y-3">
+          <div class="flex items-center justify-between">
+            <p class="text-xs font-semibold uppercase tracking-wide text-white/40">Estado de pago</p>
+            <span
+              v-if="consultation?.administrative_status"
+              class="rounded-full px-2.5 py-0.5 text-xs font-medium"
+              :class="ADMIN_STATUS_CLASS[consultation.administrative_status] ?? 'bg-white/10 text-white/40'"
+            >
+              {{ ADMIN_STATUS_LABEL[consultation.administrative_status] ?? consultation.administrative_status }}
+            </span>
+          </div>
+
+          <div v-if="loadingCharge" class="py-4 text-center text-sm text-white/30">
+            Cargando...
+          </div>
+
+          <template v-else-if="chargeDetail">
+            <div class="grid grid-cols-3 gap-3 text-center">
+              <div class="rounded-lg bg-white/5 p-3">
+                <p class="text-xs text-white/40">Total</p>
+                <p class="mt-0.5 text-sm font-semibold">{{ fmtCurrency(chargeDetail.total_amount) }}</p>
+              </div>
+              <div class="rounded-lg bg-green-500/10 p-3">
+                <p class="text-xs text-white/40">Pagado</p>
+                <p class="mt-0.5 text-sm font-semibold text-green-400">{{ fmtCurrency(chargeDetail.paid_amount) }}</p>
+              </div>
+              <div class="rounded-lg bg-orange-500/10 p-3">
+                <p class="text-xs text-white/40">Pendiente</p>
+                <p class="mt-0.5 text-sm font-semibold text-orange-400">{{ fmtCurrency(chargeDetail.pending_amount) }}</p>
+              </div>
+            </div>
+            <div class="flex flex-wrap gap-2 pt-1">
+              <button
+                class="flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-medium text-white/70 transition hover:bg-white/10"
+                @click="showInstallPanel = true"
+              >
+                Plan de cuotas
+              </button>
+              <button
+                class="flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-medium text-white transition nxr-btn-primary"
+                @click="payForm.amount = Number(chargeDetail.pending_amount); showPayPanel = true"
+              >
+                Registrar pago
+              </button>
+            </div>
+          </template>
+
+          <div v-else class="space-y-2">
+            <p class="text-sm text-white/40">
+              {{ consultationTreatmentsStore.total > 0 ? 'Sin cargo generado aun.' : 'Agrega tratamientos para generar un cargo.' }}
+            </p>
+            <button
+              v-if="canCreateCharge"
+              class="flex items-center gap-2 rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary disabled:opacity-50"
+              :disabled="actionLoading"
+              @click="generateCharge"
+            >
+              {{ actionLoading ? 'Generando...' : 'Generar cargo' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════ TAB: HISTORIA ═══════════ -->
+      <ConsultationClinicalHistoryTab
+        v-else-if="activeTab === 'history'"
+        :consultation="consultation"
+        :medical-history="medicalHistory"
+        :fmt-date="fmtDate"
+        :consultation-id="consultationId"
+        :customer-id="customerId"
+        :patient-id="customerId"
+        :read-only="isReadOnly"
+        :patient-name="patientName"
         :active-services="activeServices"
         :voided-services="voidedServices"
         :total="consultationTreatmentsStore.total"
         :has-closed-payments="hasClosedPayments"
-        :consultation="consultation"
         v-model:follow-up-form="followUpForm"
         v-model:session-schedule-dates="sessionScheduleDates"
         :sessions-count="(sessionsStore.items ?? []).length"
         :scheduling-sessions="schedulingSessions"
         :saving-follow-up="savingFollowUp"
         :fmt-currency="fmtCurrency"
-        @add-service="showAddServicePanel = true"
-        @void-service="voidService"
-        @save-follow-up="saveFollowUp"
-        @schedule-sessions="scheduleAllSessions"
-      />
-
-      <!-- ═══════════ TAB: SESIONES ═══════════ -->
-      <ConsultationSessionsTab
-        v-else-if="activeTab === 'sessions'"
-        :consultation="consultation"
         :sessions="sessionsStore.items"
         :status-class="STATUS_CLASS"
         :status-label="STATUS_LABEL"
         :editing-session-id="editingSessionId"
         v-model:edit-session-date="editSessionDate"
         :saving-edit-session="savingEditSession"
-        :fmt-date="fmtDate"
         :fmt-date-time="fmtDateTime"
+        @add-record="showMedHistPanel = true"
+        @add-service="showAddServicePanel = true"
+        @void-service="voidService"
+        @save-follow-up="saveFollowUp"
+        @schedule-sessions="scheduleAllSessions"
         @new-session="showSessionPanel = true"
         @start-edit-session="startEditSession"
         @save-edit-session="saveEditSession"
@@ -795,52 +852,16 @@ onMounted(async () => {
         @cancel-session="cancelSession"
       />
 
+      <!-- ═══════════ TAB: FOTOS ═══════════ -->
       <div v-else-if="activeTab === 'photos'">
         <WidgetsDentalPhotoGallery :consultationId="id" />
       </div>
 
-      <!-- ═══════════ TAB: ADJUNTOS ═══════════ -->
-      <div v-else-if="activeTab === 'attachments'">
-        <ConsultationAttachmentsTab :consultationId="Number(id)" />
-      </div>
-
-      <!-- ═══════════ TAB: DOCUMENTOS ═══════════ -->
-      <div v-else-if="activeTab === 'documents'">
-        <ConsultationDocumentsSection
-          :consultation-id="Number(id)"
-          :customer-id="Number(consultation?.customer_id ?? 0)"
-          :read-only="consultation?.status === 'voided' || consultation?.status === 'cancelled'"
-        />
-      </div>
-
-      <!-- ═══════════ TAB: HISTORIA ═══════════ -->
-      <ConsultationHistoryTab
-        v-else-if="activeTab === 'history'"
-        :consultation="consultation"
-        :medical-history="medicalHistory"
-        :fmt-date="fmtDate"
-        @add-record="showMedHistPanel = true"
-      />
-
-      <!-- ═══════════ TAB: PAGOS ═══════════ -->
-      <ConsultationPaymentsTab
-        v-else-if="activeTab === 'payments'"
-        :consultation="consultation"
-        :charge-detail="chargeDetail"
-        :loading-charge="loadingCharge"
-        :can-create-charge="canCreateCharge"
-        :action-loading="actionLoading"
-        :total="consultationTreatmentsStore.total"
-        :admin-status-class="ADMIN_STATUS_CLASS"
-        :admin-status-label="ADMIN_STATUS_LABEL"
-        :payment-method-label="PAYMENT_METHOD_LABEL"
-        :fmt-currency="fmtCurrency"
-        :fmt-date="fmtDate"
-        :fmt-date-time="fmtDateTime"
-        @generate-charge="generateCharge"
-        @show-installments="showInstallPanel = true"
-        @register-payment="(amount) => { payForm.amount = amount; showPayPanel = true }"
-        @pay-installment="openInstPayPanel"
+      <!-- ═══════════ TAB: PRESUPUESTO ═══════════ -->
+      <ConsultationQuotesTab
+        v-else-if="activeTab === 'quotes'"
+        :consultation-id="consultationId"
+        :customer-id="customerId"
       />
 
     </div>
