@@ -182,8 +182,8 @@ const tabs = [
             <span class="text-xs px-2 py-0.5 rounded-full bg-white/10 text-white/50 shrink-0">{{ PRODUCT_TYPE_LABEL[p.product_type] || p.product_type }}</span>
             <span v-if="p.inventory_enabled" class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300">Inventario</span>
           </div>
-          <p class="text-xs text-white/40">{{ p.sku ? `SKU: ${p.sku} ? ` : '' }}{{ p.unit }} ? ${{ Number(p.reference_price || 0).toLocaleString() }}</p>
-          <p v-if="p.inventory_enabled" class="text-xs text-white/35">Stock m?nimo: {{ Number(p.reorder_point || 0).toLocaleString() }} ? Costo prom.: ${{ Number(p.average_cost || 0).toLocaleString() }}</p>
+          <p class="text-xs text-white/40">{{ p.sku ? `SKU: ${p.sku} · ` : '' }}{{ p.unit }} · ${{ Number(p.reference_price || 0).toLocaleString() }}</p>
+          <p v-if="p.inventory_enabled" class="text-xs text-white/35">Stock mínimo: {{ Number(p.reorder_point || 0).toLocaleString() }} · Costo prom.: ${{ Number(p.average_cost || 0).toLocaleString() }}</p>
         </div>
         <div class="flex items-center gap-2 shrink-0 self-end sm:self-auto">
           <button type="button" class="text-white/30 hover:text-white/70" aria-label="Editar producto" @click="openEdit(p)"><Edit2 :size="14" /></button>
@@ -198,7 +198,7 @@ const tabs = [
         <span>{{ store.total }} productos</span>
         <div class="flex items-center gap-2">
           <button :disabled="page <= 1" class="px-3 py-1 rounded-lg bg-white/10 disabled:opacity-30 hover:bg-white/20" @click="page--; load()">Anterior</button>
-          <span>P?gina {{ page }}</span>
+          <span>Página {{ page }}</span>
           <button :disabled="store.items.length < 50" class="px-3 py-1 rounded-lg bg-white/10 disabled:opacity-30 hover:bg-white/20" @click="page++; load()">Siguiente</button>
         </div>
       </div>
@@ -250,7 +250,7 @@ const tabs = [
           <input v-model.number="form.reference_price" type="number" min="0" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" />
         </div>
         <div class="sm:col-span-2">
-          <label class="block text-xs text-white/50 mb-1">Descripci?n</label>
+          <label class="block text-xs text-white/50 mb-1">Descripción</label>
           <textarea v-model="form.description" rows="2" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none resize-none"></textarea>
         </div>
       </div>
@@ -277,11 +277,11 @@ const tabs = [
           <input v-model="form.requires_expiration" type="checkbox" class="h-4 w-4" />
         </label>
         <div>
-          <label class="block text-xs text-white/50 mb-1">Punto de reposici?n</label>
+          <label class="block text-xs text-white/50 mb-1">Punto de reposición</label>
           <input v-model.number="form.reorder_point" type="number" min="0" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none" />
         </div>
         <div>
-          <label class="block text-xs text-white/50 mb-1">Stock m?ximo</label>
+          <label class="block text-xs text-white/50 mb-1">Stock máximo</label>
           <input v-model.number="form.max_stock" type="number" min="0" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none" />
         </div>
         <div>
@@ -289,7 +289,7 @@ const tabs = [
           <input v-model.number="form.average_cost" type="number" min="0" step="0.01" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none" />
         </div>
         <div>
-          <label class="block text-xs text-white/50 mb-1">?ltimo costo compra</label>
+          <label class="block text-xs text-white/50 mb-1">Último costo compra</label>
           <input v-model.number="form.last_purchase_cost" type="number" min="0" step="0.01" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none" />
         </div>
       </div>
@@ -311,7 +311,7 @@ const tabs = [
           <input v-model="form.sale_unit" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none" />
         </div>
         <div>
-          <label class="block text-xs text-white/50 mb-1">Factor conversi?n</label>
+          <label class="block text-xs text-white/50 mb-1">Factor conversión</label>
           <input v-model.number="form.conversion_factor" type="number" min="0" step="0.0001" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none" />
         </div>
         <div class="sm:col-span-2">
