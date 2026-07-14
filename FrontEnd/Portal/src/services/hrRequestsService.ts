@@ -1,7 +1,8 @@
 ﻿import api from '../utils/axios';
-import type { HrRequest, HrRequestDetail, HrRequestPayload } from '../types/hr';
+import type { HrRequest, HrRequestDetail, HrRequestPayload, HrRequestType } from '../types/hr';
 
 export const hrRequestsService = {
+  listTypes() { return api.get<HrRequestType[]>('/hr/request-types'); },
   list(scope?: 'mine' | 'approvals') {
     return api.get<HrRequest[]>('/hr/requests', { params: scope === 'mine' ? { scope: 'mine' } : undefined });
   },

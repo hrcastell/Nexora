@@ -64,6 +64,22 @@ function isOwnRequestsView(req) {
     return req.query.scope === 'mine' || req.query.view === 'mine';
 }
 
+exports.listTypes = async (req, res) => {
+    try {
+        const { schema } = await resolveSchema(req);
+        const result = await db.query(
+            `SELECT id, code, name, description, requires_dates, status
+             FROM ${schema}.hr_request_types
+             WHERE status = 'active'
+             ORDER BY name, id`
+        );
+        res.json(result.rows);
+    } catch (error) {
+        console.error('hr requests.listTypes error:', error.message);
+        res.status(500).json({ error: 'No fue posible listar los tipos de solicitud' });
+    }
+};
+
 async function canReadRequest(schema, request, userId, employeeId, hasApprovalAccess) {
     if (hasApprovalAccess || request.employee_id === employeeId) return true;
     return request.current_step === 'supervisor'

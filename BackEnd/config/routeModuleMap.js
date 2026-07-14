@@ -389,6 +389,7 @@ const ROUTE_MODULE_MAP = {
     'PUT    /hr/employees/:id':            { module: 'human_resources', transaction: 'hr_employees' },
 
     // Human Resources: Requests and approvals
+    'GET    /hr/request-types':            { module: 'human_resources', transaction: 'hr_requests' },
     'GET    /hr/requests':                 { module: 'human_resources', transaction: 'hr_requests' },
     'POST   /hr/requests':                 { module: 'human_resources', transaction: 'hr_requests' },
     'GET    /hr/requests/:id':             { module: 'human_resources', transaction: 'hr_requests' },

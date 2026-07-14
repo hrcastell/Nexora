@@ -27,6 +27,7 @@ router.get('/employees', employeesCtrl.list);
 router.get('/employees/:id', employeesCtrl.getById);
 router.put('/employees/:id', employeesCtrl.update);
 
+router.get('/request-types', requestsCtrl.listTypes);
 router.get('/requests', requestsCtrl.list);
 router.post('/requests', requestsCtrl.create);
 router.get('/requests/:id', requestsCtrl.getById);
