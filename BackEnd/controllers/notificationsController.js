@@ -2,7 +2,7 @@ const db = require('../config/db');
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-const VALID_CATEGORIES = ['system', 'users', 'subscriptions', 'requests', 'billing', 'modules', 'dental'];
+const VALID_CATEGORIES = ['system', 'users', 'subscriptions', 'requests', 'billing', 'modules', 'dental', 'inventory'];
 
 /**
  * Construye la cláusula WHERE y el array de parámetros base para filtrar
@@ -199,7 +199,7 @@ exports.getPreferences = async (req, res) => {
                 user_id: userId,
                 categories: {
                     system: true, users: true, subscriptions: true,
-                    requests: true, billing: true, modules: true, dental: true
+                    requests: true, billing: true, modules: true, dental: true, inventory: true
                 },
                 show_toast: true,
                 updated_at: null
@@ -236,7 +236,7 @@ exports.savePreferences = async (req, res) => {
 
         const result = await db.query(
             `INSERT INTO public.notification_preferences (user_id, categories, show_toast, updated_at)
-             VALUES ($1, COALESCE($2, '{"system":true,"users":true,"subscriptions":true,"requests":true,"billing":true,"modules":true,"dental":true}'), COALESCE($3, TRUE), NOW())
+             VALUES ($1, COALESCE($2, '{"system":true,"users":true,"subscriptions":true,"requests":true,"billing":true,"modules":true,"dental":true,"inventory":true}'), COALESCE($3, TRUE), NOW())
              ON CONFLICT (user_id) DO UPDATE SET
                 categories = COALESCE($2::jsonb, public.notification_preferences.categories),
                 show_toast = COALESCE($3, public.notification_preferences.show_toast),

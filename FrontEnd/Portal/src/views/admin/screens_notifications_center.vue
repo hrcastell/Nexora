@@ -20,6 +20,7 @@ const CATEGORIES = [
   { key: 'billing',       label: 'Facturacion' },
   { key: 'modules',       label: 'Modulos' },
   { key: 'dental',        label: 'Dental' },
+  { key: 'inventory',     label: 'Inventario' },
 ];
 
 async function loadNotifications(reset = true) {
