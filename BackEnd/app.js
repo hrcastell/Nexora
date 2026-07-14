@@ -97,6 +97,9 @@ app.use('/api/inventory',                  require('./routes/inventory/inventory
 // Core 5: Human Resources
 app.use('/api/hr',                         require('./routes/hr/hrRoutes'));
 
+// Core 6: Treasury and Collections
+app.use('/api/treasury',                   require('./routes/treasury/treasuryRoutes'));
+
 const authMiddleware  = require('./middleware/authMiddleware');
 const usersController = require('./controllers/usersController');
 const upload          = require('./utils/upload');
