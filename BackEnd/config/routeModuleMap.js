@@ -235,6 +235,22 @@ const ROUTE_MODULE_MAP = {
     'POST   /garage/work-orders/:id/payments':              { module: 'garage_operations', transaction: 'garage_work_orders' },
     'DELETE /garage/work-orders/:id/payments/:paymentId':   { module: 'garage_operations', transaction: 'garage_work_orders' },
 
+    // Treasury and Collections: Master data
+    'GET    /treasury/counterparties':             { module: 'treasury_collections', transaction: 'treasury_settings' },
+    'POST   /treasury/counterparties':             { module: 'treasury_collections', transaction: 'treasury_settings' },
+    'GET    /treasury/counterparties/:id':         { module: 'treasury_collections', transaction: 'treasury_settings' },
+    'PUT    /treasury/counterparties/:id':         { module: 'treasury_collections', transaction: 'treasury_settings' },
+    'PATCH  /treasury/counterparties/:id/status':  { module: 'treasury_collections', transaction: 'treasury_settings' },
+    'GET    /treasury/payment-terms':              { module: 'treasury_collections', transaction: 'treasury_settings' },
+    'POST   /treasury/payment-terms':              { module: 'treasury_collections', transaction: 'treasury_settings' },
+    'GET    /treasury/payment-terms/:id':          { module: 'treasury_collections', transaction: 'treasury_settings' },
+    'PUT    /treasury/payment-terms/:id':          { module: 'treasury_collections', transaction: 'treasury_settings' },
+    'PATCH  /treasury/payment-terms/:id/status':   { module: 'treasury_collections', transaction: 'treasury_settings' },
+    'GET    /treasury/cash-registers':             { module: 'treasury_collections', transaction: 'treasury_settings' },
+    'POST   /treasury/cash-registers':             { module: 'treasury_collections', transaction: 'treasury_settings' },
+    'GET    /treasury/cash-registers/:id':         { module: 'treasury_collections', transaction: 'treasury_settings' },
+    'PUT    /treasury/cash-registers/:id':         { module: 'treasury_collections', transaction: 'treasury_settings' },
+    'PATCH  /treasury/cash-registers/:id/status':  { module: 'treasury_collections', transaction: 'treasury_settings' },
     // ── Financial Core: Períodos ──
     'POST   /financial/periods':                                  { module: 'financial_core', transaction: 'financial_periods' },
     'GET    /financial/periods':                                  { module: 'financial_core', transaction: 'financial_periods' },
