@@ -178,6 +178,12 @@ const ROUTE_MODULE_MAP = {
     'GET    /inventory/purchase-documents/:id':        { module: 'inventory', transaction: 'inventory_purchase_documents' },
     'PUT    /inventory/purchase-documents/:id':        { module: 'inventory', transaction: 'inventory_purchase_documents' },
     'PATCH  /inventory/purchase-documents/:id/status': { module: 'inventory', transaction: 'inventory_purchase_documents' },
+    'GET    /inventory/stock-receipts':            { module: 'inventory', transaction: 'inventory_receipts' },
+    'POST   /inventory/stock-receipts':            { module: 'inventory', transaction: 'inventory_receipts' },
+    'GET    /inventory/stock-receipts/:id':        { module: 'inventory', transaction: 'inventory_receipts' },
+    'POST   /inventory/stock-receipts/:id/confirm': { module: 'inventory', transaction: 'inventory_receipts' },
+    'GET    /inventory/stock-by-product':          { module: 'inventory', transaction: 'inventory_stock' },
+    'GET    /inventory/stock-by-warehouse':        { module: 'inventory', transaction: 'inventory_stock' },
 
     // ── Garage Operations: Servicios configurables ──
     'GET    /garage/service-templates':                            { module: 'garage_operations', transaction: 'garage_service_templates' },
