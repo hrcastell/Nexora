@@ -407,6 +407,33 @@ const router = createRouter({
       ]
     },
 
+    // Core 5: Human Resources (code='human_resources')
+    {
+      path: '/',
+      component: AdminLayout,
+      meta: { requiresAuth: true, requiresCompany: true },
+      children: [
+        {
+          path: 'hr/organization',
+          name: 'hr-organization',
+          component: () => import('../views/hr/screens_hr_org_settings.vue'),
+          meta: { requiresModule: 'human_resources', requiresTransaction: 'hr_org_settings' }
+        },
+        {
+          path: 'hr/employees',
+          name: 'hr-employees',
+          component: () => import('../views/hr/screens_hr_employees.vue'),
+          meta: { requiresModule: 'human_resources', requiresTransaction: 'hr_employees' }
+        },
+        {
+          path: 'hr/employees/:id',
+          name: 'hr-employee-profile',
+          component: () => import('../views/hr/screens_hr_employee_profile.vue'),
+          meta: { requiresModule: 'human_resources', requiresTransaction: 'hr_employee_profile' }
+        },
+      ]
+    },
+
     {
       path: '/:pathMatch(.*)*',
       redirect: '/dashboard'
