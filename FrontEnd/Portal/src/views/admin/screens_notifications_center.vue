@@ -21,6 +21,7 @@ const CATEGORIES = [
   { key: 'modules',       label: 'Modulos' },
   { key: 'dental',        label: 'Dental' },
   { key: 'inventory',     label: 'Inventario' },
+  { key: 'human_resources', label: 'Recursos Humanos' },
 ];
 
 async function loadNotifications(reset = true) {
