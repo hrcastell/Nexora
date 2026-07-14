@@ -91,6 +91,9 @@ app.use('/api/companies/:id/financial',    require('./routes/financial/financial
 app.use('/api/dental',                     require('./routes/dental/dentalRoutes'));
 app.use('/api/companies/:id/dental',       require('./routes/dental/dentalRoutes'));
 
+// ── Core 4: Inventory ────────────────────────────────────────
+app.use('/api/inventory',                  require('./routes/inventory/inventoryRoutes'));
+
 const authMiddleware  = require('./middleware/authMiddleware');
 const usersController = require('./controllers/usersController');
 const upload          = require('./utils/upload');

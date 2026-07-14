@@ -158,6 +158,20 @@ const ROUTE_MODULE_MAP = {
     'PUT    /garage/products/:id':          { module: 'garage_operations', transaction: 'garage_products' },
     'PATCH  /garage/products/:id/status':   { module: 'garage_operations', transaction: 'garage_products' },
 
+    // ── Inventory: Proveedores ──
+    'GET    /inventory/suppliers':            { module: 'inventory', transaction: 'inventory_suppliers' },
+    'POST   /inventory/suppliers':            { module: 'inventory', transaction: 'inventory_suppliers' },
+    'GET    /inventory/suppliers/:id':        { module: 'inventory', transaction: 'inventory_suppliers' },
+    'PUT    /inventory/suppliers/:id':        { module: 'inventory', transaction: 'inventory_suppliers' },
+    'PATCH  /inventory/suppliers/:id/status': { module: 'inventory', transaction: 'inventory_suppliers' },
+
+    // ── Inventory: Bodegas ──
+    'GET    /inventory/warehouses':            { module: 'inventory', transaction: 'inventory_warehouses' },
+    'POST   /inventory/warehouses':            { module: 'inventory', transaction: 'inventory_warehouses' },
+    'GET    /inventory/warehouses/:id':        { module: 'inventory', transaction: 'inventory_warehouses' },
+    'PUT    /inventory/warehouses/:id':        { module: 'inventory', transaction: 'inventory_warehouses' },
+    'PATCH  /inventory/warehouses/:id/status': { module: 'inventory', transaction: 'inventory_warehouses' },
+
     // ── Garage Operations: Servicios configurables ──
     'GET    /garage/service-templates':                            { module: 'garage_operations', transaction: 'garage_service_templates' },
     'POST   /garage/service-templates':                            { module: 'garage_operations', transaction: 'garage_service_templates' },
