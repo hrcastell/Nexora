@@ -431,6 +431,18 @@ const router = createRouter({
           component: () => import('../views/hr/screens_hr_employee_profile.vue'),
           meta: { requiresModule: 'human_resources', requiresTransaction: 'hr_employee_profile' }
         },
+        {
+          path: 'hr/requests',
+          name: 'hr-requests',
+          component: () => import('../views/hr/screens_hr_requests.vue'),
+          meta: { requiresModule: 'human_resources', requiresTransaction: 'hr_requests' }
+        },
+        {
+          path: 'hr/approvals',
+          name: 'hr-request-approvals',
+          component: () => import('../views/hr/screens_hr_request_approvals.vue'),
+          meta: { requiresModule: 'human_resources', requiresTransaction: 'hr_request_approvals' }
+        },
       ]
     },
 
