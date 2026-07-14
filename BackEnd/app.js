@@ -94,6 +94,9 @@ app.use('/api/companies/:id/dental',       require('./routes/dental/dentalRoutes
 // ── Core 4: Inventory ────────────────────────────────────────
 app.use('/api/inventory',                  require('./routes/inventory/inventoryRoutes'));
 
+// Core 5: Human Resources
+app.use('/api/hr',                         require('./routes/hr/hrRoutes'));
+
 const authMiddleware  = require('./middleware/authMiddleware');
 const usersController = require('./controllers/usersController');
 const upload          = require('./utils/upload');

@@ -361,6 +361,33 @@ const ROUTE_MODULE_MAP = {
 
     // ── Dental Core: Resumen financiero ──
     'GET    /dental/finance/summary':                             { module: 'dental_core', transaction: 'dental_dashboard' },
+    // Human Resources: Organization masters
+    'GET    /hr/departments':              { module: 'human_resources', transaction: 'hr_org_settings' },
+    'POST   /hr/departments':              { module: 'human_resources', transaction: 'hr_org_settings' },
+    'GET    /hr/departments/:id':          { module: 'human_resources', transaction: 'hr_org_settings' },
+    'PUT    /hr/departments/:id':          { module: 'human_resources', transaction: 'hr_org_settings' },
+    'PATCH  /hr/departments/:id/status':   { module: 'human_resources', transaction: 'hr_org_settings' },
+    'GET    /hr/positions':                { module: 'human_resources', transaction: 'hr_org_settings' },
+    'POST   /hr/positions':                { module: 'human_resources', transaction: 'hr_org_settings' },
+    'GET    /hr/positions/:id':            { module: 'human_resources', transaction: 'hr_org_settings' },
+    'PUT    /hr/positions/:id':            { module: 'human_resources', transaction: 'hr_org_settings' },
+    'PATCH  /hr/positions/:id/status':     { module: 'human_resources', transaction: 'hr_org_settings' },
+    'GET    /hr/cost-centers':             { module: 'human_resources', transaction: 'hr_org_settings' },
+    'POST   /hr/cost-centers':             { module: 'human_resources', transaction: 'hr_org_settings' },
+    'GET    /hr/cost-centers/:id':         { module: 'human_resources', transaction: 'hr_org_settings' },
+    'PUT    /hr/cost-centers/:id':         { module: 'human_resources', transaction: 'hr_org_settings' },
+    'PATCH  /hr/cost-centers/:id/status':  { module: 'human_resources', transaction: 'hr_org_settings' },
+    'GET    /hr/work-shifts':              { module: 'human_resources', transaction: 'hr_org_settings' },
+    'POST   /hr/work-shifts':              { module: 'human_resources', transaction: 'hr_org_settings' },
+    'GET    /hr/work-shifts/:id':          { module: 'human_resources', transaction: 'hr_org_settings' },
+    'PUT    /hr/work-shifts/:id':          { module: 'human_resources', transaction: 'hr_org_settings' },
+    'PATCH  /hr/work-shifts/:id/status':   { module: 'human_resources', transaction: 'hr_org_settings' },
+
+    // Human Resources: Employees
+    'GET    /hr/employees':                { module: 'human_resources', transaction: 'hr_employees' },
+    'GET    /hr/employees/:id':            { module: 'human_resources', transaction: 'hr_employee_profile' },
+    'PUT    /hr/employees/:id':            { module: 'human_resources', transaction: 'hr_employees' },
+
 };
 
 /**
