@@ -362,6 +362,48 @@ const router = createRouter({
           component: () => import('../views/inventory/screens_inventory_warehouses.vue'),
           meta: { requiresModule: 'inventory', requiresTransaction: 'inventory_warehouses' }
         },
+        {
+          path: 'inventory/purchase-documents',
+          name: 'inventory-purchase-documents',
+          component: () => import('../views/inventory/screens_inventory_purchase_documents.vue'),
+          meta: { requiresModule: 'inventory', requiresTransaction: 'inventory_purchase_documents' }
+        },
+        {
+          path: 'inventory/purchase-documents/new',
+          name: 'inventory-purchase-document-new',
+          component: () => import('../views/inventory/screens_inventory_purchase_documents.vue'),
+          meta: { requiresModule: 'inventory', requiresTransaction: 'inventory_purchase_documents' }
+        },
+        {
+          path: 'inventory/purchase-documents/:id',
+          name: 'inventory-purchase-document-detail',
+          component: () => import('../views/inventory/screens_inventory_purchase_documents.vue'),
+          meta: { requiresModule: 'inventory', requiresTransaction: 'inventory_purchase_documents' }
+        },
+        {
+          path: 'inventory/receptions',
+          name: 'inventory-receptions',
+          component: () => import('../views/inventory/screens_inventory_receptions.vue'),
+          meta: { requiresModule: 'inventory', requiresTransaction: 'inventory_receipts' }
+        },
+        {
+          path: 'inventory/receptions/new',
+          name: 'inventory-reception-new',
+          component: () => import('../views/inventory/screens_inventory_receptions.vue'),
+          meta: { requiresModule: 'inventory', requiresTransaction: 'inventory_receipts' }
+        },
+        {
+          path: 'inventory/receptions/:id',
+          name: 'inventory-reception-detail',
+          component: () => import('../views/inventory/screens_inventory_receptions.vue'),
+          meta: { requiresModule: 'inventory', requiresTransaction: 'inventory_receipts' }
+        },
+        {
+          path: 'inventory/stock',
+          name: 'inventory-stock',
+          component: () => import('../views/inventory/screens_inventory_stock.vue'),
+          meta: { requiresModule: 'inventory', requiresTransaction: 'inventory_stock' }
+        },
       ]
     },
 
