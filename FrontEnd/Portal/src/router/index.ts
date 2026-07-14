@@ -344,6 +344,27 @@ const router = createRouter({
     },
     // ─────────────────────────────────────────────────────────────────────────
 
+    // Core 4: Inventory (code='inventory')
+    {
+      path: '/',
+      component: AdminLayout,
+      meta: { requiresAuth: true, requiresCompany: true },
+      children: [
+        {
+          path: 'inventory/suppliers',
+          name: 'inventory-suppliers',
+          component: () => import('../views/inventory/screens_inventory_suppliers.vue'),
+          meta: { requiresModule: 'inventory', requiresTransaction: 'inventory_suppliers' }
+        },
+        {
+          path: 'inventory/warehouses',
+          name: 'inventory-warehouses',
+          component: () => import('../views/inventory/screens_inventory_warehouses.vue'),
+          meta: { requiresModule: 'inventory', requiresTransaction: 'inventory_warehouses' }
+        },
+      ]
+    },
+
     {
       path: '/:pathMatch(.*)*',
       redirect: '/dashboard'

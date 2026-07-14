@@ -174,10 +174,26 @@ export interface Product {
   unit: string;
   reference_price: number;
   currency: string;
+  inventory_enabled: boolean;
+  track_serial: boolean;
+  track_batch: boolean;
+  allow_negative_stock: boolean;
+  reorder_point: number;
+  max_stock: number | null;
+  preferred_supplier_id: number | null;
+  purchase_unit: string | null;
+  sale_unit: string | null;
+  conversion_factor: number;
+  average_cost: number;
+  last_purchase_cost: number;
+  requires_expiration: boolean;
+  storage_notes: string | null;
   status: 'active' | 'inactive';
   created_at: string;
   updated_at: string;
 }
+
+export type ProductFormData = Omit<Product, 'id' | 'normalized_name' | 'status' | 'created_at' | 'updated_at'>;
 
 // ─── SERVICIOS CONFIGURABLES ──────────────────────────────────
 

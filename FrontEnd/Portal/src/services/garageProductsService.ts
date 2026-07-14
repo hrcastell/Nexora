@@ -1,5 +1,5 @@
 import api from '../utils/axios';
-import type { Product, PaginatedResponse } from '../types/garage';
+import type { Product, ProductFormData, PaginatedResponse } from '../types/garage';
 
 export const garageProductsService = {
   list(params?: { q?: string; status?: string; product_type?: string; page?: number; limit?: number }) {
@@ -10,11 +10,11 @@ export const garageProductsService = {
     return api.get<Product>(`/garage/products/${id}`);
   },
 
-  create(data: Partial<Product>) {
+  create(data: ProductFormData) {
     return api.post<Product>('/garage/products', data);
   },
 
-  update(id: number, data: Partial<Product>) {
+  update(id: number, data: ProductFormData) {
     return api.put<Product>(`/garage/products/${id}`, data);
   },
 

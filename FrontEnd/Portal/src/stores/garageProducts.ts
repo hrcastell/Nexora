@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { garageProductsService } from '../services/garageProductsService';
-import type { Product } from '../types/garage';
+import type { Product, ProductFormData } from '../types/garage';
 
 export const useGarageProductsStore = defineStore('garageProducts', () => {
   const items   = ref<Product[]>([]);
@@ -20,14 +20,14 @@ export const useGarageProductsStore = defineStore('garageProducts', () => {
     } finally { loading.value = false; }
   }
 
-  async function create(data: Partial<Product>) {
+  async function create(data: ProductFormData) {
     const res = await garageProductsService.create(data);
     items.value.unshift(res.data);
     total.value++;
     return res.data;
   }
 
-  async function update(id: number, data: Partial<Product>) {
+  async function update(id: number, data: ProductFormData) {
     const res = await garageProductsService.update(id, data);
     const idx = items.value.findIndex(p => p.id === id);
     if (idx !== -1) Object.assign(items.value[idx], res.data);
