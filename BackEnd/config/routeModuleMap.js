@@ -369,7 +369,8 @@ const ROUTE_MODULE_MAP = {
 function pathToRegex(path) {
     const escaped = path
         .replace(/[-/\\^$*+?.()|[\]{}]/g, (c) => c === '/' ? '/' : `\\${c}`)
-        .replace(/\\:(\w+)/g, '[^/]+');
+        // Route parameters are escaped above; match the literal colon so dynamic routes resolve correctly.
+        .replace(/:(\w+)/g, '[^/]+');
     return new RegExp(`^${escaped}$`);
 }
 
