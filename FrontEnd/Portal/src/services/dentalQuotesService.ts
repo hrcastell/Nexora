@@ -34,6 +34,9 @@ export const dentalQuotesService = {
   getForPatient(customerId: number) {
     return api.get<{ data: DentalQuote[] }>(`/dental/patients/${customerId}/quotes`);
   },
+  getForConsultation(consultationId: number) {
+    return api.get<{ data: DentalQuote[] }>(`/dental/consultations/${consultationId}/quotes`).then((res) => res.data);
+  },
   addItem(quoteId: number, item: DentalQuoteItemFormData) {
     return api.post<{ data: DentalQuote }>(`${BASE}/${quoteId}/items`, item);
   },
