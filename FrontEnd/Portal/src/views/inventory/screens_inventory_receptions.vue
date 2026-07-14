@@ -102,7 +102,7 @@ async function saveReceipt() {
     const receipt = await store.create({ ...form.value, purchase_document_id: Number(form.value.purchase_document_id), warehouse_id: Number(form.value.warehouse_id) });
     router.push(`/inventory/receptions/${receipt.id}`);
   } catch (e: any) {
-    error.value = e?.response?.data?.error || 'Error al crear recepcion';
+    error.value = e?.response?.data?.error || 'Error al crear recepción';
   } finally {
     saving.value = false;
   }
@@ -124,7 +124,7 @@ async function confirmReceipt() {
     await store.confirm(store.current.id, lines);
     await documentsStore.load();
   } catch (e: any) {
-    error.value = e?.response?.data?.error || 'Error al confirmar recepcion';
+    error.value = e?.response?.data?.error || 'Error al confirmar recepción';
   } finally {
     confirming.value = false;
   }
@@ -137,9 +137,9 @@ async function confirmReceipt() {
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 class="text-xl font-semibold text-white">Recepciones</h1>
-          <p class="text-xs text-white/40">Entrada fisica de productos desde documentos emitidos.</p>
+          <p class="text-xs text-white/40">Entrada física de productos desde documentos emitidos.</p>
         </div>
-        <button class="nxr-btn nxr-btn-primary justify-center" @click="router.push('/inventory/receptions/new')"><Plus :size="15" /> Nueva recepcion</button>
+        <button class="nxr-btn nxr-btn-primary justify-center" @click="router.push('/inventory/receptions/new')"><Plus :size="15" /> Nueva recepción</button>
       </div>
 
       <div v-if="store.loading" class="space-y-2"><div v-for="i in 6" :key="i" class="h-16 animate-pulse rounded-xl bg-white/5"></div></div>
@@ -149,7 +149,7 @@ async function confirmReceipt() {
           <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p class="text-sm font-semibold text-white">{{ receipt.receipt_number }}</p>
-              <p class="text-xs text-white/40">{{ receipt.internal_number }} ? {{ receipt.warehouse_name }}</p>
+              <p class="text-xs text-white/40">{{ receipt.internal_number }} · {{ receipt.warehouse_name }}</p>
             </div>
             <div class="text-left sm:text-right"><p class="text-sm text-white">{{ fmtDate(receipt.reception_date) }}</p><p class="text-xs text-white/40">{{ receipt.status }}</p></div>
           </div>
@@ -163,7 +163,7 @@ async function confirmReceipt() {
           <div class="flex items-center gap-3">
             <button class="text-white/40 hover:text-white" @click="router.push('/inventory/receptions')"><ArrowLeft :size="20" /></button>
             <div>
-              <h1 class="text-lg font-semibold text-white">{{ isNew ? 'Nueva recepcion' : store.current?.receipt_number }}</h1>
+              <h1 class="text-lg font-semibold text-white">{{ isNew ? 'Nueva recepción' : store.current?.receipt_number }}</h1>
               <p class="text-xs text-white/40">{{ store.current?.status || 'draft' }}</p>
             </div>
           </div>
@@ -175,13 +175,13 @@ async function confirmReceipt() {
       </div>
 
       <div class="grid grid-cols-1 gap-3 rounded-2xl border border-white/10 p-4 lg:grid-cols-4" :style="{ background: 'var(--nexora-glass-bg)' }">
-        <div class="lg:col-span-2"><label class="mb-1 block text-xs text-white/50">Documento origen</label><select v-model.number="form.purchase_document_id" :disabled="!isNew" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white" @change="loadSourceDocument(form.purchase_document_id)"><option :value="0">Seleccionar</option><option v-for="doc in availableDocuments" :key="doc.id" :value="doc.id">{{ doc.internal_number }} ? {{ doc.supplier_name }} ? {{ fmtMoney(doc.total) }}</option></select></div>
+        <div class="lg:col-span-2"><label class="mb-1 block text-xs text-white/50">Documento origen</label><select v-model.number="form.purchase_document_id" :disabled="!isNew" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white" @change="loadSourceDocument(form.purchase_document_id)"><option :value="0">Seleccionar</option><option v-for="doc in availableDocuments" :key="doc.id" :value="doc.id">{{ doc.internal_number }} · {{ doc.supplier_name }} · {{ fmtMoney(doc.total) }}</option></select></div>
         <div><label class="mb-1 block text-xs text-white/50">Bodega</label><select v-model.number="form.warehouse_id" :disabled="!isNew" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white"><option :value="0">Seleccionar</option><option v-for="warehouse in warehousesStore.items" :key="warehouse.id" :value="warehouse.id">{{ warehouse.name }}</option></select></div>
         <div><label class="mb-1 block text-xs text-white/50">Fecha</label><input v-model="form.reception_date" :disabled="!isNew" type="date" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white" /></div>
       </div>
 
       <div class="flex-1 rounded-2xl border border-white/10 p-4" :style="{ background: 'var(--nexora-glass-bg)' }">
-        <div class="mb-3"><h2 class="text-sm font-semibold text-white/70">Lineas a recibir</h2><p class="text-xs text-white/35">La cantidad no puede superar el pendiente del documento origen.</p></div>
+        <div class="mb-3"><h2 class="text-sm font-semibold text-white/70">Líneas a recibir</h2><p class="text-xs text-white/35">La cantidad no puede superar el pendiente del documento origen.</p></div>
         <div v-if="!sourceDocument" class="py-12 text-center text-sm text-white/30">Selecciona un documento emitido para cargar pendientes.</div>
         <div v-else-if="confirmLines.length === 0" class="py-12 text-center text-sm text-white/30">El documento no tiene pendientes por recibir.</div>
         <div v-else class="flex flex-col gap-2">

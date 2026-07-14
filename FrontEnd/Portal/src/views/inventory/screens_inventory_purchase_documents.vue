@@ -61,7 +61,7 @@ const canCancel = computed(() => !!store.current && ['draft', 'issued'].includes
 const STATUS_LABEL: Record<PurchaseDocumentStatus, string> = {
   draft: 'Borrador',
   issued: 'Emitido',
-  partially_received: 'Recepcion parcial',
+  partially_received: 'Recepción parcial',
   received: 'Recibido',
   cancelled: 'Cancelado',
 };
@@ -172,7 +172,7 @@ function payload(): PurchaseDocumentFormData {
 
 async function save() {
   if (!form.value.supplier_id) { error.value = 'Selecciona un proveedor'; return; }
-  if (!form.value.lines.every((line) => line.product_id && Number(line.quantity) > 0)) { error.value = 'Cada linea requiere producto y cantidad mayor a cero'; return; }
+  if (!form.value.lines.every((line) => line.product_id && Number(line.quantity) > 0)) { error.value = 'Cada línea requiere producto y cantidad mayor a cero'; return; }
   saving.value = true;
   error.value = '';
   try {
@@ -198,7 +198,7 @@ async function changeStatus(status: PurchaseDocumentStatus) {
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 class="text-xl font-semibold text-white">Documentos de compra</h1>
-          <p class="text-xs text-white/40">Ordenes y facturas de compra para inventario.</p>
+          <p class="text-xs text-white/40">Órdenes y facturas de compra para inventario.</p>
         </div>
         <button class="nxr-btn nxr-btn-primary justify-center" @click="router.push('/inventory/purchase-documents/new')"><Plus :size="15" /> Nuevo documento</button>
       </div>
@@ -207,7 +207,7 @@ async function changeStatus(status: PurchaseDocumentStatus) {
         <option value="">Todos los estados</option>
         <option value="draft">Borrador</option>
         <option value="issued">Emitido</option>
-        <option value="partially_received">Recepcion parcial</option>
+        <option value="partially_received">Recepción parcial</option>
         <option value="received">Recibido</option>
         <option value="cancelled">Cancelado</option>
       </select>
@@ -219,7 +219,7 @@ async function changeStatus(status: PurchaseDocumentStatus) {
           <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p class="text-sm font-semibold text-white">{{ doc.internal_number }}</p>
-              <p class="text-xs text-white/40">{{ doc.supplier_name }} ? {{ fmtDate(doc.issue_date) }}</p>
+              <p class="text-xs text-white/40">{{ doc.supplier_name }} · {{ fmtDate(doc.issue_date) }}</p>
             </div>
             <div class="text-left sm:text-right">
               <p class="text-sm font-semibold text-white">{{ fmtMoney(doc.total) }}</p>
@@ -251,16 +251,16 @@ async function changeStatus(status: PurchaseDocumentStatus) {
       <div class="grid grid-cols-1 gap-3 rounded-2xl border border-white/10 p-4 lg:grid-cols-4" :style="{ background: 'var(--nexora-glass-bg)' }">
         <div><label class="mb-1 block text-xs text-white/50">Tipo</label><select v-model="form.document_type" :disabled="!canEdit" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white"><option value="purchase_order">Orden de compra</option><option value="purchase_invoice">Factura de compra</option></select></div>
         <div><label class="mb-1 block text-xs text-white/50">Proveedor</label><select v-model.number="form.supplier_id" :disabled="!canEdit" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white"><option :value="0">Seleccionar</option><option v-for="supplier in suppliersStore.items" :key="supplier.id" :value="supplier.id">{{ supplier.name }}</option></select></div>
-        <div><label class="mb-1 block text-xs text-white/50">Fecha emision</label><input v-model="form.issue_date" :disabled="!canEdit" type="date" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white" /></div>
-        <div><label class="mb-1 block text-xs text-white/50">Recepcion esperada</label><input v-model="form.expected_reception_date" :disabled="!canEdit" type="date" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white" /></div>
+        <div><label class="mb-1 block text-xs text-white/50">Fecha emisión</label><input v-model="form.issue_date" :disabled="!canEdit" type="date" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white" /></div>
+        <div><label class="mb-1 block text-xs text-white/50">Recepción esperada</label><input v-model="form.expected_reception_date" :disabled="!canEdit" type="date" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white" /></div>
         <div><label class="mb-1 block text-xs text-white/50">Folio proveedor</label><input v-model="form.supplier_document_number" :disabled="!canEdit" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white" /></div>
-        <div><label class="mb-1 block text-xs text-white/50">Condicion pago</label><select v-model="form.payment_condition" :disabled="!canEdit" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white"><option value="cash">Contado</option><option value="credit">Credito</option></select></div>
-        <div><label class="mb-1 block text-xs text-white/50">Dias pago</label><input v-model.number="form.payment_term_days" :disabled="!canEdit" type="number" min="0" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white" /></div>
+        <div><label class="mb-1 block text-xs text-white/50">Condición de pago</label><select v-model="form.payment_condition" :disabled="!canEdit" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white"><option value="cash">Contado</option><option value="credit">Crédito</option></select></div>
+        <div><label class="mb-1 block text-xs text-white/50">Días de pago</label><input v-model.number="form.payment_term_days" :disabled="!canEdit" type="number" min="0" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white" /></div>
         <div><label class="mb-1 block text-xs text-white/50">Vencimiento</label><input v-model="form.due_date" :disabled="!canEdit" type="date" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white" /></div>
       </div>
 
       <div class="flex-1 rounded-2xl border border-white/10 p-4" :style="{ background: 'var(--nexora-glass-bg)' }">
-        <div class="mb-3 flex items-center justify-between"><h2 class="text-sm font-semibold text-white/70">Lineas</h2><button v-if="canEdit" class="nxr-btn nxr-btn-secondary" @click="addLine"><Plus :size="14" /> Agregar linea</button></div>
+        <div class="mb-3 flex items-center justify-between"><h2 class="text-sm font-semibold text-white/70">Líneas</h2><button v-if="canEdit" class="nxr-btn nxr-btn-secondary" @click="addLine"><Plus :size="14" /> Agregar línea</button></div>
         <div class="hidden grid-cols-[2fr_repeat(5,1fr)_auto] gap-2 text-xs text-white/40 lg:grid"><span>Producto</span><span>Cant.</span><span>Unidad</span><span>Costo</span><span>Desc. %</span><span>Imp. %</span><span></span></div>
         <div class="mt-2 flex flex-col gap-2">
           <div v-for="(line, index) in form.lines" :key="index" class="grid grid-cols-1 gap-2 rounded-xl border border-white/10 bg-white/5 p-3 lg:grid-cols-[2fr_repeat(5,1fr)_auto]">
