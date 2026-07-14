@@ -1,4 +1,4 @@
-﻿import { defineStore } from 'pinia';
+import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { hrRequestsService } from '../services/hrRequestsService';
 import type { HrRequest, HrRequestDetail, HrRequestPayload, HrRequestType } from '../types/hr';

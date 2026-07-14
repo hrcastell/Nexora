@@ -1,4 +1,4 @@
-﻿import api from '../utils/axios';
+import api from '../utils/axios';
 import type { HrRequest, HrRequestDetail, HrRequestPayload, HrRequestType } from '../types/hr';
 
 export const hrRequestsService = {
