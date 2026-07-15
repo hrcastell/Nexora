@@ -446,6 +446,27 @@ const router = createRouter({
       ]
     },
 
+    // Core 6: Treasury and Collections (code='treasury_collections')
+    {
+      path: '/',
+      component: AdminLayout,
+      meta: { requiresAuth: true, requiresCompany: true },
+      children: [
+        {
+          path: 'treasury/settings',
+          name: 'treasury-settings',
+          component: () => import('../views/treasury/screens_treasury_settings.vue'),
+          meta: { requiresModule: 'treasury_collections', requiresTransaction: 'treasury_settings' }
+        },
+        {
+          path: 'treasury/cash-sessions',
+          name: 'treasury-cash-sessions',
+          component: () => import('../views/treasury/screens_treasury_cash_sessions.vue'),
+          meta: { requiresModule: 'treasury_collections', requiresTransaction: 'treasury_cash_sessions' }
+        },
+      ]
+    },
+
     {
       path: '/:pathMatch(.*)*',
       redirect: '/dashboard'
