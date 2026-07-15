@@ -1,5 +1,6 @@
 const db = require('../../config/db');
 const { resolveSchema } = require('../../utils/tenantResolver');
+const { createNotification } = require('../../utils/notifications');
 
 const MOVEMENT_TYPES = [
     'sale_in',
@@ -22,30 +23,6 @@ function isPositiveInteger(value) {
 
 function isNonNegativeAmount(value) {
     return value !== '' && value !== null && value !== undefined && Number.isFinite(Number(value)) && Number(value) >= 0;
-}
-
-async function createDifferenceNotification(client, userId, companyId, session, differenceAmount) {
-    const preferences = await client.query(
-        'SELECT categories FROM public.notification_preferences WHERE user_id = $1',
-        [userId]
-    );
-
-    const categories = preferences.rows.length ? preferences.rows[0].categories || {} : {};
-    if (categories.treasury_collections === false) return;
-
-    const difference = Number(differenceAmount).toFixed(2);
-    await client.query(
-        `INSERT INTO public.notifications
-         (user_id, company_id, type, category, title, body, action_url)
-         VALUES ($1, $2, 'warning', 'treasury_collections', $3, $4, $5)`,
-        [
-            userId,
-            companyId,
-            'Diferencia de caja detectada',
-            `La sesión de caja ${session.id} se cerró con una diferencia de ${difference}.`,
-            `/treasury/cash-sessions/${session.id}`
-        ]
-    );
 }
 
 exports.open = async (req, res) => {
@@ -197,11 +174,20 @@ exports.close = async (req, res) => {
         );
         const differenceAmount = Number(result.rows[0].difference_amount);
 
+        await client.query('COMMIT');
+
         if (differenceAmount !== 0) {
-            await createDifferenceNotification(client, req.user.id, companyId, session, differenceAmount);
+            await createNotification({
+                userId: req.user.id,
+                companyId,
+                type: 'warning',
+                category: 'treasury_collections',
+                title: 'Diferencia de caja detectada',
+                body: `La sesión de caja ${session.id} se cerró con una diferencia de ${differenceAmount.toFixed(2)}.`,
+                actionUrl: `/treasury/cash-sessions/${session.id}`
+            });
         }
 
-        await client.query('COMMIT');
         res.json(result.rows[0]);
     } catch (err) {
         await client.query('ROLLBACK');
