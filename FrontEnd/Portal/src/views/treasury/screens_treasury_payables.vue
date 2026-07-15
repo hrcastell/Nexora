@@ -1,0 +1,1 @@
+<script setup lang="ts">import TreasuryDocumentsScreen from './TreasuryDocumentsScreen.vue';</script><template><TreasuryDocumentsScreen direction="payable" title="Cuentas por Pagar" base-path="/treasury/payables" /></template>
