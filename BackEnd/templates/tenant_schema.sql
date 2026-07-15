@@ -1755,6 +1755,8 @@ CREATE TABLE IF NOT EXISTS {schema_name}.treasury_documents (
     origin_id INTEGER,
     issue_date DATE NOT NULL,
     due_date DATE,
+    payment_term_id INTEGER,
+    notes TEXT,
     currency VARCHAR(10) NOT NULL DEFAULT 'CLP',
     subtotal NUMERIC(14,2) NOT NULL DEFAULT 0,
     tax_total NUMERIC(14,2) NOT NULL DEFAULT 0,
@@ -1772,6 +1774,21 @@ CREATE TABLE IF NOT EXISTS {schema_name}.treasury_documents (
     CONSTRAINT chk_treasury_documents_direction CHECK (direction IN ('receivable', 'payable')),
     CONSTRAINT chk_treasury_documents_status CHECK (status IN ('draft', 'open', 'partially_applied', 'settled', 'void'))
 );
+
+DO $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1 FROM pg_constraint
+        WHERE conname = 'fk_treasury_documents_payment_term'
+          AND conrelid = '{schema_name}.treasury_documents'::regclass
+    ) THEN
+        ALTER TABLE {schema_name}.treasury_documents
+            ADD CONSTRAINT fk_treasury_documents_payment_term
+            FOREIGN KEY (payment_term_id)
+            REFERENCES {schema_name}.treasury_payment_terms(id) ON DELETE SET NULL;
+    END IF;
+END;
+$$;
 
 CREATE TABLE IF NOT EXISTS {schema_name}.treasury_document_lines (
     id SERIAL PRIMARY KEY,

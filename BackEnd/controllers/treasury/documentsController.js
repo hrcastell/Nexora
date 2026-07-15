@@ -4,7 +4,7 @@ const { getNextNumber } = require('../../services/treasury/sequenceService');
 
 const DIRECTIONS = ['receivable', 'payable'];
 const DOCUMENT_TYPES = ['sale_invoice', 'sale_note', 'purchase_invoice', 'debit_note', 'credit_note', 'installment_plan', 'internal_charge'];
-const EDITABLE_FIELDS = ['external_number', 'counterparty_id', 'issue_date', 'due_date', 'currency'];
+const EDITABLE_FIELDS = ['external_number', 'counterparty_id', 'issue_date', 'due_date', 'currency', 'payment_term_id', 'notes'];
 
 function createError(message, statusCode) {
     const error = new Error(message);
@@ -44,6 +44,24 @@ function validateCreate(body, direction) {
     if (body.direction && body.direction !== direction) throw createError('La dirección del documento no coincide con la ruta', 400);
     if (body.origin_core || body.origin_table || body.origin_id) throw createError('Solo se permite la carga manual de documentos en esta etapa', 400);
     return totalAmount;
+}
+
+function calculateDueDate(issueDate, paymentTerm) {
+    const daysDue = Number(paymentTerm.days_due);
+    if (paymentTerm.term_type === 'cash' || !Number.isInteger(daysDue) || daysDue <= 0) return null;
+    const date = new Date(`${issueDate}T00:00:00Z`);
+    if (Number.isNaN(date.getTime())) throw createError('issue_date inválida', 400);
+    date.setUTCDate(date.getUTCDate() + daysDue);
+    return date.toISOString().slice(0, 10);
+}
+
+async function findActivePaymentTerm(client, schema, paymentTermId) {
+    const result = await client.query(
+        `SELECT id, term_type, days_due FROM ${schema}.treasury_payment_terms WHERE id = $1 AND status = 'active'`,
+        [paymentTermId]
+    );
+    if (!result.rows.length) throw createError('Condición de pago activa no encontrada', 404);
+    return result.rows[0];
 }
 
 function validateLine(body) {
@@ -143,15 +161,27 @@ exports.create = async (req, res) => {
         await client.query('BEGIN');
         const counterparty = await client.query(`SELECT id FROM ${schema}.treasury_counterparties WHERE id = $1 AND status = 'active'`, [req.body.counterparty_id]);
         if (!counterparty.rows.length) throw createError('Contraparte activa no encontrada', 404);
+        const hasPaymentTerm = Object.prototype.hasOwnProperty.call(req.body, 'payment_term_id') && req.body.payment_term_id !== null;
+        if (hasPaymentTerm && !isPositiveInteger(req.body.payment_term_id)) {
+            throw createError('payment_term_id debe ser un entero positivo', 400);
+        }
+        const paymentTerm = hasPaymentTerm
+            ? await findActivePaymentTerm(client, schema, Number(req.body.payment_term_id))
+            : null;
+        const hasDueDate = Object.prototype.hasOwnProperty.call(req.body, 'due_date');
+        const dueDate = hasDueDate
+            ? req.body.due_date
+            : (paymentTerm ? calculateDueDate(req.body.issue_date, paymentTerm) : null);
         const internalNumber = await getNextNumber(client, schema, companyId, req.body.document_type);
         const result = await client.query(
             `INSERT INTO ${schema}.treasury_documents
              (tenant_id, document_type, direction, internal_number, external_number, counterparty_id,
-              issue_date, due_date, currency, subtotal, tax_total, discount_total, total_amount, balance_amount, status, created_by)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $13, 'open', $14)
+              issue_date, due_date, payment_term_id, notes, currency, subtotal, tax_total, discount_total, total_amount, balance_amount, status, created_by)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $15, 'open', $16)
              RETURNING *`,
             [companyId, req.body.document_type, direction, internalNumber, req.body.external_number || null,
-                req.body.counterparty_id, req.body.issue_date, req.body.due_date || null, req.body.currency || 'CLP',
+                req.body.counterparty_id, req.body.issue_date, dueDate, paymentTerm ? paymentTerm.id : null,
+                req.body.notes === undefined ? null : req.body.notes, req.body.currency || 'CLP',
                 amount(req.body.subtotal) || 0, amount(req.body.tax_total) || 0, amount(req.body.discount_total) || 0,
                 totalAmount, req.user.id]
         );
@@ -185,8 +215,15 @@ exports.update = async (req, res) => {
             const counterparty = await client.query(`SELECT id FROM ${schema}.treasury_counterparties WHERE id = $1 AND status = 'active'`, [req.body.counterparty_id]);
             if (!counterparty.rows.length) throw createError('Contraparte activa no encontrada', 404);
         }
+        if (fields.includes('payment_term_id') && req.body.payment_term_id !== null) {
+            if (!isPositiveInteger(req.body.payment_term_id)) throw createError('payment_term_id debe ser un entero positivo', 400);
+            await findActivePaymentTerm(client, schema, Number(req.body.payment_term_id));
+        }
         const assignments = fields.map((field, index) => `${field} = $${index + 1}`);
-        const values = fields.map((field) => req.body[field] || null);
+        const values = fields.map((field) => {
+            if (field === 'payment_term_id' && req.body[field] !== null) return Number(req.body[field]);
+            return req.body[field];
+        });
         values.push(req.params.id, direction);
         const result = await client.query(
             `UPDATE ${schema}.treasury_documents
