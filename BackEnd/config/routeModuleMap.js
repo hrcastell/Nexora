@@ -413,6 +413,13 @@ const ROUTE_MODULE_MAP = {
     'POST   /hr/requests/:id/reject':      { module: 'human_resources', transaction: 'hr_request_approvals' },
     'POST   /hr/requests/:id/annul':       { module: 'human_resources', transaction: 'hr_request_approvals' },
 
+    // Treasury and Collections: Cash sessions
+    'GET    /treasury/cash-sessions':              { module: 'treasury_collections', transaction: 'treasury_cash_sessions' },
+    'POST   /treasury/cash-sessions/open':         { module: 'treasury_collections', transaction: 'treasury_cash_sessions' },
+    'POST   /treasury/cash-sessions/movements':    { module: 'treasury_collections', transaction: 'treasury_cash_sessions' },
+    'POST   /treasury/cash-sessions/:id/close':    { module: 'treasury_collections', transaction: 'treasury_cash_sessions' },
+    'GET    /treasury/cash-sessions/:id':          { module: 'treasury_collections', transaction: 'treasury_cash_sessions' },
+
 };
 
 /**
