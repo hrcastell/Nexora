@@ -413,6 +413,24 @@ const ROUTE_MODULE_MAP = {
     'POST   /hr/requests/:id/reject':      { module: 'human_resources', transaction: 'hr_request_approvals' },
     'POST   /hr/requests/:id/annul':       { module: 'human_resources', transaction: 'hr_request_approvals' },
 
+    // Treasury and Collections: Financial documents
+    'GET    /treasury/receivables':                     { module: 'treasury_collections', transaction: 'treasury_receivables' },
+    'POST   /treasury/receivables':                     { module: 'treasury_collections', transaction: 'treasury_receivables' },
+    'GET    /treasury/receivables/:id':                 { module: 'treasury_collections', transaction: 'treasury_receivables' },
+    'PUT    /treasury/receivables/:id':                 { module: 'treasury_collections', transaction: 'treasury_receivables' },
+    'GET    /treasury/receivables/:id/lines':           { module: 'treasury_collections', transaction: 'treasury_receivables' },
+    'POST   /treasury/receivables/:id/lines':           { module: 'treasury_collections', transaction: 'treasury_receivables' },
+    'GET    /treasury/receivables/:id/installments':    { module: 'treasury_collections', transaction: 'treasury_receivables' },
+    'POST   /treasury/receivables/:id/installments':    { module: 'treasury_collections', transaction: 'treasury_receivables' },
+    'GET    /treasury/payables':                        { module: 'treasury_collections', transaction: 'treasury_payables' },
+    'POST   /treasury/payables':                        { module: 'treasury_collections', transaction: 'treasury_payables' },
+    'GET    /treasury/payables/:id':                    { module: 'treasury_collections', transaction: 'treasury_payables' },
+    'PUT    /treasury/payables/:id':                    { module: 'treasury_collections', transaction: 'treasury_payables' },
+    'GET    /treasury/payables/:id/lines':              { module: 'treasury_collections', transaction: 'treasury_payables' },
+    'POST   /treasury/payables/:id/lines':              { module: 'treasury_collections', transaction: 'treasury_payables' },
+    'GET    /treasury/payables/:id/installments':       { module: 'treasury_collections', transaction: 'treasury_payables' },
+    'POST   /treasury/payables/:id/installments':       { module: 'treasury_collections', transaction: 'treasury_payables' },
+
     // Treasury and Collections: Cash sessions
     'GET    /treasury/cash-sessions':              { module: 'treasury_collections', transaction: 'treasury_cash_sessions' },
     'POST   /treasury/cash-sessions/open':         { module: 'treasury_collections', transaction: 'treasury_cash_sessions' },
