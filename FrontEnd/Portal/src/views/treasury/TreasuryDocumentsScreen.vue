@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { ArrowLeft, Plus, Save, Search, Trash2 } from 'lucide-vue-next';
 import { useTreasuryDocumentsStore } from '../../stores/treasuryDocuments';
@@ -15,6 +15,7 @@ const settings = useTreasurySettingsStore();
 const query = ref('');
 const saving = ref(false);
 const error = ref('');
+let searchTimer: ReturnType<typeof setTimeout> | undefined;
 const id = computed(() => Number(route.params.id || 0));
 const isNew = computed(() => route.name === `${props.basePath.slice(1).replace(/\//g, '-')}-new`);
 const isDetail = computed(() => isNew.value || !!id.value);
@@ -44,10 +45,16 @@ function emptyForm(): TreasuryDocumentPayload {
 const form = ref<TreasuryDocumentPayload>(emptyForm());
 const subtotal = computed(() => form.value.lines.reduce((sum, line) => sum + Number(line.line_total || 0), 0));
 const selectedTerm = computed(() => settings.paymentTerms.items.find(term => term.id === Number(form.value.payment_term_id)) as TreasuryPaymentTerm | undefined);
-const canEditLines = computed(() => isNew.value);
+const canEditLines = computed(() => isNew.value || store.current?.status === 'open');
 
-function money(value: number | string | null | undefined) {
-  return new Intl.NumberFormat('es-CL', { style: 'currency', currency: form.value.currency || 'CLP', maximumFractionDigits: 0 }).format(Number(value || 0));
+function money(value: number | string | null | undefined, currency = form.value.currency) {
+  const numericValue = Number(value || 0);
+  const currencyCode = String(currency || '').toUpperCase();
+  try {
+    return new Intl.NumberFormat('es-CL', { style: 'currency', currency: currencyCode, maximumFractionDigits: 0 }).format(numericValue);
+  } catch {
+    return `${currencyCode || 'N/A'} ${numericValue.toLocaleString('es-CL')}`;
+  }
 }
 
 function addDays(date: string, days: number) {
@@ -69,7 +76,7 @@ function recalculateLine(line: TreasuryDocumentLine) {
 
 function addLine() { form.value.lines.push(emptyLine()); }
 function removeLine(index: number) {
-  if (form.value.lines.length > 1) form.value.lines.splice(index, 1);
+  if (!form.value.lines[index].id && form.value.lines.length > 1) form.value.lines.splice(index, 1);
 }
 
 function loadDocument(document: TreasuryDocument) {
@@ -86,7 +93,7 @@ function loadDocument(document: TreasuryDocument) {
     tax_total: Number(document.tax_total || 0),
     discount_total: Number(document.discount_total || 0),
     notes: document.notes || '',
-    lines: document.lines?.length ? document.lines.map(line => ({ ...line, quantity: Number(line.quantity), unit_price: Number(line.unit_price), line_total: Number(line.line_total) })) : [emptyLine()],
+    lines: document.lines?.map(line => ({ ...line, quantity: Number(line.quantity), unit_price: Number(line.unit_price), line_total: Number(line.line_total) })) || [],
   };
 }
 
@@ -97,7 +104,7 @@ async function boot() {
   loadDocument(await store.loadOne(props.direction, id.value));
 }
 
-async function save() {
+async function saveOld() {
   if (!form.value.counterparty_id || !form.value.issue_date) { error.value = 'Seleccioná una contraparte y fecha de emisión.'; return; }
   if (isNew.value && !form.value.lines.every(line => line.description.trim() && Number(line.quantity) > 0 && Number(line.unit_price) >= 0)) { error.value = 'Cada línea requiere descripción, cantidad y precio válidos.'; return; }
   saving.value = true;
@@ -127,11 +134,71 @@ async function save() {
   } finally { saving.value = false; }
 }
 
+void saveOld;
+
+async function save() {
+  if (!form.value.counterparty_id || !form.value.issue_date) {
+    error.value = 'Select a counterparty and an issue date.';
+    return;
+  }
+
+  const pendingLines = form.value.lines.filter(line => !line.id);
+  if (pendingLines.some(line => !line.description.trim() || Number(line.quantity) <= 0 || Number(line.unit_price) < 0)) {
+    error.value = 'Every pending line requires a description, quantity, and valid unit price.';
+    return;
+  }
+
+  saving.value = true;
+  error.value = '';
+  try {
+    let documentId = id.value || store.current?.id;
+    if (documentId) {
+      await store.update(props.direction, documentId, {
+        counterparty_id: Number(form.value.counterparty_id), issue_date: form.value.issue_date, due_date: form.value.due_date,
+        payment_term_id: form.value.payment_term_id || null, external_number: form.value.external_number || '', currency: form.value.currency, notes: form.value.notes,
+      });
+    } else {
+      const document = await store.create(props.direction, {
+        ...form.value,
+        counterparty_id: Number(form.value.counterparty_id),
+        total_amount: subtotal.value,
+        subtotal: subtotal.value,
+        lines: [],
+      });
+      documentId = document.id;
+      await router.replace(`${props.basePath}/${document.id}`);
+    }
+
+    for (const line of pendingLines) {
+      const lineNumber = form.value.lines.indexOf(line) + 1;
+      try {
+        const createdLine = await store.createLine(props.direction, documentId, {
+          description: line.description.trim(), quantity: Number(line.quantity), unit_price: Number(line.unit_price), line_total: Number(line.line_total),
+        });
+        line.id = createdLine.id;
+      } catch (cause: any) {
+        error.value = `Could not save line ${lineNumber}: ${cause?.response?.data?.error || 'unexpected error'}. Retry to save only pending lines.`;
+        return;
+      }
+    }
+
+    loadDocument(await store.loadOne(props.direction, documentId));
+  } catch (cause: any) {
+    error.value = cause?.response?.data?.error || 'Could not save the document.';
+  } finally {
+    saving.value = false;
+  }
+}
+
 onMounted(boot);
-watch(() => route.fullPath, boot);
-watch(query, () => { if (!isDetail.value) store.load(props.direction, { q: query.value || undefined }); });
+watch(() => route.fullPath, () => { if (!saving.value) boot(); });
+watch(query, () => {
+  if (searchTimer) clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => { if (!isDetail.value) store.load(props.direction, { q: query.value || undefined }); }, 300);
+});
 watch(() => form.value.payment_term_id, syncDueDate);
 watch(() => form.value.issue_date, syncDueDate);
+onBeforeUnmount(() => { if (searchTimer) clearTimeout(searchTimer); });
 </script>
 
 <template>
@@ -148,7 +215,7 @@ watch(() => form.value.issue_date, syncDueDate);
       <div v-else class="grid grid-cols-1 gap-3 md:grid-cols-2">
         <button v-for="document in store.items" :key="document.id" class="rounded-xl border border-white/10 p-4 text-left transition hover:border-white/25" :style="{ background: 'var(--nexora-glass-bg)' }" @click="router.push(`${basePath}/${document.id}`)">
           <div class="flex items-start justify-between gap-3"><div><p class="font-semibold text-white">{{ document.internal_number }}</p><p class="text-xs text-white/40">{{ document.counterparty_name }} · {{ document.issue_date }}</p></div><span class="text-xs text-white/45">{{ document.status }}</span></div>
-          <p class="mt-3 text-sm text-white">{{ money(document.balance_amount) }} pendiente</p>
+          <p class="mt-3 text-sm text-white">{{ money(document.balance_amount, document.currency) }} pendiente</p>
         </button>
       </div>
     </template>
