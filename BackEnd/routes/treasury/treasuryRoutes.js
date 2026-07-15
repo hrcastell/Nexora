@@ -6,6 +6,8 @@ const paymentTermsCtrl = require('../../controllers/treasury/paymentTermsControl
 const cashRegistersCtrl = require('../../controllers/treasury/cashRegistersController');
 const cashSessionsCtrl = require('../../controllers/treasury/cashSessionsController');
 const documentsCtrl = require('../../controllers/treasury/documentsController');
+const receiptsCtrl = require('../../controllers/treasury/receiptsController');
+const disbursementsCtrl = require('../../controllers/treasury/disbursementsController');
 
 router.use(authMiddleware);
 
@@ -42,6 +44,16 @@ function mountDocuments(path, direction) {
 
 mountDocuments('/receivables', 'receivable');
 mountDocuments('/payables', 'payable');
+
+function mountPayments(path, controller) {
+    router.get(path, controller.list);
+    router.post(path, controller.create);
+    router.post(`${path}/:id/apply`, controller.apply);
+    router.get(`${path}/:id`, controller.getById);
+}
+
+mountPayments('/receipts', receiptsCtrl);
+mountPayments('/disbursements', disbursementsCtrl);
 
 router.get('/cash-sessions', cashSessionsCtrl.list);
 router.post('/cash-sessions/open', cashSessionsCtrl.open);

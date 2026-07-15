@@ -431,6 +431,16 @@ const ROUTE_MODULE_MAP = {
     'GET    /treasury/payables/:id/installments':       { module: 'treasury_collections', transaction: 'treasury_payables' },
     'POST   /treasury/payables/:id/installments':       { module: 'treasury_collections', transaction: 'treasury_payables' },
 
+    // Treasury and Collections: Receipts and disbursements
+    'GET    /treasury/receipts':                        { module: 'treasury_collections', transaction: 'treasury_receipts' },
+    'POST   /treasury/receipts':                        { module: 'treasury_collections', transaction: 'treasury_receipts' },
+    'POST   /treasury/receipts/:id/apply':              { module: 'treasury_collections', transaction: 'treasury_receipts' },
+    'GET    /treasury/receipts/:id':                    { module: 'treasury_collections', transaction: 'treasury_receipts' },
+    'GET    /treasury/disbursements':                   { module: 'treasury_collections', transaction: 'treasury_disbursements' },
+    'POST   /treasury/disbursements':                   { module: 'treasury_collections', transaction: 'treasury_disbursements' },
+    'POST   /treasury/disbursements/:id/apply':         { module: 'treasury_collections', transaction: 'treasury_disbursements' },
+    'GET    /treasury/disbursements/:id':               { module: 'treasury_collections', transaction: 'treasury_disbursements' },
+
     // Treasury and Collections: Cash sessions
     'GET    /treasury/cash-sessions':              { module: 'treasury_collections', transaction: 'treasury_cash_sessions' },
     'POST   /treasury/cash-sessions/open':         { module: 'treasury_collections', transaction: 'treasury_cash_sessions' },
