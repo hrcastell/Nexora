@@ -464,6 +464,8 @@ const router = createRouter({
           component: () => import('../views/treasury/screens_treasury_cash_sessions.vue'),
           meta: { requiresModule: 'treasury_collections', requiresTransaction: 'treasury_cash_sessions' }
         },
+        { path: 'treasury/receipts', name: 'treasury-receipts', component: () => import('../views/treasury/screens_treasury_receipts.vue'), meta: { requiresModule: 'treasury_collections', requiresTransaction: 'treasury_receipts' } },
+        { path: 'treasury/disbursements', name: 'treasury-disbursements', component: () => import('../views/treasury/screens_treasury_disbursements.vue'), meta: { requiresModule: 'treasury_collections', requiresTransaction: 'treasury_disbursements' } },
         { path: 'treasury/receivables', name: 'treasury-receivables', component: () => import('../views/treasury/screens_treasury_receivables.vue'), meta: { requiresModule: 'treasury_collections', requiresTransaction: 'treasury_receivables' } },
         { path: 'treasury/receivables/new', name: 'treasury-receivables-new', component: () => import('../views/treasury/screens_treasury_receivables.vue'), meta: { requiresModule: 'treasury_collections', requiresTransaction: 'treasury_receivables' } },
         { path: 'treasury/receivables/:id', name: 'treasury-receivables-detail', component: () => import('../views/treasury/screens_treasury_receivables.vue'), meta: { requiresModule: 'treasury_collections', requiresTransaction: 'treasury_receivables' } },
