@@ -7,7 +7,7 @@ export interface Notification {
   user_id: number;
   company_id: number | null;
   type: 'info' | 'success' | 'warning' | 'error';
-  category: 'system' | 'users' | 'subscriptions' | 'requests' | 'billing' | 'modules' | 'dental' | 'inventory' | 'human_resources';
+  category: 'system' | 'users' | 'subscriptions' | 'requests' | 'billing' | 'modules' | 'dental' | 'inventory' | 'human_resources' | 'treasury_collections';
   title: string;
   body: string | null;
   action_url: string | null;
@@ -28,6 +28,7 @@ export interface NotificationPreferences {
     dental: boolean;
     inventory: boolean;
     human_resources: boolean;
+    treasury_collections: boolean;
   };
   show_toast: boolean;
   updated_at: string | null;

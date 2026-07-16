@@ -23,6 +23,7 @@ const form = reactive({
     dental:        true,
     inventory:     true,
     human_resources: true,
+    treasury_collections: true,
   }
 });
 
@@ -38,6 +39,7 @@ const CATEGORY_LABELS: Record<CategoryKey, { label: string; description: string 
   dental:        { label: 'Dental',         description: 'Citas, agenda y eventos clínicos del core dental' },
   inventory:     { label: 'Inventario',     description: 'Stock, recepciones y alertas de reposición' },
   human_resources: { label: 'Recursos Humanos', description: 'Solicitudes y aprobaciones de Recursos Humanos' },
+  treasury_collections: { label: 'Tesorería y Cobranza', description: 'Recibos, pagos y aplicaciones de tesorería' },
 };
 
 const categoryKeys = Object.keys(CATEGORY_LABELS) as CategoryKey[];
@@ -55,6 +57,7 @@ onMounted(async () => {
     form.categories.dental       = notifStore.preferences.categories.dental       ?? true;
     form.categories.inventory    = notifStore.preferences.categories.inventory    ?? true;
     form.categories.human_resources = notifStore.preferences.categories.human_resources ?? true;
+    form.categories.treasury_collections = notifStore.preferences.categories.treasury_collections ?? true;
   }
 });
 
