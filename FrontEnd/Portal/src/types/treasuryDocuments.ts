@@ -1,0 +1,4 @@
+export type TreasuryDirection = 'receivable' | 'payable';
+export interface TreasuryDocumentLine { id?:number; description:string; quantity:number; unit_price:number; line_total:number; }
+export interface TreasuryDocument { id:number; internal_number:string; external_number:string|null; counterparty_id:number; counterparty_name?:string; document_type:string; issue_date:string; due_date:string|null; payment_term_id?:number|null; currency:string; subtotal?:number; tax_total?:number; discount_total?:number; total_amount:number; balance_amount:number; status:string; notes:string|null; lines?:TreasuryDocumentLine[]; }
+export interface TreasuryDocumentPayload { document_type:string; counterparty_id:number; issue_date:string; due_date?:string|null; payment_term_id?:number|null; external_number?:string; currency?:string; total_amount:number; subtotal?:number; tax_total?:number; discount_total?:number; notes?:string; lines: TreasuryDocumentLine[]; }
