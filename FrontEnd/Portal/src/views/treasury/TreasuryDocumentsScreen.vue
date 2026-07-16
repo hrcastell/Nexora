@@ -45,7 +45,7 @@ function emptyForm(): TreasuryDocumentPayload {
 const form = ref<TreasuryDocumentPayload>(emptyForm());
 const subtotal = computed(() => form.value.lines.reduce((sum, line) => sum + Number(line.line_total || 0), 0));
 const selectedTerm = computed(() => settings.paymentTerms.items.find(term => term.id === Number(form.value.payment_term_id)) as TreasuryPaymentTerm | undefined);
-const canEditLines = computed(() => isNew.value || store.current?.status === 'open');
+const hasPendingLines = computed(() => form.value.lines.some(line => !line.id));
 
 function money(value: number | string | null | undefined, currency = form.value.currency) {
   const numericValue = Number(value || 0);
@@ -104,47 +104,15 @@ async function boot() {
   loadDocument(await store.loadOne(props.direction, id.value));
 }
 
-async function saveOld() {
-  if (!form.value.counterparty_id || !form.value.issue_date) { error.value = 'Seleccioná una contraparte y fecha de emisión.'; return; }
-  if (isNew.value && !form.value.lines.every(line => line.description.trim() && Number(line.quantity) > 0 && Number(line.unit_price) >= 0)) { error.value = 'Cada línea requiere descripción, cantidad y precio válidos.'; return; }
-  saving.value = true;
-  error.value = '';
-  try {
-    if (!isNew.value) {
-      await store.update(props.direction, id.value, {
-        counterparty_id: Number(form.value.counterparty_id), issue_date: form.value.issue_date, due_date: form.value.due_date,
-        payment_term_id: form.value.payment_term_id || null, external_number: form.value.external_number || '', currency: form.value.currency, notes: form.value.notes,
-      });
-      await boot();
-      return;
-    }
-    const document = await store.create(props.direction, {
-      ...form.value,
-      counterparty_id: Number(form.value.counterparty_id),
-      total_amount: subtotal.value,
-      subtotal: subtotal.value,
-      lines: [],
-    });
-    for (const line of form.value.lines) {
-      await store.createLine(props.direction, document.id, { description: line.description.trim(), quantity: Number(line.quantity), unit_price: Number(line.unit_price), line_total: Number(line.line_total) });
-    }
-    router.push(`${props.basePath}/${document.id}`);
-  } catch (cause: any) {
-    error.value = cause?.response?.data?.error || 'No fue posible guardar el documento.';
-  } finally { saving.value = false; }
-}
-
-void saveOld;
-
 async function save() {
   if (!form.value.counterparty_id || !form.value.issue_date) {
-    error.value = 'Select a counterparty and an issue date.';
+    error.value = 'Seleccioná una contraparte y una fecha de emisión.';
     return;
   }
 
   const pendingLines = form.value.lines.filter(line => !line.id);
   if (pendingLines.some(line => !line.description.trim() || Number(line.quantity) <= 0 || Number(line.unit_price) < 0)) {
-    error.value = 'Every pending line requires a description, quantity, and valid unit price.';
+    error.value = 'Cada línea pendiente requiere descripción, cantidad y precio unitario válidos.';
     return;
   }
 
@@ -177,14 +145,14 @@ async function save() {
         });
         line.id = createdLine.id;
       } catch (cause: any) {
-        error.value = `Could not save line ${lineNumber}: ${cause?.response?.data?.error || 'unexpected error'}. Retry to save only pending lines.`;
+        error.value = `No fue posible guardar la línea ${lineNumber}: ${cause?.response?.data?.error || 'error inesperado'}. Reintentá para guardar solo las líneas pendientes.`;
         return;
       }
     }
 
     loadDocument(await store.loadOne(props.direction, documentId));
   } catch (cause: any) {
-    error.value = cause?.response?.data?.error || 'Could not save the document.';
+    error.value = cause?.response?.data?.error || 'No fue posible guardar el documento.';
   } finally {
     saving.value = false;
   }
@@ -237,15 +205,15 @@ onBeforeUnmount(() => { if (searchTimer) clearTimeout(searchTimer); });
       </div>
 
       <div class="flex-1 rounded-2xl border border-white/10 p-4" :style="{ background: 'var(--nexora-glass-bg)' }">
-        <div class="mb-3 flex items-center justify-between"><h2 class="text-sm font-semibold text-white">Líneas</h2><button v-if="canEditLines" class="nxr-btn nxr-btn-secondary" @click="addLine"><Plus :size="14" /> Agregar línea</button></div>
+        <div class="mb-3 flex items-center justify-between"><h2 class="text-sm font-semibold text-white">Líneas</h2><button v-if="hasPendingLines" class="nxr-btn nxr-btn-secondary" @click="addLine"><Plus :size="14" /> Agregar línea</button></div>
         <div class="hidden grid-cols-[2fr_repeat(2,1fr)_120px_auto] gap-2 text-xs text-white/40 lg:grid"><span>Descripción</span><span>Cantidad</span><span>Precio unitario</span><span class="text-right">Total</span><span /></div>
         <div class="mt-2 flex flex-col gap-2">
           <div v-for="(line, index) in form.lines" :key="line.id || index" class="grid grid-cols-1 gap-2 rounded-xl border border-white/10 bg-white/5 p-3 sm:grid-cols-2 lg:grid-cols-[2fr_repeat(2,1fr)_120px_auto]">
-            <label class="text-xs text-white/45 lg:text-[0px]"><span class="lg:hidden">Descripción</span><input v-model="line.description" :disabled="!canEditLines" class="mt-1 w-full rounded-xl border border-white/10 bg-black/20 p-2 text-sm text-white lg:mt-0" /></label>
-            <label class="text-xs text-white/45 lg:text-[0px]"><span class="lg:hidden">Cantidad</span><input v-model.number="line.quantity" :disabled="!canEditLines" type="number" min="0" step="0.01" class="mt-1 w-full rounded-xl border border-white/10 bg-black/20 p-2 text-sm text-white lg:mt-0" @input="recalculateLine(line)" /></label>
-            <label class="text-xs text-white/45 lg:text-[0px]"><span class="lg:hidden">Precio unitario</span><input v-model.number="line.unit_price" :disabled="!canEditLines" type="number" min="0" step="0.01" class="mt-1 w-full rounded-xl border border-white/10 bg-black/20 p-2 text-sm text-white lg:mt-0" @input="recalculateLine(line)" /></label>
+            <label class="text-xs text-white/45 lg:text-[0px]"><span class="lg:hidden">Descripción</span><input v-model="line.description" :disabled="!!line.id" class="mt-1 w-full rounded-xl border border-white/10 bg-black/20 p-2 text-sm text-white lg:mt-0" /></label>
+            <label class="text-xs text-white/45 lg:text-[0px]"><span class="lg:hidden">Cantidad</span><input v-model.number="line.quantity" :disabled="!!line.id" type="number" min="0" step="0.01" class="mt-1 w-full rounded-xl border border-white/10 bg-black/20 p-2 text-sm text-white lg:mt-0" @input="recalculateLine(line)" /></label>
+            <label class="text-xs text-white/45 lg:text-[0px]"><span class="lg:hidden">Precio unitario</span><input v-model.number="line.unit_price" :disabled="!!line.id" type="number" min="0" step="0.01" class="mt-1 w-full rounded-xl border border-white/10 bg-black/20 p-2 text-sm text-white lg:mt-0" @input="recalculateLine(line)" /></label>
             <div class="flex items-end justify-between text-sm text-white lg:justify-end"><span class="text-xs text-white/45 lg:hidden">Total</span><span class="font-medium">{{ money(line.line_total) }}</span></div>
-            <button v-if="canEditLines" class="text-white/35 hover:text-red-400" aria-label="Eliminar línea" @click="removeLine(index)"><Trash2 :size="16" /></button>
+            <button v-if="!line.id" class="text-white/35 hover:text-red-400" aria-label="Eliminar línea" @click="removeLine(index)"><Trash2 :size="16" /></button>
           </div>
         </div>
       </div>
