@@ -57,7 +57,7 @@ onMounted(async () => {
     form.categories.dental       = notifStore.preferences.categories.dental       ?? true;
     form.categories.inventory    = notifStore.preferences.categories.inventory    ?? true;
     form.categories.human_resources = notifStore.preferences.categories.human_resources ?? true;
-    form.categories.treasury_collections = (notifStore.preferences.categories as Record<string, boolean | undefined>).treasury_collections ?? true;
+    form.categories.treasury_collections = notifStore.preferences.categories.treasury_collections ?? true;
   }
 });
 
