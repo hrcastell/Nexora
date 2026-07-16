@@ -22,6 +22,7 @@ const CATEGORIES = [
   { key: 'dental',        label: 'Dental' },
   { key: 'inventory',     label: 'Inventario' },
   { key: 'human_resources', label: 'Recursos Humanos' },
+  { key: 'treasury_collections', label: 'Tesorería y Cobranza' },
 ];
 
 async function loadNotifications(reset = true) {
