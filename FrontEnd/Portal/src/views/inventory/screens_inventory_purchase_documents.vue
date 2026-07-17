@@ -78,6 +78,22 @@ function cleanDate(value?: string | null) {
   return value ? value.slice(0, 10) : '';
 }
 
+function addDays(date: string, days: number) {
+  if (!date) return '';
+  const result = new Date(`${date}T12:00:00`);
+  result.setDate(result.getDate() + Math.max(0, days));
+  return result.toISOString().slice(0, 10);
+}
+
+function syncPaymentDueDate() {
+  if (form.value.payment_condition === 'cash') {
+    form.value.payment_term_days = 0;
+    form.value.due_date = form.value.issue_date;
+    return;
+  }
+  form.value.due_date = addDays(form.value.issue_date, Number(form.value.payment_term_days || 0));
+}
+
 function loadDocumentIntoForm(doc: PurchaseDocument) {
   form.value = {
     document_type: doc.document_type,
@@ -130,6 +146,11 @@ async function boot() {
 onMounted(boot);
 watch(() => route.fullPath, boot);
 watch(statusFilter, () => { if (!isDetail.value) store.load({ status: statusFilter.value || undefined }); });
+watch(() => form.value.payment_condition, syncPaymentDueDate);
+watch(() => form.value.payment_term_days, () => {
+  if (form.value.payment_condition === 'credit') syncPaymentDueDate();
+});
+watch(() => form.value.issue_date, syncPaymentDueDate);
 
 function onProductChange(line: PurchaseDocumentLine) {
   const product = inventoryProducts.value.find((item: Product) => item.id === Number(line.product_id));
@@ -261,21 +282,22 @@ async function changeStatus(status: PurchaseDocumentStatus) {
 
       <div class="flex-1 rounded-2xl border border-white/10 p-4" :style="{ background: 'var(--nexora-glass-bg)' }">
         <div class="mb-3 flex items-center justify-between"><h2 class="text-sm font-semibold text-white/70">Líneas</h2><button v-if="canEdit" class="nxr-btn nxr-btn-secondary" @click="addLine"><Plus :size="14" /> Agregar línea</button></div>
-        <div class="hidden grid-cols-[2fr_repeat(5,1fr)_auto] gap-2 text-xs text-white/40 lg:grid"><span>Producto</span><span>Cant.</span><span>Unidad</span><span>Costo</span><span>Desc. %</span><span>Imp. %</span><span></span></div>
+        <div class="hidden grid-cols-[2fr_repeat(5,1fr)_110px_auto] gap-2 text-xs text-white/40 lg:grid"><span>Producto</span><span>Cant.</span><span>Unidad</span><span>Costo</span><span>Desc. %</span><span>Imp. %</span><span class="text-right">Total</span><span></span></div>
         <div class="mt-2 flex flex-col gap-2">
-          <div v-for="(line, index) in form.lines" :key="index" class="grid grid-cols-1 gap-2 rounded-xl border border-white/10 bg-white/5 p-3 lg:grid-cols-[2fr_repeat(5,1fr)_auto]">
+          <div v-for="(line, index) in form.lines" :key="index" class="grid grid-cols-1 gap-2 rounded-xl border border-white/10 bg-white/5 p-3 sm:grid-cols-2 lg:grid-cols-[2fr_repeat(5,1fr)_110px_auto]">
             <select v-model.number="line.product_id" :disabled="!canEdit" class="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white" @change="onProductChange(line)"><option :value="0">Producto</option><option v-for="product in inventoryProducts" :key="product.id" :value="product.id">{{ product.name }}</option></select>
             <input v-model.number="line.quantity" :disabled="!canEdit" type="number" min="0" step="0.01" class="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white" @input="recalcLine(line)" />
             <input v-model="line.unit" :disabled="!canEdit" class="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white" />
             <input v-model.number="line.unit_cost" :disabled="!canEdit" type="number" min="0" step="0.01" class="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white" @input="recalcLine(line)" />
             <input v-model.number="line.discount_percent" :disabled="!canEdit" type="number" min="0" step="0.01" class="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white" @input="recalcLine(line)" />
             <input v-model.number="line.tax_percent" :disabled="!canEdit" type="number" min="0" step="0.01" class="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white" @input="recalcLine(line)" />
+            <div class="flex items-center justify-between text-sm text-white lg:justify-end"><span class="text-xs text-white/45 lg:hidden">Line total</span><span class="font-medium">{{ fmtMoney(line.line_total) }}</span></div>
             <button v-if="canEdit" class="text-white/30 hover:text-red-400" @click="removeLine(index)"><Trash2 :size="16" /></button>
           </div>
         </div>
       </div>
 
-      <div class="sticky bottom-0 -mx-6 border-t border-white/10 bg-black/40 px-6 py-4 backdrop-blur-xl">
+      <div class="sticky bottom-0 z-10 -mx-6 border-t border-white/10 bg-black/40 px-6 py-4 backdrop-blur-xl">
         <div class="ml-auto grid max-w-md grid-cols-2 gap-2 text-sm"><span class="text-white/40">Subtotal</span><span class="text-right text-white">{{ fmtMoney(subtotal) }}</span><span class="text-white/40">Descuento</span><span class="text-right text-white">{{ fmtMoney(discountTotal) }}</span><span class="text-white/40">Impuestos</span><span class="text-right text-white">{{ fmtMoney(taxTotal) }}</span><span class="font-semibold text-white">Total</span><span class="text-right font-semibold text-white">{{ fmtMoney(total) }}</span></div>
         <p v-if="error" class="mt-2 text-right text-xs text-red-400">{{ error }}</p>
       </div>
