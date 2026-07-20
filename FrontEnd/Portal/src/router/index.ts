@@ -240,6 +240,27 @@ const router = createRouter({
     },
     // ─────────────────────────────────────────────────────────────────────────
 
+    // ── Neutral Products catalog (code='products', virtual OR enablement) ────
+    // design §1 ADR-1 + §8: same screen as garage-products, reached via the
+    // neutral top-level route (matches public.module_transactions route
+    // '/products' seeded in migration 51, so the dynamic sidebar link lands
+    // on a working page). The legacy 'garage-products' route above is kept
+    // alive unchanged (no broken bookmarks/menus).
+    {
+      path: '/',
+      component: AdminLayout,
+      meta: { requiresAuth: true, requiresCompany: true },
+      children: [
+        {
+          path: 'products',
+          name: 'products-catalog',
+          component: () => import('../views/garage/screens_garage_products.vue'),
+          meta: { requiresAnyModule: ['garage_operations', 'inventory'], requiresTransaction: 'products' }
+        },
+      ]
+    },
+    // ─────────────────────────────────────────────────────────────────────────
+
     // ── Core 2: Financial Core (code='financial_core') ───────────────────────
     {
       path: '/',
@@ -475,6 +496,18 @@ const router = createRouter({
       ]
     },
 
+    // Core 7: Cotizaciones (code='cotizaciones', standalone module — design §1 ADR-6)
+    {
+      path: '/',
+      component: AdminLayout,
+      meta: { requiresAuth: true, requiresCompany: true },
+      children: [
+        { path: 'cotizaciones', name: 'cotizaciones-list', component: () => import('../views/cotizaciones/screens_cotizaciones_list.vue'), meta: { requiresModule: 'cotizaciones', requiresTransaction: 'quotes' } },
+        { path: 'cotizaciones/new', name: 'cotizaciones-new', component: () => import('../views/cotizaciones/screens_cotizaciones_detail.vue'), meta: { requiresModule: 'cotizaciones', requiresTransaction: 'quotes' } },
+        { path: 'cotizaciones/:id', name: 'cotizaciones-detail', component: () => import('../views/cotizaciones/screens_cotizaciones_detail.vue'), meta: { requiresModule: 'cotizaciones', requiresTransaction: 'quotes' } },
+      ]
+    },
+
     {
       path: '/:pathMatch(.*)*',
       redirect: '/dashboard'
@@ -528,6 +561,7 @@ router.beforeEach(async (to, _from, next) => {
   // Si el menú no cargó y la ruta requiere validación de transacción, esperar a que cargue.
   if (!isSuperAdmin && hasCompany) {
     const requiredModule = to.meta.requiresModule as string | undefined
+    const requiredAnyModule = to.meta.requiresAnyModule as string[] | undefined
     const requiredTransaction = to.meta.requiresTransaction as string | undefined
 
     // Await menu load if transaction check is needed and menu not loaded
@@ -536,6 +570,11 @@ router.beforeEach(async (to, _from, next) => {
     }
 
     if (requiredModule && !menuStore.hasModule(requiredModule)) {
+      return next('/dashboard')
+    }
+    // OR-semantics module guard (products-catalog-transversal design §1):
+    // route is reachable when ANY of the listed modules is enabled.
+    if (requiredAnyModule && !menuStore.hasAnyModule(requiredAnyModule)) {
       return next('/dashboard')
     }
     // Validación por transacción: buscar por ruta exacta en el índice del menú.
