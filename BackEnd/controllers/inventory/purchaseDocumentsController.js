@@ -1,6 +1,7 @@
 const db = require('../../config/db');
 const { resolveSchema } = require('../../utils/tenantResolver');
 const { allocateNumber } = require('../../services/inventory/sequenceService');
+const { normalizeCatalogText, normalizeSku } = require('../../utils/normalizeText');
 
 const DOCUMENT_TYPES = ['purchase_order', 'purchase_invoice'];
 const EDITABLE_STATUSES = ['draft'];
@@ -26,6 +27,72 @@ function validateHeader(body, res) {
     return true;
 }
 
+/**
+ * Resolves a purchase-document line's product: either an existing
+ * `product_id` (row is locked and promoted to `inventory_enabled=true` if it
+ * wasn't already) or an inline `new_product` definition (dedupe by
+ * `normalized_name` — reuse+promote the existing row instead of erroring, or
+ * INSERT a brand-new one with `inventory_enabled=true`).
+ *
+ * This is the resolve-or-create + promote-on-first-purchase mechanism
+ * (spec: Purchase Document Flow domain; design §4). `inventory_enabled` is
+ * only ever flipped here (or left alone), never by products CRUD — that
+ * write stays locked once Inventory is active (see productsController).
+ */
+async function resolveLineProduct(client, schema, line) {
+    if (line.product_id) {
+        const product = await client.query(
+            `SELECT id, name, sku, unit, inventory_enabled FROM ${schema}.products WHERE id = $1 FOR UPDATE`,
+            [line.product_id]
+        );
+        if (!product.rows.length) {
+            const error = new Error('El producto de la línea no existe');
+            error.statusCode = 400;
+            throw error;
+        }
+        if (!product.rows[0].inventory_enabled) {
+            await client.query(
+                `UPDATE ${schema}.products SET inventory_enabled = TRUE, updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
+                [product.rows[0].id]
+            );
+            product.rows[0].inventory_enabled = true;
+        }
+        return product.rows[0];
+    }
+
+    if (line.new_product && line.new_product.name && line.new_product.name.trim()) {
+        const np = line.new_product;
+        const normalized = normalizeCatalogText(np.name);
+        const existing = await client.query(
+            `SELECT id, name, sku, unit, inventory_enabled FROM ${schema}.products WHERE normalized_name = $1 FOR UPDATE`,
+            [normalized]
+        );
+        if (existing.rows.length) {
+            if (!existing.rows[0].inventory_enabled) {
+                await client.query(
+                    `UPDATE ${schema}.products SET inventory_enabled = TRUE, updated_at = CURRENT_TIMESTAMP WHERE id = $1`,
+                    [existing.rows[0].id]
+                );
+                existing.rows[0].inventory_enabled = true;
+            }
+            return existing.rows[0];
+        }
+        const normalizedSku = np.sku ? normalizeSku(np.sku) : null;
+        const inserted = await client.query(
+            `INSERT INTO ${schema}.products (
+                name, normalized_name, sku, description, product_type, unit, reference_price, currency, inventory_enabled
+             ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,TRUE) RETURNING id, name, sku, unit, inventory_enabled`,
+            [np.name.trim(), normalized, normalizedSku, np.description || null, np.product_type || 'consumable',
+             np.unit || 'unidad', number(np.reference_price), np.currency || 'CLP']
+        );
+        return inserted.rows[0];
+    }
+
+    const error = new Error('Cada línea requiere product_id o new_product');
+    error.statusCode = 400;
+    throw error;
+}
+
 async function buildLines(client, schema, lines) {
     if (!Array.isArray(lines) || !lines.length) {
         const error = new Error('El documento requiere al menos una línea');
@@ -36,27 +103,19 @@ async function buildLines(client, schema, lines) {
     for (const line of lines) {
         const quantity = number(line.quantity, -1);
         const unitCost = number(line.unit_cost, -1);
-        if (!line.product_id || quantity <= 0 || unitCost < 0) {
-            const error = new Error('Cada línea requiere product_id, quantity > 0 y unit_cost >= 0');
+        if ((!line.product_id && !line.new_product) || quantity <= 0 || unitCost < 0) {
+            const error = new Error('Cada línea requiere product_id o new_product, quantity > 0 y unit_cost >= 0');
             error.statusCode = 400;
             throw error;
         }
-        const product = await client.query(
-            `SELECT id, name, sku, unit, inventory_enabled FROM ${schema}.products WHERE id = $1`,
-            [line.product_id]
-        );
-        if (!product.rows.length || !product.rows[0].inventory_enabled) {
-            const error = new Error('El producto no existe o no tiene inventario habilitado');
-            error.statusCode = 400;
-            throw error;
-        }
+        const product = await resolveLineProduct(client, schema, line);
         const discount = number(line.discount_percent);
         const tax = number(line.tax_percent);
         const gross = quantity * unitCost;
         const lineTotal = line.line_total === undefined ? gross * (1 - discount / 100) * (1 + tax / 100) : number(line.line_total);
         built.push({
-            productId: product.rows[0].id, productName: product.rows[0].name, sku: product.rows[0].sku,
-            quantity, unit: line.unit || product.rows[0].unit, unitCost, discount, tax, lineTotal,
+            productId: product.id, productName: product.name, sku: product.sku,
+            quantity, unit: line.unit || product.unit, unitCost, discount, tax, lineTotal,
             notes: line.notes || null
         });
     }
@@ -165,3 +224,12 @@ exports.changeStatus = async (req, res) => {
         res.json(result.rows[0]);
     } catch (err) { res.status(err.statusCode || 500).json({ error: err.message || 'Error al cambiar estado' }); }
 };
+
+// Exported for reuse by BackEnd/services/cotizaciones/quotePaymentService.js,
+// which auto-generates a draft purchase_documents row (grouped by supplier)
+// when a tercerizador quote is paid — same resolve-or-create line-building
+// and totals logic as a manually-created purchase document (spec: Tercerizador
+// Fulfillment domain; design §4, §6).
+exports.buildLines = buildLines;
+exports.totals = totals;
+exports.insertLines = insertLines;

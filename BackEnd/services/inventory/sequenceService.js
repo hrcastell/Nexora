@@ -2,7 +2,11 @@ const SEQUENCE_DEFAULTS = {
     purchase_order: { prefix: 'OC', padding: 6, resetPolicy: 'yearly' },
     purchase_invoice: { prefix: 'FC', padding: 6, resetPolicy: 'yearly' },
     dispatch_order: { prefix: 'OD', padding: 6, resetPolicy: 'yearly' },
-    stock_count: { prefix: 'CI', padding: 6, resetPolicy: 'yearly' }
+    stock_count: { prefix: 'CI', padding: 6, resetPolicy: 'yearly' },
+    // Cotizaciones (Phase 3, migration 54): quotes reuse this same
+    // document_sequences / allocateNumber() correlative mechanism instead
+    // of independent numbering.
+    quote: { prefix: 'COT', padding: 6, resetPolicy: 'yearly' }
 };
 
 function assertSchema(schema) {

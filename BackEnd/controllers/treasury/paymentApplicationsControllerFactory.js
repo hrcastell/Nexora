@@ -1,6 +1,7 @@
 const db = require('../../config/db');
 const { resolveSchema } = require('../../utils/tenantResolver');
 const { createNotification } = require('../../utils/notifications');
+const { markQuotePaidAndGenerateDraftPO } = require('../../services/cotizaciones/quotePaymentService');
 
 function createError(message, statusCode) {
     const error = new Error(message);
@@ -96,7 +97,7 @@ module.exports = function createPaymentApplicationsController(config) {
 
     async function lockDocument(client, schema, documentId, counterpartyId) {
         const result = await client.query(
-            `SELECT id, counterparty_id, total_amount, balance_amount, status
+            `SELECT id, counterparty_id, total_amount, balance_amount, status, origin_core
              FROM ${schema}.treasury_documents
              WHERE id = $1 AND direction = $2
              FOR UPDATE`,
@@ -186,6 +187,10 @@ module.exports = function createPaymentApplicationsController(config) {
             }
 
             const insertedApplications = [];
+            // Quote payment settle-hook (spec: Treasury Integration for
+            // Quote Payment domain; design §6, ADR-4). Collected during the
+            // loop, actioned AFTER commit — see below.
+            const settledQuoteDocuments = [];
             for (const application of applications) {
                 const document = await lockDocument(client, schema, application.treasuryDocumentId, entity.counterparty_id);
                 if (application.appliedAmount > Number(document.balance_amount)) {
@@ -208,12 +213,16 @@ module.exports = function createPaymentApplicationsController(config) {
                 }
 
                 const documentBalance = Number(document.balance_amount) - application.appliedAmount;
+                const newDocumentStatus = documentStatus(documentBalance, document.total_amount);
                 await client.query(
                     `UPDATE ${schema}.treasury_documents
                      SET balance_amount = $1, status = $2, updated_at = CURRENT_TIMESTAMP
                      WHERE id = $3`,
-                    [documentBalance, documentStatus(documentBalance, document.total_amount), document.id]
+                    [documentBalance, newDocumentStatus, document.id]
                 );
+                if (newDocumentStatus === 'settled' && document.origin_core === 'cotizaciones') {
+                    settledQuoteDocuments.push(document.id);
+                }
                 const inserted = await client.query(
                     `INSERT INTO ${schema}.${applicationTable}
                      (tenant_id, ${applicationEntityColumn}, treasury_document_id, installment_id, applied_amount)
@@ -224,6 +233,24 @@ module.exports = function createPaymentApplicationsController(config) {
                 insertedApplications.push(inserted.rows[0]);
             }
             await client.query('COMMIT');
+
+            // Fire the quote payment settle-hook AFTER commit, in its own
+            // transaction (quotePaymentService.markQuotePaidAndGenerateDraftPO
+            // opens its own client) — a failure here must not roll back an
+            // already-legitimate, committed payment application.
+            for (const treasuryDocumentId of settledQuoteDocuments) {
+                try {
+                    const quoteRes = await db.query(
+                        `SELECT id FROM ${schema}.quotes WHERE treasury_document_id = $1`,
+                        [treasuryDocumentId]
+                    );
+                    if (quoteRes.rows.length) {
+                        await markQuotePaidAndGenerateDraftPO(schema, quoteRes.rows[0].id, treasuryDocumentId);
+                    }
+                } catch (hookErr) {
+                    console.error('paymentApplicationsControllerFactory quote settle-hook error:', hookErr.message);
+                }
+            }
 
             await createNotification({
                 userId: req.user.id,

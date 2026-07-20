@@ -1345,7 +1345,7 @@ CREATE TABLE IF NOT EXISTS {schema_name}.document_sequences (
     seq_year             INTEGER     NOT NULL,
     CONSTRAINT uq_document_sequences_type UNIQUE (document_type),
     CONSTRAINT chk_document_sequences_type CHECK (document_type IN (
-        'purchase_order', 'purchase_invoice', 'dispatch_order', 'stock_count'
+        'purchase_order', 'purchase_invoice', 'dispatch_order', 'stock_count', 'quote'
     )),
     CONSTRAINT chk_document_sequences_reset_policy CHECK (reset_policy IN ('yearly', 'never'))
 );

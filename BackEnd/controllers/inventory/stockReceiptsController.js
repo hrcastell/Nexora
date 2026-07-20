@@ -143,8 +143,16 @@ exports.confirm = async (req, res) => {
         `SELECT COALESCE(SUM(signed_quantity),0) on_hand FROM ${schema}.stock_movements WHERE product_id=$1`,
         [line.product_id],
       );
+      // ADR-3 (design §3c, spec: Legacy Data Freeze domain): any non-positive
+      // on-hand-before-receipt (zero, or negative under allow_negative_stock)
+      // resets average_cost to the receipt's unit cost instead of weighting
+      // it against a stale/legacy value. This is what actually makes the
+      // hand-entered-cost freeze correct — the CASE previously only guarded
+      // the div-by-zero case ($1+$2=0), which left a genuinely negative
+      // on-hand quantity skewing the weighted average with a value that no
+      // longer reflects real stock.
       await client.query(
-        `UPDATE ${schema}.products SET average_cost=CASE WHEN $1+$2=0 THEN average_cost ELSE (($1*average_cost)+($2*$3))/($1+$2) END,last_purchase_cost=$3 WHERE id=$4`,
+        `UPDATE ${schema}.products SET average_cost=CASE WHEN $1<=0 THEN $3 ELSE (($1*average_cost)+($2*$3))/($1+$2) END,last_purchase_cost=$3 WHERE id=$4`,
         [Number(p.rows[0].on_hand) - qty, qty, cost, line.product_id],
       );
     }
@@ -152,18 +160,46 @@ exports.confirm = async (req, res) => {
       `SELECT COUNT(*) count FROM ${schema}.purchase_document_lines WHERE purchase_document_id=$1 AND pending_quantity>0`,
       [receipt.rows[0].purchase_document_id],
     );
+    const purchaseDocumentStatus =
+      Number(pending.rows[0].count) > 0 ? "partially_received" : "received";
     await client.query(
       `UPDATE ${schema}.purchase_documents SET status=$1,updated_at=NOW() WHERE id=$2`,
-      [
-        Number(pending.rows[0].count) > 0 ? "partially_received" : "received",
-        receipt.rows[0].purchase_document_id,
-      ],
+      [purchaseDocumentStatus, receipt.rows[0].purchase_document_id],
     );
     await client.query(
       `UPDATE ${schema}.stock_receipts SET status='confirmed' WHERE id=$1`,
       [req.params.id],
     );
     await client.query("COMMIT");
+
+    // Tercerizador fulfillment — no bypass (spec: Tercerizador Fulfillment
+    // domain; design §6). A quote reaching `paid` auto-generates a draft
+    // purchase_documents row (quotePaymentService) and records its id on
+    // quotes.converted_purchase_document_id. Once that same purchase
+    // document is FULLY received (a real stock receipt/movement has landed
+    // in the warehouse), the linked quote may finally move to `converted`.
+    // Best-effort / non-blocking: a failure here must not roll back an
+    // already-committed, legitimate stock receipt.
+    if (purchaseDocumentStatus === "received") {
+      try {
+        const linkedQuote = await db.query(
+          `SELECT id FROM ${schema}.quotes WHERE converted_purchase_document_id = $1 AND status = 'paid'`,
+          [receipt.rows[0].purchase_document_id],
+        );
+        if (linkedQuote.rows.length) {
+          await db.query(
+            `UPDATE ${schema}.quotes SET status='converted', converted_at=CURRENT_TIMESTAMP, updated_at=CURRENT_TIMESTAMP WHERE id=$1`,
+            [linkedQuote.rows[0].id],
+          );
+        }
+      } catch (linkErr) {
+        console.error(
+          "stockReceiptsController.confirm quote-conversion link error:",
+          linkErr.message,
+        );
+      }
+    }
+
     for (const line of lines) {
       const stock = await db.query(
         `SELECT COALESCE(SUM(sm.signed_quantity),0) on_hand,p.reorder_point,p.name FROM ${schema}.stock_movements sm JOIN ${schema}.products p ON p.id=sm.product_id WHERE sm.product_id=$1 AND sm.warehouse_id=$2 GROUP BY p.reorder_point,p.name`,
