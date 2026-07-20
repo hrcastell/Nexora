@@ -335,3 +335,6 @@ select option {
   background-color: #ffffff;
   color: #0f172a;
 }
+/* Accessibility baseline shared by all views. */
+:where(button, a, input, select, textarea, [tabindex]):focus-visible { outline: 3px solid rgba(212, 175, 55, .9); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; } }

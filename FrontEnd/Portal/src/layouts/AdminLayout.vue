@@ -189,6 +189,8 @@ const logout = () => {
               <!-- Module toggle button -->
               <button
                 @click="toggleModule(mod.code)"
+                :aria-expanded="isModuleExpanded(mod.code)"
+                :aria-controls="`module-${mod.code}-transactions`"
                 :class="[
                   'flex w-full items-center gap-3 rounded-2xl border px-4 py-3 text-left transition',
                   isModuleActive(mod)
@@ -204,7 +206,7 @@ const logout = () => {
               </button>
 
               <!-- Module transactions submenu -->
-              <div v-show="isModuleExpanded(mod.code)" class="mt-1 space-y-1 pl-4">
+              <div v-show="isModuleExpanded(mod.code)" :id="`module-${mod.code}-transactions`" class="mt-1 space-y-1 pl-4" role="group" :aria-label="`${mod.name} transactions`">
                 <router-link
                   v-for="tx in mod.visibleTransactions"
                   :key="tx.code"
@@ -220,7 +222,10 @@ const logout = () => {
                   <div :class="['flex h-8 w-8 items-center justify-center rounded-xl', isActive(tx.route) ? 'nxr-nav-icon-active' : 'bg-white/5 text-slate-500']">
                     <component :is="resolveIcon(tx.icon)" class="h-4 w-4" />
                   </div>
-                  <span class="text-sm">{{ tx.name }}</span>
+                  <span class="min-w-0">
+                    <span class="block text-sm">{{ tx.name }}</span>
+                    <span v-if="tx.description" class="block truncate text-xs text-slate-500">{{ tx.description }}</span>
+                  </span>
                 </router-link>
               </div>
             </div>
