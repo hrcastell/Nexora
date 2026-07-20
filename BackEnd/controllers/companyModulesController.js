@@ -1,5 +1,6 @@
 const db = require('../config/db');
 const { createNotification } = require('../utils/notifications');
+const { invalidateCompanyModuleCache } = require('../utils/moduleState');
 
 const isSuperAdmin = (req) => req.user?.is_super_admin === true;
 const isAdmin      = (req) => isSuperAdmin(req) || req.user?.role === 'admin';
@@ -58,6 +59,44 @@ async function seedDefaultProfilePermissionsForModule(client, { companyId, modul
             [adminProfileId, transactionCode, true, true, true, true, true, true, true]
         );
     }
+}
+
+/**
+ * Seed default profile_transaction_permissions for the virtual `products`
+ * transaction (public.module_catalog code='products', ADR-1: no
+ * company_modules row for it — see BackEnd/utils/moduleState.js) when
+ * `garage_operations` or `inventory` is enabled for a company.
+ *
+ * This mirrors Database/04_migrations/53_products_cotizaciones_profile_permissions.sql's
+ * one-time backfill, but going forward for companies enabling either core
+ * AFTER that migration ran — otherwise admin_empresa would never see the
+ * neutral Products node for newly-onboarded/newly-enabled companies.
+ */
+async function seedVirtualProductsPermissions(client, companyId) {
+    const companyRes = await client.query(
+        'SELECT schema_name FROM public.companies WHERE id = $1',
+        [companyId]
+    );
+    const schema = companyRes.rows[0]?.schema_name;
+    if (!schema) return;
+
+    const adminProfileRes = await client.query(
+        `SELECT id FROM "${schema}".profiles WHERE code = 'admin_empresa' LIMIT 1`
+    );
+    if (adminProfileRes.rows.length === 0) {
+        console.warn(`No admin_empresa profile found in ${schema} - skipping products permission seed`);
+        return;
+    }
+    const adminProfileId = adminProfileRes.rows[0].id;
+
+    await client.query(
+        `INSERT INTO "${schema}".profile_transaction_permissions
+         (profile_id, transaction_code, can_view, can_create, can_edit,
+          can_delete, can_approve, can_export, can_admin)
+         VALUES ($1, 'products', TRUE, TRUE, TRUE, TRUE, TRUE, TRUE, TRUE)
+         ON CONFLICT (profile_id, transaction_code) DO NOTHING`,
+        [adminProfileId]
+    );
 }
 
 /**
@@ -158,9 +197,13 @@ exports.upsertCompanyModule = async (req, res) => {
 
         if (enabled) {
             await seedDefaultProfilePermissionsForModule(client, { companyId, moduleId });
+            if (moduleCode === 'garage_operations' || moduleCode === 'inventory') {
+                await seedVirtualProductsPermissions(client, companyId);
+            }
         }
 
         await client.query('COMMIT');
+        invalidateCompanyModuleCache(companyId);
 
         const actionLabel = enabled ? 'habilitado' : 'deshabilitado';
         createNotification({

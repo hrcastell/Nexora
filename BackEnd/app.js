@@ -100,6 +100,12 @@ app.use('/api/hr',                         require('./routes/hr/hrRoutes'));
 // Core 6: Treasury and Collections
 app.use('/api/treasury',                   require('./routes/treasury/treasuryRoutes'));
 
+// ── Products (neutral catalog, OR-gated: garage_operations OR inventory) ──
+app.use('/api/products',                   require('./routes/products/productsRoutes'));
+
+// ── Cotizaciones (standalone module) ────────────────────────────
+app.use('/api/cotizaciones',               require('./routes/cotizaciones/cotizacionesRoutes'));
+
 const authMiddleware  = require('./middleware/authMiddleware');
 const usersController = require('./controllers/usersController');
 const upload          = require('./utils/upload');

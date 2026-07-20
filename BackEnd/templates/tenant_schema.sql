@@ -1345,7 +1345,7 @@ CREATE TABLE IF NOT EXISTS {schema_name}.document_sequences (
     seq_year             INTEGER     NOT NULL,
     CONSTRAINT uq_document_sequences_type UNIQUE (document_type),
     CONSTRAINT chk_document_sequences_type CHECK (document_type IN (
-        'purchase_order', 'purchase_invoice', 'dispatch_order', 'stock_count'
+        'purchase_order', 'purchase_invoice', 'dispatch_order', 'stock_count', 'quote'
     )),
     CONSTRAINT chk_document_sequences_reset_policy CHECK (reset_policy IN ('yearly', 'never'))
 );
@@ -1895,6 +1895,66 @@ DROP TRIGGER IF EXISTS treasury_cash_movements_no_mutate ON {schema_name}.treasu
 CREATE TRIGGER treasury_cash_movements_no_mutate
 BEFORE UPDATE OR DELETE ON {schema_name}.treasury_cash_movements
 FOR EACH ROW EXECUTE PROCEDURE {schema_name}.trg_treasury_cash_movements_immutable();
+
+-- ─── COTIZACIONES (standalone module — migration 52) ─────────
+-- Distinct from dental_quotes/dental_quote_items. No shared table.
+-- treasury_document_id (not treasury_collections, which does not
+-- exist) is the real payment source of truth for a quote.
+
+CREATE TABLE IF NOT EXISTS {schema_name}.quotes (
+    id                             SERIAL PRIMARY KEY,
+    quote_number                   VARCHAR(50)   NOT NULL,
+    customer_id                    INTEGER       REFERENCES {schema_name}.customers(id) ON DELETE SET NULL,
+    status                         VARCHAR(30)   NOT NULL DEFAULT 'draft',
+    valid_until                    DATE,
+    subtotal                       NUMERIC(14,2) NOT NULL DEFAULT 0,
+    discount_amount                NUMERIC(14,2) NOT NULL DEFAULT 0,
+    final_amount                   NUMERIC(14,2) NOT NULL DEFAULT 0,
+    accepted_at                    TIMESTAMP,
+    accepted_by_name               VARCHAR(150),
+    acceptance_notes               TEXT,
+    rejected_at                    TIMESTAMP,
+    rejection_reason               TEXT,
+    treasury_document_id           INTEGER       REFERENCES {schema_name}.treasury_documents(id) ON DELETE SET NULL,
+    paid_at                        TIMESTAMP,
+    converted_at                   TIMESTAMP,
+    converted_purchase_document_id INTEGER       REFERENCES {schema_name}.purchase_documents(id) ON DELETE SET NULL,
+    notes                          TEXT,
+    created_by                     INTEGER,
+    created_at                     TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
+    updated_at                     TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_quotes_number UNIQUE (quote_number),
+    CONSTRAINT chk_quotes_status CHECK (status IN (
+        'draft', 'sent', 'accepted', 'rejected', 'expired', 'paid', 'converted'
+    ))
+);
+
+CREATE INDEX IF NOT EXISTS idx_quotes_customer_id            ON {schema_name}.quotes(customer_id);
+CREATE INDEX IF NOT EXISTS idx_quotes_status                 ON {schema_name}.quotes(status);
+CREATE INDEX IF NOT EXISTS idx_quotes_treasury_document_id   ON {schema_name}.quotes(treasury_document_id);
+CREATE INDEX IF NOT EXISTS idx_quotes_converted_purchase_doc ON {schema_name}.quotes(converted_purchase_document_id);
+
+CREATE TABLE IF NOT EXISTS {schema_name}.quote_lines (
+    id                     SERIAL PRIMARY KEY,
+    quote_id               INTEGER       NOT NULL REFERENCES {schema_name}.quotes(id) ON DELETE CASCADE,
+    product_id             INTEGER       REFERENCES {schema_name}.products(id) ON DELETE SET NULL,
+    product_name_snapshot  VARCHAR(150),
+    sku_snapshot           VARCHAR(80),
+    supplier_id            INTEGER       REFERENCES {schema_name}.suppliers(id) ON DELETE SET NULL,
+    supplier_cost          NUMERIC(14,4) NOT NULL DEFAULT 0,
+    margin_pct             NUMERIC(8,4)  NOT NULL DEFAULT 0,
+    unit_price             NUMERIC(14,4) NOT NULL DEFAULT 0,
+    quantity               NUMERIC(12,2) NOT NULL DEFAULT 1,
+    subtotal               NUMERIC(14,2) NOT NULL DEFAULT 0,
+    is_non_stocked         BOOLEAN       NOT NULL DEFAULT FALSE,
+    created_at             TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
+    updated_at             TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT chk_quote_lines_quantity CHECK (quantity > 0)
+);
+
+CREATE INDEX IF NOT EXISTS idx_quote_lines_quote_id    ON {schema_name}.quote_lines(quote_id);
+CREATE INDEX IF NOT EXISTS idx_quote_lines_product_id  ON {schema_name}.quote_lines(product_id);
+CREATE INDEX IF NOT EXISTS idx_quote_lines_supplier_id ON {schema_name}.quote_lines(supplier_id);
 
 
 -- Optional phpPgAdmin browse access for the hosting login.

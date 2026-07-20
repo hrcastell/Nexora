@@ -112,6 +112,17 @@ export const useMenuStore = defineStore('menu', () => {
     return moduleCodes.value.has(code);
   }
 
+  /**
+   * OR-semantics module check (design §1, touchpoint 4/5 — products-catalog-transversal).
+   * Used for routes/UI gated by "any of these modules", e.g. the neutral
+   * Products catalog (garage_operations OR inventory). Returns true before
+   * the menu loads (same fallback behavior as hasModule).
+   */
+  function hasAnyModule(codes: string[]): boolean {
+    if (!loaded.value) return true; // antes de la carga, permitir (fallback)
+    return codes.some((code) => hasModule(code));
+  }
+
   function hasTransaction(route: string): boolean {
     if (!loaded.value) return true; // fallback
     return routeIndex.value.has(route);
@@ -146,6 +157,7 @@ export const useMenuStore = defineStore('menu', () => {
     routeIndex,
     permissionIndex,
     hasModule,
+    hasAnyModule,
     hasTransaction,
     loadMenu,
     reset,
