@@ -1,4 +1,5 @@
 const db = require('../config/db');
+const { isProductsModuleActive } = require('../utils/moduleState');
 
 /**
  * GET /api/menu/me
@@ -56,6 +57,30 @@ exports.getMyMenu = async (req, res) => {
         );
 
         const modules = modulesRes.rows;
+
+        // Virtual `products` module (design §1, ADR-1): no row in
+        // public.company_modules — inject it here when garage_operations OR
+        // inventory is active for the company, so it flows through the same
+        // transaction-fetch/permission-filter pipeline below as any real module.
+        if (await isProductsModuleActive(companyId)) {
+            const productsModRes = await db.query(
+                `SELECT id, code, name, description, icon, group_name,
+                        is_core, is_global, is_system,
+                        menu_order_default AS menu_order, status
+                 FROM public.module_catalog
+                 WHERE code = 'products' AND status = 'activo'`
+            );
+            if (productsModRes.rows.length > 0) {
+                modules.push({
+                    ...productsModRes.rows[0],
+                    is_enabled: true,
+                    is_visible: true,
+                    is_required: false
+                });
+                modules.sort((a, b) => (a.menu_order - b.menu_order) || String(a.name).localeCompare(String(b.name)));
+            }
+        }
+
         if (modules.length === 0) {
             return res.json({ company_id: companyId, modules: [] });
         }

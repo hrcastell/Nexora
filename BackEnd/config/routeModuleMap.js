@@ -9,8 +9,15 @@
  * antes de ejecutar el controller.
  *
  * Formato: { 'METHOD /path': { module: 'code', transaction: 'code' } }
- * - module:      código en public.module_catalog
+ *        ó { 'METHOD /path': { modules: ['codeA','codeB'], semantics: 'OR', transaction: 'code' } }
+ * - module:      código en public.module_catalog (semántica AND implícita, un solo módulo)
+ * - modules:     lista de códigos en public.module_catalog (usar junto a `semantics`)
+ * - semantics:   'AND' (default, todos requeridos) | 'OR' (basta con uno)
  * - transaction: código en public.module_transactions (opcional)
+ *
+ * `resolveRouteModule` normaliza SIEMPRE la entrada legacy `{module}` a
+ * `{modules:[module], semantics:'AND'}` antes de devolverla — los
+ * consumidores (requireModule.js) sólo deben leer `modules`/`semantics`.
  *
  * Las rutas usan el path base después de /api/... y aceptan comodines
  * básicos mediante path-to-regex style: `:id`, `:userId`, etc.
@@ -151,12 +158,37 @@ const ROUTE_MODULE_MAP = {
     'PATCH  /garage/labor-rates/:id/status':               { module: 'garage_operations', transaction: 'garage_labor_rates' },
     'GET    /garage/employees/:employeeId/labor-rates':    { module: 'garage_operations', transaction: 'garage_labor_rates' },
 
-    // ── Garage Operations: Productos ──
-    'GET    /garage/products':              { module: 'garage_operations', transaction: 'garage_products' },
-    'POST   /garage/products':              { module: 'garage_operations', transaction: 'garage_products' },
-    'GET    /garage/products/:id':          { module: 'garage_operations', transaction: 'garage_products' },
-    'PUT    /garage/products/:id':          { module: 'garage_operations', transaction: 'garage_products' },
-    'PATCH  /garage/products/:id/status':   { module: 'garage_operations', transaction: 'garage_products' },
+    // ── Products (catálogo neutral, OR-gated: garage_operations OR inventory) ──
+    // ADR-1 (design §1): `products` no tiene fila propia en company_modules;
+    // está habilitado cuando garage_operations O inventory lo están.
+    // `/garage/products*` es la ruta legacy (sigue viva); `/products*` es el
+    // alias neutral montado en Fase 3 (task 3.9) sobre el mismo controller.
+    'GET    /garage/products':              { modules: ['garage_operations', 'inventory'], semantics: 'OR', transaction: 'products' },
+    'POST   /garage/products':              { modules: ['garage_operations', 'inventory'], semantics: 'OR', transaction: 'products' },
+    'GET    /garage/products/:id':          { modules: ['garage_operations', 'inventory'], semantics: 'OR', transaction: 'products' },
+    'PUT    /garage/products/:id':          { modules: ['garage_operations', 'inventory'], semantics: 'OR', transaction: 'products' },
+    'PATCH  /garage/products/:id/status':   { modules: ['garage_operations', 'inventory'], semantics: 'OR', transaction: 'products' },
+
+    'GET    /products':              { modules: ['garage_operations', 'inventory'], semantics: 'OR', transaction: 'products' },
+    'POST   /products':              { modules: ['garage_operations', 'inventory'], semantics: 'OR', transaction: 'products' },
+    'GET    /products/:id':          { modules: ['garage_operations', 'inventory'], semantics: 'OR', transaction: 'products' },
+    'PUT    /products/:id':          { modules: ['garage_operations', 'inventory'], semantics: 'OR', transaction: 'products' },
+    'PATCH  /products/:id/status':   { modules: ['garage_operations', 'inventory'], semantics: 'OR', transaction: 'products' },
+
+    // ── Cotizaciones: standalone module (its own quotes transaction) ──
+    // Routes registered in Phase 3 (task 3.8, BackEnd/routes/cotizaciones/cotizacionesRoutes.js),
+    // mounted under /api/cotizaciones. Listed here now so the guard is
+    // effective the moment those routes land — inert until then.
+    'GET    /cotizaciones/quotes':                     { module: 'cotizaciones', transaction: 'quotes' },
+    'POST   /cotizaciones/quotes':                     { module: 'cotizaciones', transaction: 'quotes' },
+    'GET    /cotizaciones/quotes/:id':                 { module: 'cotizaciones', transaction: 'quotes' },
+    'PUT    /cotizaciones/quotes/:id':                 { module: 'cotizaciones', transaction: 'quotes' },
+    'POST   /cotizaciones/quotes/:id/lines':           { module: 'cotizaciones', transaction: 'quotes' },
+    'PUT    /cotizaciones/quotes/:id/lines/:lineId':   { module: 'cotizaciones', transaction: 'quotes' },
+    'DELETE /cotizaciones/quotes/:id/lines/:lineId':   { module: 'cotizaciones', transaction: 'quotes' },
+    'POST   /cotizaciones/quotes/:id/send':            { module: 'cotizaciones', transaction: 'quotes' },
+    'POST   /cotizaciones/quotes/:id/accept':          { module: 'cotizaciones', transaction: 'quotes' },
+    'POST   /cotizaciones/quotes/:id/reject':          { module: 'cotizaciones', transaction: 'quotes' },
 
     // ── Inventory: Proveedores ──
     'GET    /inventory/suppliers':            { module: 'inventory', transaction: 'inventory_suppliers' },
@@ -473,14 +505,20 @@ const COMPILED = Object.entries(ROUTE_MODULE_MAP).map(([key, value]) => {
 });
 
 /**
- * Resuelve módulo/transacción para una ruta + método.
+ * Resuelve módulo(s)/semántica/transacción para una ruta + método.
  * Retorna null si la ruta no está mapeada (default-permit).
+ *
+ * Siempre normaliza a `{ modules: string[], semantics: 'AND'|'OR', transaction }`.
+ * Las entradas legacy `{ module }` se envuelven como `{ modules:[module], semantics:'AND' }`
+ * — comportamiento histórico sin cambios para toda ruta no tocada por esta feature.
  */
 function resolveRouteModule(method, path) {
     const m = method.toUpperCase();
     for (const entry of COMPILED) {
         if (entry.method === m && entry.regex.test(path)) {
-            return { module: entry.module, transaction: entry.transaction };
+            const modules = entry.modules ?? (entry.module ? [entry.module] : []);
+            const semantics = entry.semantics === 'OR' ? 'OR' : 'AND';
+            return { modules, semantics, transaction: entry.transaction };
         }
     }
     return null;

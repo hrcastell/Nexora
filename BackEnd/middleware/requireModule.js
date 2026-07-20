@@ -4,6 +4,13 @@
  * Middleware que valida que la compañía actual tenga habilitado el
  * módulo correspondiente a la ruta (según routeModuleMap).
  *
+ * Soporta dos semánticas por ruta (routeModuleMap `resolveRouteModule`):
+ *   - AND (default, comportamiento histórico): TODOS los módulos listados
+ *     deben estar habilitados.
+ *   - OR (nuevo, products-catalog-transversal): BASTA con que UNO de los
+ *     módulos listados esté habilitado (p.ej. `/products*` con
+ *     `modules:['garage_operations','inventory']`).
+ *
  * MODO LOG-ONLY (default en fase 3):
  *   - Si la compañía NO tiene el módulo habilitado, SOLO se registra en log.
  *   - Se deja pasar la request al siguiente middleware.
@@ -15,38 +22,15 @@
  * (cualquier otro valor = modo log-only).
  */
 
-const db = require('../config/db');
 const { resolveRouteModule } = require('../config/routeModuleMap');
+const { getEnabledModuleCodes } = require('../utils/moduleState');
 
 const MODE = (process.env.MODULE_GUARD || 'log-only').toLowerCase();
 const STRICT = MODE === 'strict';
 
-// Caché simple por companyId → { code → bool }
-// Se invalida automáticamente cada 30s
-const CACHE = new Map();
-const CACHE_TTL_MS = 30 * 1000;
-
-async function getEnabledModulesForCompany(companyId) {
-    const cached = CACHE.get(companyId);
-    if (cached && cached.expiresAt > Date.now()) {
-        return cached.map;
-    }
-
-    const res = await db.query(
-        `SELECT m.code FROM public.module_catalog m
-         JOIN public.company_modules cm ON cm.module_id = m.id
-         WHERE cm.company_id = $1 AND cm.is_enabled = TRUE AND m.status = 'activo'`,
-        [companyId]
-    );
-
-    const map = new Set(res.rows.map(r => r.code));
-    CACHE.set(companyId, { map, expiresAt: Date.now() + CACHE_TTL_MS });
-    return map;
-}
-
 /**
- * Middleware global: resuelve la ruta al par (module, transaction) y
- * valida contra los módulos habilitados de la compañía del usuario.
+ * Middleware global: resuelve la ruta a su(s) módulo(s)/semántica/transacción
+ * y valida contra los módulos habilitados de la compañía del usuario.
  *
  * Se monta DESPUÉS del routing para que la ruta ya esté resuelta.
  */
@@ -63,17 +47,26 @@ async function requireModuleMiddleware(req, res, next) {
         const mapping = resolveRouteModule(req.method, path);
         if (!mapping) return next(); // default-permit para rutas no mapeadas
 
-        const enabled = await getEnabledModulesForCompany(req.user.company_id);
-        if (enabled.has(mapping.module)) return next();
+        const codes = mapping.modules ?? [];
+        if (codes.length === 0) return next(); // mapeo sin módulos = default-permit
 
-        // Módulo no habilitado
-        const logMsg = `[module-guard:${MODE}] user=${req.user.id} company=${req.user.company_id} tried ${req.method} ${path} → module=${mapping.module} NOT enabled`;
+        const semantics = mapping.semantics === 'OR' ? 'OR' : 'AND';
+
+        const enabled = await getEnabledModuleCodes(req.user.company_id);
+        const evaluated = codes.map(code => enabled.has(code));
+        const pass = semantics === 'OR' ? evaluated.some(Boolean) : evaluated.every(Boolean);
+
+        if (pass) return next();
+
+        // Módulo(s) no habilitado(s)
+        const logMsg = `[module-guard:${MODE}] user=${req.user.id} company=${req.user.company_id} tried ${req.method} ${path} → modules=[${codes.join(',')}] (${semantics}) NOT enabled`;
 
         if (STRICT) {
             console.warn(logMsg);
             return res.status(403).json({
                 error: 'Módulo no habilitado para esta compañía',
-                module: mapping.module,
+                modules: codes,
+                semantics,
                 transaction: mapping.transaction
             });
         }
