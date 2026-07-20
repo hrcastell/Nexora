@@ -19,13 +19,13 @@ const applyGlobalConfig = () => {
   //     can show through transparent panels. AdminLayout root must be transparent.
   document.body.style.backgroundColor = configStore.shellBg;
 
-  // 3. Scale: apply transform on <body> so the entire UI scales uniformly.
-  //    Compensate width/height so the browser scrollbar doesn't appear prematurely.
-  const s = configStore.scale / 100;
-  document.body.style.transform = s !== 1 ? `scale(${s})` : '';
-  document.body.style.transformOrigin = 'top left';
-  document.body.style.width  = s !== 1 ? `${(1 / s) * 100}%` : '';
-  document.body.style.height = s !== 1 ? `${(1 / s) * 100}vh` : '';
+  // 3. Keep browser zoom and layout geometry intact. `scale` remains a visual
+  // preference token for individual components, not a transform on <body>.
+  root.style.setProperty('--nexora-scale', String(configStore.scale / 100));
+  document.body.style.transform = '';
+  document.body.style.transformOrigin = '';
+  document.body.style.width = '';
+  document.body.style.height = '';
 
   // 4. Theme mode attribute – CSS overrides target [data-nexora-mode="light"]
   document.body.setAttribute('data-nexora-mode', configStore.mode);

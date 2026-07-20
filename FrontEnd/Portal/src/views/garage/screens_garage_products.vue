@@ -4,6 +4,9 @@ import { Plus, Search, Edit2, ToggleLeft, ToggleRight } from 'lucide-vue-next';
 import { useGarageProductsStore } from '../../stores/garageProducts';
 import { useInventorySuppliersStore } from '../../stores/inventorySuppliers';
 import NxrSlidePanel from '../../components/NxrSlidePanel.vue';
+import Field from '../../components/ui/Field.vue';
+import FormSection from '../../components/ui/FormSection.vue';
+import Checkbox from '../../components/ui/Checkbox.vue';
 import type { Product, ProductFormData } from '../../types/garage';
 
 const store = useGarageProductsStore();
@@ -223,10 +226,12 @@ const tabs = [
         </button>
       </div>
 
-      <div v-if="activeTab === 'general'" class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <FormSection v-if="activeTab === 'general'" title="Identidad" description="Datos que identifican el producto en los procesos de Taller e Inventario.">
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div class="sm:col-span-2">
-          <label class="block text-xs text-white/50 mb-1">Nombre *</label>
-          <input v-model="form.name" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" />
+          <Field id="product-name" label="Nombre" required :error="error && !form.name.trim() ? error : undefined">
+            <template #default="{ describedBy }"><input id="product-name" v-model="form.name" type="text" required :aria-describedby="describedBy || undefined" :aria-invalid="!!(error && !form.name.trim())" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" /></template>
+          </Field>
         </div>
         <div>
           <label class="block text-xs text-white/50 mb-1">SKU</label>
@@ -254,28 +259,16 @@ const tabs = [
           <textarea v-model="form.description" rows="2" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none resize-none"></textarea>
         </div>
       </div>
+      </FormSection>
 
-      <div v-else-if="activeTab === 'inventory'" class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <label class="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/70 sm:col-span-2">
-          Inventario habilitado
-          <input v-model="form.inventory_enabled" type="checkbox" class="h-4 w-4" />
-        </label>
-        <label class="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/70">
-          Controla serie
-          <input v-model="form.track_serial" type="checkbox" class="h-4 w-4" />
-        </label>
-        <label class="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/70">
-          Controla lote
-          <input v-model="form.track_batch" type="checkbox" class="h-4 w-4" />
-        </label>
-        <label class="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/70">
-          Permite stock negativo
-          <input v-model="form.allow_negative_stock" type="checkbox" class="h-4 w-4" />
-        </label>
-        <label class="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white/70">
-          Requiere vencimiento
-          <input v-model="form.requires_expiration" type="checkbox" class="h-4 w-4" />
-        </label>
+      <FormSection v-else-if="activeTab === 'inventory'" title="Uso en inventario" description="Activá el control de stock sólo si este ítem se recibe y se mueve entre bodegas.">
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div class="sm:col-span-2"><Checkbox id="inventory-enabled" v-model="form.inventory_enabled" label="Inventario habilitado" help="Permite incluir este producto en compras, recepciones y stock." /></div>
+        <template v-if="form.inventory_enabled">
+        <Checkbox id="track-serial" v-model="form.track_serial" label="Controla serie" help="Identifica cada unidad de forma individual." />
+        <Checkbox id="track-batch" v-model="form.track_batch" label="Controla lote" help="Agrupa unidades por lote de ingreso." />
+        <Checkbox id="allow-negative-stock" v-model="form.allow_negative_stock" label="Permite stock negativo" help="Usalo sólo si aceptás registrar salidas antes de la recepción." />
+        <Checkbox id="requires-expiration" v-model="form.requires_expiration" label="Requiere vencimiento" help="Pedirá fecha de vencimiento al recibir el producto." />
         <div>
           <label class="block text-xs text-white/50 mb-1">Punto de reposición</label>
           <input v-model.number="form.reorder_point" type="number" min="0" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none" />
@@ -292,9 +285,12 @@ const tabs = [
           <label class="block text-xs text-white/50 mb-1">Último costo compra</label>
           <input v-model.number="form.last_purchase_cost" type="number" min="0" step="0.01" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none" />
         </div>
+        </template>
       </div>
+      </FormSection>
 
-      <div v-else class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <FormSection v-else title="Abastecimiento y unidades" description="Configuración de compra y almacenamiento. Completala cuando el producto se abastezca desde proveedores.">
+      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div class="sm:col-span-2">
           <label class="block text-xs text-white/50 mb-1">Proveedor preferido</label>
           <select v-model.number="form.preferred_supplier_id" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none">
@@ -319,6 +315,7 @@ const tabs = [
           <textarea v-model="form.storage_notes" rows="3" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none resize-none"></textarea>
         </div>
       </div>
+      </FormSection>
 
       <p v-if="error" class="mt-2 text-xs text-red-400">{{ error }}</p>
 

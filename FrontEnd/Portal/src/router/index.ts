@@ -351,6 +351,12 @@ const router = createRouter({
       meta: { requiresAuth: true, requiresCompany: true },
       children: [
         {
+          path: 'inventory',
+          name: 'inventory-home',
+          component: () => import('../views/inventory/InventoryHomeView.vue'),
+          meta: { requiresModule: 'inventory' }
+        },
+        {
           path: 'inventory/suppliers',
           name: 'inventory-suppliers',
           component: () => import('../views/inventory/screens_inventory_suppliers.vue'),
