@@ -471,16 +471,26 @@ CREATE INDEX IF NOT EXISTS idx_work_orders_appointment ON {schema_name}.work_ord
 CREATE INDEX IF NOT EXISTS idx_work_orders_entry_date  ON {schema_name}.work_orders(entry_date);
 
 -- Agregar FK de appointments.converted_work_order_id ahora que work_orders existe
-ALTER TABLE {schema_name}.appointments
-    ADD CONSTRAINT IF NOT EXISTS fk_appt_converted_work_order
-    FOREIGN KEY (converted_work_order_id)
-    REFERENCES {schema_name}.work_orders(id) ON DELETE SET NULL;
+-- (Postgres has no `ADD CONSTRAINT IF NOT EXISTS`; DO block + duplicate_object
+-- is the standard idiom to keep this idempotent like the rest of the file.)
+DO $$
+BEGIN
+    ALTER TABLE {schema_name}.appointments
+        ADD CONSTRAINT fk_appt_converted_work_order
+        FOREIGN KEY (converted_work_order_id)
+        REFERENCES {schema_name}.work_orders(id) ON DELETE SET NULL;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 -- Agregar FK de vehicle_photos.work_order_id ahora que work_orders existe
-ALTER TABLE {schema_name}.vehicle_photos
-    ADD CONSTRAINT IF NOT EXISTS fk_vehicle_photos_work_order
-    FOREIGN KEY (work_order_id)
-    REFERENCES {schema_name}.work_orders(id) ON DELETE SET NULL;
+DO $$
+BEGIN
+    ALTER TABLE {schema_name}.vehicle_photos
+        ADD CONSTRAINT fk_vehicle_photos_work_order
+        FOREIGN KEY (work_order_id)
+        REFERENCES {schema_name}.work_orders(id) ON DELETE SET NULL;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
 CREATE INDEX IF NOT EXISTS idx_vehicle_photos_work_order ON {schema_name}.vehicle_photos(work_order_id);
 

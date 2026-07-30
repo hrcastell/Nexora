@@ -53,7 +53,7 @@ BEGIN
         VALUES
             (v_module_id, 'notifications', 'Notificaciones', 'Centro de notificaciones del sistema',
              '/admin/notifications', 'Bell', 900, TRUE, 'activo')
-        ON CONFLICT (code) DO NOTHING;
+        ON CONFLICT (module_id, code) DO NOTHING;
 
         -- Transacción: configuración de preferencias de notificaciones
         INSERT INTO public.module_transactions
@@ -61,7 +61,7 @@ BEGIN
         VALUES
             (v_module_id, 'notification_settings', 'Preferencias de notificaciones', 'Configurar preferencias de notificaciones',
              '/admin/notifications/settings', 'Settings', 910, FALSE, 'activo')
-        ON CONFLICT (code) DO NOTHING;
+        ON CONFLICT (module_id, code) DO NOTHING;
 
     END IF;
 END $$;

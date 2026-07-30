@@ -50,7 +50,7 @@ BEGIN
                 ON %s (transaction_code);
         ', tbl);
 
-        RAISE NOTICE ''profile_transaction_permissions creada/verificada en schema: %'', r.schema_name;
+        RAISE NOTICE 'profile_transaction_permissions creada/verificada en schema: %', r.schema_name;
     END LOOP;
 END;
 $$;
