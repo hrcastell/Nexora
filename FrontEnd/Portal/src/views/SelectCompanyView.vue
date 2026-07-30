@@ -41,19 +41,6 @@ const handleLogout = () => {
 
 <template>
   <div class="min-h-screen overflow-hidden bg-[#08101f] text-white">
-    <style>
-      @keyframes driftOne {
-        0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-        50% { transform: translate3d(16px, -18px, 0) scale(1.04); }
-      }
-      @keyframes driftTwo {
-        0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
-        50% { transform: translate3d(-22px, 16px, 0) scale(1.06); }
-      }
-      .orb-one { animation: driftOne 8s ease-in-out infinite; }
-      .orb-two { animation: driftTwo 10s ease-in-out infinite; }
-    </style>
-
     <!-- Background Effects -->
     <div class="fixed inset-0 bg-[radial-gradient(circle_at_top_left,rgba(124,58,237,0.22),transparent_28%),radial-gradient(circle_at_top_right,rgba(212,175,55,0.18),transparent_22%),radial-gradient(circle_at_bottom,rgba(148,163,184,0.12),transparent_20%)]" />
     <div class="fixed left-[-4rem] top-16 h-72 w-72 rounded-full bg-[#7c3aed]/20 blur-3xl orb-one pointer-events-none" />
@@ -223,3 +210,16 @@ const handleLogout = () => {
       @close="showInfoModal = false" />
   </div>
 </template>
+
+<style scoped>
+@keyframes driftOne {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(16px, -18px, 0) scale(1.04); }
+}
+@keyframes driftTwo {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(-22px, 16px, 0) scale(1.06); }
+}
+.orb-one { animation: driftOne 8s ease-in-out infinite; }
+.orb-two { animation: driftTwo 10s ease-in-out infinite; }
+</style>
