@@ -71,15 +71,15 @@ exports.getById = async (req, res) => {
 exports.create = async (req, res) => {
     try {
         if (req.user?.read_only) return res.status(403).json({ error: 'Operación no permitida en modo solo lectura' });
-        const { schema } = await resolveSchema(req);
+        const { schema, companyId } = await resolveSchema(req);
         const { first_name, last_name, document_type, document_number, phone, email, role_name, specialty, notes, user_id } = req.body;
 
         if (!first_name?.trim()) return res.status(400).json({ error: 'first_name es requerido' });
 
         const result = await db.query(
-            `INSERT INTO ${schema}.employees (first_name, last_name, document_type, document_number, phone, email, role_name, specialty, notes, user_id)
-             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
-            [first_name.trim(), last_name?.trim() || null, document_type || null, document_number || null,
+            `INSERT INTO ${schema}.employees (tenant_id, first_name, last_name, document_type, document_number, phone, email, role_name, specialty, notes, user_id)
+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING *`,
+            [companyId, first_name.trim(), last_name?.trim() || null, document_type || null, document_number || null,
              phone || null, email?.toLowerCase().trim() || null, role_name || null, specialty || null, notes || null, user_id || null]
         );
         res.status(201).json(result.rows[0]);

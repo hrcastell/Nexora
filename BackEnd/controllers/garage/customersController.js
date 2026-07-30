@@ -80,7 +80,7 @@ exports.create = async (req, res) => {
     try {
         if (req.user?.read_only) return res.status(403).json({ error: 'Operación no permitida en modo solo lectura' });
 
-        const { schema } = await resolveSchema(req);
+        const { schema, companyId } = await resolveSchema(req);
         const {
             first_name, last_name, document_type, document_number,
             phone, mobile, email, birth_date,
@@ -92,12 +92,12 @@ exports.create = async (req, res) => {
 
         const result = await db.query(
             `INSERT INTO ${schema}.customers
-             (first_name, last_name, document_type, document_number, phone, mobile, email,
+             (tenant_id, first_name, last_name, document_type, document_number, phone, mobile, email,
               birth_date, country, region_state, city, commune_district, address, notes, source)
-             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
              RETURNING *`,
             [
-                first_name.trim(), last_name?.trim() || null, document_type || null, document_number || null,
+                companyId, first_name.trim(), last_name?.trim() || null, document_type || null, document_number || null,
                 phone || null, mobile || null, email?.toLowerCase().trim() || null,
                 birth_date || null, country || null, region_state || null,
                 city || null, commune_district || null, address || null,
