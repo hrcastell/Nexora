@@ -5,3 +5,9 @@ FrontEnd/Portal/dist
 
 .atl/
 .codex/
+
+# Local env files (root, BackEnd, FrontEnd) — includes the local Docker
+# dev stack's .env; never commit real secrets
+.env
+.env.local
+!.env.example

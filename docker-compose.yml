@@ -1,0 +1,91 @@
+# Nexora — LOCAL DEVELOPMENT ONLY docker-compose stack.
+#
+# This is a local dev convenience and has nothing to do with production.
+# Production runs on Bluehost shared hosting: backend via cPanel
+# "Setup Node.js App", database migrations pasted by hand into phpPgAdmin.
+# There is no Docker, no PM2, no container runtime in production, and this
+# file must never be treated as a deploy artifact for it.
+#
+# Usage: see docker/README.md
+
+services:
+  db:
+    image: postgres:10.23-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-nexora_db}
+      POSTGRES_USER: ${POSTGRES_USER:-nexora}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nexora}
+    ports:
+      - "5432:5432"
+    volumes:
+      - nexora_db_data:/var/lib/postgresql/data
+      # docker-entrypoint-initdb.d only looks at files directly inside itself,
+      # sorted flat/lexically — it does NOT recurse into subfolders. The real
+      # bootstrap ordering is driven by 00-bootstrap.sh below, which applies
+      # each Database/ folder's *.sql files in the correct sequence.
+      - ./Database/00_core:/docker-entrypoint-initdb.d/sql/00_core:ro
+      - ./Database/01_public_schema:/docker-entrypoint-initdb.d/sql/01_public_schema:ro
+      # NOT Database/02_company_template/02_tenant_tables.sql — that copy is
+      # stale (507 lines vs. 1971) and contains invalid SQL
+      # (`ADD CONSTRAINT IF NOT EXISTS`, unsupported by Postgres). The real,
+      # current tenant schema is BackEnd/templates/tenant_schema.sql — the
+      # exact file the app executes at runtime for every new company.
+      - ./BackEnd/templates/tenant_schema.sql:/docker-entrypoint-initdb.d/sql/tenant_schema.sql:ro
+      - ./Database/03_seeds:/docker-entrypoint-initdb.d/sql/03_seeds:ro
+      - ./Database/docker-init/00-bootstrap.sh:/docker-entrypoint-initdb.d/00-bootstrap.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-nexora} -d ${POSTGRES_DB:-nexora_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./BackEnd
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DB_SSL: "false"
+      # `db` is the compose service hostname — resolved INSIDE the backend
+      # container, on the compose network. Correct only in that context.
+      DATABASE_URL: postgres://${POSTGRES_USER:-nexora}:${POSTGRES_PASSWORD:-nexora}@db:5432/${POSTGRES_DB:-nexora_db}
+      # LOCAL-ONLY placeholder secret. Never reuse this value anywhere real.
+      JWT_SECRET: ${JWT_SECRET:-local_dev_only_change_me_1234567890}
+    volumes:
+      - ./BackEnd:/usr/src/app
+      # Anonymous volume: keeps the container's own node_modules (installed
+      # during image build) from being shadowed by the bind mount above, and
+      # keeps it isolated from whatever (or nothing) is in the host's
+      # BackEnd/node_modules.
+      - /usr/src/app/node_modules
+    command: npm run dev
+
+  frontend:
+    build:
+      context: ./FrontEnd/Portal
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "5173:5173"
+    environment:
+      # Vite only ships this as static JS — it is resolved by the BROWSER on
+      # the host, not inside the container. Must stay a host-exposed port,
+      # never an internal compose service hostname like `backend`.
+      VITE_API_URL: http://localhost:3000/api
+    volumes:
+      - ./FrontEnd/Portal:/usr/src/app
+      - /usr/src/app/node_modules
+    command: npm run dev -- --host 0.0.0.0
+
+volumes:
+  nexora_db_data:

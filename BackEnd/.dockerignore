@@ -1,0 +1,16 @@
+node_modules
+npm-debug.log*
+
+# Real uploaded files — not needed in the build context, and the runtime
+# bind mount supplies whatever exists on the host anyway.
+uploads
+
+# Secrets / local env
+.env
+.env.*
+!.env.example
+
+*.log
+.git
+.gitignore
+.DS_Store
