@@ -211,7 +211,7 @@ const STATUS_CLASS: Record<string, string> = {
   scheduled:   'bg-blue-500/20 text-blue-400',
   confirmed:   'bg-green-500/20 text-green-400',
   checked_in:  'bg-cyan-500/20 text-cyan-400',
-  completed:   'bg-white/10 text-white/50',
+  completed:   'bg-white/10 nxr-text-muted',
   cancelled:   'bg-red-500/20 text-red-400',
   no_show:     'bg-orange-500/20 text-orange-400',
   rescheduled: 'bg-purple-500/20 text-purple-400',
@@ -434,7 +434,7 @@ onMounted(() => {
 <template>
   <div class="flex flex-col gap-5 p-4 md:p-6">
     <div class="flex items-center justify-between flex-wrap gap-3">
-      <h1 class="text-xl font-semibold text-white">Citas</h1>
+      <h1 class="text-xl font-semibold nxr-text">Citas</h1>
       <button
         class="flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-medium text-white transition nxr-btn-primary sm:w-auto"
         @click="openCreate"
@@ -455,7 +455,7 @@ onMounted(() => {
         class="flex min-h-10 items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition-all"
         :class="activeTab === tab.key
           ? 'bg-[var(--nexora-primary)] text-white'
-          : 'text-white/50 border border-white/10 hover:border-white/30 hover:text-white'"
+          : 'nxr-text-muted border border-white/10 hover:border-white/30 hover:text-[var(--nexora-text-color)]'"
         @click="switchTab(tab.key as ViewTab)"
       >
         <component :is="tab.icon" :size="12" /> {{ tab.label }}
@@ -463,9 +463,9 @@ onMounted(() => {
 
       <!-- Month nav -->
       <template v-if="activeTab === 'month'">
-        <button class="ml-0 min-h-10 min-w-10 rounded-lg border border-white/10 px-2 py-1 text-xs text-white/50 hover:text-white sm:ml-2" aria-label="Mes anterior" @click="goPreviousMonth">‹</button>
-        <span class="min-w-0 text-xs text-white/60">{{ MONTHS[currentMonth - 1] }} {{ currentYear }}</span>
-        <button class="min-h-10 min-w-10 rounded-lg border border-white/10 px-2 py-1 text-xs text-white/50 hover:text-white" aria-label="Mes siguiente" @click="goNextMonth">›</button>
+        <button class="ml-0 min-h-10 min-w-10 rounded-lg border border-white/10 px-2 py-1 text-xs nxr-text-muted hover:text-[var(--nexora-text-color)] sm:ml-2" aria-label="Mes anterior" @click="goPreviousMonth">‹</button>
+        <span class="min-w-0 text-xs nxr-text-muted">{{ MONTHS[currentMonth - 1] }} {{ currentYear }}</span>
+        <button class="min-h-10 min-w-10 rounded-lg border border-white/10 px-2 py-1 text-xs nxr-text-muted hover:text-[var(--nexora-text-color)]" aria-label="Mes siguiente" @click="goNextMonth">›</button>
       </template>
     </div>
 
@@ -482,8 +482,8 @@ onMounted(() => {
     <!-- Today tab -->
     <template v-else-if="activeTab === 'today'">
       <div v-if="store.today.length === 0" class="flex flex-col items-center gap-4 py-20 text-center">
-        <CalendarDays :size="48" class="text-white/20" />
-        <p class="text-white/50 text-sm">No hay citas para hoy.</p>
+        <CalendarDays :size="48" class="nxr-text-soft" />
+        <p class="nxr-text-muted text-sm">No hay citas para hoy.</p>
         <button class="flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-medium text-white transition nxr-btn-primary" @click="openCreate">
           <Plus :size="15" /> Agendar cita
         </button>
@@ -497,12 +497,12 @@ onMounted(() => {
         >
           <div class="flex min-w-0 flex-1 items-start gap-3">
             <div class="flex w-14 shrink-0 flex-col items-center text-center">
-              <p class="text-sm font-bold text-white">{{ fmtTime(apt.scheduled_start) }}</p>
-              <p class="text-xs text-white/30">{{ fmtTime(apt.scheduled_end) }}</p>
+              <p class="text-sm font-bold nxr-text">{{ fmtTime(apt.scheduled_start) }}</p>
+              <p class="text-xs nxr-text-soft">{{ fmtTime(apt.scheduled_end) }}</p>
             </div>
             <div class="min-w-0 flex-1">
-              <p class="text-sm font-medium text-white sm:truncate">{{ patientDisplayName(apt) }}</p>
-              <p class="text-xs text-white/40 sm:truncate">{{ apt.treatment?.name ?? apt.reason ?? '—' }}</p>
+              <p class="text-sm font-medium nxr-text sm:truncate">{{ patientDisplayName(apt) }}</p>
+              <p class="text-xs nxr-text-muted sm:truncate">{{ apt.treatment?.name ?? apt.reason ?? '—' }}</p>
             </div>
           </div>
           <div class="flex flex-col gap-3 sm:items-end sm:shrink-0">
@@ -514,7 +514,7 @@ onMounted(() => {
               <button v-if="apt.status === 'confirmed'" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-cyan-500/10 text-cyan-300 transition-opacity hover:opacity-70" title="Marcar presente" aria-label="Marcar paciente presente" @click="doAction('check_in', apt)">
                 <LogIn :size="16" />
               </button>
-              <button v-if="!['completed','cancelled','no_show'].includes(apt.status)" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/5 text-white/60 transition-opacity hover:text-white" title="Editar/reprogramar" aria-label="Editar o reprogramar cita" @click="openEditAppointment(apt)">
+              <button v-if="!['completed','cancelled','no_show'].includes(apt.status)" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/5 nxr-text-muted transition-opacity hover:text-[var(--nexora-text-color)]" title="Editar/reprogramar" aria-label="Editar o reprogramar cita" @click="openEditAppointment(apt)">
                 <Edit2 :size="16" />
               </button>
               <button v-if="['scheduled','confirmed'].includes(apt.status)" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-cyan-500/10 text-cyan-400 transition-opacity hover:opacity-70" title="Convertir en consulta" aria-label="Convertir cita en consulta" @click="doAction('convert', apt)">
@@ -534,12 +534,12 @@ onMounted(() => {
 
     <!-- Month tab -->
     <template v-else-if="activeTab === 'month'">
-      <div v-if="store.items.length === 0" class="text-center text-white/30 py-16 text-sm">
+      <div v-if="store.items.length === 0" class="text-center nxr-text-soft py-16 text-sm">
         No hay citas en {{ MONTHS[currentMonth - 1] }} {{ currentYear }}.
       </div>
       <div v-else class="flex flex-col gap-5">
         <div class="hidden grid-cols-7 gap-2 rounded-2xl border border-white/10 p-3 md:grid" :style="{ background: 'var(--nexora-glass-bg)' }">
-          <div v-for="dayName in ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']" :key="dayName" class="px-2 py-1 text-center text-[11px] font-semibold uppercase tracking-wide text-white/35">
+          <div v-for="dayName in ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']" :key="dayName" class="px-2 py-1 text-center text-[11px] font-semibold uppercase tracking-wide nxr-text-soft">
             {{ dayName }}
           </div>
           <div
@@ -555,30 +555,30 @@ onMounted(() => {
             @click="selectCalendarDay(day)"
           >
             <div class="mb-2 flex items-center justify-between">
-              <span class="text-xs font-semibold" :class="day.isToday ? 'text-[var(--nexora-primary)]' : 'text-white/60'">{{ day.day }}</span>
-              <span v-if="day.appointments.length" class="rounded-full bg-[var(--nexora-primary)]/20 px-1.5 py-0.5 text-[10px] text-white/70">{{ day.appointments.length }}</span>
+              <span class="text-xs font-semibold" :class="day.isToday ? 'text-[var(--nexora-primary)]' : 'nxr-text-muted'">{{ day.day }}</span>
+              <span v-if="day.appointments.length" class="rounded-full bg-[var(--nexora-primary)]/20 px-1.5 py-0.5 text-[10px] nxr-text-muted">{{ day.appointments.length }}</span>
             </div>
             <div class="flex flex-col gap-1">
               <div
                 v-for="apt in day.appointments.slice(0, 3)"
                 :key="apt.id"
-                class="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-[11px] text-white/75"
+                class="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-[11px] nxr-text-muted"
               >
                 <p class="font-semibold">{{ fmtTime(apt.scheduled_start) }}</p>
-                <p class="truncate text-white/50">{{ patientDisplayName(apt) }}</p>
+                <p class="truncate nxr-text-muted">{{ patientDisplayName(apt) }}</p>
               </div>
-              <p v-if="day.appointments.length > 3" class="text-[10px] text-white/35">+{{ day.appointments.length - 3 }} más</p>
+              <p v-if="day.appointments.length > 3" class="text-[10px] nxr-text-soft">+{{ day.appointments.length - 3 }} más</p>
             </div>
           </div>
         </div>
 
         <div class="flex flex-col gap-3 md:hidden">
-          <div class="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-xs text-white/50">
+          <div class="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-xs nxr-text-muted">
             Vista optimizada para móvil: las citas se muestran por día para evitar desbordes del calendario mensual.
           </div>
 
           <div v-for="[day, apts] in monthGrouped" :key="day" class="flex flex-col gap-2">
-            <p class="text-xs font-semibold uppercase tracking-wide text-white/40">{{ day }}</p>
+            <p class="text-xs font-semibold uppercase tracking-wide nxr-text-muted">{{ day }}</p>
             <div
               v-for="apt in apts"
               :key="apt.id"
@@ -587,15 +587,15 @@ onMounted(() => {
             >
               <div class="flex items-start justify-between gap-3">
                 <div class="min-w-0 flex-1">
-                  <p class="text-sm font-semibold text-white">{{ fmtTime(apt.scheduled_start) }} · {{ patientDisplayName(apt) }}</p>
-                  <p class="mt-0.5 text-xs text-white/40">{{ apt.treatment?.name ?? apt.reason ?? 'Sin tratamiento' }}</p>
+                  <p class="text-sm font-semibold nxr-text">{{ fmtTime(apt.scheduled_start) }} · {{ patientDisplayName(apt) }}</p>
+                  <p class="mt-0.5 text-xs nxr-text-muted">{{ apt.treatment?.name ?? apt.reason ?? 'Sin tratamiento' }}</p>
                 </div>
                 <span class="w-fit shrink-0 rounded-full px-2 py-0.5 text-xs" :class="STATUS_CLASS[apt.status]">{{ STATUS_LABEL[apt.status] }}</span>
               </div>
               <div class="flex w-full items-center gap-1.5 overflow-x-auto pb-1">
                 <button v-if="apt.status === 'scheduled'" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-green-500/10 text-green-400" title="Confirmar" aria-label="Confirmar cita" @click="doAction('confirm', apt)"><CheckCircle2 :size="16" /></button>
                 <button v-if="apt.status === 'confirmed'" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-cyan-500/10 text-cyan-300" title="Marcar presente" aria-label="Marcar paciente presente" @click="doAction('check_in', apt)"><LogIn :size="16" /></button>
-                <button v-if="!['completed','cancelled','no_show'].includes(apt.status)" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/5 text-white/60" title="Editar/reprogramar" aria-label="Editar o reprogramar cita" @click="openEditAppointment(apt)"><Edit2 :size="16" /></button>
+                <button v-if="!['completed','cancelled','no_show'].includes(apt.status)" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/5 nxr-text-muted" title="Editar/reprogramar" aria-label="Editar o reprogramar cita" @click="openEditAppointment(apt)"><Edit2 :size="16" /></button>
                 <button v-if="['scheduled','confirmed'].includes(apt.status)" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-cyan-500/10 text-cyan-400" title="Convertir en consulta" aria-label="Convertir cita en consulta" @click="doAction('convert', apt)"><ArrowRightCircle :size="16" /></button>
                 <button v-if="['scheduled','confirmed'].includes(apt.status)" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-orange-500/10 text-orange-400" title="No asistió" aria-label="Marcar como no asistió" @click="doAction('no_show', apt)"><UserX :size="16" /></button>
                 <button v-if="['scheduled','confirmed'].includes(apt.status)" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-red-500/10 text-red-400" title="Cancelar" aria-label="Cancelar cita" @click="doAction('cancel', apt)"><XCircle :size="16" /></button>
@@ -604,13 +604,13 @@ onMounted(() => {
           </div>
         </div>
 
-        <div v-if="selectedCalendarDate" class="hidden items-center justify-between rounded-xl border border-[var(--nexora-primary)]/30 bg-[var(--nexora-primary)]/10 px-4 py-2 text-xs text-white/70 md:flex">
+        <div v-if="selectedCalendarDate" class="hidden items-center justify-between rounded-xl border border-[var(--nexora-primary)]/30 bg-[var(--nexora-primary)]/10 px-4 py-2 text-xs nxr-text-muted md:flex">
           <span>Mostrando citas del día seleccionado</span>
-          <button class="text-white/50 hover:text-white" @click="selectedCalendarDate = null">Ver todo el mes</button>
+          <button class="nxr-text-muted hover:text-[var(--nexora-text-color)]" @click="selectedCalendarDate = null">Ver todo el mes</button>
         </div>
 
         <div v-for="[day, apts] in monthGrouped" :key="day" class="hidden md:block">
-          <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-white/40">{{ day }}</p>
+          <p class="mb-2 text-xs font-semibold uppercase tracking-wide nxr-text-muted">{{ day }}</p>
           <div class="flex flex-col gap-1.5">
             <div
               v-for="apt in apts"
@@ -618,8 +618,8 @@ onMounted(() => {
               class="flex items-center gap-3 rounded-xl border border-white/10 px-4 py-2.5"
               :style="{ background: 'var(--nexora-glass-bg)' }"
             >
-              <p class="w-12 shrink-0 text-xs text-white/50">{{ fmtTime(apt.scheduled_start) }}</p>
-              <p class="flex-1 truncate text-sm text-white">{{ patientDisplayName(apt) }}</p>
+              <p class="w-12 shrink-0 text-xs nxr-text-muted">{{ fmtTime(apt.scheduled_start) }}</p>
+              <p class="flex-1 truncate text-sm nxr-text">{{ patientDisplayName(apt) }}</p>
               <span class="shrink-0 rounded-full px-2 py-0.5 text-xs" :class="STATUS_CLASS[apt.status]">{{ STATUS_LABEL[apt.status] }}</span>
             </div>
           </div>
@@ -629,12 +629,12 @@ onMounted(() => {
 
     <!-- All tab -->
     <template v-else>
-      <div v-if="store.items.length === 0" class="text-center text-white/30 py-16 text-sm">
+      <div v-if="store.items.length === 0" class="text-center nxr-text-soft py-16 text-sm">
         No hay citas registradas.
       </div>
       <div v-else class="flex flex-col gap-2">
         <!-- Desktop header -->
-        <div class="hidden md:grid md:grid-cols-[140px_1fr_1fr_120px_100px] gap-4 px-4 py-2 text-xs text-white/30 font-semibold uppercase tracking-wide">
+        <div class="hidden md:grid md:grid-cols-[140px_1fr_1fr_120px_100px] gap-4 px-4 py-2 text-xs nxr-text-soft font-semibold uppercase tracking-wide">
           <span>Fecha/Hora</span>
           <span>Paciente</span>
           <span>Servicio</span>
@@ -651,16 +651,16 @@ onMounted(() => {
           <div class="min-w-0 md:hidden">
             <div class="flex items-start justify-between gap-3">
               <div class="min-w-0 flex-1">
-                <p class="text-sm font-medium text-white">{{ patientDisplayName(apt) }}</p>
-                <p class="text-xs text-white/40">{{ fmtDate(apt.scheduled_start) }} {{ fmtTime(apt.scheduled_start) }}</p>
-                <p class="mt-1 text-xs text-white/40">{{ apt.treatment?.name ?? apt.reason ?? 'Sin tratamiento' }}</p>
+                <p class="text-sm font-medium nxr-text">{{ patientDisplayName(apt) }}</p>
+                <p class="text-xs nxr-text-muted">{{ fmtDate(apt.scheduled_start) }} {{ fmtTime(apt.scheduled_start) }}</p>
+                <p class="mt-1 text-xs nxr-text-muted">{{ apt.treatment?.name ?? apt.reason ?? 'Sin tratamiento' }}</p>
               </div>
               <span class="w-fit shrink-0 rounded-full px-2 py-0.5 text-xs" :class="STATUS_CLASS[apt.status]">{{ STATUS_LABEL[apt.status] }}</span>
             </div>
             <div class="mt-3 flex w-full items-center gap-1.5 overflow-x-auto pb-1">
               <button v-if="apt.status === 'scheduled'" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-green-500/10 text-green-400" title="Confirmar" aria-label="Confirmar cita" @click="doAction('confirm', apt)"><CheckCircle2 :size="16" /></button>
               <button v-if="apt.status === 'confirmed'" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-cyan-500/10 text-cyan-300" title="Marcar presente" aria-label="Marcar paciente presente" @click="doAction('check_in', apt)"><LogIn :size="16" /></button>
-              <button v-if="!['completed','cancelled','no_show'].includes(apt.status)" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/5 text-white/60" title="Editar/reprogramar" aria-label="Editar o reprogramar cita" @click="openEditAppointment(apt)"><Edit2 :size="16" /></button>
+              <button v-if="!['completed','cancelled','no_show'].includes(apt.status)" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/5 nxr-text-muted" title="Editar/reprogramar" aria-label="Editar o reprogramar cita" @click="openEditAppointment(apt)"><Edit2 :size="16" /></button>
               <button v-if="['scheduled','confirmed'].includes(apt.status)" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-cyan-500/10 text-cyan-400" title="Convertir en consulta" aria-label="Convertir cita en consulta" @click="doAction('convert', apt)"><ArrowRightCircle :size="16" /></button>
               <button v-if="['scheduled','confirmed'].includes(apt.status)" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-orange-500/10 text-orange-400" title="No asistió" aria-label="Marcar como no asistió" @click="doAction('no_show', apt)"><UserX :size="16" /></button>
               <button v-if="['scheduled','confirmed'].includes(apt.status)" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-red-500/10 text-red-400" title="Cancelar" aria-label="Cancelar cita" @click="doAction('cancel', apt)"><XCircle :size="16" /></button>
@@ -668,14 +668,14 @@ onMounted(() => {
           </div>
           <!-- Desktop -->
           <div class="hidden flex-1 items-center gap-4 md:grid md:grid-cols-[140px_1fr_1fr_120px_100px]">
-            <p class="text-xs text-white/60">{{ fmtDate(apt.scheduled_start) }}<br />{{ fmtTime(apt.scheduled_start) }}</p>
-            <p class="truncate text-sm text-white">{{ patientDisplayName(apt) }}</p>
-            <p class="truncate text-xs text-white/60">{{ apt.treatment?.name ?? apt.reason ?? '—' }}</p>
+            <p class="text-xs nxr-text-muted">{{ fmtDate(apt.scheduled_start) }}<br />{{ fmtTime(apt.scheduled_start) }}</p>
+            <p class="truncate text-sm nxr-text">{{ patientDisplayName(apt) }}</p>
+            <p class="truncate text-xs nxr-text-muted">{{ apt.treatment?.name ?? apt.reason ?? '—' }}</p>
             <span class="w-fit rounded-full px-2 py-0.5 text-xs" :class="STATUS_CLASS[apt.status]">{{ STATUS_LABEL[apt.status] }}</span>
             <div class="flex items-center justify-end gap-1">
               <button v-if="apt.status === 'scheduled'" type="button" class="text-green-400 hover:opacity-70" title="Confirmar" aria-label="Confirmar cita" @click="doAction('confirm', apt)"><CheckCircle2 :size="14" /></button>
               <button v-if="apt.status === 'confirmed'" type="button" class="text-cyan-300 hover:opacity-70" title="Marcar presente" aria-label="Marcar paciente presente" @click="doAction('check_in', apt)"><LogIn :size="14" /></button>
-              <button v-if="!['completed','cancelled','no_show'].includes(apt.status)" type="button" class="text-white/50 hover:text-white" title="Editar/reprogramar" aria-label="Editar o reprogramar cita" @click="openEditAppointment(apt)"><Edit2 :size="14" /></button>
+              <button v-if="!['completed','cancelled','no_show'].includes(apt.status)" type="button" class="nxr-text-muted hover:text-[var(--nexora-text-color)]" title="Editar/reprogramar" aria-label="Editar o reprogramar cita" @click="openEditAppointment(apt)"><Edit2 :size="14" /></button>
               <button v-if="['scheduled','confirmed'].includes(apt.status)" type="button" class="text-cyan-400 hover:opacity-70" title="Consulta" aria-label="Convertir cita en consulta" @click="doAction('convert', apt)"><ArrowRightCircle :size="14" /></button>
               <button v-if="['scheduled','confirmed'].includes(apt.status)" type="button" class="text-orange-400 hover:opacity-70" title="No asistió" @click="doAction('no_show', apt)"><UserX :size="14" /></button>
               <button v-if="['scheduled','confirmed'].includes(apt.status)" type="button" class="text-red-400 hover:opacity-70" title="Cancelar" aria-label="Cancelar cita" @click="doAction('cancel', apt)"><XCircle :size="14" /></button>
@@ -693,20 +693,20 @@ onMounted(() => {
     :draft-setters="{ patientSearch: (value) => patientSearch = value, selectedPatient: (value) => selectedPatient = value }">
       <form class="flex flex-col gap-5" @submit.prevent="save">
         <div class="flex flex-col gap-1.5 relative">
-          <label class="text-xs text-white/50">Paciente *</label>
+          <label class="text-xs nxr-text-muted">Paciente *</label>
           <input
             v-model="patientSearch"
             type="text"
             placeholder="Buscar por nombre o documento..."
             autocomplete="off"
-            class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-white/30 outline-none focus:border-white/30"
+            class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text placeholder-[var(--nexora-soft-text)] outline-none focus:border-white/30"
             @input="onPatientInput"
             @focus="focusPatientDrop"
             @blur="blurPatientDrop"
           />
-          <div v-if="selectedPatient" class="flex items-center justify-between px-3 py-1.5 rounded-lg bg-[var(--nexora-primary)]/20 border border-[var(--nexora-primary)]/30 text-xs text-white">
+          <div v-if="selectedPatient" class="flex items-center justify-between px-3 py-1.5 rounded-lg bg-[var(--nexora-primary)]/20 border border-[var(--nexora-primary)]/30 text-xs nxr-text">
             <span>{{ selectedPatient.first_name }} {{ selectedPatient.last_name }}</span>
-            <button type="button" class="text-white/50 hover:text-white ml-2" @click="clearPatient">✕</button>
+            <button type="button" class="nxr-text-muted hover:text-[var(--nexora-text-color)] ml-2" @click="clearPatient">✕</button>
           </div>
           <div
             v-if="showPatientDrop && patientsStore.items.length > 0"
@@ -717,36 +717,36 @@ onMounted(() => {
               v-for="p in patientsStore.items"
               :key="p.id"
               type="button"
-              class="w-full text-left px-3 py-2.5 text-sm text-white hover:bg-white/10 transition-colors border-b border-white/5 last:border-0"
+              class="w-full text-left px-3 py-2.5 text-sm nxr-text hover:bg-white/10 transition-colors border-b border-white/5 last:border-0"
               @mousedown.prevent="selectPatient(p)"
             >
               {{ p.first_name }} {{ p.last_name }}
-              <span v-if="p.document_number" class="text-xs text-white/40 ml-2">{{ p.document_type }} {{ p.document_number }}</span>
+              <span v-if="p.document_number" class="text-xs nxr-text-muted ml-2">{{ p.document_type }} {{ p.document_number }}</span>
             </button>
           </div>
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Inicio *</label>
-          <input v-model="form.scheduled_start" type="datetime-local" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" required />
+          <label class="text-xs nxr-text-muted">Inicio *</label>
+          <input v-model="form.scheduled_start" type="datetime-local" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" required />
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Fin *</label>
-          <input v-model="form.scheduled_end" type="datetime-local" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" required />
+          <label class="text-xs nxr-text-muted">Fin *</label>
+          <input v-model="form.scheduled_end" type="datetime-local" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" required />
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Tratamiento</label>
-          <select v-model="form.treatment_id" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30">
+          <label class="text-xs nxr-text-muted">Tratamiento</label>
+          <select v-model="form.treatment_id" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30">
             <option value="">Sin tratamiento</option>
             <option v-for="s in treatmentsStore.items" :key="s.id" :value="s.id">{{ s.name }}</option>
           </select>
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Motivo</label>
-          <input v-model="form.reason" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+          <label class="text-xs nxr-text-muted">Motivo</label>
+          <input v-model="form.reason" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" />
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Notas internas</label>
-          <textarea v-model="form.notes" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none"></textarea>
+          <label class="text-xs nxr-text-muted">Notas internas</label>
+          <textarea v-model="form.notes" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30 resize-none"></textarea>
         </div>
         <p v-if="saveError" class="text-xs text-red-400">{{ saveError }}</p>
       </form>
@@ -764,38 +764,38 @@ onMounted(() => {
     :draft-entity="'inline-patient-create'"
     :draft-state="{ patientForm }">
       <form id="inline-patient-create-form" class="flex flex-col gap-5" @submit.prevent="saveInlinePatient">
-        <p class="text-xs font-semibold uppercase tracking-wide text-white/40">Datos personales</p>
+        <p class="text-xs font-semibold uppercase tracking-wide nxr-text-muted">Datos personales</p>
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div class="flex flex-col gap-1.5">
-            <label class="text-xs text-white/50">Nombre *</label>
-            <input v-model="patientForm.first_name" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" required />
+            <label class="text-xs nxr-text-muted">Nombre *</label>
+            <input v-model="patientForm.first_name" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" required />
           </div>
           <div class="flex flex-col gap-1.5">
-            <label class="text-xs text-white/50">Apellido *</label>
-            <input v-model="patientForm.last_name" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" required />
+            <label class="text-xs nxr-text-muted">Apellido *</label>
+            <input v-model="patientForm.last_name" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" required />
           </div>
         </div>
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div class="flex flex-col gap-1.5">
-            <label class="text-xs text-white/50">Tipo documento</label>
-            <input v-model="patientForm.document_type" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+            <label class="text-xs nxr-text-muted">Tipo documento</label>
+            <input v-model="patientForm.document_type" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" />
           </div>
           <div class="flex flex-col gap-1.5">
-            <label class="text-xs text-white/50">Documento</label>
-            <input v-model="patientForm.document_number" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+            <label class="text-xs nxr-text-muted">Documento</label>
+            <input v-model="patientForm.document_number" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" />
           </div>
         </div>
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div class="flex flex-col gap-1.5">
-            <label class="text-xs text-white/50">Teléfono</label>
-            <input v-model="patientForm.phone" type="tel" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+            <label class="text-xs nxr-text-muted">Teléfono</label>
+            <input v-model="patientForm.phone" type="tel" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" />
           </div>
           <div class="flex flex-col gap-1.5">
-            <label class="text-xs text-white/50">Email</label>
-            <input v-model="patientForm.email" type="email" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+            <label class="text-xs nxr-text-muted">Email</label>
+            <input v-model="patientForm.email" type="email" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" />
           </div>
         </div>
 

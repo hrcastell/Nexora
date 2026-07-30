@@ -185,7 +185,7 @@ async function removeProduct(templateId: number, productLineId: number) {
 <template>
   <div class="flex flex-col gap-5 p-6">
     <div class="flex items-center justify-between">
-      <h1 class="text-xl font-semibold text-white">Servicios Configurables</h1>
+      <h1 class="text-xl font-semibold nxr-text">Servicios Configurables</h1>
       <button class="flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-medium text-white transition nxr-btn-primary" @click="openCreate">
         <Plus :size="15" /> Nuevo servicio
       </button>
@@ -193,10 +193,10 @@ async function removeProduct(templateId: number, productLineId: number) {
 
     <div class="flex items-center gap-3">
       <div class="flex-1 relative">
-        <Search :size="14" class="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" />
-        <input v-model="q" type="text" placeholder="Buscar servicios..." class="w-full pl-9 pr-4 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+        <Search :size="14" class="absolute left-3 top-1/2 -translate-y-1/2 nxr-text-soft" />
+        <input v-model="q" type="text" placeholder="Buscar servicios..." class="w-full pl-9 pr-4 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" />
       </div>
-      <select v-model="status" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none">
+      <select v-model="status" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none">
         <option value="active">Activos</option>
         <option value="inactive">Inactivos</option>
         <option value="all">Todos</option>
@@ -206,39 +206,39 @@ async function removeProduct(templateId: number, productLineId: number) {
     <div v-if="store.loading" class="flex flex-col gap-2">
       <div v-for="i in 6" :key="i" class="h-16 rounded-xl bg-white/5 animate-pulse"></div>
     </div>
-    <div v-else-if="store.items.length === 0" class="text-center text-white/30 py-16 text-sm">Sin servicios registrados.</div>
+    <div v-else-if="store.items.length === 0" class="text-center nxr-text-soft py-16 text-sm">Sin servicios registrados.</div>
 
     <div v-else class="flex flex-col gap-2">
       <div v-for="s in store.items" :key="s.id" class="rounded-xl border border-white/10 overflow-hidden">
         <div class="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-white/5 transition-colors" :style="{ background: 'var(--nexora-glass-bg)' }" @click="toggleExpand(s.id)">
           <div class="flex-1 min-w-0">
-            <p class="text-sm font-medium text-white truncate">{{ s.name }}</p>
-            <p class="text-xs text-white/40">{{ s.estimated_hours }}h · tarifa: {{ (s as any).base_labor_rate ? fmt((s as any).base_labor_rate) + '/h' : 'no definida' }} · {{ s.suggested_role || 'Cualquier mecánico' }}</p>
+            <p class="text-sm font-medium nxr-text truncate">{{ s.name }}</p>
+            <p class="text-xs nxr-text-muted">{{ s.estimated_hours }}h · tarifa: {{ (s as any).base_labor_rate ? fmt((s as any).base_labor_rate) + '/h' : 'no definida' }} · {{ s.suggested_role || 'Cualquier mecánico' }}</p>
           </div>
           <div class="flex items-center gap-2 shrink-0">
-            <button type="button" class="text-white/30 hover:text-white/70" @click.stop="openEdit(s)"><Edit2 :size="14" /></button>
+            <button type="button" class="nxr-text-soft hover:text-[var(--nexora-text-color)]" @click.stop="openEdit(s)"><Edit2 :size="14" /></button>
             <button type="button" @click.stop="toggleStatus(s)">
               <ToggleRight v-if="s.status === 'active'" :size="18" class="text-green-400" />
-              <ToggleLeft v-else :size="18" class="text-white/30" />
+              <ToggleLeft v-else :size="18" class="nxr-text-soft" />
             </button>
-            <ChevronRight :size="14" class="text-white/30 transition-transform" :class="expanded === s.id ? 'rotate-90' : ''" />
+            <ChevronRight :size="14" class="nxr-text-soft transition-transform" :class="expanded === s.id ? 'rotate-90' : ''" />
           </div>
         </div>
 
         <div v-if="expanded === s.id && store.current?.id === s.id" class="border-t border-white/10 px-4 py-3 bg-black/10">
-          <p class="text-xs text-white/50 mb-2">Productos incluidos:</p>
-          <div v-for="p in store.current.products ?? []" :key="p.id" class="flex items-center justify-between text-xs text-white/60 py-1">
+          <p class="text-xs nxr-text-muted mb-2">Productos incluidos:</p>
+          <div v-for="p in store.current.products ?? []" :key="p.id" class="flex items-center justify-between text-xs nxr-text-soft py-1">
             <span>{{ p.quantity }} {{ p.unit || 'u.' }} × {{ p.product_name }}</span>
             <div class="flex items-center gap-2">
               <span>{{ fmt(p.reference_unit_price) }}</span>
               <button type="button" class="text-red-400/50 hover:text-red-400" @click="removeProduct(s.id, p.id)"><Trash2 :size="12" /></button>
             </div>
           </div>
-          <p v-if="!store.current.products?.length" class="text-xs text-white/30 italic">Sin productos asociados</p>
+          <p v-if="!store.current.products?.length" class="text-xs nxr-text-soft italic">Sin productos asociados</p>
         </div>
       </div>
 
-      <div class="flex items-center justify-between mt-2 text-xs text-white/40">
+      <div class="flex items-center justify-between mt-2 text-xs nxr-text-muted">
         <span>{{ store.total }} servicios</span>
         <div class="flex items-center gap-2">
           <button :disabled="page <= 1" class="px-3 py-1 rounded-lg bg-white/10 disabled:opacity-30 hover:bg-white/20" @click="page--; load()">Anterior</button>
@@ -261,50 +261,50 @@ async function removeProduct(templateId: number, productLineId: number) {
       <!-- Nombre y descripción -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
             <div class="col-span-2">
-              <label class="block text-xs text-white/50 mb-1">Nombre *</label>
-              <input v-model="form.name" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" />
+              <label class="block text-xs nxr-text-muted mb-1">Nombre *</label>
+              <input v-model="form.name" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40" />
             </div>
             <div class="col-span-2">
-              <label class="block text-xs text-white/50 mb-1">Descripción</label>
-              <textarea v-model="form.description" rows="2" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none resize-none"></textarea>
+              <label class="block text-xs nxr-text-muted mb-1">Descripción</label>
+              <textarea v-model="form.description" rows="2" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none resize-none"></textarea>
             </div>
           </div>
 
           <!-- Mano de obra -->
           <div class="rounded-xl border border-white/10 p-4 mb-4">
-            <p class="text-xs font-semibold text-white/60 mb-3 uppercase tracking-wide">Mano de obra</p>
+            <p class="text-xs font-semibold nxr-text-muted mb-3 uppercase tracking-wide">Mano de obra</p>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label class="block text-xs text-white/50 mb-1">Horas estimadas</label>
-                <input v-model.number="form.estimated_hours" type="number" min="0" step="0.5" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" />
+                <label class="block text-xs nxr-text-muted mb-1">Horas estimadas</label>
+                <input v-model.number="form.estimated_hours" type="number" min="0" step="0.5" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40" />
               </div>
               <div>
-                <label class="block text-xs text-white/50 mb-1">Tarifa (desde catálogo)</label>
-                <select class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none" @change="selectLaborRate(($event.target as HTMLSelectElement).value)">
+                <label class="block text-xs nxr-text-muted mb-1">Tarifa (desde catálogo)</label>
+                <select class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none" @change="selectLaborRate(($event.target as HTMLSelectElement).value)">
                   <option value="">— Seleccionar tarifa —</option>
                   <option v-for="r in laborRates" :key="r.id" :value="r.id">{{ r.rate_name }} · {{ fmt(r.hourly_rate) }}/h</option>
                 </select>
               </div>
               <div>
-                <label class="block text-xs text-white/50 mb-1">Tarifa por hora</label>
-                <input v-model.number="form.base_labor_rate" type="number" min="0" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" placeholder="0" />
+                <label class="block text-xs nxr-text-muted mb-1">Tarifa por hora</label>
+                <input v-model.number="form.base_labor_rate" type="number" min="0" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40" placeholder="0" />
               </div>
               <div class="flex items-end">
                 <div class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm">
-                  <p class="text-xs text-white/40 mb-0.5">Total mano de obra</p>
-                  <p class="text-white font-semibold">{{ fmt(totalMO) }}</p>
+                  <p class="text-xs nxr-text-muted mb-0.5">Total mano de obra</p>
+                  <p class="nxr-text font-semibold">{{ fmt(totalMO) }}</p>
                 </div>
               </div>
               <div>
-                <label class="block text-xs text-white/50 mb-1">Mecánico/Rol sugerido</label>
-                <select v-model="form.suggested_role" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none">
+                <label class="block text-xs nxr-text-muted mb-1">Mecánico/Rol sugerido</label>
+                <select v-model="form.suggested_role" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none">
                   <option value="">Cualquier mecánico</option>
                   <option v-for="e in employees" :key="e.id" :value="e.first_name + ' ' + (e.last_name || '')">{{ e.first_name }} {{ e.last_name || '' }} {{ e.role_name ? `(${e.role_name})` : '' }}</option>
                 </select>
               </div>
               <div>
-                <label class="block text-xs text-white/50 mb-1">Especialidad sugerida</label>
-                <input v-model="form.suggested_specialty" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" />
+                <label class="block text-xs nxr-text-muted mb-1">Especialidad sugerida</label>
+                <input v-model="form.suggested_specialty" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40" />
               </div>
             </div>
           </div>
@@ -312,19 +312,19 @@ async function removeProduct(templateId: number, productLineId: number) {
           <!-- Repuestos e insumos -->
           <div class="rounded-xl border border-white/10 p-4 mb-4">
             <div class="flex items-center justify-between mb-3">
-              <p class="text-xs font-semibold text-white/60 uppercase tracking-wide">Repuestos e insumos</p>
-              <button v-if="!addingProduct" type="button" class="flex items-center gap-1 text-xs px-2 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white/70" @click="addingProduct = true">
+              <p class="text-xs font-semibold nxr-text-muted uppercase tracking-wide">Repuestos e insumos</p>
+              <button v-if="!addingProduct" type="button" class="flex items-center gap-1 text-xs px-2 py-1 rounded-lg bg-white/10 hover:bg-white/20 nxr-text-muted" @click="addingProduct = true">
                 <Plus :size="12" /> Agregar
               </button>
             </div>
 
-            <div v-if="formProducts.length === 0 && !addingProduct" class="text-xs text-white/30 italic py-2">Sin repuestos ni insumos asociados.</div>
+            <div v-if="formProducts.length === 0 && !addingProduct" class="text-xs nxr-text-soft italic py-2">Sin repuestos ni insumos asociados.</div>
 
             <div v-if="formProducts.length > 0" class="flex flex-col gap-1 mb-3">
-              <div class="grid grid-cols-12 gap-1 text-xs text-white/30 px-1 mb-1">
+              <div class="grid grid-cols-12 gap-1 text-xs nxr-text-soft px-1 mb-1">
                 <span class="col-span-5">Producto</span><span class="col-span-2 text-center">Cant.</span><span class="col-span-2 text-center">P. unit.</span><span class="col-span-2 text-right">Subtotal</span><span class="col-span-1"></span>
               </div>
-              <div v-for="(p, idx) in formProducts" :key="idx" class="grid grid-cols-12 gap-1 text-xs text-white/70 items-center px-1 py-1 rounded-lg hover:bg-white/5">
+              <div v-for="(p, idx) in formProducts" :key="idx" class="grid grid-cols-12 gap-1 text-xs nxr-text-muted items-center px-1 py-1 rounded-lg hover:bg-white/5">
                 <span class="col-span-5 truncate">{{ p.product_name }}</span>
                 <span class="col-span-2 text-center">{{ p.quantity }} {{ p.unit || 'u.' }}</span>
                 <span class="col-span-2 text-center">{{ fmt(p.reference_unit_price) }}</span>
@@ -334,18 +334,18 @@ async function removeProduct(templateId: number, productLineId: number) {
             </div>
 
             <div v-if="addingProduct" class="flex flex-col gap-2 mt-2 border-t border-white/10 pt-3">
-              <select class="w-full px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white text-xs outline-none" @change="selectCatalogProduct(($event.target as HTMLSelectElement).value)">
+              <select class="w-full px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 nxr-text text-xs outline-none" @change="selectCatalogProduct(($event.target as HTMLSelectElement).value)">
                 <option value="">— Seleccionar del catálogo —</option>
                 <option v-for="p in products" :key="p.id" :value="p.id">{{ p.name }} · {{ fmt(p.reference_price ?? 0) }}/{{ p.unit || 'u.' }}</option>
               </select>
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                <input v-model="newProd.product_name" type="text" placeholder="Nombre *" class="col-span-3 px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white text-xs outline-none" />
-                <input v-model.number="newProd.quantity" type="number" min="0.01" step="0.01" placeholder="Cantidad" class="px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white text-xs outline-none" />
-                <input v-model="newProd.unit" type="text" placeholder="Unidad" class="px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white text-xs outline-none" />
-                <input v-model.number="newProd.reference_unit_price" type="number" min="0" placeholder="Precio unit." class="px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white text-xs outline-none" />
+                <input v-model="newProd.product_name" type="text" placeholder="Nombre *" class="col-span-3 px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 nxr-text text-xs outline-none" />
+                <input v-model.number="newProd.quantity" type="number" min="0.01" step="0.01" placeholder="Cantidad" class="px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 nxr-text text-xs outline-none" />
+                <input v-model="newProd.unit" type="text" placeholder="Unidad" class="px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 nxr-text text-xs outline-none" />
+                <input v-model.number="newProd.reference_unit_price" type="number" min="0" placeholder="Precio unit." class="px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 nxr-text text-xs outline-none" />
               </div>
               <div class="flex items-center justify-between">
-                <span class="text-xs text-white/30">Subtotal: {{ fmt((newProd.quantity || 0) * (newProd.reference_unit_price || 0)) }}</span>
+                <span class="text-xs nxr-text-soft">Subtotal: {{ fmt((newProd.quantity || 0) * (newProd.reference_unit_price || 0)) }}</span>
                 <div class="flex gap-2">
                   <button type="button" class="rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-secondary" @click="addingProduct = false">Cancelar</button>
                   <button type="button" class="rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary" @click="addNewProduct">Agregar</button>
@@ -353,31 +353,31 @@ async function removeProduct(templateId: number, productLineId: number) {
               </div>
             </div>
 
-            <div v-if="formProducts.length > 0" class="flex justify-end mt-2 text-xs text-white/50">
-              Total repuestos: <span class="text-white ml-1 font-medium">{{ fmt(totalRepuestos) }}</span>
+            <div v-if="formProducts.length > 0" class="flex justify-end mt-2 text-xs nxr-text-muted">
+              Total repuestos: <span class="nxr-text ml-1 font-medium">{{ fmt(totalRepuestos) }}</span>
             </div>
           </div>
 
           <!-- Margen, impuesto y total final -->
           <div class="rounded-xl border border-white/10 p-4 mb-5">
-            <p class="text-xs font-semibold text-white/60 mb-3 uppercase tracking-wide">Precio final</p>
+            <p class="text-xs font-semibold nxr-text-muted mb-3 uppercase tracking-wide">Precio final</p>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
               <div>
-                <label class="block text-xs text-white/50 mb-1">Margen de ganancia (%)</label>
-                <input v-model.number="form.margin_pct" type="number" min="0" max="100" step="0.5" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" />
+                <label class="block text-xs nxr-text-muted mb-1">Margen de ganancia (%)</label>
+                <input v-model.number="form.margin_pct" type="number" min="0" max="100" step="0.5" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40" />
               </div>
               <div>
-                <label class="block text-xs text-white/50 mb-1">Impuesto (%)</label>
-                <input v-model.number="form.tax_pct" type="number" min="0" max="100" step="0.5" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" />
+                <label class="block text-xs nxr-text-muted mb-1">Impuesto (%)</label>
+                <input v-model.number="form.tax_pct" type="number" min="0" max="100" step="0.5" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40" />
               </div>
             </div>
             <div class="rounded-xl bg-white/5 p-3 flex flex-col gap-1 text-xs">
-              <div class="flex justify-between text-white/50"><span>MO ({{ form.estimated_hours }}h × {{ fmt(form.base_labor_rate || 0) }})</span><span>{{ fmt(totalMO) }}</span></div>
-              <div class="flex justify-between text-white/50"><span>Repuestos e insumos</span><span>{{ fmt(totalRepuestos) }}</span></div>
-              <div class="flex justify-between text-white/50 border-t border-white/10 pt-1"><span>Subtotal</span><span>{{ fmt(subtotal) }}</span></div>
-              <div v-if="form.margin_pct" class="flex justify-between text-white/50"><span>Margen ({{ form.margin_pct }}%)</span><span>{{ fmt(subtotal * (form.margin_pct / 100)) }}</span></div>
-              <div v-if="form.tax_pct" class="flex justify-between text-white/50"><span>Impuesto ({{ form.tax_pct }}%)</span><span>{{ fmt(subtotal * (1 + (form.margin_pct || 0) / 100) * (form.tax_pct / 100)) }}</span></div>
-              <div class="flex justify-between text-white font-bold text-sm border-t border-white/10 pt-2 mt-1">
+              <div class="flex justify-between nxr-text-muted"><span>MO ({{ form.estimated_hours }}h × {{ fmt(form.base_labor_rate || 0) }})</span><span>{{ fmt(totalMO) }}</span></div>
+              <div class="flex justify-between nxr-text-muted"><span>Repuestos e insumos</span><span>{{ fmt(totalRepuestos) }}</span></div>
+              <div class="flex justify-between nxr-text-muted border-t border-white/10 pt-1"><span>Subtotal</span><span>{{ fmt(subtotal) }}</span></div>
+              <div v-if="form.margin_pct" class="flex justify-between nxr-text-muted"><span>Margen ({{ form.margin_pct }}%)</span><span>{{ fmt(subtotal * (form.margin_pct / 100)) }}</span></div>
+              <div v-if="form.tax_pct" class="flex justify-between nxr-text-muted"><span>Impuesto ({{ form.tax_pct }}%)</span><span>{{ fmt(subtotal * (1 + (form.margin_pct || 0) / 100) * (form.tax_pct / 100)) }}</span></div>
+              <div class="flex justify-between nxr-text font-bold text-sm border-t border-white/10 pt-2 mt-1">
                 <span class="flex items-center gap-1"><Calculator :size="13" /> Total estimado del servicio</span>
                 <span>{{ fmt(totalFinal) }}</span>
               </div>

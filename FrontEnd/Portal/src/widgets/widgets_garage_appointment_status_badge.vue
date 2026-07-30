@@ -17,7 +17,7 @@ const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
 <template>
   <span
     class="inline-flex items-center rounded-full font-medium"
-    :class="[(STATUS_CONFIG[status] ?? { color: 'bg-white/10 text-white/60' }).color, small ? 'text-xs px-2 py-0.5' : 'text-xs px-3 py-1']"
+    :class="[(STATUS_CONFIG[status] ?? { color: 'bg-white/10 nxr-text-muted' }).color, small ? 'text-xs px-2 py-0.5' : 'text-xs px-3 py-1']"
   >
     {{ (STATUS_CONFIG[status] ?? { label: status }).label }}
   </span>

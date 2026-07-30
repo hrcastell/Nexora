@@ -121,21 +121,21 @@ async function onPhotoDelete() {
               @upload="onPhotoSelected"
               @delete="onPhotoDelete"
             />
-            <p v-if="pendingPhoto" class="mt-2 text-xs text-white/60">Foto pendiente: {{ pendingPhoto.name }}</p>
+            <p v-if="pendingPhoto" class="mt-2 text-xs nxr-text-muted">Foto pendiente: {{ pendingPhoto.name }}</p>
           </div>
 
           <div class="nxr-garage-form-grid grid gap-4">
             <div>
-              <label class="block text-xs text-white/50 mb-1">Nombre *</label>
-              <input v-model="form.first_name" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" />
+              <label class="block text-xs nxr-text-muted mb-1">Nombre *</label>
+              <input v-model="form.first_name" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40" />
             </div>
             <div>
-              <label class="block text-xs text-white/50 mb-1">Apellido</label>
-              <input v-model="form.last_name" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" />
+              <label class="block text-xs nxr-text-muted mb-1">Apellido</label>
+              <input v-model="form.last_name" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40" />
             </div>
             <div>
-              <label class="block text-xs text-white/50 mb-1">Tipo documento</label>
-              <select v-model="form.document_type" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40">
+              <label class="block text-xs nxr-text-muted mb-1">Tipo documento</label>
+              <select v-model="form.document_type" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40">
                 <option value="">Seleccionar</option>
                 <option value="RUT">RUT</option>
                 <option value="DNI">DNI</option>
@@ -144,52 +144,52 @@ async function onPhotoDelete() {
               </select>
             </div>
             <div>
-              <label class="block text-xs text-white/50 mb-1">Número documento</label>
-              <input v-model="form.document_number" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" />
+              <label class="block text-xs nxr-text-muted mb-1">Número documento</label>
+              <input v-model="form.document_number" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40" />
             </div>
             <div>
-              <label class="block text-xs text-white/50 mb-1">Teléfono</label>
-              <input v-model="form.phone" type="tel" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" />
+              <label class="block text-xs nxr-text-muted mb-1">Teléfono</label>
+              <input v-model="form.phone" type="tel" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40" />
             </div>
             <div>
-              <label class="block text-xs text-white/50 mb-1">Móvil</label>
-              <input v-model="form.mobile" type="tel" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" />
+              <label class="block text-xs nxr-text-muted mb-1">Móvil</label>
+              <input v-model="form.mobile" type="tel" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40" />
             </div>
             <div>
-              <label class="block text-xs text-white/50 mb-1">Correo electrónico</label>
-              <input v-model="form.email" type="email" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" />
+              <label class="block text-xs nxr-text-muted mb-1">Correo electrónico</label>
+              <input v-model="form.email" type="email" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40" />
             </div>
             <div>
-              <label class="block text-xs text-white/50 mb-1">Fecha de nacimiento</label>
-              <input v-model="form.birth_date" type="date" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" />
+              <label class="block text-xs nxr-text-muted mb-1">Fecha de nacimiento</label>
+              <input v-model="form.birth_date" type="date" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40" />
             </div>
 
             <div class="nxr-garage-form-section"><div class="border-t border-white/10 my-1"></div></div>
-            <p class="nxr-garage-form-section text-xs text-white/40 -mt-3">Dirección</p>
+            <p class="nxr-garage-form-section text-xs nxr-text-muted -mt-3">Dirección</p>
 
             <div>
-              <label class="block text-xs text-white/50 mb-1">País</label>
-              <input v-model="form.country" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" />
+              <label class="block text-xs nxr-text-muted mb-1">País</label>
+              <input v-model="form.country" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40" />
             </div>
             <div>
-              <label class="block text-xs text-white/50 mb-1">Región / Estado</label>
-              <input v-model="form.region_state" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" />
+              <label class="block text-xs nxr-text-muted mb-1">Región / Estado</label>
+              <input v-model="form.region_state" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40" />
             </div>
             <div>
-              <label class="block text-xs text-white/50 mb-1">Ciudad</label>
-              <input v-model="form.city" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" />
+              <label class="block text-xs nxr-text-muted mb-1">Ciudad</label>
+              <input v-model="form.city" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40" />
             </div>
             <div>
-              <label class="block text-xs text-white/50 mb-1">Comuna / Municipio</label>
-              <input v-model="form.commune_district" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" />
+              <label class="block text-xs nxr-text-muted mb-1">Comuna / Municipio</label>
+              <input v-model="form.commune_district" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40" />
             </div>
             <div class="col-span-2">
-              <label class="block text-xs text-white/50 mb-1">Dirección</label>
-              <input v-model="form.address" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" />
+              <label class="block text-xs nxr-text-muted mb-1">Dirección</label>
+              <input v-model="form.address" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40" />
             </div>
             <div class="col-span-2">
-              <label class="block text-xs text-white/50 mb-1">Notas</label>
-              <textarea v-model="form.notes" rows="2" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40 resize-none"></textarea>
+              <label class="block text-xs nxr-text-muted mb-1">Notas</label>
+              <textarea v-model="form.notes" rows="2" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40 resize-none"></textarea>
             </div>
           </div>
 

@@ -159,34 +159,34 @@ function formatSize(bytes?: number) {
 
     <!-- Upload form -->
     <div v-if="!readOnly" class="rounded-xl bg-white/5 border border-white/10 p-4 space-y-4">
-      <h3 class="text-sm font-medium text-white/70 uppercase tracking-wide">Adjuntar archivo</h3>
+      <h3 class="text-sm font-medium nxr-text-muted uppercase tracking-wide">Adjuntar archivo</h3>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <!-- File picker -->
         <div>
-          <label class="block text-xs text-white/50 mb-1">Archivo</label>
+          <label class="block text-xs nxr-text-muted mb-1">Archivo</label>
           <input
             ref="fileInput"
             type="file"
             accept="image/*,.pdf,.doc,.docx"
-            class="block w-full text-sm text-white/70
+            class="block w-full text-sm nxr-text-muted
                    file:mr-3 file:py-1.5 file:px-3
                    file:rounded-lg file:border-0
                    file:text-xs file:font-medium
-                   file:bg-white/10 file:text-white/70
+                   file:bg-white/10 file:text-[var(--nexora-muted-text)]
                    hover:file:bg-white/20
                    cursor-pointer"
             @change="onFileChange"
           />
-          <p v-if="selectedFile" class="mt-1 text-xs text-white/40 truncate">{{ selectedFile.name }}</p>
+          <p v-if="selectedFile" class="mt-1 text-xs nxr-text-muted truncate">{{ selectedFile.name }}</p>
         </div>
 
         <!-- Category -->
         <div>
-          <label class="block text-xs text-white/50 mb-1">Categoría</label>
+          <label class="block text-xs nxr-text-muted mb-1">Categoría</label>
           <select
             v-model="uploadCategory"
-            class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white/80 focus:outline-none focus:ring-1 focus:ring-white/20"
+            class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm nxr-text focus:outline-none focus:ring-1 focus:ring-white/20"
           >
             <option v-for="opt in CATEGORY_OPTIONS" :key="opt.value" :value="opt.value">
               {{ CATEGORY_ICON[opt.value] }} {{ opt.label }}
@@ -197,12 +197,12 @@ function formatSize(bytes?: number) {
 
       <!-- Description -->
       <div>
-        <label class="block text-xs text-white/50 mb-1">Descripción (opcional)</label>
+        <label class="block text-xs nxr-text-muted mb-1">Descripción (opcional)</label>
         <input
           v-model="uploadDescription"
           type="text"
           placeholder="Ej: Radiografía panorámica inicial"
-          class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white/80 placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-white/20"
+          class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm nxr-text placeholder-[var(--nexora-soft-text)] focus:outline-none focus:ring-1 focus:ring-white/20"
         />
       </div>
 
@@ -220,7 +220,7 @@ function formatSize(bytes?: number) {
     </div>
 
     <!-- Loading state -->
-    <div v-if="loading" class="flex items-center justify-center py-12 text-white/40 text-sm gap-2">
+    <div v-if="loading" class="flex items-center justify-center py-12 nxr-text-muted text-sm gap-2">
       <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
@@ -229,7 +229,7 @@ function formatSize(bytes?: number) {
     </div>
 
     <!-- Empty state -->
-    <div v-else-if="!loading && attachments.length === 0" class="flex flex-col items-center justify-center py-12 text-white/30 gap-2">
+    <div v-else-if="!loading && attachments.length === 0" class="flex flex-col items-center justify-center py-12 nxr-text-soft gap-2">
       <span class="text-4xl">📎</span>
       <p class="text-sm">No hay archivos adjuntos</p>
     </div>
@@ -260,16 +260,16 @@ function formatSize(bytes?: number) {
               :href="attachment.file_url"
               target="_blank"
               rel="noopener noreferrer"
-              class="text-sm font-medium text-white/80 hover:text-white truncate max-w-xs underline decoration-white/30 hover:decoration-white transition-colors"
+              class="text-sm font-medium nxr-text-muted hover:text-[var(--nexora-text-color)] truncate max-w-xs underline decoration-white/30 hover:decoration-white transition-colors"
             >
               {{ attachment.file_name }}
             </a>
-            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/10 text-xs text-white/50">
+            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/10 text-xs nxr-text-muted">
               {{ CATEGORY_ICON[attachment.category] }} {{ ATTACHMENT_CATEGORY_LABELS[attachment.category] }}
             </span>
           </div>
-          <p v-if="attachment.description" class="text-xs text-white/50 mt-0.5 truncate">{{ attachment.description }}</p>
-          <p class="text-xs text-white/30 mt-0.5">
+          <p v-if="attachment.description" class="text-xs nxr-text-muted mt-0.5 truncate">{{ attachment.description }}</p>
+          <p class="text-xs nxr-text-soft mt-0.5">
             {{ formatDate(attachment.created_at) }}
             <span v-if="attachment.file_size_bytes"> · {{ formatSize(attachment.file_size_bytes) }}</span>
           </p>
@@ -281,7 +281,7 @@ function formatSize(bytes?: number) {
             :href="attachment.file_url"
             target="_blank"
             rel="noopener noreferrer"
-            class="p-1.5 rounded-lg hover:bg-white/10 text-white/40 hover:text-white/70 transition-colors"
+            class="p-1.5 rounded-lg hover:bg-white/10 nxr-text-muted hover:text-[var(--nexora-text-color)] transition-colors"
             title="Abrir en nueva pestaña"
           >
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -292,7 +292,7 @@ function formatSize(bytes?: number) {
           </a>
           <button
             v-if="!readOnly"
-            class="p-1.5 rounded-lg hover:bg-red-500/20 text-white/30 hover:text-red-400 transition-colors"
+            class="p-1.5 rounded-lg hover:bg-red-500/20 nxr-text-soft hover:text-red-400 transition-colors"
             title="Eliminar"
             @click="handleRemove(attachment)"
           >

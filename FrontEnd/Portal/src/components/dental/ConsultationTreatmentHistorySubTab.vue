@@ -54,7 +54,7 @@ const emit = defineEmits<{
   <div class="space-y-4">
 
     <div class="rounded-xl border border-white/10 bg-white/5 px-4 py-3">
-      <p class="text-xs font-semibold uppercase tracking-wide text-white/40">Plan de tratamiento</p>
+      <p class="text-xs font-semibold uppercase tracking-wide nxr-text-muted">Plan de tratamiento</p>
     </div>
 
     <ConsultationTreatmentPlanTab

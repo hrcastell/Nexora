@@ -121,10 +121,10 @@ async function seedCategories() {
 <template>
   <div class="flex flex-col gap-5 p-6">
     <div class="flex items-center justify-between flex-wrap gap-3">
-      <h1 class="text-xl font-semibold text-white">Categorías</h1>
+      <h1 class="text-xl font-semibold nxr-text">Categorías</h1>
       <div class="flex items-center gap-2">
         <button
-          class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border border-white/10 text-white/60 hover:border-white/30 hover:text-white transition-all disabled:opacity-40"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border border-white/10 nxr-text-muted hover:border-white/30 hover:text-[var(--nexora-text-color)] transition-all disabled:opacity-40"
           :disabled="seeding"
           @click="seedCategories"
         >
@@ -140,7 +140,7 @@ async function seedCategories() {
     </div>
 
     <div class="flex items-center gap-3">
-      <select v-model="typeFilter" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none">
+      <select v-model="typeFilter" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none">
         <option value="">Todos los tipos</option>
         <option value="income">Ingresos</option>
         <option value="expense">Gastos</option>
@@ -148,7 +148,7 @@ async function seedCategories() {
         <option value="debt">Deudas</option>
         <option value="transfer">Transferencias</option>
       </select>
-      <span class="text-xs text-white/30">{{ filtered.length }} categorías</span>
+      <span class="text-xs nxr-text-soft">{{ filtered.length }} categorías</span>
     </div>
 
     <div v-if="store.loading" class="flex flex-col gap-2">
@@ -157,13 +157,13 @@ async function seedCategories() {
 
     <div v-else-if="store.error" class="text-center text-red-400 py-10 text-sm">{{ store.error }}</div>
 
-    <div v-else-if="filtered.length === 0" class="text-center text-white/30 py-16 text-sm">
+    <div v-else-if="filtered.length === 0" class="text-center nxr-text-soft py-16 text-sm">
       No hay categorías para este filtro.
     </div>
 
     <div v-else class="flex flex-col gap-2">
       <!-- Desktop table header -->
-      <div class="hidden md:grid grid-cols-[1fr_120px_80px_80px_80px] gap-4 px-4 py-2 text-xs text-white/30 font-semibold uppercase tracking-wide">
+      <div class="hidden md:grid grid-cols-[1fr_120px_80px_80px_80px] gap-4 px-4 py-2 text-xs nxr-text-soft font-semibold uppercase tracking-wide">
         <span>Nombre</span>
         <span>Tipo</span>
         <span class="text-center">Fija</span>
@@ -181,10 +181,10 @@ async function seedCategories() {
         <!-- Mobile layout -->
         <div class="flex-1 min-w-0 md:hidden">
           <div class="flex items-center gap-2 mb-1">
-            <p class="text-sm text-white truncate">{{ c.name }}</p>
+            <p class="text-sm nxr-text truncate">{{ c.name }}</p>
             <span class="px-2 py-0.5 rounded-full text-xs shrink-0" :class="TYPE_CLASS[c.type]">{{ TYPE_LABEL[c.type] }}</span>
           </div>
-          <div class="flex items-center gap-2 text-xs text-white/30">
+          <div class="flex items-center gap-2 text-xs nxr-text-soft">
             <span v-if="c.is_fixed" class="text-blue-400">Fija</span>
             <span v-if="c.is_essential" class="text-yellow-400">Esencial</span>
           </div>
@@ -192,19 +192,19 @@ async function seedCategories() {
 
         <!-- Desktop layout -->
         <div class="hidden md:grid md:grid-cols-[1fr_120px_80px_80px_80px] gap-4 items-center flex-1">
-          <p class="text-sm text-white truncate">{{ c.name }}</p>
+          <p class="text-sm nxr-text truncate">{{ c.name }}</p>
           <span class="px-2 py-0.5 rounded-full text-xs inline-flex items-center w-fit" :class="TYPE_CLASS[c.type]">{{ TYPE_LABEL[c.type] }}</span>
-          <p class="text-center text-xs" :class="c.is_fixed ? 'text-blue-400' : 'text-white/20'">{{ c.is_fixed ? 'Si' : '—' }}</p>
-          <p class="text-center text-xs" :class="c.is_essential ? 'text-yellow-400' : 'text-white/20'">{{ c.is_essential ? 'Si' : '—' }}</p>
+          <p class="text-center text-xs" :class="c.is_fixed ? 'text-blue-400' : 'nxr-text-soft'">{{ c.is_fixed ? 'Si' : '—' }}</p>
+          <p class="text-center text-xs" :class="c.is_essential ? 'text-yellow-400' : 'nxr-text-soft'">{{ c.is_essential ? 'Si' : '—' }}</p>
           <div class="flex items-center justify-center gap-2">
-            <button class="text-white/30 hover:text-white/70 transition-colors" @click="openEdit(c)">
+            <button class="nxr-text-soft hover:text-[var(--nexora-text-color)] transition-colors" @click="openEdit(c)">
               <Pencil :size="14" />
             </button>
-            <button class="text-white/30 hover:text-white/70 transition-colors" @click="toggleStatus(c)">
+            <button class="nxr-text-soft hover:text-[var(--nexora-text-color)] transition-colors" @click="toggleStatus(c)">
               <ToggleRight v-if="c.is_active" :size="18" class="text-green-400" />
-              <ToggleLeft v-else :size="18" class="text-white/30" />
+              <ToggleLeft v-else :size="18" class="nxr-text-soft" />
             </button>
-            <button class="text-white/30 hover:text-red-400 transition-colors" @click="removeCategory(c)">
+            <button class="nxr-text-soft hover:text-red-400 transition-colors" @click="removeCategory(c)">
               <Trash2 :size="14" />
             </button>
           </div>
@@ -212,14 +212,14 @@ async function seedCategories() {
 
         <!-- Mobile actions -->
         <div class="flex items-center gap-2 shrink-0 md:hidden">
-          <button class="text-white/30 hover:text-white/70 transition-colors" @click="openEdit(c)">
+          <button class="nxr-text-soft hover:text-[var(--nexora-text-color)] transition-colors" @click="openEdit(c)">
             <Pencil :size="14" />
           </button>
-          <button class="text-white/30 hover:text-white/70 transition-colors" @click="toggleStatus(c)">
+          <button class="nxr-text-soft hover:text-[var(--nexora-text-color)] transition-colors" @click="toggleStatus(c)">
             <ToggleRight v-if="c.is_active" :size="18" class="text-green-400" />
             <ToggleLeft v-else :size="18" />
           </button>
-          <button class="text-white/30 hover:text-red-400 transition-colors" @click="removeCategory(c)">
+          <button class="nxr-text-soft hover:text-red-400 transition-colors" @click="removeCategory(c)">
             <Trash2 :size="14" />
           </button>
         </div>
@@ -237,12 +237,12 @@ async function seedCategories() {
     :draft-state="{ form }">
       <form class="flex flex-col gap-5" @submit.prevent="save">
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Nombre</label>
-          <input v-model="form.name" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" required />
+          <label class="text-xs nxr-text-muted">Nombre</label>
+          <input v-model="form.name" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" required />
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Tipo</label>
-          <select v-model="form.type" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none" @change="onTypeChange">
+          <label class="text-xs nxr-text-muted">Tipo</label>
+          <select v-model="form.type" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none" @change="onTypeChange">
             <option value="income">Ingreso</option>
             <option value="expense">Gasto</option>
             <option value="saving">Ahorro</option>
@@ -251,24 +251,24 @@ async function seedCategories() {
           </select>
         </div>
         <div v-if="form.type === 'debt'" class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Total de cuotas</label>
+          <label class="text-xs nxr-text-muted">Total de cuotas</label>
           <input
             v-model.number="form.total_installments"
             type="number"
             min="1"
             placeholder="Ej: 24"
-            class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30"
+            class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30"
           />
-          <p class="text-xs text-white/30">Cantidad total de cuotas de esta deuda (opcional)</p>
+          <p class="text-xs nxr-text-soft">Cantidad total de cuotas de esta deuda (opcional)</p>
         </div>
         <div class="flex items-center gap-3">
           <label class="flex items-center gap-2 cursor-pointer">
             <input v-model="form.is_fixed" type="checkbox" class="rounded" />
-            <span class="text-sm text-white/70">Gasto fijo</span>
+            <span class="text-sm nxr-text-muted">Gasto fijo</span>
           </label>
           <label class="flex items-center gap-2 cursor-pointer">
             <input v-model="form.is_essential" type="checkbox" class="rounded" />
-            <span class="text-sm text-white/70">Esencial</span>
+            <span class="text-sm nxr-text-muted">Esencial</span>
           </label>
         </div>
         <p v-if="saveError" class="text-xs text-red-400">{{ saveError }}</p>

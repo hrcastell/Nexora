@@ -62,7 +62,7 @@ onMounted(load)
 
     <!-- Actions (hidden on print) -->
     <div class="flex items-center justify-between no-print">
-      <h3 class="text-sm font-semibold uppercase tracking-wide text-white/40">Informe final</h3>
+      <h3 class="text-sm font-semibold uppercase tracking-wide nxr-text-muted">Informe final</h3>
       <button
         class="flex items-center gap-1.5 rounded-2xl px-4 py-2 text-sm font-medium text-white transition nxr-btn-primary"
         @click="print"
@@ -74,7 +74,7 @@ onMounted(load)
       </button>
     </div>
 
-    <div v-if="loading" class="py-6 text-center text-sm text-white/30">Cargando informe...</div>
+    <div v-if="loading" class="py-6 text-center text-sm nxr-text-soft">Cargando informe...</div>
     <p v-else-if="error" class="text-sm text-red-400">{{ error }}</p>
 
     <!-- Report body -->
@@ -82,28 +82,28 @@ onMounted(load)
 
       <!-- Report header -->
       <div class="border-b border-white/10 pb-4">
-        <h2 class="text-lg font-semibold text-white">Informe clinico de consulta</h2>
-        <div class="mt-2 space-y-0.5 text-sm text-white/60">
-          <p><span class="text-white/40">Paciente:</span> {{ patientName ?? '—' }}</p>
-          <p><span class="text-white/40">Fecha de emisión:</span> {{ today }}</p>
+        <h2 class="text-lg font-semibold nxr-text">Informe clinico de consulta</h2>
+        <div class="mt-2 space-y-0.5 text-sm nxr-text-muted">
+          <p><span class="nxr-text-muted">Paciente:</span> {{ patientName ?? '—' }}</p>
+          <p><span class="nxr-text-muted">Fecha de emisión:</span> {{ today }}</p>
         </div>
       </div>
 
       <!-- Section: Diagnoses -->
       <div class="space-y-2">
-        <p class="text-xs font-semibold uppercase tracking-wide text-white/40">Diagnosticos</p>
-        <div v-if="diagnoses.length === 0" class="text-sm text-white/30">Sin diagnósticos registrados.</div>
+        <p class="text-xs font-semibold uppercase tracking-wide nxr-text-muted">Diagnosticos</p>
+        <div v-if="diagnoses.length === 0" class="text-sm nxr-text-soft">Sin diagnósticos registrados.</div>
         <ul v-else class="space-y-1.5">
           <li
             v-for="d in diagnoses"
             :key="d.id"
-            class="flex items-start gap-2 text-sm text-white"
+            class="flex items-start gap-2 text-sm nxr-text"
           >
             <span class="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-white/30" />
             <span>
               {{ d.diagnosis_text }}
-              <span v-if="d.diagnosis_code" class="ml-1 text-xs text-white/40">({{ d.diagnosis_code }})</span>
-              <span class="ml-1 text-xs text-white/40">— {{ SEVERITY_LABEL[d.severity] ?? d.severity }}</span>
+              <span v-if="d.diagnosis_code" class="ml-1 text-xs nxr-text-muted">({{ d.diagnosis_code }})</span>
+              <span class="ml-1 text-xs nxr-text-muted">— {{ SEVERITY_LABEL[d.severity] ?? d.severity }}</span>
             </span>
           </li>
         </ul>
@@ -111,20 +111,20 @@ onMounted(load)
 
       <!-- Section: Odontogram findings -->
       <div class="space-y-2">
-        <p class="text-xs font-semibold uppercase tracking-wide text-white/40">Hallazgos del odontograma</p>
-        <div v-if="odontogram.length === 0" class="text-sm text-white/30">Sin hallazgos registrados en esta consulta.</div>
+        <p class="text-xs font-semibold uppercase tracking-wide nxr-text-muted">Hallazgos del odontograma</p>
+        <div v-if="odontogram.length === 0" class="text-sm nxr-text-soft">Sin hallazgos registrados en esta consulta.</div>
         <ul v-else class="space-y-1.5">
           <li
             v-for="e in odontogram"
             :key="e.id"
-            class="flex items-start gap-2 text-sm text-white"
+            class="flex items-start gap-2 text-sm nxr-text"
           >
             <span class="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-white/30" />
             <span>
               Diente {{ e.tooth_number }}
               <span v-if="e.surface"> — {{ e.surface }}</span>:
               {{ FINDING_LABEL[e.finding_type] ?? e.finding_type }}
-              <span v-if="e.observation" class="text-white/50"> — {{ e.observation }}</span>
+              <span v-if="e.observation" class="nxr-text-muted"> — {{ e.observation }}</span>
             </span>
           </li>
         </ul>
@@ -132,19 +132,19 @@ onMounted(load)
 
       <!-- Section: Treatment plan -->
       <div class="space-y-2">
-        <p class="text-xs font-semibold uppercase tracking-wide text-white/40">Plan de tratamiento</p>
-        <div v-if="treatments.length === 0" class="text-sm text-white/30">Sin tratamientos registrados.</div>
+        <p class="text-xs font-semibold uppercase tracking-wide nxr-text-muted">Plan de tratamiento</p>
+        <div v-if="treatments.length === 0" class="text-sm nxr-text-soft">Sin tratamientos registrados.</div>
         <ul v-else class="space-y-1.5">
           <li
             v-for="t in treatments"
             :key="t.id"
             class="flex items-start gap-2 text-sm"
-            :class="t.status === 'voided' ? 'text-white/30 line-through' : 'text-white'"
+            :class="t.status === 'voided' ? 'nxr-text-soft line-through' : 'nxr-text'"
           >
             <span class="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-white/30" />
             <span>
               {{ t.treatment_name_snapshot }}
-              <span v-if="t.tooth_reference" class="text-white/50"> (Diente {{ t.tooth_reference }})</span>
+              <span v-if="t.tooth_reference" class="nxr-text-muted"> (Diente {{ t.tooth_reference }})</span>
             </span>
           </li>
         </ul>
@@ -152,13 +152,13 @@ onMounted(load)
 
       <!-- Section: Prescriptions -->
       <div class="space-y-2">
-        <p class="text-xs font-semibold uppercase tracking-wide text-white/40">Prescripciones</p>
-        <div v-if="prescriptions.length === 0" class="text-sm text-white/30">Sin prescripciones emitidas.</div>
+        <p class="text-xs font-semibold uppercase tracking-wide nxr-text-muted">Prescripciones</p>
+        <div v-if="prescriptions.length === 0" class="text-sm nxr-text-soft">Sin prescripciones emitidas.</div>
         <ul v-else class="space-y-1.5">
           <li
             v-for="p in prescriptions"
             :key="p.id"
-            class="flex items-start gap-2 text-sm text-white"
+            class="flex items-start gap-2 text-sm nxr-text"
           >
             <span class="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-white/30" />
             <span>
@@ -172,7 +172,7 @@ onMounted(load)
       <div class="border-t border-white/10 pt-6">
         <div class="flex items-end gap-4">
           <div class="flex-1 border-b border-white/30 pb-1" />
-          <p class="text-xs text-white/40">Firma del profesional</p>
+          <p class="text-xs nxr-text-muted">Firma del profesional</p>
         </div>
       </div>
 

@@ -75,7 +75,7 @@ const STATUS_LABEL: Record<string, string> = {
   voided:                  'Anulada',
 }
 const STATUS_CLASS: Record<string, string> = {
-  borrador:                'bg-white/10 text-white/40',
+  borrador:                'bg-white/10 nxr-text-muted',
   creada:                  'bg-blue-500/20 text-blue-400',
   en_evaluacion:           'bg-indigo-500/20 text-indigo-400',
   cotizada:                'bg-violet-500/20 text-violet-400',
@@ -103,7 +103,7 @@ const ADMIN_STATUS_CLASS: Record<string, string> = {
   partially_paid: 'bg-blue-500/20 text-blue-400',
   paid:           'bg-green-500/20 text-green-400',
   overdue:        'bg-red-500/20 text-red-400',
-  cancelled:      'bg-white/10 text-white/40',
+  cancelled:      'bg-white/10 nxr-text-muted',
 }
 const PAYMENT_METHOD_LABEL: Record<string, string> = {
   cash:           'Efectivo',
@@ -628,17 +628,17 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="min-h-screen text-white" :style="{ background: 'var(--nexora-glass-bg)' }">
+  <div class="min-h-screen nxr-text" :style="{ background: 'var(--nexora-glass-bg)' }">
 
     <!-- ── Header ──────────────────────────────────────────────────────────── -->
-    <div class="sticky top-0 z-20 border-b border-white/10 bg-black/40 backdrop-blur-md">
+    <div class="sticky top-0 z-20 border-b border-white/10 backdrop-blur-md" :style="{ background: 'var(--nexora-glass-bg-strong)' }">
       <div class="mx-auto max-w-6xl px-4 py-4">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 
           <!-- Left: back + title -->
           <div class="flex items-center gap-3">
             <button
-              class="flex items-center gap-1 rounded-lg px-2 py-1 text-sm text-white/50 transition hover:bg-white/10 hover:text-white"
+              class="flex items-center gap-1 rounded-lg px-2 py-1 text-sm nxr-text-muted transition hover:bg-white/10 hover:text-[var(--nexora-text-color)]"
               @click="router.back()"
             >
               <ArrowLeft class="h-4 w-4" />
@@ -648,7 +648,7 @@ onMounted(async () => {
               <h1 class="text-lg font-semibold leading-tight">
                 Consulta &mdash; {{ fmtDate((consultation as any)?.consultation_date) }}
               </h1>
-              <p class="text-xs text-white/40">{{ patientName }}</p>
+              <p class="text-xs nxr-text-muted">{{ patientName }}</p>
             </div>
           </div>
 
@@ -658,7 +658,7 @@ onMounted(async () => {
             <span
               v-if="consultation?.status"
               class="rounded-full px-3 py-1 text-xs font-medium"
-              :class="STATUS_CLASS[consultation.status] ?? 'bg-white/10 text-white/40'"
+              :class="STATUS_CLASS[consultation.status] ?? 'bg-white/10 nxr-text-muted'"
             >
               {{ STATUS_LABEL[consultation.status] ?? consultation.status }}
             </span>
@@ -667,20 +667,20 @@ onMounted(async () => {
             <span
               v-if="consultation?.administrative_status"
               class="rounded-full px-3 py-1 text-xs font-medium"
-              :class="ADMIN_STATUS_CLASS[consultation.administrative_status] ?? 'bg-white/10 text-white/40'"
+              :class="ADMIN_STATUS_CLASS[consultation.administrative_status] ?? 'bg-white/10 nxr-text-muted'"
             >
               {{ ADMIN_STATUS_LABEL[consultation.administrative_status] ?? consultation.administrative_status }}
             </span>
 
             <!-- Total -->
-            <span class="rounded-full bg-white/5 px-3 py-1 text-xs font-semibold text-white/70">
+            <span class="rounded-full bg-white/5 px-3 py-1 text-xs font-semibold nxr-text-muted">
               {{ fmtCurrency(consultationTreatmentsStore.total) }}
             </span>
 
             <!-- Status transition dropdown -->
             <select
               v-if="allowedTransitions.length"
-              class="rounded-xl border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white outline-none focus:border-white/30"
+              class="rounded-xl border border-white/10 bg-white/5 px-3 py-1.5 text-xs nxr-text outline-none focus:border-white/30"
               value=""
               @change="openStatusChange(($event.target as HTMLSelectElement).value); ($event.target as HTMLSelectElement).value = ''"
             >
@@ -695,14 +695,14 @@ onMounted(async () => {
     </div>
 
     <!-- ── Tabs ────────────────────────────────────────────────────────────── -->
-    <div class="sticky top-[73px] z-10 border-b border-white/10 bg-black/30 backdrop-blur-md">
+    <div class="sticky top-[73px] z-10 border-b border-white/10 backdrop-blur-md" :style="{ background: 'var(--nexora-glass-bg-strong)' }">
       <div class="mx-auto max-w-6xl px-4">
         <!-- Mobile: dropdown -->
         <div class="py-2 md:hidden">
           <select
             :value="activeTab"
             @change="selectTab(($event.target as HTMLSelectElement).value as TabKey)"
-            class="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-white focus:outline-none focus:ring-1 focus:ring-[var(--nexora-primary)]"
+            class="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium nxr-text focus:outline-none focus:ring-1 focus:ring-[var(--nexora-primary)]"
           >
             <option v-for="tab in tabs" :key="tab.key" :value="tab.key" class="bg-gray-900 text-white">
               {{ tab.label }}
@@ -717,7 +717,7 @@ onMounted(async () => {
             class="flex shrink-0 items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition"
             :class="activeTab === tab.key
               ? 'bg-[var(--nexora-primary)] text-white'
-              : 'text-white/50 hover:bg-white/5 hover:text-white'"
+              : 'nxr-text-muted hover:bg-white/5 hover:text-[var(--nexora-text-color)]'"
             @click="selectTab(tab.key)"
           >
             <component :is="tab.icon" class="h-4 w-4" />
@@ -750,38 +750,38 @@ onMounted(async () => {
         <!-- Payment summary card -->
         <div class="rounded-xl border border-white/10 bg-white/5 p-5 space-y-3">
           <div class="flex items-center justify-between">
-            <p class="text-xs font-semibold uppercase tracking-wide text-white/40">Estado de pago</p>
+            <p class="text-xs font-semibold uppercase tracking-wide nxr-text-muted">Estado de pago</p>
             <span
               v-if="consultation?.administrative_status"
               class="rounded-full px-2.5 py-0.5 text-xs font-medium"
-              :class="ADMIN_STATUS_CLASS[consultation.administrative_status] ?? 'bg-white/10 text-white/40'"
+              :class="ADMIN_STATUS_CLASS[consultation.administrative_status] ?? 'bg-white/10 nxr-text-muted'"
             >
               {{ ADMIN_STATUS_LABEL[consultation.administrative_status] ?? consultation.administrative_status }}
             </span>
           </div>
 
-          <div v-if="loadingCharge" class="py-4 text-center text-sm text-white/30">
+          <div v-if="loadingCharge" class="py-4 text-center text-sm nxr-text-soft">
             Cargando...
           </div>
 
           <template v-else-if="chargeDetail">
             <div class="grid grid-cols-3 gap-3 text-center">
               <div class="rounded-lg bg-white/5 p-3">
-                <p class="text-xs text-white/40">Total</p>
+                <p class="text-xs nxr-text-muted">Total</p>
                 <p class="mt-0.5 text-sm font-semibold">{{ fmtCurrency(chargeDetail.total_amount) }}</p>
               </div>
               <div class="rounded-lg bg-green-500/10 p-3">
-                <p class="text-xs text-white/40">Pagado</p>
+                <p class="text-xs nxr-text-muted">Pagado</p>
                 <p class="mt-0.5 text-sm font-semibold text-green-400">{{ fmtCurrency(chargeDetail.paid_amount) }}</p>
               </div>
               <div class="rounded-lg bg-orange-500/10 p-3">
-                <p class="text-xs text-white/40">Pendiente</p>
+                <p class="text-xs nxr-text-muted">Pendiente</p>
                 <p class="mt-0.5 text-sm font-semibold text-orange-400">{{ fmtCurrency(chargeDetail.pending_amount) }}</p>
               </div>
             </div>
             <div class="flex flex-wrap gap-2 pt-1">
               <button
-                class="flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-medium text-white/70 transition hover:bg-white/10"
+                class="flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-medium nxr-text-muted transition hover:bg-white/10"
                 @click="showInstallPanel = true"
               >
                 Plan de cuotas
@@ -796,7 +796,7 @@ onMounted(async () => {
           </template>
 
           <div v-else class="space-y-2">
-            <p class="text-sm text-white/40">
+            <p class="text-sm nxr-text-muted">
               {{ consultationTreatmentsStore.total > 0 ? 'Sin cargo generado aun.' : 'Agrega tratamientos para generar un cargo.' }}
             </p>
             <button
@@ -875,35 +875,35 @@ onMounted(async () => {
     :draft-state="{ editForm }">
       <div class="space-y-4">
         <div>
-          <label class="mb-1.5 block text-xs text-white/50">Motivo de consulta</label>
+          <label class="mb-1.5 block text-xs nxr-text-muted">Motivo de consulta</label>
           <textarea
             v-model="editForm.reason"
             rows="3"
-            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none focus:border-white/30"
           />
         </div>
         <div>
-          <label class="mb-1.5 block text-xs text-white/50">Diagnóstico</label>
+          <label class="mb-1.5 block text-xs nxr-text-muted">Diagnóstico</label>
           <textarea
             v-model="editForm.diagnosis"
             rows="3"
-            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none focus:border-white/30"
           />
         </div>
         <div>
-          <label class="mb-1.5 block text-xs text-white/50">Notas clínicas</label>
+          <label class="mb-1.5 block text-xs nxr-text-muted">Notas clínicas</label>
           <textarea
             v-model="editForm.clinical_notes"
             rows="3"
-            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none focus:border-white/30"
           />
         </div>
         <div>
-          <label class="mb-1.5 block text-xs text-white/50">Indicaciones</label>
+          <label class="mb-1.5 block text-xs nxr-text-muted">Indicaciones</label>
           <textarea
             v-model="editForm.indications"
             rows="3"
-            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none focus:border-white/30"
           />
         </div>
         <button
@@ -923,10 +923,10 @@ onMounted(async () => {
     :draft-setters="{ targetStatus: (value) => targetStatus = value, statusReason: (value) => statusReason = value }">
       <div class="space-y-4">
         <div>
-          <label class="mb-1.5 block text-xs text-white/50">Nuevo estado</label>
+          <label class="mb-1.5 block text-xs nxr-text-muted">Nuevo estado</label>
           <select
             v-model="targetStatus"
-            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none focus:border-white/30"
           >
             <option v-for="st in allowedTransitions" :key="st" :value="st">
               {{ STATUS_LABEL[st] ?? st }}
@@ -934,7 +934,7 @@ onMounted(async () => {
           </select>
         </div>
         <div>
-          <label class="mb-1.5 block text-xs text-white/50">
+          <label class="mb-1.5 block text-xs nxr-text-muted">
             Motivo
             <span v-if="targetStatus === 'voided'" class="text-red-400">*</span>
           </label>
@@ -942,7 +942,7 @@ onMounted(async () => {
             v-model="statusReason"
             rows="3"
             :placeholder="targetStatus === 'voided' ? 'Motivo de anulación (requerido)' : 'Motivo opcional...'"
-            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none focus:border-white/30"
           />
         </div>
         <button
@@ -974,9 +974,9 @@ onMounted(async () => {
           </div>
         </div>
         <div>
-          <label class="mb-1.5 block text-xs text-white/50">Tratamiento</label>
+          <label class="mb-1.5 block text-xs nxr-text-muted">Tratamiento</label>
           <select
-            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none focus:border-white/30"
             @change="onServiceSelect(($event.target as HTMLSelectElement).value); addServiceForm.treatment_id = ($event.target as HTMLSelectElement).value as any"
           >
             <option value="">Seleccioná un tratamiento...</option>
@@ -987,40 +987,40 @@ onMounted(async () => {
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label class="mb-1.5 block text-xs text-white/50">Precio unitario</label>
+            <label class="mb-1.5 block text-xs nxr-text-muted">Precio unitario</label>
             <input
               v-model.number="addServiceForm.unit_price"
               type="number"
               min="0"
               step="0.01"
-              class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+              class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none focus:border-white/30"
             />
           </div>
           <div>
-            <label class="mb-1.5 block text-xs text-white/50">Cantidad</label>
+            <label class="mb-1.5 block text-xs nxr-text-muted">Cantidad</label>
             <input
               v-model.number="addServiceForm.quantity"
               type="number"
               min="1"
-              class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+              class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none focus:border-white/30"
             />
           </div>
         </div>
         <div>
-          <label class="mb-1.5 block text-xs text-white/50">Referencia de diente</label>
+          <label class="mb-1.5 block text-xs nxr-text-muted">Referencia de diente</label>
           <input
             v-model="addServiceForm.tooth_reference"
             type="text"
             placeholder="Ej: 21, 22..."
-            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none focus:border-white/30"
           />
         </div>
         <div>
-          <label class="mb-1.5 block text-xs text-white/50">Notas clínicas</label>
+          <label class="mb-1.5 block text-xs nxr-text-muted">Notas clínicas</label>
           <textarea
             v-model="addServiceForm.clinical_notes"
             rows="2"
-            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none focus:border-white/30"
           />
         </div>
         <p v-if="addServiceError" class="text-xs text-red-400">{{ addServiceError }}</p>
@@ -1041,35 +1041,35 @@ onMounted(async () => {
     :draft-state="{ sessionForm }">
       <div class="space-y-4">
         <div>
-          <label class="mb-1.5 block text-xs text-white/50">Fecha y hora de sesión</label>
+          <label class="mb-1.5 block text-xs nxr-text-muted">Fecha y hora de sesión</label>
           <input
             v-model="sessionForm.session_date"
             type="datetime-local"
-            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none focus:border-white/30"
           />
         </div>
         <div>
-          <label class="mb-1.5 block text-xs text-white/50">Notas</label>
+          <label class="mb-1.5 block text-xs nxr-text-muted">Notas</label>
           <textarea
             v-model="sessionForm.notes"
             rows="3"
-            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none focus:border-white/30"
           />
         </div>
         <div>
-          <label class="mb-1.5 block text-xs text-white/50">Evolución</label>
+          <label class="mb-1.5 block text-xs nxr-text-muted">Evolución</label>
           <textarea
             v-model="sessionForm.evolution"
             rows="3"
-            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none focus:border-white/30"
           />
         </div>
         <div>
-          <label class="mb-1.5 block text-xs text-white/50">Fecha próxima sesión</label>
+          <label class="mb-1.5 block text-xs nxr-text-muted">Fecha próxima sesión</label>
           <input
             v-model="sessionForm.next_session_date"
             type="date"
-            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none focus:border-white/30"
           />
         </div>
         <p v-if="sessionError" class="text-xs text-red-400">{{ sessionError }}</p>
@@ -1090,25 +1090,25 @@ onMounted(async () => {
     :draft-state="{ installForm }">
       <div class="space-y-4">
         <div>
-          <label class="mb-1.5 block text-xs text-white/50">Cantidad de cuotas</label>
+          <label class="mb-1.5 block text-xs nxr-text-muted">Cantidad de cuotas</label>
           <input
             v-model.number="installForm.installments_count"
             type="number"
             min="2"
             max="48"
-            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none focus:border-white/30"
           />
         </div>
         <div>
-          <label class="mb-1.5 block text-xs text-white/50">Fecha del primer vencimiento</label>
+          <label class="mb-1.5 block text-xs nxr-text-muted">Fecha del primer vencimiento</label>
           <input
             v-model="installForm.first_due_date"
             type="date"
-            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none focus:border-white/30"
           />
         </div>
         <div v-if="chargeDetail" class="rounded-xl bg-white/5 p-3 text-center">
-          <p class="text-xs text-white/40">Monto por cuota aprox.</p>
+          <p class="text-xs nxr-text-muted">Monto por cuota aprox.</p>
           <p class="text-lg font-bold">
             {{ fmtCurrency(Number(chargeDetail.total_amount) / installForm.installments_count) }}
           </p>
@@ -1131,30 +1131,30 @@ onMounted(async () => {
     :draft-state="{ payForm }">
       <div class="space-y-4">
         <div>
-          <label class="mb-1.5 block text-xs text-white/50">Monto</label>
+          <label class="mb-1.5 block text-xs nxr-text-muted">Monto</label>
           <input
             v-model.number="payForm.amount"
             type="number"
             min="0"
             step="0.01"
-            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none focus:border-white/30"
           />
         </div>
         <div>
-          <label class="mb-1.5 block text-xs text-white/50">Método de pago</label>
+          <label class="mb-1.5 block text-xs nxr-text-muted">Método de pago</label>
           <select
             v-model="payForm.payment_method"
-            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none focus:border-white/30"
           >
             <option v-for="(label, key) in PAYMENT_METHOD_LABEL" :key="key" :value="key">{{ label }}</option>
           </select>
         </div>
         <div>
-          <label class="mb-1.5 block text-xs text-white/50">Notas</label>
+          <label class="mb-1.5 block text-xs nxr-text-muted">Notas</label>
           <input
             v-model="payForm.notes"
             type="text"
-            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none focus:border-white/30"
           />
         </div>
         <p v-if="payError" class="text-xs text-red-400">{{ payError }}</p>
@@ -1175,20 +1175,20 @@ onMounted(async () => {
     :draft-state="{ instPayForm }">
       <div class="space-y-4">
         <div>
-          <label class="mb-1.5 block text-xs text-white/50">Monto a pagar</label>
+          <label class="mb-1.5 block text-xs nxr-text-muted">Monto a pagar</label>
           <input
             v-model.number="instPayForm.amount"
             type="number"
             min="0"
             step="0.01"
-            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none focus:border-white/30"
           />
         </div>
         <div>
-          <label class="mb-1.5 block text-xs text-white/50">Método de pago</label>
+          <label class="mb-1.5 block text-xs nxr-text-muted">Método de pago</label>
           <select
             v-model="instPayForm.payment_method"
-            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none focus:border-white/30"
           >
             <option v-for="(label, key) in PAYMENT_METHOD_LABEL" :key="key" :value="key">{{ label }}</option>
           </select>
@@ -1211,68 +1211,68 @@ onMounted(async () => {
     :draft-state="{ medHistForm }">
       <div class="space-y-4">
         <div>
-          <label class="mb-1.5 block text-xs text-white/50">Fecha del registro</label>
+          <label class="mb-1.5 block text-xs nxr-text-muted">Fecha del registro</label>
           <input
             v-model="medHistForm.entry_date"
             type="date"
-            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none focus:border-white/30"
           />
         </div>
         <div>
-          <label class="mb-1.5 block text-xs text-white/50">Grupo sanguíneo</label>
+          <label class="mb-1.5 block text-xs nxr-text-muted">Grupo sanguíneo</label>
           <input
             v-model="medHistForm.blood_type"
             type="text"
             placeholder="Ej: A+, O-, AB+"
-            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none focus:border-white/30"
           />
         </div>
         <div>
-          <label class="mb-1.5 block text-xs text-white/50">Antecedentes médicos</label>
+          <label class="mb-1.5 block text-xs nxr-text-muted">Antecedentes médicos</label>
           <textarea
             v-model="medHistForm.medical_background"
             rows="2"
-            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none focus:border-white/30"
           />
         </div>
         <div>
-          <label class="mb-1.5 block text-xs text-white/50">Alergias</label>
+          <label class="mb-1.5 block text-xs nxr-text-muted">Alergias</label>
           <textarea
             v-model="medHistForm.allergies"
             rows="2"
-            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none focus:border-white/30"
           />
         </div>
         <div>
-          <label class="mb-1.5 block text-xs text-white/50">Medicamentos actuales</label>
+          <label class="mb-1.5 block text-xs nxr-text-muted">Medicamentos actuales</label>
           <textarea
             v-model="medHistForm.current_medications"
             rows="2"
-            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none focus:border-white/30"
           />
         </div>
         <div>
-          <label class="mb-1.5 block text-xs text-white/50">Condiciones crónicas</label>
+          <label class="mb-1.5 block text-xs nxr-text-muted">Condiciones crónicas</label>
           <textarea
             v-model="medHistForm.chronic_conditions"
             rows="2"
-            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none focus:border-white/30"
           />
         </div>
         <div>
-          <label class="mb-1.5 block text-xs text-white/50">Observaciones dentales</label>
+          <label class="mb-1.5 block text-xs nxr-text-muted">Observaciones dentales</label>
           <textarea
             v-model="medHistForm.dental_observations"
             rows="2"
-            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none focus:border-white/30"
           />
         </div>
         <div>
-          <label class="mb-1.5 block text-xs text-white/50">Notas adicionales</label>
+          <label class="mb-1.5 block text-xs nxr-text-muted">Notas adicionales</label>
           <textarea
             v-model="medHistForm.notes"
             rows="2"
-            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none focus:border-white/30"
           />
         </div>
         <p v-if="medHistError" class="text-xs text-red-400">{{ medHistError }}</p>

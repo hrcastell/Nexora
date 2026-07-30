@@ -59,7 +59,7 @@ const cancelSession = (session: DentalConsultationSession) => emit('cancel-sessi
 <div class="space-y-4">
 
         <div class="flex items-center justify-between">
-          <h2 class="text-sm font-semibold text-white/70">Sesiones de tratamiento</h2>
+          <h2 class="text-sm font-semibold nxr-text">Sesiones de tratamiento</h2>
           <button
             v-if="(consultation as any)?.requires_multiple_sessions"
             class="flex items-center gap-1.5 rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary"
@@ -75,9 +75,9 @@ const cancelSession = (session: DentalConsultationSession) => emit('cancel-sessi
           v-if="!(consultation as any)?.requires_multiple_sessions"
           class="rounded-xl border border-white/10 bg-white/5 p-10 text-center"
         >
-          <AlertCircle class="mx-auto mb-3 h-8 w-8 text-white/20" />
-          <p class="text-sm text-white/40">Esta consulta no tiene sesiones múltiples configuradas.</p>
-          <p class="mt-1 text-xs text-white/30">Activá la opción en la pestaña Tratamiento.</p>
+          <AlertCircle class="mx-auto mb-3 h-8 w-8 nxr-text-soft" />
+          <p class="text-sm nxr-text-muted">Esta consulta no tiene sesiones múltiples configuradas.</p>
+          <p class="mt-1 text-xs nxr-text-soft">Activá la opción en la pestaña Tratamiento.</p>
         </div>
 
         <!-- Empty sessions -->
@@ -85,8 +85,8 @@ const cancelSession = (session: DentalConsultationSession) => emit('cancel-sessi
           v-else-if="!sessionsStore.items.length"
           class="rounded-xl border border-white/10 bg-white/5 p-10 text-center"
         >
-          <Calendar class="mx-auto mb-3 h-8 w-8 text-white/20" />
-          <p class="text-sm text-white/40">No hay sesiones registradas aún.</p>
+          <Calendar class="mx-auto mb-3 h-8 w-8 nxr-text-soft" />
+          <p class="text-sm nxr-text-muted">No hay sesiones registradas aún.</p>
         </div>
 
         <!-- Sessions list -->
@@ -102,14 +102,14 @@ const cancelSession = (session: DentalConsultationSession) => emit('cancel-sessi
                   <span class="text-sm font-semibold">Sesión #{{ session.session_number }}</span>
                   <span
                     class="rounded-full px-2 py-0.5 text-xs font-medium"
-                    :class="SESSION_STATUS_CLASS[session.status ?? ''] ?? 'bg-white/10 text-white/40'"
+                    :class="SESSION_STATUS_CLASS[session.status ?? ''] ?? 'bg-white/10 nxr-text-muted'"
                   >
                     {{ SESSION_STATUS_LABEL[session.status ?? ''] ?? session.status }}
                   </span>
-                  <span class="text-xs text-white/40">{{ fmtDateTime(session.session_date) }}</span>
+                  <span class="text-xs nxr-text-muted">{{ fmtDateTime(session.session_date) }}</span>
                 </div>
-                <p v-if="session.notes" class="line-clamp-2 text-sm text-white/60">{{ session.notes }}</p>
-                <p v-if="session.next_session_date" class="mt-1 text-xs text-white/40">
+                <p v-if="session.notes" class="line-clamp-2 text-sm nxr-text-muted">{{ session.notes }}</p>
+                <p v-if="session.next_session_date" class="mt-1 text-xs nxr-text-muted">
                   Próxima: {{ fmtDate(session.next_session_date) }}
                 </p>
 
@@ -121,7 +121,7 @@ const cancelSession = (session: DentalConsultationSession) => emit('cancel-sessi
                   <input
                     v-model="editSessionDate"
                     type="datetime-local"
-                    class="rounded-xl border border-white/20 bg-white/5 px-3 py-1.5 text-sm text-white outline-none focus:border-white/40"
+                    class="rounded-xl border border-white/20 bg-white/5 px-3 py-1.5 text-sm nxr-text outline-none focus:border-white/40"
                   />
                   <button
                     class="rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary disabled:opacity-50"
@@ -131,7 +131,7 @@ const cancelSession = (session: DentalConsultationSession) => emit('cancel-sessi
                     {{ savingEditSession ? '...' : 'Guardar' }}
                   </button>
                   <button
-                    class="rounded-lg border border-white/10 px-3 py-1.5 text-xs text-white/50 hover:text-white transition"
+                    class="rounded-lg border border-white/10 px-3 py-1.5 text-xs nxr-text-muted hover:text-[var(--nexora-text-color)] transition"
                     @click="cancelEditSession"
                   >
                     Cancelar
@@ -150,7 +150,7 @@ const cancelSession = (session: DentalConsultationSession) => emit('cancel-sessi
                 </button>
                 <button
                   v-if="editingSessionId !== session.id && !['completed', 'cancelled'].includes(session.status ?? '')"
-                  class="flex items-center gap-1 rounded-lg border border-white/10 px-3 py-1.5 text-xs text-white/50 transition hover:border-white/20 hover:text-white"
+                  class="flex items-center gap-1 rounded-lg border border-white/10 px-3 py-1.5 text-xs nxr-text-muted transition hover:border-white/20 hover:text-[var(--nexora-text-color)]"
                   @click="startEditSession(session)"
                 >
                   <Edit2 class="h-3 w-3" />

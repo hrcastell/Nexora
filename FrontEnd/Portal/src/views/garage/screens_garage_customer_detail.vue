@@ -47,9 +47,9 @@ function fmtDate(d: string | null) {
 <template>
   <div class="flex flex-col gap-5 p-6 max-w-4xl mx-auto">
     <div class="flex items-center gap-3">
-      <button class="text-white/40 hover:text-white" @click="router.back()"><ArrowLeft :size="20" /></button>
-      <h1 class="text-xl font-semibold text-white flex-1">Detalle de Cliente</h1>
-      <button class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm bg-white/10 text-white hover:bg-white/20 transition-colors" @click="showEdit = true">
+      <button class="nxr-text-muted hover:text-[var(--nexora-text-color)]" @click="router.back()"><ArrowLeft :size="20" /></button>
+      <h1 class="text-xl font-semibold nxr-text flex-1">Detalle de Cliente</h1>
+      <button class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm bg-white/10 nxr-text hover:bg-white/20 transition-colors" @click="showEdit = true">
         <Edit :size="14" /> Editar
       </button>
     </div>
@@ -60,18 +60,18 @@ function fmtDate(d: string | null) {
       <div class="flex items-start gap-5 p-5 rounded-2xl border border-white/10" :style="{ background: 'var(--nexora-glass-bg)' }">
         <div class="w-20 h-20 rounded-full overflow-hidden bg-white/10 flex items-center justify-center shrink-0">
           <img v-if="custStore.current.photo_url" :src="customerPhotoSrc(custStore.current.photo_url)" class="w-full h-full object-cover" @error="(e) => { (e.target as HTMLImageElement).style.display = 'none' }" />
-          <User v-else :size="32" class="text-white/20" />
+          <User v-else :size="32" class="nxr-text-soft" />
         </div>
         <div class="flex-1">
-          <h2 class="text-lg font-semibold text-white">{{ custStore.current.first_name }} {{ custStore.current.last_name || '' }}</h2>
-          <p v-if="custStore.current.document_number" class="text-sm text-white/50">{{ custStore.current.document_type }}: {{ custStore.current.document_number }}</p>
-          <div class="flex flex-wrap gap-4 mt-3 text-sm text-white/60">
+          <h2 class="text-lg font-semibold nxr-text">{{ custStore.current.first_name }} {{ custStore.current.last_name || '' }}</h2>
+          <p v-if="custStore.current.document_number" class="text-sm nxr-text-muted">{{ custStore.current.document_type }}: {{ custStore.current.document_number }}</p>
+          <div class="flex flex-wrap gap-4 mt-3 text-sm nxr-text-muted">
             <span v-if="custStore.current.phone" class="flex items-center gap-1"><Phone :size="13" /> {{ custStore.current.phone }}</span>
             <span v-if="custStore.current.mobile" class="flex items-center gap-1"><Phone :size="13" /> {{ custStore.current.mobile }}</span>
             <span v-if="custStore.current.email" class="flex items-center gap-1"><Mail :size="13" /> {{ custStore.current.email }}</span>
             <span v-if="custStore.current.birth_date" class="flex items-center gap-1"><Calendar :size="13" /> {{ fmtDate(custStore.current.birth_date) }}</span>
           </div>
-          <div v-if="custStore.current.address || custStore.current.city" class="flex items-center gap-1 mt-2 text-xs text-white/40">
+          <div v-if="custStore.current.address || custStore.current.city" class="flex items-center gap-1 mt-2 text-xs nxr-text-muted">
             <MapPin :size="11" />
             <span>{{ [custStore.current.address, custStore.current.commune_district, custStore.current.city, custStore.current.country].filter(Boolean).join(', ') }}</span>
           </div>
@@ -84,7 +84,7 @@ function fmtDate(d: string | null) {
       <div class="flex gap-2">
         <button v-for="tab in ['info', 'vehicles']" :key="tab"
           class="px-4 py-2 rounded-xl text-sm transition-colors"
-          :class="activeTab === tab ? 'bg-[var(--nexora-primary)] text-white' : 'bg-white/5 text-white/60 hover:bg-white/10'"
+          :class="activeTab === tab ? 'bg-[var(--nexora-primary)] text-white' : 'bg-white/5 nxr-tab-inactive hover:bg-white/10'"
           @click="activeTab = tab as 'info' | 'vehicles'"
         >
           {{ tab === 'info' ? 'Información' : `Vehículos (${vehicleStore.items.length})` }}
@@ -101,8 +101,8 @@ function fmtDate(d: string | null) {
           { label: 'Dirección', value: custStore.current.address },
         ]" :key="field.label">
           <div v-if="field.value" class="p-4 rounded-xl border border-white/10" :style="{ background: 'var(--nexora-glass-bg)' }">
-            <p class="text-xs text-white/40 mb-1">{{ field.label }}</p>
-            <p class="text-sm text-white">{{ field.value }}</p>
+            <p class="text-xs nxr-text-muted mb-1">{{ field.label }}</p>
+            <p class="text-sm nxr-text">{{ field.value }}</p>
           </div>
         </div>
       </div>
@@ -121,14 +121,14 @@ function fmtDate(d: string | null) {
             :style="{ background: 'var(--nexora-glass-bg)' }"
             @click="router.push(`/garage/vehicles/${v.id}`)"
           >
-            <Car :size="18" class="text-white/40 shrink-0" />
+            <Car :size="18" class="nxr-text-muted shrink-0" />
             <div class="flex-1">
-              <p class="text-sm text-white font-medium">{{ (v as any).brand || '' }} {{ (v as any).model || '' }} {{ v.version || '' }}</p>
-              <p class="text-xs text-white/40">{{ v.plate || 'Sin placa' }} · {{ v.year || '' }}</p>
+              <p class="text-sm nxr-text font-medium">{{ (v as any).brand || '' }} {{ (v as any).model || '' }} {{ v.version || '' }}</p>
+              <p class="text-xs nxr-text-muted">{{ v.plate || 'Sin placa' }} · {{ v.year || '' }}</p>
             </div>
             <span class="text-xs px-2 py-0.5 rounded-full" :class="v.status === 'active' ? 'bg-green-500/20 text-green-300' : 'bg-red-500/20 text-red-300'">{{ v.status === 'active' ? 'Activo' : 'Inactivo' }}</span>
           </div>
-          <div v-if="vehicleStore.items.length === 0" class="text-center text-white/30 py-8 text-sm">Sin vehículos registrados</div>
+          <div v-if="vehicleStore.items.length === 0" class="text-center nxr-text-soft py-8 text-sm">Sin vehículos registrados</div>
         </div>
       </div>
     </template>

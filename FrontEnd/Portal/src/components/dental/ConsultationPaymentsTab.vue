@@ -30,18 +30,18 @@ defineEmits<{
 <div class="space-y-5">
 
   <!-- Loading -->
-  <div v-if="loadingCharge" class="py-12 text-center text-sm text-white/40">
+  <div v-if="loadingCharge" class="py-12 text-center text-sm nxr-text-muted">
     Cargando información de pagos...
   </div>
 
   <!-- No charge -->
   <div v-else-if="!chargeDetail" class="rounded-xl border border-white/10 bg-white/5 p-10 text-center">
-    <CreditCard class="mx-auto mb-4 h-10 w-10 text-white/20" />
-    <p class="mb-1 text-sm text-white/50">No hay cargo generado para esta consulta</p>
-    <p v-if="!total" class="mb-4 text-xs text-white/30">
+    <CreditCard class="mx-auto mb-4 h-10 w-10 nxr-text-soft" />
+    <p class="mb-1 text-sm nxr-text-muted">No hay cargo generado para esta consulta</p>
+    <p v-if="!total" class="mb-4 text-xs nxr-text-soft">
       Agregá al menos un servicio en la pestaña Tratamiento para habilitar el cargo.
     </p>
-    <p v-else-if="!canCreateCharge" class="mb-4 text-xs text-white/30">
+    <p v-else-if="!canCreateCharge" class="mb-4 text-xs nxr-text-soft">
       El cargo ya existe o el estado de pago no lo permite.
     </p>
     <button
@@ -61,25 +61,25 @@ defineEmits<{
     <!-- Summary card -->
     <div class="rounded-xl border border-white/10 bg-white/5 p-5">
       <div class="mb-4 flex items-center justify-between">
-        <h2 class="text-sm font-semibold text-white/70">Resumen del cargo</h2>
+        <h2 class="text-sm font-semibold nxr-text">Resumen del cargo</h2>
         <span
           class="rounded-full px-3 py-1 text-xs font-medium"
-          :class="adminStatusClass[chargeDetail.administrative_status ?? ''] ?? 'bg-white/10 text-white/40'"
+          :class="adminStatusClass[chargeDetail.administrative_status ?? ''] ?? 'bg-white/10 nxr-text-muted'"
         >
           {{ adminStatusLabel[chargeDetail.administrative_status ?? ''] ?? chargeDetail.administrative_status }}
         </span>
       </div>
       <div class="grid gap-4 sm:grid-cols-3">
         <div>
-          <p class="mb-0.5 text-xs text-white/40">Total</p>
+          <p class="mb-0.5 text-xs nxr-text-muted">Total</p>
           <p class="text-xl font-bold">{{ fmtCurrency?.(chargeDetail.total_amount) }}</p>
         </div>
         <div>
-          <p class="mb-0.5 text-xs text-white/40">Pagado</p>
+          <p class="mb-0.5 text-xs nxr-text-muted">Pagado</p>
           <p class="text-xl font-bold text-green-400">{{ fmtCurrency?.(chargeDetail.paid_amount) }}</p>
         </div>
         <div>
-          <p class="mb-0.5 text-xs text-white/40">Pendiente</p>
+          <p class="mb-0.5 text-xs nxr-text-muted">Pendiente</p>
           <p class="text-xl font-bold text-yellow-400">
             {{ fmtCurrency?.(Number(chargeDetail.total_amount) - Number(chargeDetail.paid_amount)) }}
           </p>
@@ -91,7 +91,7 @@ defineEmits<{
     <div class="flex flex-wrap gap-2">
       <button
         v-if="!(chargeDetail.installments as any)?.length"
-        class="flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/70 transition hover:bg-white/10"
+        class="flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm nxr-text-muted transition hover:bg-white/10"
         @click="$emit('show-installments')"
       >
         <Calendar class="h-4 w-4" />
@@ -109,7 +109,7 @@ defineEmits<{
 
     <!-- Installments -->
     <div v-if="(chargeDetail.installments as any)?.length" class="rounded-xl border border-white/10 bg-white/5 p-5">
-      <h3 class="mb-4 text-sm font-semibold text-white/70">Plan de cuotas</h3>
+      <h3 class="mb-4 text-sm font-semibold nxr-text">Plan de cuotas</h3>
       <div class="space-y-2">
         <div
           v-for="inst in (chargeDetail.installments as any)"
@@ -118,10 +118,10 @@ defineEmits<{
         >
           <div class="flex items-center gap-3">
             <span class="text-sm font-medium">Cuota {{ inst.installment_number }}</span>
-            <span class="text-xs text-white/40">Vence: {{ fmtDate?.(inst.due_date) ?? '—' }}</span>
+            <span class="text-xs nxr-text-muted">Vence: {{ fmtDate?.(inst.due_date) ?? '—' }}</span>
             <span
               class="rounded-full px-2 py-0.5 text-xs font-medium"
-              :class="adminStatusClass[inst.status ?? ''] ?? 'bg-white/10 text-white/40'"
+              :class="adminStatusClass[inst.status ?? ''] ?? 'bg-white/10 nxr-text-muted'"
             >
               {{ adminStatusLabel[inst.status ?? ''] ?? inst.status }}
             </span>
@@ -147,7 +147,7 @@ defineEmits<{
 
     <!-- Payment history -->
     <div v-if="(chargeDetail.payments as any)?.length" class="rounded-xl border border-white/10 bg-white/5 p-5">
-      <h3 class="mb-4 text-sm font-semibold text-white/70">Historial de pagos</h3>
+      <h3 class="mb-4 text-sm font-semibold nxr-text">Historial de pagos</h3>
       <div class="space-y-2">
         <div
           v-for="pmt in (chargeDetail.payments as any)"
@@ -156,8 +156,8 @@ defineEmits<{
         >
           <div>
             <p class="text-sm">{{ paymentMethodLabel[pmt.payment_method] ?? pmt.payment_method }}</p>
-            <p class="text-xs text-white/40">{{ fmtDateTime?.(pmt.payment_date) ?? '—' }}</p>
-            <p v-if="pmt.notes" class="mt-0.5 text-xs text-white/40">{{ pmt.notes }}</p>
+            <p class="text-xs nxr-text-muted">{{ fmtDateTime?.(pmt.payment_date) ?? '—' }}</p>
+            <p v-if="pmt.notes" class="mt-0.5 text-xs nxr-text-muted">{{ pmt.notes }}</p>
           </div>
           <span class="text-sm font-semibold text-green-400">{{ fmtCurrency?.(pmt.amount) }}</span>
         </div>

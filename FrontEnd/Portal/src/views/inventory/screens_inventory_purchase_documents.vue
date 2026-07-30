@@ -218,13 +218,13 @@ async function changeStatus(status: PurchaseDocumentStatus) {
     <template v-if="!isDetail">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 class="text-xl font-semibold text-white">Documentos de compra</h1>
-          <p class="text-xs text-white/40">Órdenes y facturas de compra para inventario.</p>
+          <h1 class="text-xl font-semibold nxr-text">Documentos de compra</h1>
+          <p class="text-xs nxr-text-muted">Órdenes y facturas de compra para inventario.</p>
         </div>
         <button class="nxr-btn nxr-btn-primary justify-center" @click="router.push('/inventory/purchase-documents/new')"><Plus :size="15" /> Nuevo documento</button>
       </div>
 
-      <select v-model="statusFilter" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none sm:w-56">
+      <select v-model="statusFilter" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none sm:w-56">
         <option value="">Todos los estados</option>
         <option value="draft">Borrador</option>
         <option value="issued">Emitido</option>
@@ -234,17 +234,17 @@ async function changeStatus(status: PurchaseDocumentStatus) {
       </select>
 
       <div v-if="store.loading" class="space-y-2"><div v-for="i in 6" :key="i" class="h-16 animate-pulse rounded-xl bg-white/5"></div></div>
-      <div v-else-if="store.items.length === 0" class="py-16 text-center text-sm text-white/30">Sin documentos de compra.</div>
+      <div v-else-if="store.items.length === 0" class="py-16 text-center text-sm nxr-text-soft">Sin documentos de compra.</div>
       <div v-else class="flex flex-col gap-2">
         <button v-for="doc in store.items" :key="doc.id" class="rounded-xl border border-white/10 p-4 text-left transition hover:border-white/25" :style="{ background: 'var(--nexora-glass-bg)' }" @click="router.push(`/inventory/purchase-documents/${doc.id}`)">
           <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p class="text-sm font-semibold text-white">{{ doc.internal_number }}</p>
-              <p class="text-xs text-white/40">{{ doc.supplier_name }} · {{ fmtDate(doc.issue_date) }}</p>
+              <p class="text-sm font-semibold nxr-text">{{ doc.internal_number }}</p>
+              <p class="text-xs nxr-text-muted">{{ doc.supplier_name }} · {{ fmtDate(doc.issue_date) }}</p>
             </div>
             <div class="text-left sm:text-right">
-              <p class="text-sm font-semibold text-white">{{ fmtMoney(doc.total) }}</p>
-              <p class="text-xs text-white/40">{{ STATUS_LABEL[doc.status] || doc.status }}</p>
+              <p class="text-sm font-semibold nxr-text">{{ fmtMoney(doc.total) }}</p>
+              <p class="text-xs nxr-text-muted">{{ STATUS_LABEL[doc.status] || doc.status }}</p>
             </div>
           </div>
         </button>
@@ -252,13 +252,13 @@ async function changeStatus(status: PurchaseDocumentStatus) {
     </template>
 
     <template v-else>
-      <div class="sticky top-0 z-10 -mx-6 -mt-6 border-b border-white/10 bg-black/30 px-6 py-4 backdrop-blur-xl">
+      <div class="rounded-2xl border border-white/10 p-4" :style="{ background: 'var(--nexora-glass-bg)' }">
         <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div class="flex items-center gap-3">
-            <button class="text-white/40 hover:text-white" @click="router.push('/inventory/purchase-documents')"><ArrowLeft :size="20" /></button>
+            <button class="nxr-text-muted hover:text-[var(--nexora-text-color)]" @click="router.push('/inventory/purchase-documents')"><ArrowLeft :size="20" /></button>
             <div>
-              <h1 class="text-lg font-semibold text-white">{{ isNew ? 'Nuevo documento de compra' : store.current?.internal_number }}</h1>
-              <p class="text-xs text-white/40">{{ store.current ? STATUS_LABEL[store.current.status] : 'Borrador' }}</p>
+              <h1 class="text-lg font-semibold nxr-text">{{ isNew ? 'Nuevo documento de compra' : store.current?.internal_number }}</h1>
+              <p class="text-xs nxr-text-muted">{{ store.current ? STATUS_LABEL[store.current.status] : 'Borrador' }}</p>
             </div>
           </div>
           <div class="flex flex-wrap gap-2">
@@ -270,35 +270,35 @@ async function changeStatus(status: PurchaseDocumentStatus) {
       </div>
 
       <div class="grid grid-cols-1 gap-3 rounded-2xl border border-white/10 p-4 lg:grid-cols-4" :style="{ background: 'var(--nexora-glass-bg)' }">
-        <div><label class="mb-1 block text-xs text-white/50">Tipo</label><select v-model="form.document_type" :disabled="!canEdit" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white"><option value="purchase_order">Orden de compra</option><option value="purchase_invoice">Factura de compra</option></select></div>
-        <div><label class="mb-1 block text-xs text-white/50">Proveedor</label><select v-model.number="form.supplier_id" :disabled="!canEdit" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white"><option :value="0">Seleccionar</option><option v-for="supplier in suppliersStore.items" :key="supplier.id" :value="supplier.id">{{ supplier.name }}</option></select></div>
-        <div><label class="mb-1 block text-xs text-white/50">Fecha emisión</label><input v-model="form.issue_date" :disabled="!canEdit" type="date" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white" /></div>
-        <div><label class="mb-1 block text-xs text-white/50">Recepción esperada</label><input v-model="form.expected_reception_date" :disabled="!canEdit" type="date" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white" /></div>
-        <div><label class="mb-1 block text-xs text-white/50">Folio proveedor</label><input v-model="form.supplier_document_number" :disabled="!canEdit" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white" /></div>
-        <div><label class="mb-1 block text-xs text-white/50">Condición de pago</label><select v-model="form.payment_condition" :disabled="!canEdit" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white"><option value="cash">Contado</option><option value="credit">Crédito</option></select></div>
-        <div><label class="mb-1 block text-xs text-white/50">Días de pago</label><input v-model.number="form.payment_term_days" :disabled="!canEdit" type="number" min="0" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white" /></div>
-        <div><label class="mb-1 block text-xs text-white/50">Vencimiento</label><input v-model="form.due_date" :disabled="!canEdit" type="date" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white" /></div>
+        <div><label class="mb-1 block text-xs nxr-text-muted">Tipo</label><select v-model="form.document_type" :disabled="!canEdit" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text"><option value="purchase_order">Orden de compra</option><option value="purchase_invoice">Factura de compra</option></select></div>
+        <div><label class="mb-1 block text-xs nxr-text-muted">Proveedor</label><select v-model.number="form.supplier_id" :disabled="!canEdit" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text"><option :value="0">Seleccionar</option><option v-for="supplier in suppliersStore.items" :key="supplier.id" :value="supplier.id">{{ supplier.name }}</option></select></div>
+        <div><label class="mb-1 block text-xs nxr-text-muted">Fecha emisión</label><input v-model="form.issue_date" :disabled="!canEdit" type="date" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text" /></div>
+        <div><label class="mb-1 block text-xs nxr-text-muted">Recepción esperada</label><input v-model="form.expected_reception_date" :disabled="!canEdit" type="date" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text" /></div>
+        <div><label class="mb-1 block text-xs nxr-text-muted">Folio proveedor</label><input v-model="form.supplier_document_number" :disabled="!canEdit" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text" /></div>
+        <div><label class="mb-1 block text-xs nxr-text-muted">Condición de pago</label><select v-model="form.payment_condition" :disabled="!canEdit" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text"><option value="cash">Contado</option><option value="credit">Crédito</option></select></div>
+        <div><label class="mb-1 block text-xs nxr-text-muted">Días de pago</label><input v-model.number="form.payment_term_days" :disabled="!canEdit" type="number" min="0" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text" /></div>
+        <div><label class="mb-1 block text-xs nxr-text-muted">Vencimiento</label><input v-model="form.due_date" :disabled="!canEdit" type="date" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text" /></div>
       </div>
 
       <div class="flex-1 rounded-2xl border border-white/10 p-4" :style="{ background: 'var(--nexora-glass-bg)' }">
-        <div class="mb-3 flex items-center justify-between"><h2 class="text-sm font-semibold text-white/70">Líneas</h2><button v-if="canEdit" class="nxr-btn nxr-btn-secondary" @click="addLine"><Plus :size="14" /> Agregar línea</button></div>
-        <div class="hidden grid-cols-[2fr_repeat(5,1fr)_110px_auto] gap-2 text-xs text-white/40 lg:grid"><span>Producto</span><span>Cant.</span><span>Unidad</span><span>Costo</span><span>Desc. %</span><span>Imp. %</span><span class="text-right">Total</span><span></span></div>
+        <div class="mb-3 flex items-center justify-between"><h2 class="text-sm font-semibold nxr-text">Líneas</h2><button v-if="canEdit" class="nxr-btn nxr-btn-secondary" @click="addLine"><Plus :size="14" /> Agregar línea</button></div>
+        <div class="hidden grid-cols-[2fr_repeat(5,1fr)_110px_auto] gap-2 text-xs nxr-text-muted lg:grid"><span>Producto</span><span>Cant.</span><span>Unidad</span><span>Costo</span><span>Desc. %</span><span>Imp. %</span><span class="text-right">Total</span><span></span></div>
         <div class="mt-2 flex flex-col gap-2">
           <div v-for="(line, index) in form.lines" :key="index" class="grid grid-cols-1 gap-2 rounded-xl border border-white/10 bg-white/5 p-3 sm:grid-cols-2 lg:grid-cols-[2fr_repeat(5,1fr)_110px_auto]">
-            <select v-model.number="line.product_id" :disabled="!canEdit" class="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white" @change="onProductChange(line)"><option :value="0">Producto</option><option v-for="product in inventoryProducts" :key="product.id" :value="product.id">{{ product.name }}</option></select>
-            <input v-model.number="line.quantity" :disabled="!canEdit" type="number" min="0" step="0.01" class="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white" @input="recalcLine(line)" />
-            <input v-model="line.unit" :disabled="!canEdit" class="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white" />
-            <input v-model.number="line.unit_cost" :disabled="!canEdit" type="number" min="0" step="0.01" class="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white" @input="recalcLine(line)" />
-            <input v-model.number="line.discount_percent" :disabled="!canEdit" type="number" min="0" step="0.01" class="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white" @input="recalcLine(line)" />
-            <input v-model.number="line.tax_percent" :disabled="!canEdit" type="number" min="0" step="0.01" class="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white" @input="recalcLine(line)" />
-            <div class="flex items-center justify-between text-sm text-white lg:justify-end"><span class="text-xs text-white/45 lg:hidden">Line total</span><span class="font-medium">{{ fmtMoney(line.line_total) }}</span></div>
-            <button v-if="canEdit" class="text-white/30 hover:text-red-400" @click="removeLine(index)"><Trash2 :size="16" /></button>
+            <select v-model.number="line.product_id" :disabled="!canEdit" class="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm nxr-text" @change="onProductChange(line)"><option :value="0">Producto</option><option v-for="product in inventoryProducts" :key="product.id" :value="product.id">{{ product.name }}</option></select>
+            <input v-model.number="line.quantity" :disabled="!canEdit" type="number" min="0" step="0.01" class="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm nxr-text" @input="recalcLine(line)" />
+            <input v-model="line.unit" :disabled="!canEdit" class="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm nxr-text" />
+            <input v-model.number="line.unit_cost" :disabled="!canEdit" type="number" min="0" step="0.01" class="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm nxr-text" @input="recalcLine(line)" />
+            <input v-model.number="line.discount_percent" :disabled="!canEdit" type="number" min="0" step="0.01" class="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm nxr-text" @input="recalcLine(line)" />
+            <input v-model.number="line.tax_percent" :disabled="!canEdit" type="number" min="0" step="0.01" class="rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm nxr-text" @input="recalcLine(line)" />
+            <div class="flex items-center justify-between text-sm nxr-text lg:justify-end"><span class="text-xs nxr-text-muted lg:hidden">Line total</span><span class="font-medium">{{ fmtMoney(line.line_total) }}</span></div>
+            <button v-if="canEdit" class="nxr-text-soft hover:text-red-400" @click="removeLine(index)"><Trash2 :size="16" /></button>
           </div>
         </div>
       </div>
 
-      <div class="sticky bottom-0 z-10 -mx-6 border-t border-white/10 bg-black/40 px-6 py-4 backdrop-blur-xl">
-        <div class="ml-auto grid max-w-md grid-cols-2 gap-2 text-sm"><span class="text-white/40">Subtotal</span><span class="text-right text-white">{{ fmtMoney(subtotal) }}</span><span class="text-white/40">Descuento</span><span class="text-right text-white">{{ fmtMoney(discountTotal) }}</span><span class="text-white/40">Impuestos</span><span class="text-right text-white">{{ fmtMoney(taxTotal) }}</span><span class="font-semibold text-white">Total</span><span class="text-right font-semibold text-white">{{ fmtMoney(total) }}</span></div>
+      <div class="rounded-2xl border border-white/10 p-4" :style="{ background: 'var(--nexora-glass-bg)' }">
+        <div class="ml-auto grid max-w-md grid-cols-2 gap-2 text-sm"><span class="nxr-text-muted">Subtotal</span><span class="text-right nxr-text">{{ fmtMoney(subtotal) }}</span><span class="nxr-text-muted">Descuento</span><span class="text-right nxr-text">{{ fmtMoney(discountTotal) }}</span><span class="nxr-text-muted">Impuestos</span><span class="text-right nxr-text">{{ fmtMoney(taxTotal) }}</span><span class="font-semibold nxr-text">Total</span><span class="text-right font-semibold nxr-text">{{ fmtMoney(total) }}</span></div>
         <p v-if="error" class="mt-2 text-right text-xs text-red-400">{{ error }}</p>
       </div>
     </template>

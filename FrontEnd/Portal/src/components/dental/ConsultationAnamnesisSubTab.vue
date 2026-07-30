@@ -158,7 +158,7 @@ async function save() {
     </transition>
 
     <!-- Loading -->
-    <div v-if="loading" class="flex items-center justify-center py-12 text-white/40 text-sm gap-2">
+    <div v-if="loading" class="flex items-center justify-center py-12 nxr-text-muted text-sm gap-2">
       <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
@@ -172,12 +172,12 @@ async function save() {
       <div class="rounded-xl bg-white/5 border border-white/10 overflow-hidden">
         <button
           type="button"
-          class="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-white/80 hover:bg-white/5 transition-colors"
+          class="w-full flex items-center justify-between px-4 py-3 text-sm font-medium nxr-text-muted hover:bg-white/5 transition-colors"
           @click="toggle('systemic')"
         >
           <span>Historia sistemica</span>
           <svg
-            class="h-4 w-4 text-white/40 transition-transform"
+            class="h-4 w-4 nxr-text-muted transition-transform"
             :class="open.systemic ? 'rotate-180' : ''"
             xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
           >
@@ -185,46 +185,46 @@ async function save() {
           </svg>
         </button>
         <div v-show="open.systemic" class="px-4 pb-4 grid grid-cols-1 sm:grid-cols-2 gap-3 border-t border-white/10 pt-3">
-          <label class="flex items-center gap-2 text-sm text-white/70 cursor-pointer select-none">
+          <label class="flex items-center gap-2 text-sm nxr-text-muted cursor-pointer select-none">
             <input type="checkbox" v-model="form.has_diabetes" :disabled="readOnly" class="accent-[var(--nexora-primary)]" />
             Diabetes
           </label>
-          <label class="flex items-center gap-2 text-sm text-white/70 cursor-pointer select-none">
+          <label class="flex items-center gap-2 text-sm nxr-text-muted cursor-pointer select-none">
             <input type="checkbox" v-model="form.has_hypertension" :disabled="readOnly" class="accent-[var(--nexora-primary)]" />
             Hipertension
           </label>
-          <label class="flex items-center gap-2 text-sm text-white/70 cursor-pointer select-none">
+          <label class="flex items-center gap-2 text-sm nxr-text-muted cursor-pointer select-none">
             <input type="checkbox" v-model="form.has_heart_disease" :disabled="readOnly" class="accent-[var(--nexora-primary)]" />
             Enfermedad cardiaca
           </label>
-          <label class="flex items-center gap-2 text-sm text-white/70 cursor-pointer select-none">
+          <label class="flex items-center gap-2 text-sm nxr-text-muted cursor-pointer select-none">
             <input type="checkbox" v-model="form.has_respiratory_disease" :disabled="readOnly" class="accent-[var(--nexora-primary)]" />
             Enfermedad respiratoria
           </label>
-          <label class="flex items-center gap-2 text-sm text-white/70 cursor-pointer select-none">
+          <label class="flex items-center gap-2 text-sm nxr-text-muted cursor-pointer select-none">
             <input type="checkbox" v-model="form.has_kidney_disease" :disabled="readOnly" class="accent-[var(--nexora-primary)]" />
             Enfermedad renal
           </label>
-          <label class="flex items-center gap-2 text-sm text-white/70 cursor-pointer select-none">
+          <label class="flex items-center gap-2 text-sm nxr-text-muted cursor-pointer select-none">
             <input type="checkbox" v-model="form.has_epilepsy" :disabled="readOnly" class="accent-[var(--nexora-primary)]" />
             Epilepsia
           </label>
-          <label class="flex items-center gap-2 text-sm text-white/70 cursor-pointer select-none">
+          <label class="flex items-center gap-2 text-sm nxr-text-muted cursor-pointer select-none">
             <input type="checkbox" v-model="form.has_hepatitis" :disabled="readOnly" class="accent-[var(--nexora-primary)]" />
             Hepatitis
           </label>
-          <label class="flex items-center gap-2 text-sm text-white/70 cursor-pointer select-none">
+          <label class="flex items-center gap-2 text-sm nxr-text-muted cursor-pointer select-none">
             <input type="checkbox" v-model="form.has_hiv" :disabled="readOnly" class="accent-[var(--nexora-primary)]" />
             VIH
           </label>
           <div class="sm:col-span-2">
-            <label class="block text-xs text-white/50 mb-1">Otras condiciones sistemicas</label>
+            <label class="block text-xs nxr-text-muted mb-1">Otras condiciones sistemicas</label>
             <input
               v-model="form.other_systemic_conditions"
               type="text"
               :disabled="readOnly"
               placeholder="Describir otras condiciones..."
-              class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white/80 placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-white/20 disabled:opacity-50"
+              class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm nxr-text placeholder-[var(--nexora-soft-text)] focus:outline-none focus:ring-1 focus:ring-white/20 disabled:opacity-50"
             />
           </div>
         </div>
@@ -234,12 +234,12 @@ async function save() {
       <div class="rounded-xl bg-white/5 border border-white/10 overflow-hidden">
         <button
           type="button"
-          class="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-white/80 hover:bg-white/5 transition-colors"
+          class="w-full flex items-center justify-between px-4 py-3 text-sm font-medium nxr-text-muted hover:bg-white/5 transition-colors"
           @click="toggle('allergies')"
         >
           <span>Alergias</span>
           <svg
-            class="h-4 w-4 text-white/40 transition-transform"
+            class="h-4 w-4 nxr-text-muted transition-transform"
             :class="open.allergies ? 'rotate-180' : ''"
             xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
           >
@@ -247,30 +247,30 @@ async function save() {
           </svg>
         </button>
         <div v-show="open.allergies" class="px-4 pb-4 grid grid-cols-1 sm:grid-cols-2 gap-3 border-t border-white/10 pt-3">
-          <label class="flex items-center gap-2 text-sm text-white/70 cursor-pointer select-none">
+          <label class="flex items-center gap-2 text-sm nxr-text-muted cursor-pointer select-none">
             <input type="checkbox" v-model="form.has_penicillin_allergy" :disabled="readOnly" class="accent-[var(--nexora-primary)]" />
             Penicilina
           </label>
-          <label class="flex items-center gap-2 text-sm text-white/70 cursor-pointer select-none">
+          <label class="flex items-center gap-2 text-sm nxr-text-muted cursor-pointer select-none">
             <input type="checkbox" v-model="form.has_aspirin_allergy" :disabled="readOnly" class="accent-[var(--nexora-primary)]" />
             Aspirina / AINEs
           </label>
-          <label class="flex items-center gap-2 text-sm text-white/70 cursor-pointer select-none">
+          <label class="flex items-center gap-2 text-sm nxr-text-muted cursor-pointer select-none">
             <input type="checkbox" v-model="form.has_latex_allergy" :disabled="readOnly" class="accent-[var(--nexora-primary)]" />
             Latex
           </label>
-          <label class="flex items-center gap-2 text-sm text-white/70 cursor-pointer select-none">
+          <label class="flex items-center gap-2 text-sm nxr-text-muted cursor-pointer select-none">
             <input type="checkbox" v-model="form.has_anesthesia_allergy" :disabled="readOnly" class="accent-[var(--nexora-primary)]" />
             Anestesia local
           </label>
           <div class="sm:col-span-2">
-            <label class="block text-xs text-white/50 mb-1">Otras alergias</label>
+            <label class="block text-xs nxr-text-muted mb-1">Otras alergias</label>
             <input
               v-model="form.other_allergies"
               type="text"
               :disabled="readOnly"
               placeholder="Describir otras alergias..."
-              class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white/80 placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-white/20 disabled:opacity-50"
+              class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm nxr-text placeholder-[var(--nexora-soft-text)] focus:outline-none focus:ring-1 focus:ring-white/20 disabled:opacity-50"
             />
           </div>
         </div>
@@ -280,12 +280,12 @@ async function save() {
       <div class="rounded-xl bg-white/5 border border-white/10 overflow-hidden">
         <button
           type="button"
-          class="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-white/80 hover:bg-white/5 transition-colors"
+          class="w-full flex items-center justify-between px-4 py-3 text-sm font-medium nxr-text-muted hover:bg-white/5 transition-colors"
           @click="toggle('medications')"
         >
           <span>Medicacion actual</span>
           <svg
-            class="h-4 w-4 text-white/40 transition-transform"
+            class="h-4 w-4 nxr-text-muted transition-transform"
             :class="open.medications ? 'rotate-180' : ''"
             xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
           >
@@ -294,21 +294,21 @@ async function save() {
         </button>
         <div v-show="open.medications" class="px-4 pb-4 space-y-3 border-t border-white/10 pt-3">
           <div>
-            <label class="block text-xs text-white/50 mb-1">Medicamentos actuales</label>
+            <label class="block text-xs nxr-text-muted mb-1">Medicamentos actuales</label>
             <textarea
               v-model="form.current_medications"
               :disabled="readOnly"
               rows="3"
               placeholder="Listar medicamentos con dosis..."
-              class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white/80 placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-white/20 disabled:opacity-50 resize-none"
+              class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm nxr-text placeholder-[var(--nexora-soft-text)] focus:outline-none focus:ring-1 focus:ring-white/20 disabled:opacity-50 resize-none"
             />
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <label class="flex items-center gap-2 text-sm text-white/70 cursor-pointer select-none">
+            <label class="flex items-center gap-2 text-sm nxr-text-muted cursor-pointer select-none">
               <input type="checkbox" v-model="form.takes_anticoagulants" :disabled="readOnly" class="accent-[var(--nexora-primary)]" />
               Toma anticoagulantes
             </label>
-            <label class="flex items-center gap-2 text-sm text-white/70 cursor-pointer select-none">
+            <label class="flex items-center gap-2 text-sm nxr-text-muted cursor-pointer select-none">
               <input type="checkbox" v-model="form.takes_bisphosphonates" :disabled="readOnly" class="accent-[var(--nexora-primary)]" />
               Toma bifosfonatos
             </label>
@@ -320,12 +320,12 @@ async function save() {
       <div class="rounded-xl bg-white/5 border border-white/10 overflow-hidden">
         <button
           type="button"
-          class="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-white/80 hover:bg-white/5 transition-colors"
+          class="w-full flex items-center justify-between px-4 py-3 text-sm font-medium nxr-text-muted hover:bg-white/5 transition-colors"
           @click="toggle('dental')"
         >
           <span>Historia dental previa</span>
           <svg
-            class="h-4 w-4 text-white/40 transition-transform"
+            class="h-4 w-4 nxr-text-muted transition-transform"
             :class="open.dental ? 'rotate-180' : ''"
             xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
           >
@@ -334,32 +334,32 @@ async function save() {
         </button>
         <div v-show="open.dental" class="px-4 pb-4 space-y-3 border-t border-white/10 pt-3">
           <div>
-            <label class="block text-xs text-white/50 mb-1">Tratamientos dentales previos</label>
+            <label class="block text-xs nxr-text-muted mb-1">Tratamientos dentales previos</label>
             <textarea
               v-model="form.previous_dental_treatments"
               :disabled="readOnly"
               rows="3"
               placeholder="Ortodoncia, extracciones, implantes..."
-              class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white/80 placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-white/20 disabled:opacity-50 resize-none"
+              class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm nxr-text placeholder-[var(--nexora-soft-text)] focus:outline-none focus:ring-1 focus:ring-white/20 disabled:opacity-50 resize-none"
             />
           </div>
           <div>
-            <label class="block text-xs text-white/50 mb-1">Complicaciones previas</label>
+            <label class="block text-xs nxr-text-muted mb-1">Complicaciones previas</label>
             <textarea
               v-model="form.previous_complications"
               :disabled="readOnly"
               rows="2"
               placeholder="Reacciones a anestesia, sangrado excesivo..."
-              class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white/80 placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-white/20 disabled:opacity-50 resize-none"
+              class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm nxr-text placeholder-[var(--nexora-soft-text)] focus:outline-none focus:ring-1 focus:ring-white/20 disabled:opacity-50 resize-none"
             />
           </div>
           <div>
-            <label class="block text-xs text-white/50 mb-1">Ultima visita dental</label>
+            <label class="block text-xs nxr-text-muted mb-1">Ultima visita dental</label>
             <input
               v-model="form.last_dental_visit"
               type="date"
               :disabled="readOnly"
-              class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white/80 focus:outline-none focus:ring-1 focus:ring-white/20 disabled:opacity-50"
+              class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm nxr-text focus:outline-none focus:ring-1 focus:ring-white/20 disabled:opacity-50"
             />
           </div>
         </div>
@@ -369,12 +369,12 @@ async function save() {
       <div class="rounded-xl bg-white/5 border border-white/10 overflow-hidden">
         <button
           type="button"
-          class="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-white/80 hover:bg-white/5 transition-colors"
+          class="w-full flex items-center justify-between px-4 py-3 text-sm font-medium nxr-text-muted hover:bg-white/5 transition-colors"
           @click="toggle('habits')"
         >
           <span>Habitos</span>
           <svg
-            class="h-4 w-4 text-white/40 transition-transform"
+            class="h-4 w-4 nxr-text-muted transition-transform"
             :class="open.habits ? 'rotate-180' : ''"
             xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
           >
@@ -383,21 +383,21 @@ async function save() {
         </button>
         <div v-show="open.habits" class="px-4 pb-4 space-y-3 border-t border-white/10 pt-3">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <label class="flex items-center gap-2 text-sm text-white/70 cursor-pointer select-none">
+            <label class="flex items-center gap-2 text-sm nxr-text-muted cursor-pointer select-none">
               <input type="checkbox" v-model="form.smokes" :disabled="readOnly" class="accent-[var(--nexora-primary)]" />
               Fumador/a
             </label>
-            <label class="flex items-center gap-2 text-sm text-white/70 cursor-pointer select-none">
+            <label class="flex items-center gap-2 text-sm nxr-text-muted cursor-pointer select-none">
               <input type="checkbox" v-model="form.bruxism" :disabled="readOnly" class="accent-[var(--nexora-primary)]" />
               Bruxismo
             </label>
           </div>
           <div>
-            <label class="block text-xs text-white/50 mb-1">Consumo de alcohol</label>
+            <label class="block text-xs nxr-text-muted mb-1">Consumo de alcohol</label>
             <select
               v-model="form.alcohol_consumption"
               :disabled="readOnly"
-              class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white/80 focus:outline-none focus:ring-1 focus:ring-white/20 disabled:opacity-50"
+              class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm nxr-text focus:outline-none focus:ring-1 focus:ring-white/20 disabled:opacity-50"
             >
               <option :value="null">No especificado</option>
               <option value="none">No consume</option>
@@ -413,12 +413,12 @@ async function save() {
       <div class="rounded-xl bg-white/5 border border-white/10 overflow-hidden">
         <button
           type="button"
-          class="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-white/80 hover:bg-white/5 transition-colors"
+          class="w-full flex items-center justify-between px-4 py-3 text-sm font-medium nxr-text-muted hover:bg-white/5 transition-colors"
           @click="toggle('notes')"
         >
           <span>Notas adicionales</span>
           <svg
-            class="h-4 w-4 text-white/40 transition-transform"
+            class="h-4 w-4 nxr-text-muted transition-transform"
             :class="open.notes ? 'rotate-180' : ''"
             xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"
           >
@@ -431,7 +431,7 @@ async function save() {
             :disabled="readOnly"
             rows="4"
             placeholder="Observaciones clinicas adicionales..."
-            class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white/80 placeholder-white/30 focus:outline-none focus:ring-1 focus:ring-white/20 disabled:opacity-50 resize-none"
+            class="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm nxr-text placeholder-[var(--nexora-soft-text)] focus:outline-none focus:ring-1 focus:ring-white/20 disabled:opacity-50 resize-none"
           />
         </div>
       </div>

@@ -3,7 +3,7 @@
 
     <!-- Header -->
     <div class="flex items-center justify-between">
-      <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Documentos médicos</p>
+      <p class="text-xs nxr-text-muted uppercase tracking-wide font-semibold">Documentos médicos</p>
       <button
         v-if="!readOnly"
         class="flex items-center gap-1.5 rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary"
@@ -19,14 +19,14 @@
       v-if="showForm"
       class="rounded-xl border border-white/10 bg-white/5 p-4 space-y-4"
     >
-      <p class="text-sm font-semibold text-white">Nuevo documento</p>
+      <p class="text-sm font-semibold nxr-text">Nuevo documento</p>
 
       <!-- document_type -->
       <div class="flex flex-col gap-1.5">
-        <label class="text-xs text-white/50">Tipo de documento *</label>
+        <label class="text-xs nxr-text-muted">Tipo de documento *</label>
         <select
           v-model="form.document_type"
-          class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30"
+          class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30"
         >
           <option value="" disabled>Seleccionar tipo</option>
           <option
@@ -39,83 +39,83 @@
 
       <!-- document_date -->
       <div class="flex flex-col gap-1.5">
-        <label class="text-xs text-white/50">Fecha *</label>
+        <label class="text-xs nxr-text-muted">Fecha *</label>
         <input
           v-model="form.document_date"
           type="date"
-          class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30"
+          class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30"
         />
       </div>
 
       <!-- title -->
       <div class="flex flex-col gap-1.5">
-        <label class="text-xs text-white/50">Título</label>
+        <label class="text-xs nxr-text-muted">Título</label>
         <input
           v-model="form.title"
           type="text"
           placeholder="Ej: Informe post-operatorio"
-          class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30"
+          class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30"
         />
       </div>
 
       <!-- Professional fields -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Profesional</label>
+          <label class="text-xs nxr-text-muted">Profesional</label>
           <input
             v-model="form.professional_name"
             type="text"
             placeholder="Nombre del profesional"
-            class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30"
+            class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30"
           />
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Matrícula</label>
+          <label class="text-xs nxr-text-muted">Matrícula</label>
           <input
             v-model="form.professional_license"
             type="text"
             placeholder="N° matrícula"
-            class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30"
+            class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30"
           />
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Especialidad</label>
+          <label class="text-xs nxr-text-muted">Especialidad</label>
           <input
             v-model="form.professional_specialty"
             type="text"
             placeholder="Especialidad"
-            class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30"
+            class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30"
           />
         </div>
       </div>
 
       <!-- Dynamic content section -->
       <div v-if="form.document_type === 'medical_report'" class="flex flex-col gap-1.5">
-        <label class="text-xs text-white/50">Diagnóstico y tratamiento</label>
+        <label class="text-xs nxr-text-muted">Diagnóstico y tratamiento</label>
         <textarea
           v-model="form.content"
           rows="5"
           placeholder="Describa el diagnóstico y tratamiento realizado..."
-          class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none"
+          class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30 resize-none"
         ></textarea>
       </div>
 
       <div v-else-if="form.document_type === 'medical_certificate'" class="flex flex-col gap-1.5">
-        <label class="text-xs text-white/50">Texto de la constancia</label>
+        <label class="text-xs nxr-text-muted">Texto de la constancia</label>
         <textarea
           v-model="form.content"
           rows="5"
           placeholder="Se hace constar que el/la paciente fue atendido/a..."
-          class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none"
+          class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30 resize-none"
         ></textarea>
       </div>
 
       <div v-else-if="form.document_type === 'prescription'" class="space-y-3">
         <div class="flex items-center justify-between">
-          <label class="text-xs text-white/50">Medicamentos</label>
+          <label class="text-xs nxr-text-muted">Medicamentos</label>
           <button
             type="button"
-            class="flex items-center gap-1 text-xs text-white/60 hover:text-white transition"
+            class="flex items-center gap-1 text-xs nxr-text-muted hover:text-[var(--nexora-text-color)] transition"
             @click="addMedication"
           >
             <Plus class="h-3 w-3" />
@@ -131,46 +131,46 @@
             v-model="med.name"
             type="text"
             placeholder="Medicamento"
-            class="px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs text-white outline-none focus:border-white/30"
+            class="px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs nxr-text outline-none focus:border-white/30"
           />
           <input
             v-model="med.dose"
             type="text"
             placeholder="Dosis"
-            class="px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs text-white outline-none focus:border-white/30"
+            class="px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs nxr-text outline-none focus:border-white/30"
           />
           <input
             v-model="med.frequency"
             type="text"
             placeholder="Frecuencia"
-            class="px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs text-white outline-none focus:border-white/30"
+            class="px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs nxr-text outline-none focus:border-white/30"
           />
           <div class="flex gap-1.5">
             <input
               v-model="med.duration"
               type="text"
               placeholder="Duración"
-              class="flex-1 px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs text-white outline-none focus:border-white/30"
+              class="flex-1 px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs nxr-text outline-none focus:border-white/30"
             />
             <button
               type="button"
-              class="p-1.5 rounded-lg text-white/30 hover:text-red-400 hover:bg-white/5 transition"
+              class="p-1.5 rounded-lg nxr-text-soft hover:text-red-400 hover:bg-white/5 transition"
               @click="removeMedication(idx)"
             >
               <Trash2 class="h-3.5 w-3.5" />
             </button>
           </div>
         </div>
-        <div v-if="medications.length === 0" class="text-xs text-white/30 italic">
+        <div v-if="medications.length === 0" class="text-xs nxr-text-soft italic">
           Sin medicamentos. Presioná "Agregar" para añadir uno.
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Indicaciones</label>
+          <label class="text-xs nxr-text-muted">Indicaciones</label>
           <textarea
             v-model="instructions"
             rows="3"
             placeholder="Indicaciones generales para el paciente..."
-            class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none"
+            class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30 resize-none"
           ></textarea>
         </div>
       </div>
@@ -182,7 +182,7 @@
       <div class="flex gap-2 justify-end pt-1">
         <button
           type="button"
-          class="px-4 py-2 rounded-xl text-xs text-white/60 hover:text-white bg-white/5 hover:bg-white/10 transition"
+          class="px-4 py-2 rounded-xl text-xs nxr-text-muted hover:text-[var(--nexora-text-color)] bg-white/5 hover:bg-white/10 transition"
           @click="cancelForm"
         >
           Cancelar
@@ -199,14 +199,14 @@
     </div>
 
     <!-- Document list -->
-    <div v-if="loading" class="py-8 text-center text-sm text-white/30">Cargando documentos...</div>
+    <div v-if="loading" class="py-8 text-center text-sm nxr-text-soft">Cargando documentos...</div>
 
     <div
       v-else-if="documents.length === 0 && !showForm"
       class="py-8 text-center rounded-xl border border-white/10 bg-white/5"
     >
-      <FileText class="mx-auto mb-3 h-8 w-8 text-white/20" />
-      <p class="text-sm text-white/30">No hay documentos para esta consulta.</p>
+      <FileText class="mx-auto mb-3 h-8 w-8 nxr-text-soft" />
+      <p class="text-sm nxr-text-soft">No hay documentos para esta consulta.</p>
     </div>
 
     <div
@@ -222,18 +222,18 @@
           >
             {{ MEDICAL_DOCUMENT_TYPE_LABELS[doc.document_type] }}
           </span>
-          <span class="text-xs font-mono text-white/60">{{ doc.document_number }}</span>
-          <span class="text-xs text-white/30">{{ fmtDate(doc.document_date) }}</span>
+          <span class="text-xs font-mono nxr-text-muted">{{ doc.document_number }}</span>
+          <span class="text-xs nxr-text-soft">{{ fmtDate(doc.document_date) }}</span>
         </div>
-        <p v-if="doc.title" class="mt-1 text-sm text-white truncate">{{ doc.title }}</p>
-        <p v-if="doc.professional_name" class="mt-0.5 text-xs text-white/40">
+        <p v-if="doc.title" class="mt-1 text-sm nxr-text truncate">{{ doc.title }}</p>
+        <p v-if="doc.professional_name" class="mt-0.5 text-xs nxr-text-muted">
           Prof: {{ doc.professional_name }}
           <span v-if="doc.professional_license"> · Mat: {{ doc.professional_license }}</span>
         </p>
       </div>
       <div class="flex items-center gap-1.5 shrink-0">
         <button
-          class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs text-white/60 bg-white/5 hover:bg-white/10 transition"
+          class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs nxr-text-muted bg-white/5 hover:bg-white/10 transition"
           :disabled="printingId === doc.id"
           @click="handlePrint(doc)"
         >
@@ -242,7 +242,7 @@
         </button>
         <button
           v-if="!readOnly"
-          class="p-1.5 rounded-lg text-white/30 hover:text-red-400 hover:bg-white/5 transition"
+          class="p-1.5 rounded-lg nxr-text-soft hover:text-red-400 hover:bg-white/5 transition"
           @click="confirmDelete(doc)"
         >
           <Trash2 class="h-3.5 w-3.5" />
@@ -257,13 +257,13 @@
       @click.self="docToDelete = null"
     >
       <div class="rounded-2xl border border-white/10 bg-[var(--nexora-glass-bg)] p-6 max-w-sm w-full mx-4">
-        <p class="text-sm text-white font-semibold mb-1">Eliminar documento</p>
-        <p class="text-xs text-white/50 mb-5">
+        <p class="text-sm nxr-text font-semibold mb-1">Eliminar documento</p>
+        <p class="text-xs nxr-text-muted mb-5">
           ¿Eliminar "{{ docToDelete.document_number }}"? Esta acción no se puede deshacer.
         </p>
         <div class="flex gap-2 justify-end">
           <button
-            class="px-4 py-2 rounded-xl text-xs text-white/60 bg-white/5 hover:bg-white/10 transition"
+            class="px-4 py-2 rounded-xl text-xs nxr-text-muted bg-white/5 hover:bg-white/10 transition"
             @click="docToDelete = null"
           >Cancelar</button>
           <button

@@ -38,7 +38,7 @@ const STATUS_CLASS: Record<string, string> = {
   scheduled:   'bg-blue-500/20 text-blue-400',
   confirmed:   'bg-green-500/20 text-green-400',
   checked_in:  'bg-cyan-500/20 text-cyan-400',
-  completed:   'bg-white/10 text-white/50',
+  completed:   'bg-white/10 nxr-text-muted',
   cancelled:   'bg-red-500/20 text-red-400',
   no_show:     'bg-orange-500/20 text-orange-400',
   rescheduled: 'bg-purple-500/20 text-purple-400',
@@ -57,7 +57,7 @@ const ADMIN_STATUS_CLASS: Record<string, string> = {
   partially_paid:  'bg-blue-500/20 text-blue-400',
   paid:            'bg-green-500/20 text-green-400',
   overdue:         'bg-red-500/20 text-red-400',
-  cancelled:       'bg-white/10 text-white/40',
+  cancelled:       'bg-white/10 nxr-text-muted',
 };
 
 onMounted(() => store.load());
@@ -66,9 +66,9 @@ onMounted(() => store.load());
 <template>
   <div class="flex flex-col gap-6 p-6">
     <div class="flex items-center justify-between">
-      <h1 class="text-xl font-semibold text-white">Dental — Dashboard</h1>
+      <h1 class="text-xl font-semibold nxr-text">Dental — Dashboard</h1>
       <button
-        class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border border-white/10 text-white/70 hover:border-white/30 hover:text-white transition-all"
+        class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border border-white/10 nxr-text-muted hover:border-white/30 hover:text-[var(--nexora-text-color)] transition-all"
         @click="router.push('/dental/appointments')"
       >
         Ver citas <ArrowRight :size="14" />
@@ -92,8 +92,8 @@ onMounted(() => store.load());
           :style="{ background: 'var(--nexora-glass-bg)' }"
         >
           <CalendarDays :size="20" class="text-blue-400" />
-          <p class="text-2xl font-bold text-white">{{ summary.today_appointments_count }}</p>
-          <p class="text-xs text-white/50">Citas de hoy</p>
+          <p class="text-2xl font-bold nxr-text">{{ summary.today_appointments_count }}</p>
+          <p class="text-xs nxr-text-muted">Citas de hoy</p>
         </div>
 
         <div
@@ -101,8 +101,8 @@ onMounted(() => store.load());
           :style="{ background: 'var(--nexora-glass-bg)' }"
         >
           <Users :size="20" class="text-green-400" />
-          <p class="text-2xl font-bold text-white">{{ summary.patients_seen_today }}</p>
-          <p class="text-xs text-white/50">Pacientes atendidos hoy</p>
+          <p class="text-2xl font-bold nxr-text">{{ summary.patients_seen_today }}</p>
+          <p class="text-xs nxr-text-muted">Pacientes atendidos hoy</p>
         </div>
 
         <div
@@ -110,8 +110,8 @@ onMounted(() => store.load());
           :style="{ background: 'var(--nexora-glass-bg)' }"
         >
           <DollarSign :size="20" class="text-cyan-400" />
-          <p class="text-2xl font-bold text-white">{{ fmt(summary.total_charged_today) }}</p>
-          <p class="text-xs text-white/50">Facturado hoy</p>
+          <p class="text-2xl font-bold nxr-text">{{ fmt(summary.total_charged_today) }}</p>
+          <p class="text-xs nxr-text-muted">Facturado hoy</p>
         </div>
 
         <div
@@ -119,8 +119,8 @@ onMounted(() => store.load());
           :style="{ background: 'var(--nexora-glass-bg)' }"
         >
           <TrendingUp :size="20" class="text-purple-400" />
-          <p class="text-2xl font-bold text-white">{{ fmt(summary.total_charged_month) }}</p>
-          <p class="text-xs text-white/50">Facturado este mes</p>
+          <p class="text-2xl font-bold nxr-text">{{ fmt(summary.total_charged_month) }}</p>
+          <p class="text-xs nxr-text-muted">Facturado este mes</p>
         </div>
 
         <div
@@ -128,8 +128,8 @@ onMounted(() => store.load());
           :style="{ background: 'var(--nexora-glass-bg)' }"
         >
           <Clock :size="20" class="text-orange-400" />
-          <p class="text-2xl font-bold text-white">{{ fmt(summary.total_pending) }}</p>
-          <p class="text-xs text-white/50">Pendiente de cobro</p>
+          <p class="text-2xl font-bold nxr-text">{{ fmt(summary.total_pending) }}</p>
+          <p class="text-xs nxr-text-muted">Pendiente de cobro</p>
         </div>
 
         <div
@@ -137,8 +137,8 @@ onMounted(() => store.load());
           :style="{ background: 'var(--nexora-glass-bg)' }"
         >
           <AlertTriangle :size="20" class="text-red-400" />
-          <p class="text-2xl font-bold text-white">{{ summary.overdue_patients_count }}</p>
-          <p class="text-xs text-white/50">Pacientes con deuda vencida</p>
+          <p class="text-2xl font-bold nxr-text">{{ summary.overdue_patients_count }}</p>
+          <p class="text-xs nxr-text-muted">Pacientes con deuda vencida</p>
         </div>
       </div>
 
@@ -147,14 +147,14 @@ onMounted(() => store.load());
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-2">
             <CalendarDays :size="16" class="text-blue-400" />
-            <h2 class="text-sm font-semibold text-white">Agenda de hoy</h2>
+            <h2 class="text-sm font-semibold nxr-text">Agenda de hoy</h2>
           </div>
-          <button class="text-xs text-white/40 hover:text-white/70 transition-colors" @click="router.push('/dental/appointments')">
+          <button class="text-xs nxr-text-muted hover:text-[var(--nexora-text-color)] transition-colors" @click="router.push('/dental/appointments')">
             Ver todas
           </button>
         </div>
 
-        <div v-if="agenda.length === 0" class="py-8 text-center text-white/30 text-sm">
+        <div v-if="agenda.length === 0" class="py-8 text-center nxr-text-soft text-sm">
           No hay citas programadas para hoy.
         </div>
 
@@ -166,12 +166,12 @@ onMounted(() => store.load());
             :style="{ background: 'var(--nexora-glass-bg)' }"
           >
             <div class="flex flex-col items-center justify-center w-12 shrink-0 text-center">
-              <p class="text-sm font-bold text-white">{{ fmtTime(apt.scheduled_start) }}</p>
-              <p class="text-xs text-white/30">{{ fmtTime(apt.scheduled_end) }}</p>
+              <p class="text-sm font-bold nxr-text">{{ fmtTime(apt.scheduled_start) }}</p>
+              <p class="text-xs nxr-text-soft">{{ fmtTime(apt.scheduled_end) }}</p>
             </div>
             <div class="flex-1 min-w-0">
-              <p class="text-sm text-white truncate">{{ apt.customer?.first_name }} {{ apt.customer?.last_name }}</p>
-              <p class="text-xs text-white/40 truncate">{{ apt.treatment?.name ?? apt.reason ?? '—' }}</p>
+              <p class="text-sm nxr-text truncate">{{ apt.customer?.first_name }} {{ apt.customer?.last_name }}</p>
+              <p class="text-xs nxr-text-muted truncate">{{ apt.treatment?.name ?? apt.reason ?? '—' }}</p>
             </div>
             <span class="px-2 py-0.5 rounded-full text-xs shrink-0" :class="STATUS_CLASS[apt.status]">
               {{ STATUS_LABEL[apt.status] ?? apt.status }}
@@ -184,7 +184,7 @@ onMounted(() => store.load());
       <div v-if="(summary?.recent_consultations?.length ?? 0) > 0" class="flex flex-col gap-3">
         <div class="flex items-center gap-2">
           <Stethoscope :size="16" class="text-green-400" />
-          <h2 class="text-sm font-semibold text-white">Consultas recientes</h2>
+          <h2 class="text-sm font-semibold nxr-text">Consultas recientes</h2>
         </div>
         <div class="flex flex-col gap-2">
           <div
@@ -195,14 +195,14 @@ onMounted(() => store.load());
             @click="router.push('/dental/consultations')"
           >
             <div class="flex-1 min-w-0">
-              <p class="text-sm text-white truncate">{{ c.customer?.first_name }} {{ c.customer?.last_name }}</p>
-              <p class="text-xs text-white/40 truncate">{{ fmtDate(c.consultation_date) }} · {{ c.treatment?.name ?? c.reason ?? '—' }}</p>
+              <p class="text-sm nxr-text truncate">{{ c.customer?.first_name }} {{ c.customer?.last_name }}</p>
+              <p class="text-xs nxr-text-muted truncate">{{ fmtDate(c.consultation_date) }} · {{ c.treatment?.name ?? c.reason ?? '—' }}</p>
             </div>
             <div class="flex items-center gap-2 shrink-0">
               <span class="px-2 py-0.5 rounded-full text-xs" :class="ADMIN_STATUS_CLASS[c.administrative_status]">
                 {{ ADMIN_STATUS_LABEL[c.administrative_status] ?? c.administrative_status }}
               </span>
-              <p class="text-sm font-semibold text-white">{{ fmt(c.total_amount) }}</p>
+              <p class="text-sm font-semibold nxr-text">{{ fmt(c.total_amount) }}</p>
             </div>
           </div>
         </div>

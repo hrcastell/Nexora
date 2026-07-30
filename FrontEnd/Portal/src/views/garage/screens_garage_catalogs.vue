@@ -108,7 +108,7 @@ async function toggleStatus(item: CatalogItem) {
 <template>
   <div class="flex flex-col gap-5 p-6">
     <div class="flex items-center justify-between">
-      <h1 class="text-xl font-semibold text-white">Catálogos de Vehículos</h1>
+      <h1 class="text-xl font-semibold nxr-text">Catálogos de Vehículos</h1>
       <button class="flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-medium text-white transition nxr-btn-primary" @click="openCreate">
         <Plus :size="15" /> Nuevo
       </button>
@@ -118,7 +118,7 @@ async function toggleStatus(item: CatalogItem) {
       <button
         v-for="tab in CATALOG_TABS" :key="tab.type"
         class="px-3 py-1.5 rounded-xl text-sm transition-colors"
-        :class="activeType === tab.type ? 'bg-[var(--nexora-primary)] text-white' : 'bg-white/5 text-white/60 hover:bg-white/10'"
+        :class="activeType === tab.type ? 'bg-[var(--nexora-primary)] text-white' : 'bg-white/5 nxr-tab-inactive hover:bg-white/10'"
         @click="switchTab(tab.type)"
       >
         {{ tab.label }}
@@ -126,8 +126,8 @@ async function toggleStatus(item: CatalogItem) {
     </div>
 
     <div v-if="activeType === 'vehicle_models'" class="flex items-center gap-2">
-      <label class="text-xs text-white/50">Filtrar por marca:</label>
-      <select v-model="selectedBrandFilter" class="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none" @change="loadActive">
+      <label class="text-xs nxr-text-muted">Filtrar por marca:</label>
+      <select v-model="selectedBrandFilter" class="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none" @change="loadActive">
         <option :value="null">Todas</option>
         <option v-for="b in brands" :key="b.id" :value="b.id">{{ b.name }}</option>
       </select>
@@ -144,20 +144,20 @@ async function toggleStatus(item: CatalogItem) {
         :style="{ background: 'var(--nexora-glass-bg)' }"
       >
         <div v-if="activeType === 'vehicle_colors' && item.hex_color" class="w-5 h-5 rounded-full shrink-0 border border-white/20" :style="{ background: item.hex_color }"></div>
-        <span class="flex-1 text-sm text-white">{{ item.name }}</span>
-        <span class="text-xs text-white/30">{{ item.normalized_name }}</span>
+        <span class="flex-1 text-sm nxr-text">{{ item.name }}</span>
+        <span class="text-xs nxr-text-soft">{{ item.normalized_name }}</span>
         <div class="flex items-center gap-2">
-          <button type="button" class="text-white/30 hover:text-white/70" @click="openEdit(item)">
+          <button type="button" class="nxr-text-soft hover:text-[var(--nexora-text-color)]" @click="openEdit(item)">
             <Edit2 :size="14" />
           </button>
           <button type="button" @click="toggleStatus(item)">
             <ToggleRight v-if="item.status === 'active'" :size="18" class="text-green-400" />
-            <ToggleLeft v-else :size="18" class="text-white/30" />
+            <ToggleLeft v-else :size="18" class="nxr-text-soft" />
           </button>
         </div>
       </div>
 
-      <div v-if="items.length === 0" class="text-center text-white/30 py-10 text-sm">Sin entradas. Agrega la primera.</div>
+      <div v-if="items.length === 0" class="text-center nxr-text-soft py-10 text-sm">Sin entradas. Agrega la primera.</div>
     </div>
 
     <NxrSlidePanel
@@ -172,21 +172,21 @@ async function toggleStatus(item: CatalogItem) {
     >
       <div class="flex flex-col gap-3">
             <div v-if="activeType === 'vehicle_models' && !editing">
-              <label class="block text-xs text-white/50 mb-1">Marca *</label>
-              <select v-model="formBrandId" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none">
+              <label class="block text-xs nxr-text-muted mb-1">Marca *</label>
+              <select v-model="formBrandId" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none">
                 <option :value="null">Seleccionar</option>
                 <option v-for="b in brands" :key="b.id" :value="b.id">{{ b.name }}</option>
               </select>
             </div>
             <div>
-              <label class="block text-xs text-white/50 mb-1">Nombre *</label>
-              <input v-model="formName" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" />
+              <label class="block text-xs nxr-text-muted mb-1">Nombre *</label>
+              <input v-model="formName" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40" />
             </div>
             <div v-if="activeType === 'vehicle_colors'">
-              <label class="block text-xs text-white/50 mb-1">Color (hex)</label>
+              <label class="block text-xs nxr-text-muted mb-1">Color (hex)</label>
               <div class="flex items-center gap-2">
                 <input v-model="formHex" type="color" class="w-10 h-10 rounded-lg cursor-pointer border-none bg-transparent" />
-                <input v-model="formHex" type="text" placeholder="#FFFFFF" class="flex-1 px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none" />
+                <input v-model="formHex" type="text" placeholder="#FFFFFF" class="flex-1 px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none" />
               </div>
             </div>
         <p v-if="error" class="text-xs text-red-400">{{ error }}</p>

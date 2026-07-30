@@ -28,14 +28,14 @@ const fmtDate = (d: string) => d ? new Date(d).toLocaleDateString('es-CL', { day
 const fmtAmt  = (n: number) => `$${Math.round(n ?? 0).toLocaleString()}`;
 
 const PRIORITY_COLOR: Record<string, string> = {
-  low: 'text-white/30', normal: 'text-white/50', high: 'text-orange-400', urgent: 'text-red-400'
+  low: 'nxr-text-soft', normal: 'nxr-text-muted', high: 'text-orange-400', urgent: 'text-red-400'
 };
 </script>
 
 <template>
   <div class="flex flex-col gap-5 p-6">
     <div class="flex items-center justify-between">
-      <h1 class="text-xl font-semibold text-white">Órdenes de Trabajo</h1>
+      <h1 class="text-xl font-semibold nxr-text">Órdenes de Trabajo</h1>
       <button class="flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-medium text-white transition nxr-btn-primary" @click="showForm = true">
         <Plus :size="15" /> Nueva orden
       </button>
@@ -43,10 +43,10 @@ const PRIORITY_COLOR: Record<string, string> = {
 
     <div class="flex items-center gap-3 flex-wrap">
       <div class="flex-1 relative min-w-48">
-        <Search :size="14" class="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" />
-        <input v-model="q" type="text" placeholder="N° orden, cliente, placa..." class="w-full pl-9 pr-4 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+        <Search :size="14" class="absolute left-3 top-1/2 -translate-y-1/2 nxr-text-soft" />
+        <input v-model="q" type="text" placeholder="N° orden, cliente, placa..." class="w-full pl-9 pr-4 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" />
       </div>
-      <select v-model="status" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none">
+      <select v-model="status" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none">
         <option value="">Todos los estados</option>
         <option value="draft">Borrador</option>
         <option value="received">Recibida</option>
@@ -64,7 +64,7 @@ const PRIORITY_COLOR: Record<string, string> = {
       <div v-for="i in 8" :key="i" class="h-18 rounded-xl bg-white/5 animate-pulse"></div>
     </div>
 
-    <div v-else-if="store.items.length === 0" class="text-center text-white/30 py-16 text-sm">No se encontraron órdenes de trabajo.</div>
+    <div v-else-if="store.items.length === 0" class="text-center nxr-text-soft py-16 text-sm">No se encontraron órdenes de trabajo.</div>
 
     <div v-else class="flex flex-col gap-2">
       <div
@@ -76,27 +76,27 @@ const PRIORITY_COLOR: Record<string, string> = {
       >
         <div class="w-14 h-14 rounded-xl overflow-hidden bg-white/5 flex items-center justify-center shrink-0">
           <img v-if="(wo as any).first_photo_url" :src="photoSrc((wo as any).first_photo_url)" class="w-full h-full object-cover" @error="(e) => (e.target as HTMLImageElement).style.display='none'" />
-          <Car v-else :size="20" class="text-white/20" />
+          <Car v-else :size="20" class="nxr-text-soft" />
         </div>
         <div class="flex-1 min-w-0">
           <div class="flex items-center gap-2 mb-1">
-            <span class="text-sm font-semibold text-white font-mono">{{ wo.order_number }}</span>
+            <span class="text-sm font-semibold nxr-text font-mono">{{ wo.order_number }}</span>
             <widgets_garage_work_order_status_badge :status="wo.status" :small="true" />
             <span class="text-xs" :class="PRIORITY_COLOR[wo.priority]">{{ wo.priority }}</span>
           </div>
-          <p class="text-xs text-white/50 truncate">
+          <p class="text-xs nxr-text-muted truncate">
             {{ wo.customer_name || '—' }} · {{ wo.plate || 'Sin placa' }} · {{ (wo as any).vehicle_desc || '' }}
           </p>
-          <p class="text-xs text-white/30 mt-0.5">Ingreso: {{ fmtDate(wo.entry_date) }}</p>
+          <p class="text-xs nxr-text-soft mt-0.5">Ingreso: {{ fmtDate(wo.entry_date) }}</p>
         </div>
         <div class="text-right shrink-0">
-          <p class="text-sm font-semibold text-white">{{ fmtAmt(wo.total_amount) }}</p>
-          <p class="text-xs text-white/30">{{ wo.currency }}</p>
+          <p class="text-sm font-semibold nxr-text">{{ fmtAmt(wo.total_amount) }}</p>
+          <p class="text-xs nxr-text-soft">{{ wo.currency }}</p>
         </div>
-        <ChevronRight :size="16" class="text-white/30 shrink-0" />
+        <ChevronRight :size="16" class="nxr-text-soft shrink-0" />
       </div>
 
-      <div class="flex items-center justify-between mt-2 text-xs text-white/40">
+      <div class="flex items-center justify-between mt-2 text-xs nxr-text-muted">
         <span>{{ store.total }} órdenes en total</span>
         <div class="flex items-center gap-2">
           <button :disabled="page <= 1" class="px-3 py-1 rounded-lg bg-white/10 disabled:opacity-30 hover:bg-white/20" @click="page--; load()">Anterior</button>

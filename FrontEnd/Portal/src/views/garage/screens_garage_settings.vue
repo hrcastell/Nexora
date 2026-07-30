@@ -16,8 +16,8 @@ const SECTIONS = [
 <template>
   <div class="flex flex-col gap-5 p-6 max-w-2xl">
     <div class="flex items-center gap-3">
-      <Settings :size="22" class="text-white/60" />
-      <h1 class="text-xl font-semibold text-white">Configuración del Taller</h1>
+      <Settings :size="22" class="nxr-text-muted" />
+      <h1 class="text-xl font-semibold nxr-text">Configuración del Taller</h1>
     </div>
 
     <div class="flex flex-col gap-3">
@@ -30,8 +30,8 @@ const SECTIONS = [
       >
         <component :is="sec.icon" :size="22" class="text-[var(--nexora-primary)] shrink-0" />
         <div>
-          <p class="text-sm font-semibold text-white">{{ sec.label }}</p>
-          <p class="text-xs text-white/40 mt-0.5">{{ sec.desc }}</p>
+          <p class="text-sm font-semibold nxr-text">{{ sec.label }}</p>
+          <p class="text-xs nxr-text-muted mt-0.5">{{ sec.desc }}</p>
         </div>
       </button>
     </div>

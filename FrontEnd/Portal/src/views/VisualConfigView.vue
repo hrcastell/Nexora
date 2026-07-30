@@ -133,7 +133,7 @@ const isActive = (condition: boolean) => condition;
               <Sparkles class="h-5 w-5" />
             </div>
             <div>
-              <h1 class="text-lg font-semibold text-white">Preferencias visuales</h1>
+              <h1 class="text-lg font-semibold nxr-text">Preferencias visuales</h1>
               <p class="text-sm text-slate-400">Configura el aspecto general del sistema</p>
             </div>
           </div>
@@ -172,7 +172,7 @@ const isActive = (condition: boolean) => condition;
               <Monitor class="h-5 w-5" />
             </div>
             <div>
-              <h2 class="text-base font-semibold text-white">Tema y fondo</h2>
+              <h2 class="text-base font-semibold nxr-text">Tema y fondo</h2>
               <p class="text-xs text-slate-400">Modo de interfaz y wallpaper</p>
             </div>
           </div>
@@ -283,7 +283,7 @@ const isActive = (condition: boolean) => condition;
               <Layers class="h-5 w-5" />
             </div>
             <div>
-              <h2 class="text-base font-semibold text-white">Escala y dimensiones</h2>
+              <h2 class="text-base font-semibold nxr-text">Escala y dimensiones</h2>
               <p class="text-xs text-slate-400">Tamaño de interfaz</p>
             </div>
           </div>
@@ -292,7 +292,7 @@ const isActive = (condition: boolean) => condition;
             <!-- Scale -->
             <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
               <div class="flex items-center justify-between mb-2">
-                <span class="text-sm font-medium text-white">Escala del entorno</span>
+                <span class="text-sm font-medium nxr-text">Escala del entorno</span>
                 <span class="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-xs text-slate-400">{{ draft.scale }}%</span>
               </div>
               <input
@@ -314,7 +314,7 @@ const isActive = (condition: boolean) => condition;
             <!-- Corner radius -->
             <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
               <div class="flex items-center justify-between mb-2">
-                <span class="text-sm font-medium text-white">Redondeo de esquinas</span>
+                <span class="text-sm font-medium nxr-text">Redondeo de esquinas</span>
                 <span class="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-xs text-slate-400">{{ draft.corner }}px</span>
               </div>
               <input
@@ -341,7 +341,7 @@ const isActive = (condition: boolean) => condition;
               <Type class="h-5 w-5" />
             </div>
             <div>
-              <h2 class="text-base font-semibold text-white">Tipografía</h2>
+              <h2 class="text-base font-semibold nxr-text">Tipografía</h2>
               <p class="text-xs text-slate-400">Fuente y tamaño de texto</p>
             </div>
           </div>
@@ -376,7 +376,7 @@ const isActive = (condition: boolean) => condition;
             <!-- Font size -->
             <div class="rounded-2xl border border-white/10 bg-white/5 p-4 mt-3">
               <div class="flex items-center justify-between mb-2">
-                <span class="text-sm font-medium text-white">Tamaño de letra</span>
+                <span class="text-sm font-medium nxr-text">Tamaño de letra</span>
                 <span class="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-xs text-slate-400">{{ draft.fontSize }}px</span>
               </div>
               <input
@@ -403,7 +403,7 @@ const isActive = (condition: boolean) => condition;
               <Palette class="h-5 w-5" />
             </div>
             <div>
-              <h2 class="text-base font-semibold text-white">Colores</h2>
+              <h2 class="text-base font-semibold nxr-text">Colores</h2>
               <p class="text-xs text-slate-400">Personaliza la paleta</p>
             </div>
           </div>
@@ -411,7 +411,7 @@ const isActive = (condition: boolean) => condition;
           <div class="space-y-4">
             <!-- Preset colors -->
             <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
-              <div class="text-sm font-medium text-white mb-3">Colores predefinidos</div>
+              <div class="text-sm font-medium nxr-text mb-3">Colores predefinidos</div>
               <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 <button
                   v-for="color in PRESET_COLORS"
@@ -442,7 +442,7 @@ const isActive = (condition: boolean) => condition;
                 />
                 <div>
                   <div class="text-xs text-slate-400">Principal</div>
-                  <div class="text-sm font-medium text-white">{{ draft.primaryColor }}</div>
+                  <div class="text-sm font-medium nxr-text">{{ draft.primaryColor }}</div>
                 </div>
               </button>
               <button
@@ -491,7 +491,7 @@ const isActive = (condition: boolean) => condition;
               <Layers class="h-5 w-5" />
             </div>
             <div>
-              <h2 class="text-base font-semibold text-white">Transparencia y superficie</h2>
+              <h2 class="text-base font-semibold nxr-text">Transparencia y superficie</h2>
               <p class="text-xs text-slate-400">Intensidad visual de paneles</p>
             </div>
           </div>
@@ -499,7 +499,7 @@ const isActive = (condition: boolean) => condition;
           <div class="grid gap-4 lg:grid-cols-2">
             <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
               <div class="flex items-center justify-between mb-2">
-                <span class="text-sm font-medium text-white">Nivel de transparencia</span>
+                <span class="text-sm font-medium nxr-text">Nivel de transparencia</span>
                 <span class="rounded-full border border-white/10 bg-white/5 px-2 py-0.5 text-xs text-slate-400">{{ draft.transparency }}%</span>
               </div>
               <input
@@ -517,7 +517,7 @@ const isActive = (condition: boolean) => condition;
             </div>
 
             <div class="rounded-2xl border border-white/10 bg-white/5 p-4">
-              <div class="text-sm font-medium text-white mb-2">Aplicación sugerida</div>
+              <div class="text-sm font-medium nxr-text mb-2">Aplicación sugerida</div>
               <ul class="space-y-1.5 text-xs text-slate-400">
                 <li class="flex items-start gap-2">
                   <span class="text-[#d4af37]">•</span>

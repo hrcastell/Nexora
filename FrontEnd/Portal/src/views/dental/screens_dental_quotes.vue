@@ -162,7 +162,7 @@ onMounted(() => {
 <template>
   <div class="flex flex-col gap-5 p-6">
     <div class="flex items-center justify-between flex-wrap gap-3">
-      <h1 class="text-xl font-semibold text-white">Presupuestos</h1>
+      <h1 class="text-xl font-semibold nxr-text">Presupuestos</h1>
       <button
         class="flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-medium text-white transition nxr-btn-primary"
         @click="openCreate"
@@ -175,7 +175,7 @@ onMounted(() => {
     <div class="flex items-center gap-3 flex-wrap">
       <select
         v-model="statusFilter"
-        class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none"
+        class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none"
         @change="load"
       >
         <option value="">Todos los estados</option>
@@ -186,7 +186,7 @@ onMounted(() => {
         <option value="expired">Vencido</option>
         <option value="converted">Convertido</option>
       </select>
-      <span class="text-xs text-white/30">{{ total }} presupuestos</span>
+      <span class="text-xs nxr-text-soft">{{ total }} presupuestos</span>
     </div>
 
     <!-- Loading -->
@@ -199,8 +199,8 @@ onMounted(() => {
 
     <!-- Empty -->
     <div v-else-if="quotes.length === 0" class="flex flex-col items-center gap-4 py-20 text-center">
-      <FileText :size="48" class="text-white/20" />
-      <p class="text-white/50 text-sm">No hay presupuestos registrados.</p>
+      <FileText :size="48" class="nxr-text-soft" />
+      <p class="nxr-text-muted text-sm">No hay presupuestos registrados.</p>
       <button
         class="flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-medium text-white transition nxr-btn-primary"
         @click="openCreate"
@@ -212,7 +212,7 @@ onMounted(() => {
     <!-- List -->
     <div v-else class="flex flex-col gap-2">
       <!-- Desktop header -->
-      <div class="hidden md:grid md:grid-cols-[120px_1fr_120px_120px_120px_60px] gap-4 px-4 py-2 text-xs text-white/30 font-semibold uppercase tracking-wide">
+      <div class="hidden md:grid md:grid-cols-[120px_1fr_120px_120px_120px_60px] gap-4 px-4 py-2 text-xs nxr-text-soft font-semibold uppercase tracking-wide">
         <span>Número</span>
         <span>Paciente</span>
         <span>Fecha</span>
@@ -230,22 +230,22 @@ onMounted(() => {
       >
         <!-- Mobile -->
         <div class="flex-1 min-w-0 md:hidden">
-          <p class="text-sm font-medium text-white truncate">{{ q.customer_first_name }} {{ q.customer_last_name }}</p>
-          <p class="text-xs text-white/40">{{ q.quote_number }} · {{ fmtDate(q.quote_date) }}</p>
+          <p class="text-sm font-medium nxr-text truncate">{{ q.customer_first_name }} {{ q.customer_last_name }}</p>
+          <p class="text-xs nxr-text-muted">{{ q.quote_number }} · {{ fmtDate(q.quote_date) }}</p>
           <div class="flex items-center gap-2 mt-1">
             <span class="px-2 py-0.5 rounded-full text-xs" :class="QUOTE_STATUS_COLORS[q.status]">{{ QUOTE_STATUS_LABELS[q.status] }}</span>
-            <span class="text-xs font-semibold text-white">{{ fmt(q.final_amount) }}</span>
+            <span class="text-xs font-semibold nxr-text">{{ fmt(q.final_amount) }}</span>
           </div>
         </div>
 
         <!-- Desktop -->
         <div class="hidden md:grid md:grid-cols-[120px_1fr_120px_120px_120px_60px] gap-4 items-center flex-1">
-          <p class="text-xs text-white font-mono">{{ q.quote_number }}</p>
-          <p class="text-sm text-white truncate">{{ q.customer_first_name }} {{ q.customer_last_name }}</p>
-          <p class="text-xs text-white/60">{{ fmtDate(q.quote_date) }}</p>
-          <p class="text-xs text-white/60">{{ q.valid_until ? fmtDate(q.valid_until) : '—' }}</p>
+          <p class="text-xs nxr-text font-mono">{{ q.quote_number }}</p>
+          <p class="text-sm nxr-text truncate">{{ q.customer_first_name }} {{ q.customer_last_name }}</p>
+          <p class="text-xs nxr-text-muted">{{ fmtDate(q.quote_date) }}</p>
+          <p class="text-xs nxr-text-muted">{{ q.valid_until ? fmtDate(q.valid_until) : '—' }}</p>
           <span class="px-2 py-0.5 rounded-full text-xs w-fit" :class="QUOTE_STATUS_COLORS[q.status]">{{ QUOTE_STATUS_LABELS[q.status] }}</span>
-          <p class="text-sm font-semibold text-white text-right">{{ fmt(q.final_amount) }}</p>
+          <p class="text-sm font-semibold nxr-text text-right">{{ fmt(q.final_amount) }}</p>
         </div>
       </div>
     </div>
@@ -253,15 +253,15 @@ onMounted(() => {
     <!-- Pagination -->
     <div v-if="total > 20" class="flex items-center justify-center gap-3 mt-2">
       <button
-        class="px-3 py-1.5 rounded-xl text-xs text-white/60 border border-white/10 hover:border-white/30 disabled:opacity-30"
+        class="px-3 py-1.5 rounded-xl text-xs nxr-text-muted border border-white/10 hover:border-white/30 disabled:opacity-30"
         :disabled="page === 1"
         @click="page--; load()"
       >
         Anterior
       </button>
-      <span class="text-xs text-white/40">Página {{ page }}</span>
+      <span class="text-xs nxr-text-muted">Página {{ page }}</span>
       <button
-        class="px-3 py-1.5 rounded-xl text-xs text-white/60 border border-white/10 hover:border-white/30 disabled:opacity-30"
+        class="px-3 py-1.5 rounded-xl text-xs nxr-text-muted border border-white/10 hover:border-white/30 disabled:opacity-30"
         :disabled="page * 20 >= total"
         @click="page++; load()"
       >
@@ -278,23 +278,23 @@ onMounted(() => {
       <form class="flex flex-col gap-5" @submit.prevent="save">
         <!-- Patient search -->
         <div class="flex flex-col gap-1.5 relative">
-          <label class="text-xs text-white/50">Paciente *</label>
+          <label class="text-xs nxr-text-muted">Paciente *</label>
           <input
             v-model="patientSearch"
             type="text"
             placeholder="Buscar por nombre o documento..."
             autocomplete="off"
-            class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-white/30 outline-none focus:border-white/30"
+            class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text placeholder-[var(--nexora-soft-text)] outline-none focus:border-white/30"
             @input="onPatientInput"
             @focus="focusPatientDrop"
             @blur="blurPatientDrop"
           />
           <div
             v-if="selectedPatient"
-            class="flex items-center justify-between px-3 py-1.5 rounded-lg bg-[var(--nexora-primary)]/20 border border-[var(--nexora-primary)]/30 text-xs text-white"
+            class="flex items-center justify-between px-3 py-1.5 rounded-lg bg-[var(--nexora-primary)]/20 border border-[var(--nexora-primary)]/30 text-xs nxr-text"
           >
             <span>{{ selectedPatient.first_name }} {{ selectedPatient.last_name }}</span>
-            <button type="button" class="text-white/50 hover:text-white ml-2" @click="clearPatient">✕</button>
+            <button type="button" class="nxr-text-muted hover:text-[var(--nexora-text-color)] ml-2" @click="clearPatient">✕</button>
           </div>
           <div
             v-if="showPatientDrop && patientsStore.items.length > 0"
@@ -305,32 +305,32 @@ onMounted(() => {
               v-for="p in patientsStore.items"
               :key="p.id"
               type="button"
-              class="w-full text-left px-3 py-2.5 text-sm text-white hover:bg-white/10 transition-colors border-b border-white/5 last:border-0"
+              class="w-full text-left px-3 py-2.5 text-sm nxr-text hover:bg-white/10 transition-colors border-b border-white/5 last:border-0"
               @mousedown.prevent="selectPatient(p)"
             >
               {{ p.first_name }} {{ p.last_name }}
-              <span v-if="p.document_number" class="text-xs text-white/40 ml-2">{{ p.document_type }} {{ p.document_number }}</span>
+              <span v-if="p.document_number" class="text-xs nxr-text-muted ml-2">{{ p.document_type }} {{ p.document_number }}</span>
             </button>
           </div>
         </div>
 
         <!-- Valid until -->
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Válido hasta</label>
+          <label class="text-xs nxr-text-muted">Válido hasta</label>
           <input
             v-model="form.valid_until"
             type="date"
-            class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30"
+            class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30"
           />
         </div>
 
         <!-- Notes -->
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Notas</label>
+          <label class="text-xs nxr-text-muted">Notas</label>
           <textarea
             v-model="form.notes"
             rows="3"
-            class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-white/30 outline-none focus:border-white/30 resize-none"
+            class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text placeholder-[var(--nexora-soft-text)] outline-none focus:border-white/30 resize-none"
             placeholder="Observaciones generales..."
           />
         </div>

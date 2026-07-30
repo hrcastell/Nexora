@@ -65,17 +65,17 @@ async function confirm() {
     <div v-if="modelValue" class="fixed inset-0 z-40 bg-black/60 flex items-center justify-center p-4" @click.self="close">
       <div class="w-full max-w-sm rounded-2xl border border-white/10 shadow-2xl overflow-hidden" :style="{ background: 'var(--nexora-glass-bg, #0b1326)' }">
         <div class="flex items-center justify-between px-6 py-4 border-b border-white/10">
-          <h2 class="text-base font-semibold text-white">Cambiar estado</h2>
-          <button type="button" class="text-white/40 hover:text-white" @click="close"><X :size="18" /></button>
+          <h2 class="text-base font-semibold nxr-text">Cambiar estado</h2>
+          <button type="button" class="nxr-text-muted hover:text-[var(--nexora-text-color)]" @click="close"><X :size="18" /></button>
         </div>
 
         <div class="p-6 flex flex-col gap-4">
-          <div v-if="availableTransitions.length === 0" class="text-sm text-white/50 text-center py-2">
+          <div v-if="availableTransitions.length === 0" class="text-sm nxr-text-muted text-center py-2">
             No hay transiciones disponibles para este estado.
           </div>
 
           <div v-else>
-            <label class="block text-xs text-white/50 mb-2">Nuevo estado</label>
+            <label class="block text-xs nxr-text-muted mb-2">Nuevo estado</label>
             <div class="flex flex-col gap-2">
               <label
                 v-for="t in availableTransitions"
@@ -87,20 +87,20 @@ async function confirm() {
                 <div class="w-3 h-3 rounded-full border-2 flex items-center justify-center" :class="newStatus === t.value ? 'border-[var(--nexora-primary)]' : 'border-white/30'">
                   <div v-if="newStatus === t.value" class="w-1.5 h-1.5 rounded-full bg-[var(--nexora-primary)]"></div>
                 </div>
-                <span class="text-sm text-white">{{ t.label }}</span>
+                <span class="text-sm nxr-text">{{ t.label }}</span>
               </label>
             </div>
           </div>
 
           <div>
-            <label class="block text-xs text-white/50 mb-1">Notas (opcional)</label>
-            <textarea v-model="notes" rows="2" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40 resize-none"></textarea>
+            <label class="block text-xs nxr-text-muted mb-1">Notas (opcional)</label>
+            <textarea v-model="notes" rows="2" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40 resize-none"></textarea>
           </div>
           <p v-if="error" class="text-xs text-red-400">{{ error }}</p>
         </div>
 
         <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-white/10">
-          <button type="button" class="px-4 py-2 rounded-xl text-sm text-white/60 hover:text-white" @click="close">Cancelar</button>
+          <button type="button" class="px-4 py-2 rounded-xl text-sm nxr-text-muted hover:text-[var(--nexora-text-color)]" @click="close">Cancelar</button>
           <button
             v-if="availableTransitions.length > 0"
             type="button"

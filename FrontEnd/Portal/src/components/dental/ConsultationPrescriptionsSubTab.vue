@@ -122,13 +122,13 @@ function formatDate(iso: string) {
 
     <!-- Toolbar -->
     <div class="flex items-center justify-between gap-2 flex-wrap no-print">
-      <h3 class="text-sm font-semibold text-white/70 uppercase tracking-wide">
+      <h3 class="text-sm font-semibold nxr-text uppercase tracking-wide">
         Prescripciones
       </h3>
       <div class="flex gap-2">
         <button
           v-if="prescriptions.length > 0"
-          class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium bg-white/5 text-white/60 hover:bg-white/10 hover:text-white transition"
+          class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium bg-white/5 nxr-text-muted hover:bg-white/10 hover:text-[var(--nexora-text-color)] transition"
           @click="print"
           type="button"
         >
@@ -141,7 +141,7 @@ function formatDate(iso: string) {
           v-if="!readOnly"
           class="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition"
           :class="showForm
-            ? 'bg-white/10 text-white/60 hover:bg-white/15'
+            ? 'bg-white/10 nxr-text-muted hover:bg-white/15'
             : 'bg-[var(--nexora-primary)] text-white hover:opacity-90'"
           @click="toggleForm"
           type="button"
@@ -162,59 +162,59 @@ function formatDate(iso: string) {
       v-if="showForm && !readOnly"
       class="rounded-xl border border-white/10 bg-white/5 p-4 space-y-3 no-print"
     >
-      <p class="text-xs font-medium text-white/50 uppercase tracking-wide">Nueva prescripcion</p>
+      <p class="text-xs font-medium nxr-text-muted uppercase tracking-wide">Nueva prescripcion</p>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <!-- Medication -->
         <div class="sm:col-span-2">
-          <label class="block text-xs text-white/50 mb-1">Medicamento <span class="text-red-400">*</span></label>
+          <label class="block text-xs nxr-text-muted mb-1">Medicamento <span class="text-red-400">*</span></label>
           <input
             v-model="form.medication"
             type="text"
             placeholder="Ej: Amoxicilina 500 mg"
-            class="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-sm text-white placeholder-white/25 focus:outline-none focus:border-[var(--nexora-primary)] transition"
+            class="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-sm nxr-text placeholder-[var(--nexora-soft-text)] focus:outline-none focus:border-[var(--nexora-primary)] transition"
           />
         </div>
 
         <!-- Dosage -->
         <div>
-          <label class="block text-xs text-white/50 mb-1">Dosis <span class="text-red-400">*</span></label>
+          <label class="block text-xs nxr-text-muted mb-1">Dosis <span class="text-red-400">*</span></label>
           <input
             v-model="form.dosage"
             type="text"
             placeholder="Ej: 1 comprimido"
-            class="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-sm text-white placeholder-white/25 focus:outline-none focus:border-[var(--nexora-primary)] transition"
+            class="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-sm nxr-text placeholder-[var(--nexora-soft-text)] focus:outline-none focus:border-[var(--nexora-primary)] transition"
           />
         </div>
 
         <!-- Frequency -->
         <div>
-          <label class="block text-xs text-white/50 mb-1">Frecuencia <span class="text-red-400">*</span></label>
+          <label class="block text-xs nxr-text-muted mb-1">Frecuencia <span class="text-red-400">*</span></label>
           <input
             v-model="form.frequency"
             type="text"
             placeholder="Ej: cada 8 horas"
-            class="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-sm text-white placeholder-white/25 focus:outline-none focus:border-[var(--nexora-primary)] transition"
+            class="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-sm nxr-text placeholder-[var(--nexora-soft-text)] focus:outline-none focus:border-[var(--nexora-primary)] transition"
           />
         </div>
 
         <!-- Duration -->
         <div>
-          <label class="block text-xs text-white/50 mb-1">Duracion <span class="text-red-400">*</span></label>
+          <label class="block text-xs nxr-text-muted mb-1">Duracion <span class="text-red-400">*</span></label>
           <input
             v-model="form.duration"
             type="text"
             placeholder="Ej: 7 dias"
-            class="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-sm text-white placeholder-white/25 focus:outline-none focus:border-[var(--nexora-primary)] transition"
+            class="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-sm nxr-text placeholder-[var(--nexora-soft-text)] focus:outline-none focus:border-[var(--nexora-primary)] transition"
           />
         </div>
 
         <!-- Route -->
         <div>
-          <label class="block text-xs text-white/50 mb-1">Via de administracion</label>
+          <label class="block text-xs nxr-text-muted mb-1">Via de administracion</label>
           <select
             v-model="form.route"
-            class="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-sm text-white focus:outline-none focus:border-[var(--nexora-primary)] transition"
+            class="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-sm nxr-text focus:outline-none focus:border-[var(--nexora-primary)] transition"
           >
             <option value="">Sin especificar</option>
             <option v-for="opt in ROUTE_OPTIONS" :key="opt.value" :value="opt.value">
@@ -225,12 +225,12 @@ function formatDate(iso: string) {
 
         <!-- Instructions -->
         <div class="sm:col-span-2">
-          <label class="block text-xs text-white/50 mb-1">Indicaciones adicionales</label>
+          <label class="block text-xs nxr-text-muted mb-1">Indicaciones adicionales</label>
           <textarea
             v-model="form.instructions"
             rows="2"
             placeholder="Ej: Tomar con alimentos, no suspender antes del plazo indicado..."
-            class="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-sm text-white placeholder-white/25 focus:outline-none focus:border-[var(--nexora-primary)] transition resize-none"
+            class="w-full rounded-lg bg-white/5 border border-white/10 px-3 py-2 text-sm nxr-text placeholder-[var(--nexora-soft-text)] focus:outline-none focus:border-[var(--nexora-primary)] transition resize-none"
           />
         </div>
       </div>
@@ -252,7 +252,7 @@ function formatDate(iso: string) {
     </div>
 
     <!-- Loading -->
-    <div v-if="loading" class="flex items-center gap-2 text-sm text-white/40 py-4 no-print">
+    <div v-if="loading" class="flex items-center gap-2 text-sm nxr-text-muted py-4 no-print">
       <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/>
@@ -268,7 +268,7 @@ function formatDate(iso: string) {
     <!-- Empty state -->
     <div
       v-else-if="!loading && prescriptions.length === 0"
-      class="text-center py-10 text-white/30 text-sm no-print"
+      class="text-center py-10 nxr-text-soft text-sm no-print"
     >
       No hay prescripciones registradas para esta consulta.
     </div>
@@ -290,10 +290,10 @@ function formatDate(iso: string) {
         class="rounded-xl border border-white/10 bg-white/5 p-4 space-y-1.5 prescription-card"
       >
         <div class="flex items-start justify-between gap-2">
-          <p class="text-sm font-semibold text-white leading-snug">{{ rx.medication }}</p>
+          <p class="text-sm font-semibold nxr-text leading-snug">{{ rx.medication }}</p>
           <button
             v-if="!readOnly"
-            class="flex-shrink-0 text-white/30 hover:text-red-400 transition no-print"
+            class="flex-shrink-0 nxr-text-soft hover:text-red-400 transition no-print"
             title="Eliminar prescripcion"
             type="button"
             @click="remove(rx.id)"
@@ -304,18 +304,18 @@ function formatDate(iso: string) {
           </button>
         </div>
 
-        <div class="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-white/50">
-          <span><span class="text-white/30">Dosis:</span> {{ rx.dosage }}</span>
-          <span><span class="text-white/30">Frecuencia:</span> {{ rx.frequency }}</span>
-          <span><span class="text-white/30">Duracion:</span> {{ rx.duration }}</span>
-          <span v-if="routeLabel(rx.route)"><span class="text-white/30">Via:</span> {{ routeLabel(rx.route) }}</span>
+        <div class="flex flex-wrap gap-x-4 gap-y-0.5 text-xs nxr-text-muted">
+          <span><span class="nxr-text-soft">Dosis:</span> {{ rx.dosage }}</span>
+          <span><span class="nxr-text-soft">Frecuencia:</span> {{ rx.frequency }}</span>
+          <span><span class="nxr-text-soft">Duracion:</span> {{ rx.duration }}</span>
+          <span v-if="routeLabel(rx.route)"><span class="nxr-text-soft">Via:</span> {{ routeLabel(rx.route) }}</span>
         </div>
 
-        <p v-if="rx.instructions" class="text-xs text-white/40 line-clamp-2">
+        <p v-if="rx.instructions" class="text-xs nxr-text-muted line-clamp-2">
           {{ rx.instructions }}
         </p>
 
-        <p class="text-xs text-white/25 no-print">{{ formatDate(rx.created_at) }}</p>
+        <p class="text-xs nxr-text-soft no-print">{{ formatDate(rx.created_at) }}</p>
       </div>
     </div>
 

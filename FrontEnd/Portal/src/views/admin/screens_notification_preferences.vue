@@ -96,7 +96,7 @@ function toggleAll() {
     <div class="flex items-center gap-4">
       <button
         @click="router.push('/admin/notifications')"
-        class="flex h-9 w-9 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-slate-400 transition hover:bg-white/10 hover:text-white"
+        class="flex h-9 w-9 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-slate-400 transition hover:bg-white/10 hover:text-[var(--nexora-text-color)]"
       >
         <ArrowLeft class="h-4 w-4" />
       </button>
@@ -105,7 +105,7 @@ function toggleAll() {
           <Settings class="h-5 w-5 text-violet-400" />
         </div>
         <div>
-          <h2 class="text-lg font-semibold text-white">Preferencias de notificaciones</h2>
+          <h2 class="text-lg font-semibold nxr-text">Preferencias de notificaciones</h2>
           <p class="text-xs text-slate-400">Configura qué notificaciones recibir y cómo</p>
         </div>
       </div>
@@ -119,7 +119,7 @@ function toggleAll() {
             <Bell class="h-4 w-4 text-violet-400" />
           </div>
           <div>
-            <p class="text-sm font-medium text-white">Notificaciones en pantalla</p>
+            <p class="text-sm font-medium nxr-text">Notificaciones en pantalla</p>
             <p class="mt-0.5 text-xs text-slate-500">Mostrar notificaciones emergentes mientras navegas</p>
           </div>
         </div>
@@ -145,7 +145,7 @@ function toggleAll() {
     <!-- Categories -->
     <div class="rounded-[24px] border border-white/10 bg-white/3 p-5 space-y-4">
       <div class="flex items-center justify-between">
-        <p class="text-sm font-semibold text-white">Categorías</p>
+        <p class="text-sm font-semibold nxr-text">Categorías</p>
         <button
           @click="toggleAll"
           class="text-xs font-medium text-violet-400 transition hover:text-violet-300"

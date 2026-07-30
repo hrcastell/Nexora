@@ -173,52 +173,52 @@ onBeforeUnmount(() => { if (searchTimer) clearTimeout(searchTimer); });
   <div class="flex min-h-[calc(100vh-5rem)] flex-col gap-5 p-3 sm:p-6">
     <template v-if="!isDetail">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div><h1 class="text-xl font-semibold text-white">{{ title }}</h1><p class="text-xs text-white/40">Documentos financieros pendientes de gestión.</p></div>
+        <div><h1 class="text-xl font-semibold nxr-text">{{ title }}</h1><p class="text-xs nxr-text-muted">Documentos financieros pendientes de gestión.</p></div>
         <button class="nxr-btn nxr-btn-primary justify-center" @click="router.push(`${basePath}/new`)"><Plus :size="15" /> Nuevo documento</button>
       </div>
-      <div class="relative"><Search :size="14" class="absolute left-3 top-3 text-white/30"/><input v-model="query" placeholder="Buscar..." class="w-full rounded-xl border border-white/10 bg-white/5 py-2 pl-9 text-sm text-white"/></div>
+      <div class="relative"><Search :size="14" class="absolute left-3 top-3 nxr-text-soft"/><input v-model="query" placeholder="Buscar..." class="w-full rounded-xl border border-white/10 bg-white/5 py-2 pl-9 text-sm nxr-text"/></div>
       <p v-if="store.error" class="text-sm text-red-400">{{ store.error }}</p>
       <div v-if="store.loading" class="space-y-2"><div v-for="item in 5" :key="item" class="h-20 animate-pulse rounded-xl bg-white/5" /></div>
-      <div v-else-if="!store.items.length" class="py-16 text-center text-sm text-white/35">Sin documentos.</div>
+      <div v-else-if="!store.items.length" class="py-16 text-center text-sm nxr-text-soft">Sin documentos.</div>
       <div v-else class="grid grid-cols-1 gap-3 md:grid-cols-2">
         <button v-for="document in store.items" :key="document.id" class="rounded-xl border border-white/10 p-4 text-left transition hover:border-white/25" :style="{ background: 'var(--nexora-glass-bg)' }" @click="router.push(`${basePath}/${document.id}`)">
-          <div class="flex items-start justify-between gap-3"><div><p class="font-semibold text-white">{{ document.internal_number }}</p><p class="text-xs text-white/40">{{ document.counterparty_name }} · {{ document.issue_date }}</p></div><span class="text-xs text-white/45">{{ document.status }}</span></div>
-          <p class="mt-3 text-sm text-white">{{ money(document.balance_amount, document.currency) }} pendiente</p>
+          <div class="flex items-start justify-between gap-3"><div><p class="font-semibold nxr-text">{{ document.internal_number }}</p><p class="text-xs nxr-text-muted">{{ document.counterparty_name }} · {{ document.issue_date }}</p></div><span class="text-xs nxr-text-muted">{{ document.status }}</span></div>
+          <p class="mt-3 text-sm nxr-text">{{ money(document.balance_amount, document.currency) }} pendiente</p>
         </button>
       </div>
     </template>
 
     <template v-else>
-      <div class="sticky top-0 z-10 -mx-3 -mt-3 border-b border-white/10 bg-black/35 px-3 py-4 backdrop-blur-xl sm:-mx-6 sm:-mt-6 sm:px-6">
-        <div class="flex items-center justify-between gap-3"><button class="text-white/60 hover:text-white" @click="router.push(basePath)"><ArrowLeft :size="20" /></button><div class="min-w-0 flex-1"><h1 class="truncate text-lg font-semibold text-white">{{ isNew ? `Nuevo documento · ${title}` : store.current?.internal_number }}</h1><p class="text-xs text-white/40">{{ isNew ? 'Borrador' : store.current?.status }}</p></div><button class="nxr-btn nxr-btn-primary" :disabled="saving" @click="save"><Save :size="15" /> {{ saving ? 'Guardando...' : 'Guardar' }}</button></div>
+      <div class="rounded-2xl border border-white/10 p-4" :style="{ background: 'var(--nexora-glass-bg)' }">
+        <div class="flex items-center justify-between gap-3"><button class="nxr-text-muted hover:text-[var(--nexora-text-color)]" @click="router.push(basePath)"><ArrowLeft :size="20" /></button><div class="min-w-0 flex-1"><h1 class="truncate text-lg font-semibold nxr-text">{{ isNew ? `Nuevo documento · ${title}` : store.current?.internal_number }}</h1><p class="text-xs nxr-text-muted">{{ isNew ? 'Borrador' : store.current?.status }}</p></div><button class="nxr-btn nxr-btn-primary" :disabled="saving" @click="save"><Save :size="15" /> {{ saving ? 'Guardando...' : 'Guardar' }}</button></div>
       </div>
 
       <div class="grid grid-cols-1 gap-3 rounded-2xl border border-white/10 p-4 md:grid-cols-2 xl:grid-cols-4" :style="{ background: 'var(--nexora-glass-bg)' }">
-        <label class="text-xs text-white/50">Contraparte<select v-model.number="form.counterparty_id" class="mt-1 w-full rounded-xl border border-white/10 bg-white/5 p-2 text-sm text-white"><option :value="0">Seleccionar</option><option v-for="item in settings.counterparties.items" :key="item.id" :value="item.id">{{ item.name_snapshot }}</option></select></label>
-        <label class="text-xs text-white/50">Fecha de emisión<input v-model="form.issue_date" type="date" class="mt-1 w-full rounded-xl border border-white/10 bg-white/5 p-2 text-sm text-white" /></label>
-        <label class="text-xs text-white/50">Condición de pago<select v-model.number="form.payment_term_id" class="mt-1 w-full rounded-xl border border-white/10 bg-white/5 p-2 text-sm text-white"><option :value="null">Sin condición</option><option v-for="term in settings.paymentTerms.items" :key="term.id" :value="term.id">{{ term.name }}</option></select></label>
-        <label class="text-xs text-white/50">Vencimiento<input v-model="form.due_date" type="date" class="mt-1 w-full rounded-xl border border-white/10 bg-white/5 p-2 text-sm text-white" /></label>
-        <label class="text-xs text-white/50">Tipo<select v-model="form.document_type" class="mt-1 w-full rounded-xl border border-white/10 bg-white/5 p-2 text-sm text-white"><option value="sale_invoice">Factura</option><option value="purchase_invoice">Factura de compra</option><option value="sale_note">Nota</option><option value="debit_note">Nota de débito</option><option value="credit_note">Nota de crédito</option></select></label>
-        <label class="text-xs text-white/50">Folio externo<input v-model="form.external_number" class="mt-1 w-full rounded-xl border border-white/10 bg-white/5 p-2 text-sm text-white" /></label>
-        <label class="text-xs text-white/50">Moneda<input v-model="form.currency" maxlength="3" class="mt-1 w-full rounded-xl border border-white/10 bg-white/5 p-2 text-sm uppercase text-white" /></label>
-        <label class="text-xs text-white/50">Notas<textarea v-model="form.notes" rows="1" class="mt-1 w-full rounded-xl border border-white/10 bg-white/5 p-2 text-sm text-white" /></label>
+        <label class="text-xs nxr-text-muted">Contraparte<select v-model.number="form.counterparty_id" class="mt-1 w-full rounded-xl border border-white/10 bg-white/5 p-2 text-sm nxr-text"><option :value="0">Seleccionar</option><option v-for="item in settings.counterparties.items" :key="item.id" :value="item.id">{{ item.name_snapshot }}</option></select></label>
+        <label class="text-xs nxr-text-muted">Fecha de emisión<input v-model="form.issue_date" type="date" class="mt-1 w-full rounded-xl border border-white/10 bg-white/5 p-2 text-sm nxr-text" /></label>
+        <label class="text-xs nxr-text-muted">Condición de pago<select v-model.number="form.payment_term_id" class="mt-1 w-full rounded-xl border border-white/10 bg-white/5 p-2 text-sm nxr-text"><option :value="null">Sin condición</option><option v-for="term in settings.paymentTerms.items" :key="term.id" :value="term.id">{{ term.name }}</option></select></label>
+        <label class="text-xs nxr-text-muted">Vencimiento<input v-model="form.due_date" type="date" class="mt-1 w-full rounded-xl border border-white/10 bg-white/5 p-2 text-sm nxr-text" /></label>
+        <label class="text-xs nxr-text-muted">Tipo<select v-model="form.document_type" class="mt-1 w-full rounded-xl border border-white/10 bg-white/5 p-2 text-sm nxr-text"><option value="sale_invoice">Factura</option><option value="purchase_invoice">Factura de compra</option><option value="sale_note">Nota</option><option value="debit_note">Nota de débito</option><option value="credit_note">Nota de crédito</option></select></label>
+        <label class="text-xs nxr-text-muted">Folio externo<input v-model="form.external_number" class="mt-1 w-full rounded-xl border border-white/10 bg-white/5 p-2 text-sm nxr-text" /></label>
+        <label class="text-xs nxr-text-muted">Moneda<input v-model="form.currency" maxlength="3" class="mt-1 w-full rounded-xl border border-white/10 bg-white/5 p-2 text-sm uppercase nxr-text" /></label>
+        <label class="text-xs nxr-text-muted">Notas<textarea v-model="form.notes" rows="1" class="mt-1 w-full rounded-xl border border-white/10 bg-white/5 p-2 text-sm nxr-text" /></label>
       </div>
 
       <div class="flex-1 rounded-2xl border border-white/10 p-4" :style="{ background: 'var(--nexora-glass-bg)' }">
-        <div class="mb-3 flex items-center justify-between"><h2 class="text-sm font-semibold text-white">Líneas</h2><button v-if="hasPendingLines" class="nxr-btn nxr-btn-secondary" @click="addLine"><Plus :size="14" /> Agregar línea</button></div>
-        <div class="hidden grid-cols-[2fr_repeat(2,1fr)_120px_auto] gap-2 text-xs text-white/40 lg:grid"><span>Descripción</span><span>Cantidad</span><span>Precio unitario</span><span class="text-right">Total</span><span /></div>
+        <div class="mb-3 flex items-center justify-between"><h2 class="text-sm font-semibold nxr-text">Líneas</h2><button v-if="hasPendingLines" class="nxr-btn nxr-btn-secondary" @click="addLine"><Plus :size="14" /> Agregar línea</button></div>
+        <div class="hidden grid-cols-[2fr_repeat(2,1fr)_120px_auto] gap-2 text-xs nxr-text-muted lg:grid"><span>Descripción</span><span>Cantidad</span><span>Precio unitario</span><span class="text-right">Total</span><span /></div>
         <div class="mt-2 flex flex-col gap-2">
           <div v-for="(line, index) in form.lines" :key="line.id || index" class="grid grid-cols-1 gap-2 rounded-xl border border-white/10 bg-white/5 p-3 sm:grid-cols-2 lg:grid-cols-[2fr_repeat(2,1fr)_120px_auto]">
-            <label class="text-xs text-white/45 lg:text-[0px]"><span class="lg:hidden">Descripción</span><input v-model="line.description" :disabled="!!line.id" class="mt-1 w-full rounded-xl border border-white/10 bg-black/20 p-2 text-sm text-white lg:mt-0" /></label>
-            <label class="text-xs text-white/45 lg:text-[0px]"><span class="lg:hidden">Cantidad</span><input v-model.number="line.quantity" :disabled="!!line.id" type="number" min="0" step="0.01" class="mt-1 w-full rounded-xl border border-white/10 bg-black/20 p-2 text-sm text-white lg:mt-0" @input="recalculateLine(line)" /></label>
-            <label class="text-xs text-white/45 lg:text-[0px]"><span class="lg:hidden">Precio unitario</span><input v-model.number="line.unit_price" :disabled="!!line.id" type="number" min="0" step="0.01" class="mt-1 w-full rounded-xl border border-white/10 bg-black/20 p-2 text-sm text-white lg:mt-0" @input="recalculateLine(line)" /></label>
-            <div class="flex items-end justify-between text-sm text-white lg:justify-end"><span class="text-xs text-white/45 lg:hidden">Total</span><span class="font-medium">{{ money(line.line_total) }}</span></div>
-            <button v-if="!line.id" class="text-white/35 hover:text-red-400" aria-label="Eliminar línea" @click="removeLine(index)"><Trash2 :size="16" /></button>
+            <label class="text-xs nxr-text-muted lg:text-[0px]"><span class="lg:hidden">Descripción</span><input v-model="line.description" :disabled="!!line.id" class="mt-1 w-full rounded-xl border border-white/10 bg-black/20 p-2 text-sm nxr-text lg:mt-0" /></label>
+            <label class="text-xs nxr-text-muted lg:text-[0px]"><span class="lg:hidden">Cantidad</span><input v-model.number="line.quantity" :disabled="!!line.id" type="number" min="0" step="0.01" class="mt-1 w-full rounded-xl border border-white/10 bg-black/20 p-2 text-sm nxr-text lg:mt-0" @input="recalculateLine(line)" /></label>
+            <label class="text-xs nxr-text-muted lg:text-[0px]"><span class="lg:hidden">Precio unitario</span><input v-model.number="line.unit_price" :disabled="!!line.id" type="number" min="0" step="0.01" class="mt-1 w-full rounded-xl border border-white/10 bg-black/20 p-2 text-sm nxr-text lg:mt-0" @input="recalculateLine(line)" /></label>
+            <div class="flex items-end justify-between text-sm nxr-text lg:justify-end"><span class="text-xs nxr-text-muted lg:hidden">Total</span><span class="font-medium">{{ money(line.line_total) }}</span></div>
+            <button v-if="!line.id" class="nxr-text-soft hover:text-red-400" aria-label="Eliminar línea" @click="removeLine(index)"><Trash2 :size="16" /></button>
           </div>
         </div>
       </div>
 
-      <div class="sticky bottom-0 z-10 -mx-3 border-t border-white/10 bg-black/45 px-3 py-4 backdrop-blur-xl sm:-mx-6 sm:px-6"><div class="ml-auto grid max-w-sm grid-cols-2 gap-2 text-sm"><span class="text-white/45">Subtotal</span><span class="text-right text-white">{{ money(subtotal) }}</span><span class="font-semibold text-white">Total</span><span class="text-right font-semibold text-white">{{ money(subtotal) }}</span></div><p v-if="error" class="mt-2 text-right text-xs text-red-400">{{ error }}</p></div>
+      <div class="rounded-2xl border border-white/10 p-4" :style="{ background: 'var(--nexora-glass-bg)' }"><div class="ml-auto grid max-w-sm grid-cols-2 gap-2 text-sm"><span class="nxr-text-muted">Subtotal</span><span class="text-right nxr-text">{{ money(subtotal) }}</span><span class="font-semibold nxr-text">Total</span><span class="text-right font-semibold nxr-text">{{ money(subtotal) }}</span></div><p v-if="error" class="mt-2 text-right text-xs text-red-400">{{ error }}</p></div>
     </template>
   </div>
 </template>

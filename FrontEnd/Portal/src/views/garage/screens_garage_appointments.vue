@@ -42,7 +42,7 @@ const fmtDateShort = (d: string) => new Date(d).toLocaleDateString('es-CL', { da
 const fmtTime      = (d: string) => new Date(d).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
 
 const PRIORITY_COLOR: Record<string, string> = {
-  low:    'bg-white/10 text-white/50',
+  low:    'bg-white/10 nxr-text-muted',
   normal: 'bg-blue-500/20 text-blue-300',
   high:   'bg-orange-500/20 text-orange-300',
   urgent: 'bg-red-500/20 text-red-300',
@@ -52,15 +52,15 @@ const PRIORITY_COLOR: Record<string, string> = {
 <template>
   <div class="flex flex-col gap-5 p-6">
     <div class="flex items-center justify-between">
-      <h1 class="text-xl font-semibold text-white">Agenda / Citas</h1>
+      <h1 class="text-xl font-semibold nxr-text">Agenda / Citas</h1>
       <button class="flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-medium text-white transition nxr-btn-primary" @click="openCreate">
         <Plus :size="15" /> Nueva cita
       </button>
     </div>
 
     <div class="flex items-center gap-3 flex-wrap">
-      <input v-model="dateFrom" type="date" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
-      <select v-model="status" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none">
+      <input v-model="dateFrom" type="date" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" />
+      <select v-model="status" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none">
         <option value="">Todos los estados</option>
         <option value="scheduled">Programada</option>
         <option value="confirmed">Confirmada</option>
@@ -76,7 +76,7 @@ const PRIORITY_COLOR: Record<string, string> = {
       <div v-for="i in 6" :key="i" class="h-20 rounded-xl bg-white/5 animate-pulse"></div>
     </div>
 
-    <div v-else-if="store.items.length === 0" class="text-center text-white/30 py-16 text-sm">No hay citas para los filtros seleccionados.</div>
+    <div v-else-if="store.items.length === 0" class="text-center nxr-text-soft py-16 text-sm">No hay citas para los filtros seleccionados.</div>
 
     <div v-else class="flex flex-col gap-2">
       <div
@@ -86,17 +86,17 @@ const PRIORITY_COLOR: Record<string, string> = {
         :style="{ background: 'var(--nexora-glass-bg)' }"
       >
         <div class="w-12 text-center shrink-0">
-          <p class="text-lg font-bold text-white leading-none">{{ fmtTime(a.scheduled_start) }}</p>
-          <p class="text-xs text-white/40">{{ fmtDateShort(a.scheduled_start) }}</p>
+          <p class="text-lg font-bold nxr-text leading-none">{{ fmtTime(a.scheduled_start) }}</p>
+          <p class="text-xs nxr-text-muted">{{ fmtDateShort(a.scheduled_start) }}</p>
         </div>
 
         <div class="flex-1 min-w-0">
           <div class="flex items-center gap-2 mb-1">
-            <p class="text-sm font-medium text-white truncate">{{ a.customer_name || 'Sin cliente' }}</p>
+            <p class="text-sm font-medium nxr-text truncate">{{ a.customer_name || 'Sin cliente' }}</p>
             <widgets_garage_appointment_status_badge :status="a.status" :small="true" />
             <span class="text-xs px-2 py-0.5 rounded-full" :class="PRIORITY_COLOR[a.priority]">{{ a.priority }}</span>
           </div>
-          <p class="text-xs text-white/40 truncate">{{ a.plate ? `${a.plate} ·` : '' }} {{ a.requested_service_summary || a.reported_issue || 'Sin descripción' }}</p>
+          <p class="text-xs nxr-text-muted truncate">{{ a.plate ? `${a.plate} ·` : '' }} {{ a.requested_service_summary || a.reported_issue || 'Sin descripción' }}</p>
         </div>
 
         <div class="flex items-center gap-2 shrink-0">
@@ -108,13 +108,13 @@ const PRIORITY_COLOR: Record<string, string> = {
           >
             <ArrowRight :size="12" /> Crear OT
           </button>
-          <button type="button" class="text-white/30 hover:text-white/70" @click.stop="openEdit(a)">
+          <button type="button" class="nxr-text-soft hover:text-[var(--nexora-text-color)]" @click.stop="openEdit(a)">
             <ChevronRight :size="16" />
           </button>
         </div>
       </div>
 
-      <div class="flex items-center justify-between mt-2 text-xs text-white/40">
+      <div class="flex items-center justify-between mt-2 text-xs nxr-text-muted">
         <span>{{ store.total }} citas</span>
         <div class="flex items-center gap-2">
           <button :disabled="page <= 1" class="px-3 py-1 rounded-lg bg-white/10 disabled:opacity-30 hover:bg-white/20" @click="page--; load()">Anterior</button>

@@ -47,7 +47,7 @@ function onPhotoError(e: Event) {
   const parent = img.parentElement;
   if (parent && !parent.querySelector('.photo-error')) {
     const msg = document.createElement('div');
-    msg.className = 'photo-error w-full h-full flex items-center justify-center text-white/20 text-xs';
+    msg.className = 'photo-error w-full h-full flex items-center justify-center nxr-text-soft text-xs';
     msg.textContent = 'Sin imagen';
     parent.appendChild(msg);
   }
@@ -86,18 +86,18 @@ function navLightbox(dir: 1 | -1) {
 
 <template>
   <div class="flex flex-col gap-4">
-    <div class="flex items-center justify-between text-xs text-white/50">
+    <div class="flex items-center justify-between text-xs nxr-text-muted">
       <span>{{ photos.length }} / {{ MAX }} fotos</span>
       <span v-if="!canAdd" class="text-yellow-400">Límite alcanzado</span>
     </div>
 
     <div v-for="(group, stage) in [{ label: 'Ingreso del vehículo', stage: 'entry' as const, photos: entryPhotos }, { label: 'Listo para entrega', stage: 'delivery' as const, photos: deliveryPhotos }]" :key="stage" class="flex flex-col gap-2">
       <div class="flex items-center justify-between">
-        <span class="text-sm font-semibold text-white/70">{{ group.label }}</span>
+        <span class="text-sm font-semibold nxr-text">{{ group.label }}</span>
         <button
           v-if="!disabled && canAdd"
           type="button"
-          class="flex items-center gap-1 text-xs px-2 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-white/70 transition-colors"
+          class="flex items-center gap-1 text-xs px-2 py-1 rounded-lg bg-white/10 hover:bg-white/20 nxr-text-muted transition-colors"
           @click="openUpload(group.stage)"
         >
           <Upload :size="12" />
@@ -127,7 +127,7 @@ function navLightbox(dir: 1 | -1) {
 
         <div
           v-if="group.photos.length === 0"
-          class="aspect-square rounded-xl border border-dashed border-white/20 flex items-center justify-center text-white/30 text-xs cursor-pointer hover:border-white/40 transition-colors"
+          class="aspect-square rounded-xl border border-dashed border-white/20 flex items-center justify-center nxr-text-soft text-xs cursor-pointer hover:border-white/40 transition-colors"
           @click="openUpload(group.stage)"
         >
           Sin fotos

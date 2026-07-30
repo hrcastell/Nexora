@@ -136,10 +136,10 @@ const panelClasses = [
           :aria-label="title"
         >
           <!-- Header with title + close button -->
-          <header class="sticky top-0 z-10 flex items-center justify-between border-b border-white/10 bg-black/20 px-6 py-4 backdrop-blur-xl">
+          <header class="sticky top-0 z-10 flex items-center justify-between border-b border-white/10 px-6 py-4 backdrop-blur-xl" :style="{ background: 'var(--nexora-glass-bg-strong)' }">
             <div>
-              <p v-if="eyebrow" class="text-xs text-white/50 mb-1">{{ eyebrow }}</p>
-              <h2 class="text-lg font-semibold text-white">{{ title }}</h2>
+              <p v-if="eyebrow" class="text-xs nxr-text-soft mb-1">{{ eyebrow }}</p>
+              <h2 class="text-lg font-semibold nxr-text">{{ title }}</h2>
             </div>
             <button
               type="button"
@@ -147,7 +147,7 @@ const panelClasses = [
               aria-label="Cerrar"
               @click="requestCancel"
             >
-              <XIcon class="h-5 w-5 text-white/60" />
+              <XIcon class="h-5 w-5 nxr-text-muted" />
             </button>
           </header>
 
@@ -158,7 +158,8 @@ const panelClasses = [
 
           <!-- Footer (optional, sticky at bottom) -->
           <footer
-            class="sticky bottom-0 flex gap-3 border-t border-white/10 bg-black/20 px-6 py-4 backdrop-blur-xl"
+            class="sticky bottom-0 flex gap-3 border-t border-white/10 px-6 py-4 backdrop-blur-xl"
+            :style="{ background: 'var(--nexora-glass-bg-strong)' }"
           >
             <button type="button" class="nxr-btn nxr-btn-secondary" @click="requestCancel">
               Cancelar

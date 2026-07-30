@@ -145,7 +145,7 @@ const logout = () => {
       <div class="flex items-center gap-3 rounded-3xl border nxr-glass p-4">
         <img src="../assets/logo_icon3.png" alt="Nexora" class="h-11 w-11 rounded-2xl object-contain" />
         <div>
-          <p class="text-sm font-semibold text-white">Nexora</p>
+          <p class="text-sm font-semibold nxr-text">Nexora</p>
           <p class="text-xs uppercase tracking-[0.18em] text-slate-400">SaaS Core</p>
         </div>
       </div>
@@ -238,7 +238,7 @@ const logout = () => {
       <div class="mt-auto pt-6">
         <button 
           @click="logout"
-          class="flex w-full items-center justify-center gap-2 rounded-2xl border nxr-glass px-4 py-3 text-sm font-medium text-slate-200 transition hover:text-white"
+          class="flex w-full items-center justify-center gap-2 rounded-2xl border nxr-glass px-4 py-3 text-sm font-medium text-slate-200 transition hover:text-[var(--nexora-text-color)]"
         >
           <LogOut class="h-5 w-5" />
           Cerrar sesión
@@ -259,7 +259,7 @@ const logout = () => {
           </button>
           <div class="flex items-center gap-2">
             <img src="../assets/logo_icon3.png" alt="Nexora" class="h-8 w-8 rounded-xl object-contain" />
-            <span class="text-sm font-semibold text-white">Nexora</span>
+            <span class="text-sm font-semibold nxr-text">Nexora</span>
           </div>
           <div class="w-10" />
         </header>
@@ -281,7 +281,7 @@ const logout = () => {
                   Super Admin View
                 </span>
               </div>
-              <h1 class="mt-3 text-2xl font-semibold text-white">
+              <h1 class="mt-3 text-2xl font-semibold nxr-text">
                 Panel de administración
               </h1>
             </div>
@@ -289,7 +289,7 @@ const logout = () => {
               <WidgetsNotificationBell />
               <button
                 @click="toggleSidebar"
-                class="flex items-center gap-2 rounded-2xl border nxr-glass px-3 py-2 text-xs font-medium text-slate-300 transition hover:text-white"
+                class="flex items-center gap-2 rounded-2xl border nxr-glass px-3 py-2 text-xs font-medium text-slate-300 transition hover:text-[var(--nexora-text-color)]"
                 :title="isSidebarCollapsed ? 'Mostrar menú' : 'Ocultar menú'"
               >
                 <ChevronLeft v-if="!isSidebarCollapsed" class="h-4 w-4" />

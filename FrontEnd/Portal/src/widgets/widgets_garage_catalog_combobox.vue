@@ -94,12 +94,12 @@ async function createNew() {
       :disabled="disabled"
       @click="open = !open"
     >
-      <span :class="selected ? 'text-white' : 'text-white/40'">
+      <span :class="selected ? 'nxr-text' : 'nxr-text-muted'">
         {{ selected ? selected.name : (placeholder || 'Seleccionar...') }}
       </span>
       <div class="flex items-center gap-1">
-        <span v-if="selected" class="text-white/40 hover:text-white text-xs" @click.stop="clear">✕</span>
-        <ChevronDown :size="14" class="text-white/40 transition-transform" :class="open ? 'rotate-180' : ''" />
+        <span v-if="selected" class="nxr-text-muted hover:text-[var(--nexora-text-color)] text-xs" @click.stop="clear">✕</span>
+        <ChevronDown :size="14" class="nxr-text-muted transition-transform" :class="open ? 'rotate-180' : ''" />
       </div>
     </button>
 
@@ -112,7 +112,7 @@ async function createNew() {
         <input
           v-model="query"
           type="text"
-          class="w-full bg-transparent text-sm text-white placeholder-white/30 outline-none"
+          class="w-full bg-transparent text-sm nxr-text placeholder-[var(--nexora-soft-text)] outline-none"
           placeholder="Buscar..."
           autofocus
         />
@@ -122,14 +122,14 @@ async function createNew() {
         <li
           v-for="item in items"
           :key="item.id"
-          class="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-white/10 text-sm text-white transition-colors"
+          class="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-white/10 text-sm nxr-text transition-colors"
           @click="select(item)"
         >
           <span>{{ item.name }}</span>
           <Check v-if="item.id === modelValue" :size="14" class="text-[var(--nexora-primary)]" />
         </li>
 
-        <li v-if="items.length === 0 && !allowCreate" class="px-3 py-2 text-sm text-white/40">
+        <li v-if="items.length === 0 && !allowCreate" class="px-3 py-2 text-sm nxr-text-muted">
           Sin resultados
         </li>
 

@@ -398,13 +398,13 @@ watch(
         class="relative flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-medium transition"
         :class="dentitionMode === tab.key
           ? 'bg-[var(--nexora-primary)] text-white'
-          : 'text-white/50 bg-white/5 hover:bg-white/10 hover:text-white'"
+          : 'nxr-text-muted bg-white/5 hover:bg-white/10 hover:text-[var(--nexora-text-color)]'"
         @click="dentitionMode = tab.key"
       >
         {{ tab.label }}
         <span
           v-if="tab.key !== 'permanent'"
-          class="ml-1 rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-white/40"
+          class="ml-1 rounded-full bg-white/10 px-2 py-0.5 text-[10px] nxr-text-muted"
         >Proximamente</span>
       </button>
     </div>
@@ -538,7 +538,7 @@ watch(
             { color: '#d1d5db', label: 'Planificado' },
           ]" :key="item.label" class="flex items-center gap-1.5">
             <span class="h-3 w-3 rounded-sm border border-gray-300 flex-shrink-0" :style="{ background: item.color }"></span>
-            <span class="text-[10px] text-white/50">{{ item.label }}</span>
+            <span class="text-[10px] nxr-text-muted">{{ item.label }}</span>
           </span>
         </div>
       </div>

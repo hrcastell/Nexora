@@ -21,7 +21,7 @@ const consultationCount = computed(() =>
 
     <!-- Consultation findings count badge -->
     <div class="flex items-center gap-2">
-      <span class="text-xs text-white/40 uppercase tracking-wide font-semibold">Odontograma</span>
+      <span class="text-xs nxr-text-muted uppercase tracking-wide font-semibold">Odontograma</span>
       <span
         v-if="consultationCount > 0"
         class="rounded-full bg-violet-500/20 px-2.5 py-0.5 text-[11px] font-medium text-violet-300"
@@ -30,7 +30,7 @@ const consultationCount = computed(() =>
       </span>
       <span
         v-else-if="!store.loading"
-        class="rounded-full bg-white/5 px-2.5 py-0.5 text-[11px] text-white/30"
+        class="rounded-full bg-white/5 px-2.5 py-0.5 text-[11px] nxr-text-soft"
       >
         Sin hallazgos en esta consulta
       </span>

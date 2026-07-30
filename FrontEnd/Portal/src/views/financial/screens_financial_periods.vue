@@ -30,8 +30,8 @@ const STATUS_LABEL: Record<PeriodStatus, string> = {
 
 const STATUS_CLASS: Record<PeriodStatus, string> = {
   open:     'bg-green-500/20 text-green-400',
-  closed:   'bg-white/10 text-white/40',
-  archived: 'bg-white/5 text-white/25',
+  closed:   'bg-white/10 nxr-text-muted',
+  archived: 'bg-white/5 nxr-text-soft',
 };
 
 function fmt(n: number) {
@@ -57,7 +57,7 @@ async function createPeriod() {
 <template>
   <div class="flex flex-col gap-5 p-6">
     <div class="flex items-center justify-between">
-      <h1 class="text-xl font-semibold text-white">Períodos Financieros</h1>
+      <h1 class="text-xl font-semibold nxr-text">Períodos Financieros</h1>
       <button
         class="flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-medium text-white transition nxr-btn-primary"
         @click="showCreate = true"
@@ -72,7 +72,7 @@ async function createPeriod() {
 
     <div v-else-if="store.error" class="text-center text-red-400 py-10 text-sm">{{ store.error }}</div>
 
-    <div v-else-if="store.items.length === 0" class="text-center text-white/30 py-16 text-sm">
+    <div v-else-if="store.items.length === 0" class="text-center nxr-text-soft py-16 text-sm">
       No hay períodos financieros creados.
     </div>
 
@@ -84,15 +84,15 @@ async function createPeriod() {
         :style="{ background: 'var(--nexora-glass-bg)' }"
         @click="router.push(`/financial/periods/${p.id}`)"
       >
-        <CalendarDays :size="20" class="text-white/30 shrink-0" />
+        <CalendarDays :size="20" class="nxr-text-soft shrink-0" />
         <div class="flex-1 min-w-0">
-          <p class="text-sm font-medium text-white">{{ MONTHS[p.month - 1] }} {{ p.year }}</p>
-          <p class="text-xs text-white/40">Saldo inicial: {{ fmt(p.initial_balance) }}</p>
+          <p class="text-sm font-medium nxr-text">{{ MONTHS[p.month - 1] }} {{ p.year }}</p>
+          <p class="text-xs nxr-text-muted">Saldo inicial: {{ fmt(p.initial_balance) }}</p>
         </div>
         <span class="px-2.5 py-1 rounded-full text-xs font-semibold shrink-0" :class="STATUS_CLASS[p.status]">
           {{ STATUS_LABEL[p.status] }}
         </span>
-        <ChevronRight :size="16" class="text-white/30 shrink-0" />
+        <ChevronRight :size="16" class="nxr-text-soft shrink-0" />
       </div>
     </div>
 
@@ -102,18 +102,18 @@ async function createPeriod() {
     :draft-state="{ form }">
       <form class="flex flex-col gap-5" @submit.prevent="createPeriod">
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Año</label>
-          <input v-model.number="form.year" type="number" min="2020" max="2099" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" required />
+          <label class="text-xs nxr-text-muted">Año</label>
+          <input v-model.number="form.year" type="number" min="2020" max="2099" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" required />
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Mes</label>
-          <select v-model.number="form.month" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none">
+          <label class="text-xs nxr-text-muted">Mes</label>
+          <select v-model.number="form.month" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none">
             <option v-for="(m, i) in MONTHS" :key="i" :value="i + 1">{{ m }}</option>
           </select>
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Saldo inicial</label>
-          <input v-model.number="form.initial_balance" type="number" min="0" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" required />
+          <label class="text-xs nxr-text-muted">Saldo inicial</label>
+          <input v-model.number="form.initial_balance" type="number" min="0" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" required />
         </div>
         <p v-if="saveError" class="text-xs text-red-400">{{ saveError }}</p>
       </form>

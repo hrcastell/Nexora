@@ -78,7 +78,7 @@ watch(localDates, v => {
   <!-- Services section -->
   <div class="rounded-xl border border-white/10 bg-white/5 p-5">
     <div class="mb-4 flex items-center justify-between">
-      <h2 class="text-sm font-semibold text-white/70">Servicios aplicados</h2>
+      <h2 class="text-sm font-semibold nxr-text">Servicios aplicados</h2>
       <button
         class="flex items-center gap-1.5 rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary"
         @click="$emit('add-service')"
@@ -88,13 +88,13 @@ watch(localDates, v => {
       </button>
     </div>
 
-    <div v-if="!activeServices.length && !voidedServices.length" class="py-8 text-center text-sm text-white/30">
+    <div v-if="!activeServices.length && !voidedServices.length" class="py-8 text-center text-sm nxr-text-soft">
       Sin servicios registrados
     </div>
 
     <div v-else>
       <!-- Table header -->
-      <div class="mb-2 hidden grid-cols-6 gap-3 px-2 text-xs text-white/30 sm:grid">
+      <div class="mb-2 hidden grid-cols-6 gap-3 px-2 text-xs nxr-text-soft sm:grid">
         <span class="col-span-2">Servicio</span>
         <span>Diente</span>
         <span class="text-right">Cant.</span>
@@ -110,14 +110,14 @@ watch(localDates, v => {
           class="grid grid-cols-2 gap-3 rounded-lg border border-white/5 bg-white/5 px-3 py-2.5 sm:grid-cols-6"
         >
           <span class="col-span-2 text-sm sm:col-span-2">{{ svc.treatment_name_snapshot }}</span>
-          <span class="text-sm text-white/50 sm:col-span-1">{{ svc.tooth_reference || '—' }}</span>
+          <span class="text-sm nxr-text-muted sm:col-span-1">{{ svc.tooth_reference || '—' }}</span>
           <span class="text-right text-sm sm:col-span-1">{{ svc.quantity }}</span>
           <span class="text-right text-sm sm:col-span-1">{{ fmtCurrency?.(svc.unit_price) }}</span>
           <div class="flex items-center justify-end gap-2 sm:col-span-1">
             <span class="text-sm font-medium">{{ fmtCurrency?.(Number(svc.unit_price) * Number(svc.quantity)) }}</span>
             <button
               v-if="!hasClosedPayments"
-              class="rounded p-1 text-white/30 transition hover:bg-red-500/20 hover:text-red-400"
+              class="rounded p-1 nxr-text-soft transition hover:bg-red-500/20 hover:text-red-400"
               title="Anular servicio"
               @click="$emit('void-service', svc)"
             >
@@ -129,7 +129,7 @@ watch(localDates, v => {
 
       <!-- Voided services -->
       <div v-if="voidedServices.length" class="mt-3 space-y-1.5 opacity-40">
-        <p class="px-2 text-xs text-white/30">Anulados</p>
+        <p class="px-2 text-xs nxr-text-soft">Anulados</p>
         <div
           v-for="svc in voidedServices"
           :key="svc.id"
@@ -152,7 +152,7 @@ watch(localDates, v => {
 
   <!-- Follow-up section -->
   <div class="rounded-xl border border-white/10 bg-white/5 p-5">
-    <h2 class="mb-4 text-sm font-semibold text-white/70">Seguimiento del tratamiento</h2>
+    <h2 class="mb-4 text-sm font-semibold nxr-text">Seguimiento del tratamiento</h2>
 
     <div class="space-y-4">
       <label class="flex cursor-pointer items-center gap-3">
@@ -176,20 +176,20 @@ watch(localDates, v => {
       <div v-if="localForm.requires_multiple_sessions" class="space-y-4 border-t border-white/10 pt-4">
         <div class="grid gap-4 sm:grid-cols-2">
           <div>
-            <label class="mb-1.5 block text-xs text-white/50">Sesiones estimadas</label>
+            <label class="mb-1.5 block text-xs nxr-text-muted">Sesiones estimadas</label>
             <input
               v-model.number="localForm.estimated_sessions"
               type="number"
               min="1"
-              class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+              class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none focus:border-white/30"
             />
           </div>
           <div>
-            <label class="mb-1.5 block text-xs text-white/50">Fecha próxima sesión</label>
+            <label class="mb-1.5 block text-xs nxr-text-muted">Fecha próxima sesión</label>
             <input
               v-model="localForm.next_session_date"
               type="date"
-              class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+              class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none focus:border-white/30"
             />
           </div>
         </div>
@@ -199,17 +199,17 @@ watch(localDates, v => {
           v-if="localDates.length > 0 && sessionsCount === 0"
           class="rounded-xl border border-white/10 bg-white/5 p-4 space-y-3"
         >
-          <p class="text-xs font-semibold text-white/50 uppercase tracking-wide">Programar fechas de sesiones</p>
+          <p class="text-xs font-semibold nxr-text-muted uppercase tracking-wide">Programar fechas de sesiones</p>
           <div
             v-for="(_, i) in localDates"
             :key="i"
             class="flex items-center gap-3"
           >
-            <span class="shrink-0 text-xs text-white/40 w-16">Sesión {{ i + 1 }}</span>
+            <span class="shrink-0 text-xs nxr-text-muted w-16">Sesión {{ i + 1 }}</span>
             <input
               v-model="localDates[i]"
               type="datetime-local"
-              class="flex-1 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+              class="flex-1 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none focus:border-white/30"
             />
           </div>
           <button
@@ -224,7 +224,7 @@ watch(localDates, v => {
         <!-- Already has sessions -->
         <div
           v-else-if="localDates.length > 0 && sessionsCount > 0"
-          class="flex items-center gap-2 text-xs text-white/40 px-1"
+          class="flex items-center gap-2 text-xs nxr-text-muted px-1"
         >
           <CheckCircle2 class="h-3.5 w-3.5 text-green-400" />
           {{ sessionsCount }} sesiones programadas. Modificá las fechas desde el tab Sesiones.
@@ -235,11 +235,11 @@ watch(localDates, v => {
         v-if="localForm.requires_follow_up"
         :class="{ 'border-t border-white/10 pt-4': !localForm.requires_multiple_sessions }"
       >
-        <label class="mb-1.5 block text-xs text-white/50">Notas de seguimiento</label>
+        <label class="mb-1.5 block text-xs nxr-text-muted">Notas de seguimiento</label>
         <textarea
           v-model="localForm.follow_up_notes"
           rows="3"
-          class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+          class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none focus:border-white/30"
           placeholder="Indicaciones para el seguimiento..."
         />
       </div>

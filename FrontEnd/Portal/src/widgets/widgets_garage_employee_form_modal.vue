@@ -102,21 +102,21 @@ async function onPhotoDelete() {
               @upload="(f) => pendingPhoto = f"
               @delete="onPhotoDelete"
             />
-            <p v-if="pendingPhoto" class="mt-2 text-xs text-white/60">Foto pendiente: {{ pendingPhoto.name }}</p>
+            <p v-if="pendingPhoto" class="mt-2 text-xs nxr-text-muted">Foto pendiente: {{ pendingPhoto.name }}</p>
           </div>
 
           <div class="nxr-garage-form-grid grid gap-4">
             <div>
-              <label class="block text-xs text-white/50 mb-1">Nombre *</label>
-              <input v-model="form.first_name" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" />
+              <label class="block text-xs nxr-text-muted mb-1">Nombre *</label>
+              <input v-model="form.first_name" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40" />
             </div>
             <div>
-              <label class="block text-xs text-white/50 mb-1">Apellido</label>
-              <input v-model="form.last_name" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" />
+              <label class="block text-xs nxr-text-muted mb-1">Apellido</label>
+              <input v-model="form.last_name" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40" />
             </div>
             <div>
-              <label class="block text-xs text-white/50 mb-1">Tipo documento</label>
-              <select v-model="form.document_type" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40">
+              <label class="block text-xs nxr-text-muted mb-1">Tipo documento</label>
+              <select v-model="form.document_type" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40">
                 <option value="">Seleccionar</option>
                 <option value="RUT">RUT</option>
                 <option value="DNI">DNI</option>
@@ -125,28 +125,28 @@ async function onPhotoDelete() {
               </select>
             </div>
             <div>
-              <label class="block text-xs text-white/50 mb-1">Número documento</label>
-              <input v-model="form.document_number" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" />
+              <label class="block text-xs nxr-text-muted mb-1">Número documento</label>
+              <input v-model="form.document_number" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40" />
             </div>
             <div>
-              <label class="block text-xs text-white/50 mb-1">Teléfono</label>
-              <input v-model="form.phone" type="tel" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" />
+              <label class="block text-xs nxr-text-muted mb-1">Teléfono</label>
+              <input v-model="form.phone" type="tel" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40" />
             </div>
             <div>
-              <label class="block text-xs text-white/50 mb-1">Correo electrónico</label>
-              <input v-model="form.email" type="email" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" />
+              <label class="block text-xs nxr-text-muted mb-1">Correo electrónico</label>
+              <input v-model="form.email" type="email" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40" />
             </div>
             <div>
-              <label class="block text-xs text-white/50 mb-1">Rol / Cargo</label>
-              <input v-model="form.role_name" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" placeholder="Ej: Mecánico, Electricista" />
+              <label class="block text-xs nxr-text-muted mb-1">Rol / Cargo</label>
+              <input v-model="form.role_name" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40" placeholder="Ej: Mecánico, Electricista" />
             </div>
             <div>
-              <label class="block text-xs text-white/50 mb-1">Especialidad</label>
-              <input v-model="form.specialty" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" placeholder="Ej: Motor, Frenos" />
+              <label class="block text-xs nxr-text-muted mb-1">Especialidad</label>
+              <input v-model="form.specialty" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40" placeholder="Ej: Motor, Frenos" />
             </div>
             <div class="col-span-2">
-              <label class="block text-xs text-white/50 mb-1">Notas</label>
-              <textarea v-model="form.notes" rows="2" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40 resize-none"></textarea>
+              <label class="block text-xs nxr-text-muted mb-1">Notas</label>
+              <textarea v-model="form.notes" rows="2" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40 resize-none"></textarea>
             </div>
           </div>
     <p v-if="error" class="mt-3 text-xs text-red-400">{{ error }}</p>
