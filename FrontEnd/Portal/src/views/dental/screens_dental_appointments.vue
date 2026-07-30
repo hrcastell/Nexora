@@ -686,7 +686,11 @@ onMounted(() => {
     </template>
 
     <!-- Create panel -->
-    <NxrSlidePanel :open="showPanel" :title="isEditing ? 'Editar/reprogramar cita' : 'Nueva cita'" eyebrow="Dental" size="lg" @close="showPanel = false">
+    <NxrSlidePanel :open="showPanel" :title="isEditing ? 'Editar/reprogramar cita' : 'Nueva cita'" eyebrow="Dental" size="lg" @close="showPanel = false"
+    draft-key="views/dental/screens_dental_appointments.vue#1"
+    :draft-entity="isEditing ? editingAppointmentId : 'create'"
+    :draft-state="{ patientSearch, selectedPatient, form }"
+    :draft-setters="{ patientSearch: (value) => patientSearch = value, selectedPatient: (value) => selectedPatient = value }">
       <form class="flex flex-col gap-5" @submit.prevent="save">
         <div class="flex flex-col gap-1.5 relative">
           <label class="text-xs text-white/50">Paciente *</label>
@@ -747,7 +751,7 @@ onMounted(() => {
         <p v-if="saveError" class="text-xs text-red-400">{{ saveError }}</p>
       </form>
       <template #footer>
-        <button type="button" class="flex-1 px-4 py-2 rounded-xl text-sm text-white/60 border border-white/10 hover:bg-white/5" @click="showPanel = false">Cancelar</button>
+
         <button type="button" class="flex-1 rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary disabled:opacity-50" :disabled="saving" @click="save">
           {{ saving ? 'Guardando...' : (isEditing ? 'Guardar cambios' : 'Agendar cita') }}
         </button>
@@ -755,7 +759,10 @@ onMounted(() => {
     </NxrSlidePanel>
 
     <!-- Inline patient creation panel -->
-    <NxrSlidePanel :open="showPatientPanel" title="Nuevo paciente" eyebrow="Dental" size="lg" @close="showPatientPanel = false">
+    <NxrSlidePanel :open="showPatientPanel" title="Nuevo paciente" eyebrow="Dental" size="lg" @close="showPatientPanel = false"
+    draft-key="views/dental/screens_dental_appointments.vue#2"
+    :draft-entity="'inline-patient-create'"
+    :draft-state="{ patientForm }">
       <form id="inline-patient-create-form" class="flex flex-col gap-5" @submit.prevent="saveInlinePatient">
         <p class="text-xs font-semibold uppercase tracking-wide text-white/40">Datos personales</p>
 
@@ -795,7 +802,7 @@ onMounted(() => {
         <p v-if="patientSaveError" class="text-xs text-red-400">{{ patientSaveError }}</p>
       </form>
       <template #footer>
-        <button type="button" class="flex-1 px-4 py-2 rounded-xl text-sm text-white/60 border border-white/10 hover:bg-white/5" @click="showPatientPanel = false">Cancelar</button>
+
         <button type="submit" form="inline-patient-create-form" class="flex-1 rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary disabled:opacity-50" :disabled="patientSaving">
           {{ patientSaving ? 'Guardando...' : 'Crear paciente' }}
         </button>

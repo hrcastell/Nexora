@@ -242,6 +242,7 @@ const ROUTE_MODULE_MAP = {
     'GET    /garage/work-orders':                                        { module: 'garage_operations', transaction: 'garage_work_orders' },
     'POST   /garage/work-orders':                                        { module: 'garage_operations', transaction: 'garage_work_orders' },
     'GET    /garage/work-orders/:id':                                    { module: 'garage_operations', transaction: 'garage_work_orders' },
+    'GET    /garage/work-orders/:id/print':                              { module: 'garage_operations', transaction: 'garage_work_orders' },
     'PUT    /garage/work-orders/:id':                                    { module: 'garage_operations', transaction: 'garage_work_orders' },
     'PATCH  /garage/work-orders/:id/status':                             { module: 'garage_operations', transaction: 'garage_work_orders' },
     'PATCH  /garage/work-orders/:id/assign':                             { module: 'garage_operations', transaction: 'garage_work_orders' },

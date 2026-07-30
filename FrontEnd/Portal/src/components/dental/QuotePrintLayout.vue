@@ -1,103 +1,145 @@
 <template>
-  <DentalPrintDocument
-    :config="companyConfig"
-    title="PRESUPUESTO"
-    :document-number="quote.quote_number"
-    :patient="patientInfo"
-    :legal-text="quote.conditions_text"
-  >
-    <!-- Dates row -->
-    <div style="display:flex; gap:24pt; margin-bottom:10pt; font-size:9pt;">
+  <Teleport to="body">
+    <div id="dental-print-target">
+      <!-- Header: company info left, document info right -->
+      <div class="nxr-print-header">
+        <div class="nxr-print-company">
+          <img v-if="companyInfo.logoUrl" :src="companyInfo.logoUrl" alt="Logo" style="height:32pt; width:auto; object-fit:contain; margin-bottom:4pt;" />
+          <div class="nxr-print-company-name">{{ companyInfo.name }}</div>
+          <div class="nxr-print-company-details">
+            <div v-if="companyInfo.address">{{ companyInfo.address }}</div>
+            <div v-if="companyInfo.phone || companyInfo.email">
+              <span v-if="companyInfo.phone">Tel: {{ companyInfo.phone }}</span>
+              <span v-if="companyInfo.phone && companyInfo.email"> · </span>
+              <span v-if="companyInfo.email">{{ companyInfo.email }}</span>
+            </div>
+            <div v-if="companyInfo.rut">RUT/NIT: {{ companyInfo.rut }}</div>
+          </div>
+        </div>
+        <div class="nxr-print-doc-info">
+          <div class="nxr-print-doc-title">Presupuesto</div>
+          <div class="nxr-print-doc-meta">
+            <div><label>N° Presupuesto: </label><span>{{ quote.quote_number }}</span></div>
+            <div><label>Fecha: </label><span>{{ fmtDate(quote.quote_date) }}</span></div>
+            <div v-if="quote.valid_until"><label>Válido hasta: </label><span>{{ fmtDate(quote.valid_until) }}</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Client info -->
+      <div class="nxr-print-info-box print-no-break" style="margin-bottom:10pt;">
+        <div class="nxr-print-section-title">Datos del Paciente</div>
+        <div class="nxr-print-info-grid">
+          <div class="nxr-print-info-field">
+            <label>Nombre</label>
+            <span>{{ customerInfo.name }}</span>
+          </div>
+          <div v-if="customerInfo.document" class="nxr-print-info-field">
+            <label>Documento</label>
+            <span>{{ customerInfo.document }}</span>
+          </div>
+          <div v-if="customerInfo.phone" class="nxr-print-info-field">
+            <label>Teléfono</label>
+            <span>{{ customerInfo.phone }}</span>
+          </div>
+          <div v-if="customerInfo.address" class="nxr-print-info-field">
+            <label>Dirección</label>
+            <span>{{ customerInfo.address }}</span>
+          </div>
+          <div v-if="customerInfo.city" class="nxr-print-info-field">
+            <label>Ciudad</label>
+            <span>{{ customerInfo.city }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Items table -->
       <div>
-        <span style="color:#777;">Fecha: </span>
-        <span>{{ fmtDate(quote.quote_date) }}</span>
+        <div class="nxr-print-section-title">Detalle del Presupuesto</div>
+        <table class="nxr-print-items-table">
+          <thead>
+            <tr>
+              <th class="text-center">#</th>
+              <th>Tratamiento</th>
+              <th>Diente</th>
+              <th class="text-center">Cant.</th>
+              <th class="text-right">Val. Unitario</th>
+              <th class="text-right">Val. Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(item, idx) in items" :key="item.id">
+              <td class="text-center">{{ idx + 1 }}</td>
+              <td>
+                <div>{{ item.treatment_name_snapshot }}</div>
+                <div v-if="item.description" style="font-size:6.5pt; color:#888;">{{ item.description }}</div>
+              </td>
+              <td>{{ item.tooth_reference || '—' }}</td>
+              <td class="text-center">{{ item.quantity }}</td>
+              <td class="text-right">{{ fmt(item.unit_price) }}</td>
+              <td class="text-right">{{ fmt(item.subtotal) }}</td>
+            </tr>
+            <tr v-if="items.length === 0">
+              <td colspan="6" class="text-center" style="color:#aaa;">Sin ítems</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-      <div v-if="quote.valid_until">
-        <span style="color:#777;">Válido hasta: </span>
-        <span>{{ fmtDate(quote.valid_until) }}</span>
+
+      <!-- Totals -->
+      <div class="nxr-print-totals-wrap">
+        <table class="nxr-print-totals-table">
+          <tbody>
+            <tr>
+              <td class="nxr-print-totals-label">Subtotal</td>
+              <td class="nxr-print-totals-value">{{ fmt(quote.total_amount) }}</td>
+            </tr>
+            <tr v-if="quote.discount_amount > 0">
+              <td class="nxr-print-totals-label">Descuento</td>
+              <td class="nxr-print-totals-value">- {{ fmt(quote.discount_amount) }}</td>
+            </tr>
+            <tr>
+              <td class="nxr-print-totals-label">TOTAL</td>
+              <td class="nxr-print-totals-value">{{ fmt(quote.final_amount) }}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-    </div>
 
-    <!-- Items table -->
-    <table style="width:100%; border-collapse:collapse; font-size:9pt; margin-bottom:12pt;">
-      <thead>
-        <tr style="border-bottom:1px solid #ccc; text-align:left;">
-          <th style="padding:4pt 6pt; color:#555; font-weight:600;">#</th>
-          <th style="padding:4pt 6pt; color:#555; font-weight:600;">Tratamiento</th>
-          <th style="padding:4pt 6pt; color:#555; font-weight:600;">Diente</th>
-          <th style="padding:4pt 6pt; color:#555; font-weight:600; text-align:center;">Cant.</th>
-          <th style="padding:4pt 6pt; color:#555; font-weight:600; text-align:right;">P. Unit.</th>
-          <th style="padding:4pt 6pt; color:#555; font-weight:600; text-align:right;">Subtotal</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          v-for="(item, idx) in items"
-          :key="item.id"
-          style="border-bottom:1px solid #eee;"
-        >
-          <td style="padding:4pt 6pt; color:#777;">{{ idx + 1 }}</td>
-          <td style="padding:4pt 6pt;">
-            <div style="font-weight:500;">{{ item.treatment_name_snapshot }}</div>
-            <div v-if="item.description" style="font-size:8pt; color:#777;">{{ item.description }}</div>
-          </td>
-          <td style="padding:4pt 6pt; color:#777;">{{ item.tooth_reference || '—' }}</td>
-          <td style="padding:4pt 6pt; text-align:center;">{{ item.quantity }}</td>
-          <td style="padding:4pt 6pt; text-align:right;">{{ fmt(item.unit_price) }}</td>
-          <td style="padding:4pt 6pt; text-align:right; font-weight:500;">{{ fmt(item.subtotal) }}</td>
-        </tr>
-        <tr v-if="items.length === 0">
-          <td colspan="6" style="padding:8pt 6pt; color:#aaa; text-align:center;">Sin ítems</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <!-- Totals block -->
-    <div style="display:flex; justify-content:flex-end; margin-bottom:16pt;">
-      <table style="font-size:9pt; min-width:200pt;">
-        <tr>
-          <td style="padding:2pt 8pt; color:#777;">Subtotal</td>
-          <td style="padding:2pt 8pt; text-align:right;">{{ fmt(quote.total_amount) }}</td>
-        </tr>
-        <tr v-if="quote.discount_amount > 0">
-          <td style="padding:2pt 8pt; color:#777;">Descuento</td>
-          <td style="padding:2pt 8pt; text-align:right; color:#c00;">- {{ fmt(quote.discount_amount) }}</td>
-        </tr>
-        <tr style="border-top:2px solid #000;">
-          <td style="padding:4pt 8pt; font-weight:bold; font-size:11pt;">TOTAL</td>
-          <td style="padding:4pt 8pt; text-align:right; font-weight:bold; font-size:11pt;">{{ fmt(quote.final_amount) }}</td>
-        </tr>
-      </table>
-    </div>
-
-    <!-- Acceptance block -->
-    <div style="margin-top:24pt; border:1px solid #ddd; padding:10pt; font-size:9pt;">
-      <div style="font-weight:600; margin-bottom:8pt;">Aceptación del presupuesto</div>
-      <div style="display:flex; gap:16pt; align-items:center; margin-bottom:8pt;">
-        <div style="width:12pt; height:12pt; border:1px solid #000;"></div>
-        <span>Acepto el presupuesto detallado en el presente documento.</span>
+      <!-- Conditions (only when the quote has custom conditions text) -->
+      <div v-if="quote.conditions_text" class="nxr-print-conditions">
+        <div class="nxr-print-conditions-title">Condiciones</div>
+        <div style="white-space:pre-wrap;">{{ quote.conditions_text }}</div>
       </div>
-      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:12pt; margin-top:16pt;">
+
+      <!-- Acceptance declaration + signatures -->
+      <div class="nxr-print-acceptance">
+        Acepto el presupuesto detallado en el presente documento.
+      </div>
+      <div class="nxr-print-signatures nxr-print-signatures-3">
         <div>
-          <div style="border-bottom:1px solid #000; height:24pt; margin-bottom:3pt;"></div>
-          <div style="color:#777;">Nombre</div>
+          <div class="print-signature-line"></div>
+          <div>Nombre del Paciente</div>
         </div>
         <div>
-          <div style="border-bottom:1px solid #000; height:24pt; margin-bottom:3pt;"></div>
-          <div style="color:#777;">Firma</div>
+          <div class="print-signature-line"></div>
+          <div>Firma del Paciente</div>
         </div>
         <div>
-          <div style="border-bottom:1px solid #000; height:24pt; margin-bottom:3pt;"></div>
-          <div style="color:#777;">Fecha</div>
+          <div class="print-signature-line"></div>
+          <div>Fecha de aceptación</div>
         </div>
       </div>
+
+      <div class="nxr-print-footer">
+        Documento generado el {{ fmtDate(todayIso) }}
+      </div>
     </div>
-  </DentalPrintDocument>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
-import DentalPrintDocument from './DentalPrintDocument.vue';
 import type { DentalQuote, DentalQuoteItem } from '../../types/dental';
 
 const props = defineProps<{
@@ -107,24 +149,28 @@ const props = defineProps<{
   config: Record<string, unknown>;
 }>();
 
-const companyConfig = computed(() => ({
-  company_name: String(props.config.company_name ?? ''),
-  address:      props.config.address   ? String(props.config.address)   : undefined,
-  phone:        props.config.phone     ? String(props.config.phone)     : undefined,
-  email:        props.config.email     ? String(props.config.email)     : undefined,
-  tax_id:       props.config.rut       ? String(props.config.rut)       : undefined,
-  logo_url:     props.config.logo_url  ? String(props.config.logo_url)  : undefined,
+const todayIso = new Date().toISOString();
+
+const companyInfo = computed(() => ({
+  name:    props.config.company_name ? String(props.config.company_name) : '—',
+  address: props.config.address ? String(props.config.address) : '',
+  phone:   props.config.phone ? String(props.config.phone) : '',
+  email:   props.config.email ? String(props.config.email) : '',
+  rut:     props.config.rut ? String(props.config.rut) : '',
+  logoUrl: props.config.logo_url ? String(props.config.logo_url) : '',
 }));
 
-const patientInfo = computed(() => {
-  const firstName = String(props.customer.first_name ?? '');
-  const lastName  = String(props.customer.last_name  ?? '');
+const customerInfo = computed(() => {
+  const first = String(props.customer.first_name ?? '');
+  const last  = String(props.customer.last_name ?? '');
   return {
-    name:   `${firstName} ${lastName}`.trim(),
-    cedula: props.customer.document_number
+    name: `${first} ${last}`.trim() || '—',
+    document: props.customer.document_number
       ? `${props.customer.document_type ?? ''} ${props.customer.document_number}`.trim()
-      : undefined,
-    phone: props.customer.phone ? String(props.customer.phone) : undefined,
+      : '',
+    phone:   props.customer.phone   ? String(props.customer.phone)   : '',
+    address: props.customer.address ? String(props.customer.address) : '',
+    city:    props.customer.city    ? String(props.customer.city)    : '',
   };
 });
 

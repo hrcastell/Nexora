@@ -212,7 +212,10 @@ const tabs = [
       :title="editing ? 'Editar producto' : 'Nuevo producto'"
       size="md"
       @close="showForm = false"
-    >
+
+    draft-key="views/garage/screens_garage_products.vue#1"
+    :draft-entity="editing?.id ?? 'create'"
+    :draft-state="{ form }">
       <div class="mb-5 flex gap-2 rounded-2xl border border-white/10 bg-white/5 p-1">
         <button
           v-for="tab in tabs"
@@ -320,7 +323,7 @@ const tabs = [
       <p v-if="error" class="mt-2 text-xs text-red-400">{{ error }}</p>
 
       <template #footer>
-        <button type="button" class="nxr-btn nxr-btn-secondary" @click="showForm = false">Cancelar</button>
+
         <button type="button" class="nxr-btn nxr-btn-primary" :disabled="saving" @click="save">{{ saving ? 'Guardando...' : 'Guardar' }}</button>
       </template>
     </NxrSlidePanel>

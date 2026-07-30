@@ -1,19 +1,26 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ArrowLeft, Edit, RefreshCw, ArrowRight, CreditCard } from 'lucide-vue-next';
+import { ArrowLeft, Edit, RefreshCw, ArrowRight, CreditCard, Printer } from 'lucide-vue-next';
 import api from '../../utils/axios';
 import { useGarageWorkOrdersStore } from '../../stores/garageWorkOrders';
+import { garageWorkOrdersService, type WorkOrderPrintData } from '../../services/garageWorkOrdersService';
+import { usePrint } from '../../composables/usePrint';
+import { useToast } from '../../composables/useToast';
+import AppToast from '../../components/AppToast.vue';
 import widgets_garage_work_order_status_badge from '../../widgets/widgets_garage_work_order_status_badge.vue';
 import widgets_garage_work_order_services_editor from '../../widgets/widgets_garage_work_order_services_editor.vue';
 import widgets_garage_change_status_modal from '../../widgets/widgets_garage_change_status_modal.vue';
 import widgets_garage_work_order_form_modal from '../../widgets/widgets_garage_work_order_form_modal.vue';
 import widgets_garage_vehicle_photo_gallery from '../../widgets/widgets_garage_vehicle_photo_gallery.vue';
+import widgets_garage_work_order_print from '../../widgets/widgets_garage_work_order_print.vue';
 import type { WorkOrderStatus, VehiclePhoto } from '../../types/garage';
 
 const route  = useRoute();
 const router = useRouter();
 const store  = useGarageWorkOrdersStore();
+const { isPrinting, printElement } = usePrint();
+const { toasts, triggerToast, removeToast } = useToast();
 
 const showStatusModal = ref(false);
 const showEdit        = ref(false);
@@ -21,6 +28,7 @@ const activeTab       = ref<'services' | 'photos' | 'info' | 'history'>('service
 const recalcLoading   = ref(false);
 const photos          = ref<VehiclePhoto[]>([]);
 const photosLoaded    = ref(false);
+const printData       = ref<WorkOrderPrintData | null>(null);
 
 async function loadPhotos() {
   if (!store.current) return;
@@ -64,6 +72,25 @@ async function reload() {
   await store.loadOne(parseInt(route.params.id as string));
 }
 
+async function loadPrintData() {
+  if (!store.current) return false;
+  try {
+    const res = await garageWorkOrdersService.getPrintData(store.current.id);
+    printData.value = res.data.data;
+    return true;
+  } catch (e: any) {
+    printData.value = null;
+    triggerToast('Error', e?.response?.data?.error || 'No se pudieron cargar los datos para imprimir', 'error');
+    return false;
+  }
+}
+
+async function print() {
+  if (!await loadPrintData()) return;
+  const printed = await printElement('garage-print-target');
+  if (!printed) triggerToast('Error', 'No se pudo preparar el documento para imprimir', 'error');
+}
+
 const fmt     = (n: number) => `$${Math.round(n ?? 0).toLocaleString()}`;
 const fmtDate = (d: string | null) => d ? new Date(d).toLocaleDateString('es-CL', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
 
@@ -76,10 +103,10 @@ const PRIORITY_LABEL: Record<string, string> = { low: 'Baja', normal: 'Normal', 
 
 <template>
   <div class="flex flex-col gap-5 p-6 max-w-5xl mx-auto">
-    <div class="flex items-center gap-3">
+    <div class="flex items-center gap-3 flex-wrap">
       <button class="text-white/40 hover:text-white" @click="router.back()"><ArrowLeft :size="20" /></button>
       <h1 class="text-xl font-semibold text-white flex-1">Orden de Trabajo</h1>
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2 flex-wrap">
         <button class="flex items-center gap-2 px-3 py-2 rounded-xl text-sm bg-white/10 text-white hover:bg-white/20 transition-colors" @click="showEdit = true">
           <Edit :size="14" /> Editar
         </button>
@@ -89,6 +116,14 @@ const PRIORITY_LABEL: Record<string, string> = { low: 'Baja', normal: 'Normal', 
           @click="router.push(`/garage/work-orders/${store.current.id}/payments`)"
         >
           <CreditCard :size="14" /> Cobros
+        </button>
+        <button
+          v-if="store.current"
+          class="flex items-center gap-2 px-3 py-2 rounded-xl text-sm bg-white/10 text-white hover:bg-white/20 transition-colors"
+          :disabled="isPrinting"
+          @click="print"
+        >
+          <Printer :size="14" /> Imprimir
         </button>
         <button
           v-if="store.current && !['delivered','cancelled'].includes(store.current.status)"
@@ -219,5 +254,17 @@ const PRIORITY_LABEL: Record<string, string> = { low: 'Baja', normal: 'Normal', 
       @changed="reload"
     />
     <widgets_garage_work_order_form_modal v-model="showEdit" :work-order="store.current" @saved="reload" />
+
+    <!-- Print target (hidden by print.css until window.print() is called) -->
+    <widgets_garage_work_order_print
+      v-if="store.current && printData"
+      :work-order="store.current"
+      :services="printData.services"
+      :customer="printData.customer"
+      :vehicle="printData.vehicle"
+      :config="printData.config"
+    />
+
+    <AppToast v-for="t in toasts" :key="t.id" :toast="t" @close="removeToast" />
   </div>
 </template>

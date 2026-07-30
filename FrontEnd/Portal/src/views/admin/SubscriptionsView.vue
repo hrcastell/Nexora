@@ -250,7 +250,10 @@ const fmtCurrency = (n: number, c = 'CLP') =>
       :title="editingId ? 'Editar plan' : 'Nuevo plan de suscripción'"
       size="md"
       @close="showModal = false"
-    >
+
+    draft-key="views/admin/SubscriptionsView.vue#1"
+    :draft-entity="editingId ?? 'create'"
+    :draft-state="{ form }">
       <div class="space-y-4">
             <div v-if="saveError" class="flex items-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
               <ShieldAlert class="h-4 w-4 shrink-0" /> {{ saveError }}
@@ -335,7 +338,7 @@ const fmtCurrency = (n: number, c = 'CLP') =>
           </div>
 
       <template #footer>
-        <button @click="showModal = false" class="nxr-btn nxr-btn-secondary">Cancelar</button>
+
         <button @click="savePlan" :disabled="isSaving" class="nxr-btn nxr-btn-primary">
           <Loader2 v-if="isSaving" class="h-4 w-4 animate-spin" />
           <Save v-else class="h-4 w-4" />

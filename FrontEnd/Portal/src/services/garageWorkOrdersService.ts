@@ -1,6 +1,14 @@
 import api from '../utils/axios';
 import type { WorkOrder, WorkOrderService, WorkOrderServiceProduct, PaginatedResponse } from '../types/garage';
 
+export interface WorkOrderPrintData {
+  workOrder: WorkOrder;
+  customer: Record<string, unknown>;
+  vehicle: Record<string, unknown>;
+  services: WorkOrderService[];
+  config: Record<string, unknown>;
+}
+
 export const garageWorkOrdersService = {
   list(params?: {
     status?: string;
@@ -18,6 +26,10 @@ export const garageWorkOrdersService = {
 
   getById(id: number) {
     return api.get<WorkOrder>(`/garage/work-orders/${id}`);
+  },
+
+  getPrintData(id: number) {
+    return api.get<{ data: WorkOrderPrintData }>(`/garage/work-orders/${id}/print`);
   },
 
   create(data: Partial<WorkOrder>) {

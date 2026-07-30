@@ -138,7 +138,10 @@ const fmtDate = (d: string | null) => d ? new Date(d).toLocaleDateString('es-CL'
       :title="editing ? 'Editar tarifa' : 'Nueva tarifa'"
       size="sm"
       @close="showForm = false"
-    >
+
+    draft-key="views/garage/screens_garage_labor_rates.vue#1"
+    :draft-entity="editing?.id ?? 'create'"
+    :draft-state="{ form }">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div class="col-span-2">
               <label class="block text-xs text-white/50 mb-1">Empleado *</label>
@@ -175,7 +178,7 @@ const fmtDate = (d: string | null) => d ? new Date(d).toLocaleDateString('es-CL'
       <p v-if="error" class="mt-2 text-xs text-red-400">{{ error }}</p>
 
       <template #footer>
-        <button type="button" class="nxr-btn nxr-btn-secondary" @click="showForm = false">Cancelar</button>
+
         <button type="button" class="nxr-btn nxr-btn-primary" :disabled="saving" @click="save">{{ saving ? 'Guardando...' : 'Guardar' }}</button>
       </template>
     </NxrSlidePanel>

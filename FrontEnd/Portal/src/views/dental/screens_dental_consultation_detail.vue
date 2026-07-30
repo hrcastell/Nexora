@@ -869,7 +869,10 @@ onMounted(async () => {
     <!-- ═══════════ PANELS ═══════════ -->
 
     <!-- 1. Edit clinical info -->
-    <NxrSlidePanel :open="editOpen" title="Editar información clínica" @close="editOpen = false">
+    <NxrSlidePanel :open="editOpen" title="Editar información clínica" @close="editOpen = false"
+    draft-key="views/dental/screens_dental_consultation_detail.vue#1"
+    :draft-entity="id"
+    :draft-state="{ editForm }">
       <div class="space-y-4">
         <div>
           <label class="mb-1.5 block text-xs text-white/50">Motivo de consulta</label>
@@ -913,7 +916,11 @@ onMounted(async () => {
     </NxrSlidePanel>
 
     <!-- 2. Change status -->
-    <NxrSlidePanel :open="showStatusPanel" title="Cambiar estado de la consulta" @close="showStatusPanel = false">
+    <NxrSlidePanel :open="showStatusPanel" title="Cambiar estado de la consulta" @close="showStatusPanel = false"
+    draft-key="views/dental/screens_dental_consultation_detail.vue#2"
+    :draft-entity="id"
+    :draft-state="{ targetStatus, statusReason }"
+    :draft-setters="{ targetStatus: (value) => targetStatus = value, statusReason: (value) => statusReason = value }">
       <div class="space-y-4">
         <div>
           <label class="mb-1.5 block text-xs text-white/50">Nuevo estado</label>
@@ -950,7 +957,10 @@ onMounted(async () => {
     </NxrSlidePanel>
 
     <!-- 3. Add service -->
-    <NxrSlidePanel :open="showAddServicePanel" title="Agregar servicio" @close="showAddServicePanel = false">
+    <NxrSlidePanel :open="showAddServicePanel" title="Agregar servicio" @close="showAddServicePanel = false"
+    draft-key="views/dental/screens_dental_consultation_detail.vue#3"
+    :draft-entity="id"
+    :draft-state="{ addServiceForm }">
       <div class="space-y-4">
         <!-- Warning: consultation already has payments -->
         <div
@@ -1025,7 +1035,10 @@ onMounted(async () => {
     </NxrSlidePanel>
 
     <!-- 4. New session -->
-    <NxrSlidePanel :open="showSessionPanel" title="Nueva sesión" @close="showSessionPanel = false">
+    <NxrSlidePanel :open="showSessionPanel" title="Nueva sesión" @close="showSessionPanel = false"
+    draft-key="views/dental/screens_dental_consultation_detail.vue#4"
+    :draft-entity="id"
+    :draft-state="{ sessionForm }">
       <div class="space-y-4">
         <div>
           <label class="mb-1.5 block text-xs text-white/50">Fecha y hora de sesión</label>
@@ -1071,7 +1084,10 @@ onMounted(async () => {
     </NxrSlidePanel>
 
     <!-- 5. Installment plan -->
-    <NxrSlidePanel :open="showInstallPanel" title="Plan de cuotas" @close="showInstallPanel = false">
+    <NxrSlidePanel :open="showInstallPanel" title="Plan de cuotas" @close="showInstallPanel = false"
+    draft-key="views/dental/screens_dental_consultation_detail.vue#5"
+    :draft-entity="id"
+    :draft-state="{ installForm }">
       <div class="space-y-4">
         <div>
           <label class="mb-1.5 block text-xs text-white/50">Cantidad de cuotas</label>
@@ -1109,7 +1125,10 @@ onMounted(async () => {
     </NxrSlidePanel>
 
     <!-- 6. Direct payment -->
-    <NxrSlidePanel :open="showPayPanel" title="Registrar pago" @close="showPayPanel = false">
+    <NxrSlidePanel :open="showPayPanel" title="Registrar pago" @close="showPayPanel = false"
+    draft-key="views/dental/screens_dental_consultation_detail.vue#6"
+    :draft-entity="id"
+    :draft-state="{ payForm }">
       <div class="space-y-4">
         <div>
           <label class="mb-1.5 block text-xs text-white/50">Monto</label>
@@ -1150,7 +1169,10 @@ onMounted(async () => {
     </NxrSlidePanel>
 
     <!-- 7. Installment payment -->
-    <NxrSlidePanel :open="showInstPayPanel" title="Pagar cuota" @close="showInstPayPanel = false">
+    <NxrSlidePanel :open="showInstPayPanel" title="Pagar cuota" @close="showInstPayPanel = false"
+    draft-key="views/dental/screens_dental_consultation_detail.vue#7"
+    :draft-entity="id"
+    :draft-state="{ instPayForm }">
       <div class="space-y-4">
         <div>
           <label class="mb-1.5 block text-xs text-white/50">Monto a pagar</label>
@@ -1183,7 +1205,10 @@ onMounted(async () => {
     </NxrSlidePanel>
 
     <!-- 8. Medical history -->
-    <NxrSlidePanel :open="showMedHistPanel" title="Agregar registro médico" @close="showMedHistPanel = false">
+    <NxrSlidePanel :open="showMedHistPanel" title="Agregar registro médico" @close="showMedHistPanel = false"
+    draft-key="views/dental/screens_dental_consultation_detail.vue#8"
+    :draft-entity="id"
+    :draft-state="{ medHistForm }">
       <div class="space-y-4">
         <div>
           <label class="mb-1.5 block text-xs text-white/50">Fecha del registro</label>

@@ -87,8 +87,11 @@ async function loadPrintData() {
   try {
     const res = await dentalQuotesService.getPrintData(id);
     printData.value = { customer: res.data.data.customer, config: res.data.data.config };
-  } catch {
-    // non-critical — print will still work with partial data
+    return true;
+  } catch (e: any) {
+    printData.value = null;
+    triggerToast('Error', e?.response?.data?.error || 'No se pudieron cargar los datos para imprimir', 'error');
+    return false;
   }
 }
 
@@ -244,8 +247,9 @@ async function convertToConsultation() {
 }
 
 async function print() {
-  await loadPrintData();
-  await printElement('dental-print-target');
+  if (!await loadPrintData()) return;
+  const printed = await printElement('dental-print-target');
+  if (!printed) triggerToast('Error', 'No se pudo preparar el documento para imprimir', 'error');
 }
 
 onMounted(async () => {
@@ -481,7 +485,10 @@ onMounted(async () => {
     />
 
     <!-- Add item panel -->
-    <NxrSlidePanel :open="showAddItem" title="Agregar ítem" eyebrow="Presupuesto" @close="showAddItem = false">
+    <NxrSlidePanel :open="showAddItem" title="Agregar ítem" eyebrow="Presupuesto" @close="showAddItem = false"
+    draft-key="views/dental/screens_dental_quote_detail.vue#1"
+    :draft-entity="id"
+    :draft-state="{ itemForm }">
       <form class="flex flex-col gap-5" @submit.prevent="saveItem">
         <div class="flex flex-col gap-1.5">
           <label class="text-xs text-white/50">Tratamiento del catálogo</label>
@@ -541,7 +548,7 @@ onMounted(async () => {
         </div>
         <p v-if="addItemError" class="text-xs text-red-400">{{ addItemError }}</p>
         <div class="flex gap-3 pt-2">
-          <button type="button" class="flex-1 py-2.5 rounded-xl text-sm text-white/60 border border-white/10 hover:border-white/30" @click="showAddItem = false">Cancelar</button>
+
           <button type="submit" class="flex-1 rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary disabled:opacity-50" :disabled="savingItem">
             {{ savingItem ? 'Guardando...' : 'Agregar' }}
           </button>
@@ -550,7 +557,10 @@ onMounted(async () => {
     </NxrSlidePanel>
 
     <!-- Edit panel -->
-    <NxrSlidePanel :open="showEdit" title="Editar Presupuesto" eyebrow="Presupuesto" @close="showEdit = false">
+    <NxrSlidePanel :open="showEdit" title="Editar Presupuesto" eyebrow="Presupuesto" @close="showEdit = false"
+    draft-key="views/dental/screens_dental_quote_detail.vue#2"
+    :draft-entity="id"
+    :draft-state="{ editForm }">
       <form class="flex flex-col gap-5" @submit.prevent="saveEdit">
         <div class="flex flex-col gap-1.5">
           <label class="text-xs text-white/50">Válido hasta</label>
@@ -570,7 +580,7 @@ onMounted(async () => {
         </div>
         <p v-if="editError" class="text-xs text-red-400">{{ editError }}</p>
         <div class="flex gap-3 pt-2">
-          <button type="button" class="flex-1 py-2.5 rounded-xl text-sm text-white/60 border border-white/10 hover:border-white/30" @click="showEdit = false">Cancelar</button>
+
           <button type="submit" class="flex-1 rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary disabled:opacity-50" :disabled="savingEdit">
             {{ savingEdit ? 'Guardando...' : 'Guardar' }}
           </button>
@@ -579,7 +589,10 @@ onMounted(async () => {
     </NxrSlidePanel>
 
     <!-- Accept panel -->
-    <NxrSlidePanel :open="showAccept" title="Aceptar Presupuesto" eyebrow="Presupuesto" @close="showAccept = false">
+    <NxrSlidePanel :open="showAccept" title="Aceptar Presupuesto" eyebrow="Presupuesto" @close="showAccept = false"
+    draft-key="views/dental/screens_dental_quote_detail.vue#3"
+    :draft-entity="id"
+    :draft-state="{ acceptForm }">
       <form class="flex flex-col gap-5" @submit.prevent="saveAccept">
         <div class="flex flex-col gap-1.5">
           <label class="text-xs text-white/50">Nombre del paciente que acepta *</label>
@@ -591,7 +604,7 @@ onMounted(async () => {
         </div>
         <p v-if="acceptError" class="text-xs text-red-400">{{ acceptError }}</p>
         <div class="flex gap-3 pt-2">
-          <button type="button" class="flex-1 py-2.5 rounded-xl text-sm text-white/60 border border-white/10 hover:border-white/30" @click="showAccept = false">Cancelar</button>
+
           <button type="submit" class="flex-1 rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary disabled:opacity-50" :disabled="savingAccept">
             {{ savingAccept ? 'Procesando...' : 'Confirmar aceptación' }}
           </button>
@@ -600,7 +613,10 @@ onMounted(async () => {
     </NxrSlidePanel>
 
     <!-- Reject panel -->
-    <NxrSlidePanel :open="showReject" title="Rechazar Presupuesto" eyebrow="Presupuesto" @close="showReject = false">
+    <NxrSlidePanel :open="showReject" title="Rechazar Presupuesto" eyebrow="Presupuesto" @close="showReject = false"
+    draft-key="views/dental/screens_dental_quote_detail.vue#4"
+    :draft-entity="id"
+    :draft-state="{ rejectForm }">
       <form class="flex flex-col gap-5" @submit.prevent="saveReject">
         <div class="flex flex-col gap-1.5">
           <label class="text-xs text-white/50">Motivo del rechazo</label>
@@ -608,7 +624,7 @@ onMounted(async () => {
         </div>
         <p v-if="rejectError" class="text-xs text-red-400">{{ rejectError }}</p>
         <div class="flex gap-3 pt-2">
-          <button type="button" class="flex-1 py-2.5 rounded-xl text-sm text-white/60 border border-white/10 hover:border-white/30" @click="showReject = false">Cancelar</button>
+
           <button type="submit" class="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-red-600 text-white hover:opacity-90 disabled:opacity-50" :disabled="savingReject">
             {{ savingReject ? 'Procesando...' : 'Confirmar rechazo' }}
           </button>

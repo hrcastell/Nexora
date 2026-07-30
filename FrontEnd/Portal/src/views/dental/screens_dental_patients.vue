@@ -172,7 +172,10 @@ onMounted(() => store.load());
     </div>
 
     <!-- Create panel -->
-    <NxrSlidePanel :open="showPanel" title="Nuevo paciente" eyebrow="Dental" @close="showPanel = false">
+    <NxrSlidePanel :open="showPanel" title="Nuevo paciente" eyebrow="Dental" @close="showPanel = false"
+    draft-key="views/dental/screens_dental_patients.vue#1"
+    :draft-entity="'create'"
+    :draft-state="{ form }">
       <form class="flex flex-col gap-5" @submit.prevent="save">
         <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Datos personales</p>
 
@@ -299,7 +302,7 @@ onMounted(() => store.load());
         <p v-if="saveError" class="text-xs text-red-400">{{ saveError }}</p>
       </form>
       <template #footer>
-        <button type="button" class="flex-1 px-4 py-2 rounded-xl text-sm text-white/60 border border-white/10 hover:bg-white/5" @click="showPanel = false">Cancelar</button>
+
         <button type="button" class="flex-1 rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary disabled:opacity-50" :disabled="saving" @click="save">
           {{ saving ? 'Guardando...' : 'Registrar paciente' }}
         </button>

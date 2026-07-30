@@ -270,7 +270,11 @@ onMounted(() => {
     </div>
 
     <!-- Create panel -->
-    <NxrSlidePanel :open="showPanel" title="Nuevo Presupuesto" eyebrow="Dental" @close="showPanel = false">
+    <NxrSlidePanel :open="showPanel" title="Nuevo Presupuesto" eyebrow="Dental" @close="showPanel = false"
+    draft-key="views/dental/screens_dental_quotes.vue#1"
+    :draft-entity="'create'"
+    :draft-state="{ patientSearch, selectedPatient, form }"
+    :draft-setters="{ patientSearch: (value) => patientSearch = value, selectedPatient: (value) => selectedPatient = value }">
       <form class="flex flex-col gap-5" @submit.prevent="save">
         <!-- Patient search -->
         <div class="flex flex-col gap-1.5 relative">
@@ -335,13 +339,7 @@ onMounted(() => {
         <p v-if="saveError" class="text-xs text-red-400">{{ saveError }}</p>
 
         <div class="flex gap-3 pt-2">
-          <button
-            type="button"
-            class="flex-1 py-2.5 rounded-xl text-sm text-white/60 border border-white/10 hover:border-white/30"
-            @click="showPanel = false"
-          >
-            Cancelar
-          </button>
+
           <button
             type="submit"
             class="flex-1 rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary disabled:opacity-50"

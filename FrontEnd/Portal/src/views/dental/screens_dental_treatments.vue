@@ -219,7 +219,10 @@ onMounted(async () => {
       :title="editing ? 'Editar tratamiento' : 'Nuevo tratamiento'"
       eyebrow="Dental"
       @close="showPanel = false"
-    >
+
+    draft-key="views/dental/screens_dental_treatments.vue#1"
+    :draft-entity="editing?.id ?? 'create'"
+    :draft-state="{ form }">
       <form class="flex flex-col gap-5" @submit.prevent="save">
         <div class="flex flex-col gap-1.5">
           <label class="text-xs text-white/50">Nombre *</label>
@@ -302,7 +305,7 @@ onMounted(async () => {
         <p v-if="saveError" class="text-xs text-red-400">{{ saveError }}</p>
       </form>
       <template #footer>
-        <button type="button" class="flex-1 px-4 py-2 rounded-xl text-sm text-white/60 border border-white/10 hover:bg-white/5" @click="showPanel = false">Cancelar</button>
+
         <button type="button" class="flex-1 rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary disabled:opacity-50" :disabled="saving" @click="save">
           {{ saving ? 'Guardando...' : editing ? 'Guardar cambios' : 'Crear tratamiento' }}
         </button>

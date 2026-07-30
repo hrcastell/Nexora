@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Portal de Solicitudes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+    </style>
+<base target="_blank">
+</head>
+<body class="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
+
+    <!-- Login Container -->
+    <div class="w-full max-w-md px-4">
+        <!-- Logo & Header -->
+        <div class="text-center mb-8">
+            <div class="w-20 h-20 gradient-bg rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-indigo-500/30">
+                <i data-lucide="briefcase" class="w-10 h-10 text-white"></i>
+            </div>
+            <h1 class="text-3xl font-bold text-gray-900 mb-2">Portal de Solicitudes</h1>
+            <p class="text-gray-500">Permisos · Vacaciones · Desconexiones</p>
+        </div>
+
+        <!-- Login Card -->
+        <div class="glass-effect rounded-2xl shadow-xl border border-white/50 p-8">
+            <form class="space-y-6" onsubmit="event.preventDefault(); alert('Login simulado - En una app real redirigiría al dashboard');">
+
+                <!-- Email Field -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Correo electrónico
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i data-lucide="mail" class="w-5 h-5 text-gray-400"></i>
+                        </div>
+                        <input 
+                            type="email" 
+                            required
+                            class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all bg-white/50"
+                            placeholder="tu@empresa.com"
+                        >
+                    </div>
+                </div>
+
+                <!-- Password Field -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Contraseña
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i data-lucide="lock" class="w-5 h-5 text-gray-400"></i>
+                        </div>
+                        <input 
+                            type="password" 
+                            required
+                            class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all bg-white/50"
+                            placeholder="••••••••"
+                        >
+                    </div>
+                </div>
+
+                <!-- Remember & Forgot -->
+                <div class="flex items-center justify-between text-sm">
+                    <label class="flex items-center">
+                        <input type="checkbox" class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                        <span class="ml-2 text-gray-600">Recordarme</span>
+                    </label>
+                    <a href="#" class="text-indigo-600 hover:text-indigo-800 font-medium">
+                        ¿Olvidaste tu contraseña?
+                    </a>
+                </div>
+
+                <!-- Submit Button -->
+                <button 
+                    type="submit"
+                    class="w-full gradient-bg text-white font-semibold py-3 px-4 rounded-xl hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all shadow-lg shadow-indigo-500/30"
+                >
+                    Ingresar al sistema
+                </button>
+            </form>
+
+            <!-- Divider -->
+            <div class="mt-6 relative">
+                <div class="absolute inset-0 flex items-center">
+                    <div class="w-full border-t border-gray-200"></div>
+                </div>
+                <div class="relative flex justify-center text-sm">
+                    <span class="px-2 bg-white/50 text-gray-500">O</span>
+                </div>
+            </div>
+
+            <!-- Help Link -->
+            <div class="mt-6 text-center">
+                <p class="text-sm text-gray-600">
+                    ¿Problemas para acceder? 
+                    <a href="#" class="font-medium text-indigo-600 hover:text-indigo-800">
+                        Contactar soporte
+                    </a>
+                </p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="mt-8 text-center text-xs text-gray-400">
+            <p>© 2024 Portal de Solicitudes. Todos los derechos reservados.</p>
+            <p class="mt-1">Versión 1.0.0</p>
+        </div>
+    </div>
+
+    <!-- Initialize Lucide Icons -->
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

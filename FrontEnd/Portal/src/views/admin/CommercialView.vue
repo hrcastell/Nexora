@@ -516,7 +516,10 @@ const freqLabel   = (f: string) => ({ monthly: 'Mensual', quarterly: 'Trimestral
       :title="{ agreement: 'Nuevo convenio de pago', invoice: 'Generar recibo', payment: 'Registrar pago' }[modalType]"
       size="md"
       @close="showModal = false"
-    >
+
+    draft-key="views/admin/CommercialView.vue#1"
+    :draft-entity="`${selectedCompanyId ?? companyId ?? 'none'}:${modalType}`"
+    :draft-state="{ agreementForm, invoiceForm, paymentForm }">
       <div class="space-y-4">
             <div v-if="saveError" class="flex items-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
               <ShieldAlert class="h-4 w-4 shrink-0" /> {{ saveError }}
@@ -682,7 +685,7 @@ const freqLabel   = (f: string) => ({ monthly: 'Mensual', quarterly: 'Trimestral
           </div>
 
       <template #footer>
-        <button @click="showModal = false" class="nxr-btn nxr-btn-secondary">Cancelar</button>
+
         <button @click="saveForm" :disabled="isSaving" class="nxr-btn nxr-btn-primary">
           <Loader2 v-if="isSaving" class="h-4 w-4 animate-spin" />
           <Save v-else class="h-4 w-4" />

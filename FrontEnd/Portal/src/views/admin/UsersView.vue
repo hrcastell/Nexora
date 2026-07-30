@@ -549,7 +549,11 @@ const initials = (u: CompanyUser) => `${u.first_name?.[0] ?? ''}${u.last_name?.[
       :title="isEditing ? 'Editar usuario' : 'Nuevo usuario'"
       size="lg"
       @close="showModal = false"
-    >
+
+    draft-key="views/admin/UsersView.vue#1"
+    :draft-entity="`${isEditing ? (scopedCompanyId ?? 'none') : (selectedCompanyId ?? companyId ?? 'none')}:${isEditing ? form.id : 'create'}`"
+    :draft-state="{ selectedCompanyId, form, avatarFile, avatarPreview }"
+    :draft-setters="{ selectedCompanyId: (value) => selectedCompanyId = value, avatarFile: (value) => avatarFile = value, avatarPreview: (value) => avatarPreview = value }">
       <div class="space-y-5">
             <div v-if="saveError" class="flex items-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
               <ShieldAlert class="h-4 w-4 shrink-0" /> {{ saveError }}
@@ -728,7 +732,7 @@ const initials = (u: CompanyUser) => `${u.first_name?.[0] ?? ''}${u.last_name?.[
       </div>
 
       <template #footer>
-        <button @click="showModal = false" class="nxr-btn nxr-btn-secondary">Cancelar</button>
+
         <button @click="saveUser" :disabled="isSaving" class="nxr-btn nxr-btn-primary">
           <Loader2 v-if="isSaving" class="h-4 w-4 animate-spin" />
           <Save v-else class="h-4 w-4" />

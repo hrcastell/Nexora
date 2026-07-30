@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plantilla de Cotización</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        @page {
+            size: letter;
+            margin: 20mm 15mm 20mm 15mm;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 11px;
+            line-height: 1.4;
+            color: #333;
+            background: white;
+        }
+
+        .page {
+            width: 100%;
+            min-height: 100%;
+            padding: 0;
+            position: relative;
+        }
+
+        .print-frame {
+            border: 2px solid #2c3e50;
+            border-radius: 4px;
+            padding: 20px;
+            min-height: calc(100vh - 40px);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header - Company & Quote Info */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #2c3e50;
+        }
+
+        .company-info {
+            flex: 1;
+        }
+
+        .company-name {
+            font-size: 22px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 4px;
+        }
+
+        .company-details {
+            font-size: 10px;
+            color: #555;
+            line-height: 1.5;
+        }
+
+        .quote-info {
+            text-align: right;
+            flex: 1;
+        }
+
+        .quote-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .quote-meta {
+            font-size: 10px;
+            color: #555;
+        }
+
+        .quote-meta div {
+            margin-bottom: 3px;
+        }
+
+        .quote-meta label {
+            font-weight: 600;
+            color: #333;
+        }
+
+        /* Client Info */
+        .client-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+        }
+
+        .section-title {
+            font-size: 11px;
+            font-weight: 700;
+            color: #2c3e50;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .client-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            font-size: 10px;
+        }
+
+        .client-field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .client-field label {
+            font-weight: 600;
+            color: #555;
+            font-size: 9px;
+            text-transform: uppercase;
+        }
+
+        .client-field span {
+            color: #333;
+        }
+
+        /* Items Table */
+        .items-section {
+            flex: 1;
+            margin-bottom: 20px;
+        }
+
+        .table-wrapper {
+            overflow: hidden;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10px;
+        }
+
+        thead {
+            background: #2c3e50;
+            color: white;
+        }
+
+        th {
+            padding: 10px 8px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        th:nth-child(1) { width: 5%; }   /* # */
+        th:nth-child(2) { width: 45%; }  /* Descripción */
+        th:nth-child(3) { width: 10%; }  /* Cantidad */
+        th:nth-child(4) { width: 20%; }  /* Valor Unitario */
+        th:nth-child(5) { width: 20%; }  /* Valor Total */
+
+        tbody tr {
+            border-bottom: 1px solid #dee2e6;
+            page-break-inside: avoid;
+        }
+
+        tbody tr:last-child {
+            border-bottom: 2px solid #2c3e50;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #fafbfc;
+        }
+
+        td {
+            padding: 10px 8px;
+            vertical-align: top;
+        }
+
+        td.num {
+            text-align: center;
+            font-weight: 600;
+            color: #555;
+        }
+
+        td.desc {
+            line-height: 1.5;
+        }
+
+        td.qty, td.price, td.total {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+        }
+
+        td.total {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        /* Totals Section */
+        .totals-section {
+            align-self: flex-end;
+            width: 350px;
+        }
+
+        .totals-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10px;
+        }
+
+        .totals-table td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .totals-table tr:last-child td {
+            border-bottom: 2px solid #2c3e50;
+        }
+
+        .totals-label {
+            text-align: left;
+            color: #555;
+        }
+
+        .totals-value {
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+            font-weight: 600;
+        }
+
+        .totals-net .totals-value {
+            color: #333;
+        }
+
+        .totals-tax .totals-value {
+            color: #2c3e50;
+        }
+
+        .totals-grand .totals-label {
+            font-weight: 700;
+            font-size: 11px;
+            color: #2c3e50;
+        }
+
+        .totals-grand .totals-value {
+            font-weight: 700;
+            font-size: 12px;
+            color: #2c3e50;
+        }
+
+        .tax-breakdown {
+            font-size: 9px;
+            color: #666;
+            margin-top: 4px;
+            padding-left: 12px;
+        }
+
+        /* Footer */
+        .footer {
+            margin-top: auto;
+            padding-top: 15px;
+            border-top: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            font-size: 9px;
+            color: #777;
+        }
+
+        .footer-left, .footer-right {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .conditions {
+            margin-top: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            font-size: 9px;
+            color: #555;
+            border: 1px solid #dee2e6;
+        }
+
+        .conditions-title {
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        /* Page Break Handling */
+        .page-break {
+            page-break-before: always;
+        }
+
+        @media print {
+            body {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .page {
+                page-break-after: always;
+            }
+
+            .page:last-child {
+                page-break-after: auto;
+            }
+
+            .print-frame {
+                border: none;
+                box-shadow: none;
+                min-height: auto;
+                padding: 0;
+            }
+
+            table {
+                page-break-inside: auto;
+            }
+
+            tr {
+                page-break-inside: avoid;
+                page-break-after: auto;
+            }
+
+            thead {
+                display: table-header-group;
+            }
+
+            tfoot {
+                display: table-footer-group;
+            }
+
+            .totals-section {
+                page-break-inside: avoid;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+        }
+
+        /* Screen view helpers */
+        @media screen {
+            body {
+                background: #e9ecef;
+                padding: 20px;
+            }
+
+            .page {
+                background: white;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+                margin-bottom: 30px;
+            }
+
+            .print-frame {
+                min-height: 900px;
+            }
+        }
+
+        /* Utility classes for dynamic content */
+        .hidden {
+            display: none !important;
+        }
+
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .text-left { text-align: left; }
+        .fw-bold { font-weight: 700; }
+        .fw-semibold { font-weight: 600; }
+    </style>
+</head>
+<body>
+    <!-- PAGE 1 -->
+    <div class="page" id="page-1">
+        <div class="print-frame">
+            <!-- HEADER -->
+            <header class="header">
+                <div class="company-info">
+                    <div class="company-name" id="company-name">NOMBRE DE LA EMPRESA</div>
+                    <div class="company-details" id="company-details">
+                        <div>Dirección: Calle 123 #45-67, Ciudad, País</div>
+                        <div>Tel: +57 1 234 5678 | Email: contacto@empresa.com</div>
+                        <div>NIT: 900.123.456-7 | Régimen: Común</div>
+                    </div>
+                </div>
+                <div class="quote-info">
+                    <div class="quote-title">COTIZACIÓN</div>
+                    <div class="quote-meta">
+                        <div><label>No. Cotización: </label><span id="quote-number">COT-2024-001</span></div>
+                        <div><label>Fecha: </label><span id="quote-date">28/07/2026</span></div>
+                        <div><label>Válida hasta: </label><span id="quote-valid-until">27/08/2026</span></div>
+                        <div><label>Vendedor: </label><span id="salesperson">Juan Pérez</span></div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- CLIENT SECTION -->
+            <section class="client-section">
+                <div class="section-title">Datos del Cliente</div>
+                <div class="client-grid">
+                    <div class="client-field">
+                        <label>Razón Social / Nombre</label>
+                        <span id="client-name">CLIENTE EJEMPLO S.A.S.</span>
+                    </div>
+                    <div class="client-field">
+                        <label>NIT / CC</label>
+                        <span id="client-nit">800.987.654-3</span>
+                    </div>
+                    <div class="client-field">
+                        <label>Dirección</label>
+                        <span id="client-address">Carrera 45 #12-34, Bogotá, Colombia</span>
+                    </div>
+                    <div class="client-field">
+                        <label>Teléfono / Email</label>
+                        <span id="client-contact">+57 300 123 4567 | cliente@ejemplo.com</span>
+                    </div>
+                    <div class="client-field">
+                        <label>Contacto</label>
+                        <span id="client-contact-name">María González</span>
+                    </div>
+                    <div class="client-field">
+                        <label>Ciudad</label>
+                        <span id="client-city">Bogotá</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ITEMS SECTION -->
+            <section class="items-section">
+                <div class="section-title">Detalle de la Cotización</div>
+                <div class="table-wrapper">
+                    <table id="items-table">
+                        <thead>
+                            <tr>
+                                <th class="text-center">#</th>
+                                <th>Descripción</th>
+                                <th class="text-center">Cant.</th>
+                                <th class="text-right">Val. Unitario</th>
+                                <th class="text-right">Val. Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="items-body">
+                            <!-- Items se insertan dinámicamente via JavaScript -->
+                            <tr class="template-row hidden">
+                                <td class="num"></td>
+                                <td class="desc"></td>
+                                <td class="qty text-center"></td>
+                                <td class="price text-right"></td>
+                                <td class="total text-right"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- TOTALS SECTION -->
+            <section class="totals-section">
+                <table class="totals-table">
+                    <tbody>
+                        <tr class="totals-net">
+                            <td class="totals-label">Subtotal (Neto)</td>
+                            <td class="totals-value" id="subtotal">$ 0,00</td>
+                        </tr>
+                        <tr class="totals-tax">
+                            <td class="totals-label">
+                                IVA (<span id="tax-rate">19</span>%)
+                                <div class="tax-breakdown" id="tax-breakdown">Base gravable: $ 0,00 | IVA: $ 0,00</div>
+                            </td>
+                            <td class="totals-value" id="tax-amount">$ 0,00</td>
+                        </tr>
+                        <tr class="totals-grand">
+                            <td class="totals-label">TOTAL</td>
+                            <td class="totals-value" id="grand-total">$ 0,00</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- FOOTER -->
+            <footer class="footer">
+                <div class="footer-left">
+                    <div>Esta cotización es válida por 30 días</div>
+                    <div>Precios en COP | Sujetos a disponibilidad</div>
+                </div>
+                <div class="footer-right">
+                    <div>Gracias por su preferencia</div>
+                    <div id="footer-website">www.empresa.com</div>
+                </div>
+            </footer>
+
+            <!-- CONDITIONS -->
+            <div class="conditions" id="conditions">
+                <div class="conditions-title">Términos y Condiciones</div>
+                <div>1. Los precios cotizados incluyen IVA donde aplica.</div>
+                <div>2. Tiempo de entrega: 15-20 días hábiles tras confirmación del pedido.</div>
+                <div>3. Forma de pago: 50% anticipo, 50% contra entrega.</div>
+                <div>4. Garantía: 12 meses por defectos de fabricación.</div>
+                <div>5. Cotización sujeta a disponibilidad de inventario al momento de la orden.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE 2+ (Generated dynamically if needed) -->
+    <div class="page page-break hidden" id="page-2">
+        <div class="print-frame">
+            <header class="header">
+                <div class="company-info">
+                    <div class="company-name" id="company-name-2">NOMBRE DE LA EMPRESA</div>
+                    <div class="company-details" id="company-details-2">
+                        <div>Dirección: Calle 123 #45-67, Ciudad, País</div>
+                        <div>Tel: +57 1 234 5678 | Email: contacto@empresa.com</div>
+                        <div>NIT: 900.123.456-7 | Régimen: Común</div>
+                    </div>
+                </div>
+                <div class="quote-info">
+                    <div class="quote-title">COTIZACIÓN (Continuación)</div>
+                    <div class="quote-meta">
+                        <div><label>No. Cotización: </label><span id="quote-number-2">COT-2024-001</span></div>
+                        <div><label>Página: </label><span id="page-number-2">2</span></div>
+                    </div>
+                </div>
+            </header>
+
+            <section class="items-section">
+                <div class="section-title">Detalle de la Cotización (Continuación)</div>
+                <div class="table-wrapper">
+                    <table id="items-table-2">
+                        <thead>
+                            <tr>
+                                <th class="text-center">#</th>
+                                <th>Descripción</th>
+                                <th class="text-center">Cant.</th>
+                                <th class="text-right">Val. Unitario</th>
+                                <th class="text-right">Val. Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="items-body-2">
+                            <!-- Items de overflow se insertan aquí -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <footer class="footer">
+                <div class="footer-left">
+                    <div>Esta cotización es válida por 30 días</div>
+                </div>
+                <div class="footer-right">
+                    <div>Página <span id="page-num-display-2">2</span></div>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // CONFIGURACIÓN DE LA COTIZACIÓN
+        // ============================================
+        const quoteConfig = {
+            // Datos de la empresa
+            company: {
+                name: "MI EMPRESA S.A.S.",
+                address: "Calle 100 #20-30, Oficina 401, Bogotá, Colombia",
+                phone: "+57 1 745 6789",
+                email: "ventas@miempresa.com",
+                website: "www.miempresa.com",
+                nit: "901.234.567-8",
+                regime: "Común"
+            },
+
+            // Datos de la cotización
+            quote: {
+                number: "COT-2026-0142",
+                date: "28/07/2026",
+                validUntil: "27/08/2026",
+                salesperson: "Carlos Rodríguez"
+            },
+
+            // Datos del cliente
+            client: {
+                name: "CONSTRUCTORA ABC LTDA",
+                nit: "800.555.777-9",
+                address: "Autopista Norte #150-25, Bogotá, Colombia",
+                phone: "+57 310 987 6543",
+                email: "compras@constructoraabc.com",
+                contactName: "Ing. Patricia López",
+                city: "Bogotá"
+            },
+
+            // Configuración de impuestos
+            tax: {
+                rate: 19, // porcentaje
+                name: "IVA"
+            },
+
+            // Items de la cotización
+            // Agrega o quita items según necesites
+            items: [
+                {
+                    description: "Suministro e instalación de sistema de climatización VRF marca Daikin, modelo RXUQ-A, capacidad 28 HP, incluye unidad exterior, 8 unidades interiores tipo cassette, control centralizado, tubería de refrigerante, cableado, drenajes y puesta en marcha.",
+                    quantity: 1,
+                    unitPrice: 85000000
+                },
+                {
+                    description: "Diseño de ingeniería, cálculos térmicos, planos de distribución y memoria de cálculo para sistema VRF según norma RETIQ y reglamento técnico de instalaciones térmicas.",
+                    quantity: 1,
+                    unitPrice: 4500000
+                },
+                {
+                    description: "Estructura metálica de soporte para unidad exterior en azotea, fabricada en perfil PTR 3x3x1/4\" con tratamiento anticorrosivo y pintura epóxica, incluye anclajes químicos y nivelación.",
+                    quantity: 1,
+                    unitPrice: 3200000
+                },
+                {
+                    description: "Tubería de cobre tipo L para refrigerante (líquido 3/8\" y gas 7/8\"), aislamiento elastomérico 19mm, accesorios (codos, tees, reducciones), soldadura con aleación de plata 5%.",
+                    quantity: 120,
+                    unitPrice: 85000
+                },
+                {
+                    description: "Cableado eléctrico: alimentación trifásica 4x10mm² THHN, control 2x1.5mm² blindado, canaleta metálica 100x50mm, breaker 3P 63A curva C, tablero de protección IP54.",
+                    quantity: 1,
+                    unitPrice: 6800000
+                },
+                {
+                    description: "Sistema de drenaje de condensados: tubería PVC 1\", bomba de elevación Little Giant VCMA-20ULS, bandeja de goteo secundaria, conexión a red de drenaje existente.",
+                    quantity: 8,
+                    unitPrice: 420000
+                },
+                {
+                    description: "Pruebas de presión con nitrógeno (400 psi/24h), vacío profundo (500 micras), carga de refrigerante R-410A, verificación de rendimientos, capacitación al personal de mantenimiento (4 horas).",
+                    quantity: 1,
+                    unitPrice: 2500000
+                },
+                {
+                    description: "Documentación final: manuales de operación y mantenimiento, planos as-built en AutoCAD y PDF, certificados de equipos, actas de entrega y recepción, garantía por escrito 12 meses.",
+                    quantity: 1,
+                    unitPrice: 1800000
+                },
+                {
+                    description: "Transporte, flete, izaje con grúa 25tn para unidad exterior en azotea (piso 12), seguros de carga y responsabilidad civil durante instalación.",
+                    quantity: 1,
+                    unitPrice: 3500000
+                },
+                {
+                    description: "Supervisión de obra y coordinación con otras especialidades (eléctrica, civil, arquitectónica) durante 20 días hábiles, informes semanales de avance.",
+                    quantity: 20,
+                    unitPrice: 180000
+                },
+                {
+                    description: "Suministro de repuestos críticos de arranque: 2 tarjetas de control indoor, 1 sensor de temperatura, 1 válvula de expansión electrónica, 1 contactor potencia 40A.",
+                    quantity: 1,
+                    unitPrice: 2200000
+                },
+                {
+                    description: "Puesta en marcha final, afinación de parámetros, verificación de balance de caudal, entrega de acta de conformidad firmada por cliente.",
+                    quantity: 1,
+                    unitPrice: 1500000
+                }
+            ],
+
+            // Condiciones comerciales
+            conditions: [
+                "Los precios cotizados incluyen IVA (19%) donde aplica.",
+                "Tiempo de entrega: 25-30 días hábiles tras confirmación del pedido y recibo de anticipo.",
+                "Forma de pago: 50% anticipo con la orden, 30% a la entrega de equipos en bodega, 20% contra puesta en marcha exitosa.",
+                "Garantía: 12 meses por defectos de fabricación y 6 meses en mano de obra de instalación.",
+                "Cotización sujeta a disponibilidad de inventario al momento de la orden de compra.",
+                "Validez de la cotización: 30 días calendario a partir de la fecha de emisión.",
+                "No incluye: obras civiles, perforaciones estructurales, pintura de obra, permisos municipales ni conexiones a redes públicas preexistentes."
+            ]
+        };
+
+        // ============================================
+        // FUNCIONES DE UTILIDAD
+        // ============================================
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('es-CO', {
+                style: 'currency',
+                currency: 'COP',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(value).replace('COP', '$');
+        }
+
+        function formatNumber(value) {
+            return new Intl.NumberFormat('es-CO').format(value);
+        }
+
+        // ============================================
+        // RENDERIZADO DE LA PLANTILLA
+        // ============================================
+        function renderQuote() {
+            const cfg = quoteConfig;
+
+            // --- Página 1: Header empresa ---
+            setText('company-name', cfg.company.name);
+            setText('company-details', `
+                <div>Dirección: ${cfg.company.address}</div>
+                <div>Tel: ${cfg.company.phone} | Email: ${cfg.company.email}</div>
+                <div>NIT: ${cfg.company.nit} | Régimen: ${cfg.company.regime}</div>
+            `);
+
+            setText('company-name-2', cfg.company.name);
+            setText('company-details-2', `
+                <div>Dirección: ${cfg.company.address}</div>
+                <div>Tel: ${cfg.company.phone} | Email: ${cfg.company.email}</div>
+                <div>NIT: ${cfg.company.nit} | Régimen: ${cfg.company.regime}</div>
+            `);
+
+            // --- Datos de la cotización ---
+            setText('quote-number', cfg.quote.number);
+            setText('quote-date', cfg.quote.date);
+            setText('quote-valid-until', cfg.quote.validUntil);
+            setText('salesperson', cfg.quote.salesperson);
+
+            setText('quote-number-2', cfg.quote.number);
+
+            // --- Datos del cliente ---
+            setText('client-name', cfg.client.name);
+            setText('client-nit', cfg.client.nit);
+            setText('client-address', cfg.client.address);
+            setText('client-contact', `${cfg.client.phone} | ${cfg.client.email}`);
+            setText('client-contact-name', cfg.client.contactName);
+            setText('client-city', cfg.client.city);
+
+            // --- Configuración de impuestos ---
+            setText('tax-rate', cfg.tax.rate);
+
+            // --- Renderizar items ---
+            renderItems(cfg.items);
+
+            // --- Calcular y renderizar totales ---
+            renderTotals(cfg.items, cfg.tax.rate);
+
+            // --- Condiciones ---
+            renderConditions(cfg.conditions);
+
+            // --- Footer ---
+            setText('footer-website', cfg.company.website);
+        }
+
+        function setText(id, html) {
+            const el = document.getElementById(id);
+            if (el) el.innerHTML = html;
+        }
+
+        function renderItems(items) {
+            const tbody = document.getElementById('items-body');
+            const templateRow = tbody.querySelector('.template-row');
+            tbody.innerHTML = '';
+
+            // Calculamos cuántos items caben en la primera página
+            // Estimación: ~20 items por página (depende del contenido)
+            const ITEMS_PER_PAGE = 20;
+            const page1Items = items.slice(0, ITEMS_PER_PAGE);
+            const page2Items = items.slice(ITEMS_PER_PAGE);
+
+            // Render página 1
+            page1Items.forEach((item, index) => {
+                const row = createItemRow(item, index + 1);
+                tbody.appendChild(row);
+            });
+
+            // Si hay items para página 2, mostrar página 2
+            if (page2Items.length > 0) {
+                document.getElementById('page-2').classList.remove('hidden');
+                const tbody2 = document.getElementById('items-body-2');
+                tbody2.innerHTML = '';
+
+                page2Items.forEach((item, index) => {
+                    const row = createItemRow(item, index + 1 + ITEMS_PER_PAGE);
+                    tbody2.appendChild(row);
+                });
+
+                setText('page-number-2', '2');
+                setText('page-num-display-2', '2');
+            }
+        }
+
+        function createItemRow(item, index) {
+            const row = document.createElement('tr');
+            row.style.pageBreakInside = 'avoid';
+
+            const total = item.quantity * item.unitPrice;
+
+            row.innerHTML = `
+                <td class="num text-center">${index}</td>
+                <td class="desc">${escapeHtml(item.description)}</td>
+                <td class="qty text-center">${formatNumber(item.quantity)}</td>
+                <td class="price text-right">${formatCurrency(item.unitPrice)}</td>
+                <td class="total text-right">${formatCurrency(total)}</td>
+            `;
+
+            return row;
+        }
+
+        function renderTotals(items, taxRate) {
+            const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0);
+            const taxAmount = subtotal * (taxRate / 100);
+            const grandTotal = subtotal + taxAmount;
+
+            setText('subtotal', formatCurrency(subtotal));
+            setText('tax-amount', formatCurrency(taxAmount));
+            setText('grand-total', formatCurrency(grandTotal));
+            setText('tax-breakdown', `Base gravable: ${formatCurrency(subtotal)} | ${taxRate}% IVA: ${formatCurrency(taxAmount)}`);
+        }
+
+        function renderConditions(conditions) {
+            const container = document.getElementById('conditions');
+            if (!container) return;
+
+            let html = '<div class="conditions-title">Términos y Condiciones</div>';
+            conditions.forEach((condition, index) => {
+                html += `<div>${index + 1}. ${escapeHtml(condition)}</div>`;
+            });
+            container.innerHTML = html;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ============================================
+        // IMPRESIÓN
+        // ============================================
+        function printQuote() {
+            window.print();
+        }
+
+        // ============================================
+        // INICIALIZACIÓN
+        // ============================================
+        document.addEventListener('DOMContentLoaded', renderQuote);
+
+        // Exponer funciones globalmente para uso desde consola
+        window.QuoteTemplate = {
+            config: quoteConfig,
+            render: renderQuote,
+            print: printQuote,
+            formatCurrency,
+            formatNumber
+        };
+    </script>
+</body>
+</html>

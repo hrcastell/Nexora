@@ -1,7 +1,15 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, nextTick, onBeforeUnmount, onMounted, watch } from 'vue'
 import { useDentalOdontogramStore } from '../../stores/dentalOdontogram'
+import { useAuthStore } from '../../stores/auth'
 import type { OdontogramEntry } from '../../services/dentalOdontogramService'
+import {
+  cloneDraftValue,
+  deleteSlidePanelDraft,
+  draftValuesEqual,
+  saveSlidePanelDraft,
+  takeSlidePanelDraft
+} from '../../utils/slidePanelDrafts'
 
 const props = defineProps<{
   patientId: number
@@ -10,6 +18,7 @@ const props = defineProps<{
 }>()
 
 const store = useDentalOdontogramStore()
+const auth = useAuthStore()
 
 // ─── Dentition tab ───────────────────────────────────────────
 type DentitionMode = 'permanent' | 'deciduous' | 'mixed'
@@ -18,19 +27,91 @@ const dentitionMode = ref<DentitionMode>('permanent')
 // ─── Tooth detail panel ───────────────────────────────────────
 const selectedTooth = ref<number | null>(null)
 const panelVisible = ref(false)
+const showDiscardWarning = ref(false)
+const warningTitle = ref<HTMLHeadingElement | null>(null)
+const initialFindingState = ref<Record<string, string>>({})
+
+function findingState() {
+  return {
+    surface: formSurface.value,
+    findingType: formFindingType.value,
+    findingStatus: formFindingStatus.value,
+    priority: formPriority.value,
+    observation: formObservation.value
+  }
+}
+
+function restoreFindingState(state: Record<string, string>) {
+  formSurface.value = state.surface
+  formFindingType.value = state.findingType
+  formFindingStatus.value = state.findingStatus
+  formPriority.value = state.priority
+  formObservation.value = state.observation
+}
+
+function findingDraftKey(toothNumber = selectedTooth.value) {
+  const scope = `${auth.user?.id ?? 'anonymous'}:${auth.currentCompany?.schema_name ?? auth.currentCompany?.id ?? 'global'}`
+  return `${scope}:dental-odontogram:${props.patientId}:${props.consultationId ?? 'readonly'}:${toothNumber ?? 'none'}`
+}
 
 function selectTooth(toothNumber: number) {
   if (props.readonly && !entriesByTooth.value.has(toothNumber)) return
   selectedTooth.value = toothNumber
-  panelVisible.value = true
   resetForm()
+  const saved = takeSlidePanelDraft(findingDraftKey(toothNumber))
+  if (saved) {
+    restoreFindingState(saved.value as Record<string, string>)
+    initialFindingState.value = cloneDraftValue(saved.initial as Record<string, string>)
+  } else {
+    initialFindingState.value = cloneDraftValue(findingState())
+  }
+  panelVisible.value = true
 }
 
 function closePanel() {
+  if (!draftValuesEqual(findingState(), initialFindingState.value)) {
+    showDiscardWarning.value = true
+    nextTick(() => warningTitle.value?.focus())
+    return
+  }
+  finishClose()
+}
+
+function finishClose() {
   panelVisible.value = false
   selectedTooth.value = null
   formError.value = null
+  showDiscardWarning.value = false
 }
+
+function keepFindingDraftAndClose() {
+  saveSlidePanelDraft(findingDraftKey(), {
+    initial: initialFindingState.value,
+    value: findingState()
+  })
+  finishClose()
+}
+
+function discardFindingDraftAndClose() {
+  deleteSlidePanelDraft(findingDraftKey())
+  restoreFindingState(initialFindingState.value)
+  finishClose()
+}
+
+function onPanelKeydown(event: KeyboardEvent) {
+  if (event.key !== 'Escape') return
+  // The nested discard dialog owns Escape while it is open.
+  if (showDiscardWarning.value) return
+  event.stopPropagation()
+  closePanel()
+}
+
+watch(panelVisible, (visible) => {
+  if (visible) document.addEventListener('keydown', onPanelKeydown)
+  else document.removeEventListener('keydown', onPanelKeydown)
+})
+
+onBeforeUnmount(() => document.removeEventListener('keydown', onPanelKeydown))
 
 // ─── Add finding form ─────────────────────────────────────────
 const formSurface = ref('')
@@ -69,7 +150,9 @@ async function saveEntry() {
   })
   formSaving.value = false
   if (saved) {
+    deleteSlidePanelDraft(findingDraftKey())
     resetForm()
+    initialFindingState.value = cloneDraftValue(findingState())
   } else {
     formError.value = store.error || 'Error al guardar'
   }
@@ -481,6 +564,7 @@ watch(
               <p class="text-sm font-medium text-white mt-0.5">{{ toothName(selectedTooth) }}</p>
             </div>
             <button
+              type="button"
               class="flex h-8 w-8 items-center justify-center rounded-xl text-white/40 hover:bg-white/10 hover:text-white transition"
               aria-label="Cerrar panel"
               @click="closePanel"
@@ -627,6 +711,50 @@ watch(
             </template>
 
           </div>
+
+          <div class="border-t border-white/10 bg-black/20 px-5 py-4">
+            <button type="button" class="nxr-btn nxr-btn-secondary w-full" @click="closePanel">
+              Cancelar
+            </button>
+          </div>
+
+          <div
+            v-if="showDiscardWarning"
+            class="absolute inset-0 z-20 flex items-center justify-center bg-black/75 p-4"
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="odontogram-discard-title"
+            aria-describedby="odontogram-discard-description"
+          >
+            <div class="w-full rounded-2xl border border-white/15 bg-slate-950 p-5 shadow-2xl">
+              <h3
+                id="odontogram-discard-title"
+                ref="warningTitle"
+                tabindex="-1"
+                class="text-base font-semibold text-white outline-none"
+              >
+                Cambios sin guardar
+              </h3>
+              <p id="odontogram-discard-description" class="mt-2 text-sm text-white/65">
+                Al cerrar, se eliminará la información ingresada en este formulario. Puede conservar el borrador para continuar más tarde, descartarlo y restablecer el formulario, o continuar editando.
+              </p>
+              <div class="mt-5 flex flex-col gap-2">
+                <button type="button" class="nxr-btn nxr-btn-primary" @click="keepFindingDraftAndClose">
+                  Conservar borrador y cerrar
+                </button>
+                <button
+                  type="button"
+                  class="nxr-btn border border-red-500/40 bg-red-500/15 text-red-200 hover:bg-red-500/25"
+                  @click="discardFindingDraftAndClose"
+                >
+                  Descartar y cerrar
+                </button>
+                <button type="button" class="nxr-btn nxr-btn-secondary" @click="showDiscardWarning = false">
+                  Continuar editando
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </transition>
 
@@ -635,7 +763,7 @@ watch(
         <div
           v-if="panelVisible"
           class="fixed inset-0 z-40 bg-black/40"
-          @click="closePanel"
+          @click.self="closePanel"
         ></div>
       </transition>
 

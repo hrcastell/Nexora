@@ -204,17 +204,20 @@ const handleSubmit = async () => {
     eyebrow="Esto creará un nuevo registro y aprovisionará un schema dedicado en la base de datos."
     size="lg"
     @close="handleClose"
-  >
+
+    draft-key="components/admin/CreateCompanyModal.vue#1"
+    :draft-entity="'create'"
+    :draft-state="{ form, adminForm }">
     <form @submit.prevent="handleSubmit" class="space-y-4">
-              
+
               <!-- Name -->
               <div>
                 <label for="name" class="block text-sm font-medium mb-2" :style="{ color: labelColor }">Nombre de la Empresa *</label>
-                <input type="text" id="name" v-model="form.name" required class="mt-1 block w-full rounded-xl shadow-sm border p-2.5 text-sm transition-colors" 
-                       :style="{ 
-                         backgroundColor: inputBg, 
-                         borderColor: inputBorder, 
-                         color: headerTextColor 
+                <input type="text" id="name" v-model="form.name" required class="mt-1 block w-full rounded-xl shadow-sm border p-2.5 text-sm transition-colors"
+                       :style="{
+                         backgroundColor: inputBg,
+                         borderColor: inputBorder,
+                         color: headerTextColor
                        }" />
               </div>
 
@@ -222,11 +225,11 @@ const handleSubmit = async () => {
               <div>
                 <label for="schema" class="block text-sm font-medium mb-2" :style="{ color: labelColor }">Nombre del Schema (DB) *</label>
                 <div class="mt-1 flex rounded-md shadow-sm">
-                  <input type="text" id="schema" v-model="form.schema_name" required placeholder="ej: empresa_x" class="flex-1 min-w-0 block w-full px-3 py-2.5 rounded-xl text-sm border transition-colors" 
-                         :style="{ 
-                           backgroundColor: inputBg, 
-                           borderColor: inputBorder, 
-                           color: headerTextColor 
+                  <input type="text" id="schema" v-model="form.schema_name" required placeholder="ej: empresa_x" class="flex-1 min-w-0 block w-full px-3 py-2.5 rounded-xl text-sm border transition-colors"
+                         :style="{
+                           backgroundColor: inputBg,
+                           borderColor: inputBorder,
+                           color: headerTextColor
                          }" />
                 </div>
                 <p class="mt-1 text-xs" :style="{ color: mutedTextColor }">Solo minúsculas, números y guiones bajos (_).</p>
@@ -235,22 +238,22 @@ const handleSubmit = async () => {
               <!-- RUT -->
               <div>
                 <label for="rut" class="block text-sm font-medium mb-2" :style="{ color: labelColor }">RUT / ID Tributario *</label>
-                <input type="text" id="rut" v-model="form.rut" required class="mt-1 block w-full rounded-xl shadow-sm border p-2.5 text-sm transition-colors" 
-                       :style="{ 
-                         backgroundColor: inputBg, 
-                         borderColor: inputBorder, 
-                         color: headerTextColor 
+                <input type="text" id="rut" v-model="form.rut" required class="mt-1 block w-full rounded-xl shadow-sm border p-2.5 text-sm transition-colors"
+                       :style="{
+                         backgroundColor: inputBg,
+                         borderColor: inputBorder,
+                         color: headerTextColor
                        }" />
               </div>
 
               <!-- Country -->
               <div>
                 <label for="country" class="block text-sm font-medium mb-2" :style="{ color: labelColor }">País *</label>
-                <select id="country" v-model="form.country" class="mt-1 block w-full pl-3 pr-10 py-2.5 text-base rounded-xl border text-sm transition-colors" 
-                        :style="{ 
-                          backgroundColor: inputBg, 
-                          borderColor: inputBorder, 
-                          color: headerTextColor 
+                <select id="country" v-model="form.country" class="mt-1 block w-full pl-3 pr-10 py-2.5 text-base rounded-xl border text-sm transition-colors"
+                        :style="{
+                          backgroundColor: inputBg,
+                          borderColor: inputBorder,
+                          color: headerTextColor
                         }">
                   <option value="Chile" :style="{ backgroundColor: optionBg }">Chile</option>
                   <option value="Argentina" :style="{ backgroundColor: optionBg }">Argentina</option>
@@ -268,33 +271,33 @@ const handleSubmit = async () => {
               <!-- Email -->
               <div>
                 <label for="email" class="block text-sm font-medium mb-2" :style="{ color: labelColor }">Email de Contacto *</label>
-                <input type="email" id="email" v-model="form.contact_email" required class="mt-1 block w-full rounded-xl shadow-sm border p-2.5 text-sm transition-colors" 
-                       :style="{ 
-                         backgroundColor: inputBg, 
-                         borderColor: inputBorder, 
-                         color: headerTextColor 
+                <input type="email" id="email" v-model="form.contact_email" required class="mt-1 block w-full rounded-xl shadow-sm border p-2.5 text-sm transition-colors"
+                       :style="{
+                         backgroundColor: inputBg,
+                         borderColor: inputBorder,
+                         color: headerTextColor
                        }" />
               </div>
 
               <!-- Phone -->
               <div>
                 <label for="phone" class="block text-sm font-medium mb-2" :style="{ color: labelColor }">Teléfono</label>
-                <input type="text" id="phone" v-model="form.contact_phone" class="mt-1 block w-full rounded-xl shadow-sm border p-2.5 text-sm transition-colors" 
-                       :style="{ 
-                         backgroundColor: inputBg, 
-                         borderColor: inputBorder, 
-                         color: headerTextColor 
+                <input type="text" id="phone" v-model="form.contact_phone" class="mt-1 block w-full rounded-xl shadow-sm border p-2.5 text-sm transition-colors"
+                       :style="{
+                         backgroundColor: inputBg,
+                         borderColor: inputBorder,
+                         color: headerTextColor
                        }" />
               </div>
 
               <!-- Address -->
               <div>
                 <label for="address" class="block text-sm font-medium mb-2" :style="{ color: labelColor }">Dirección</label>
-                <textarea id="address" v-model="form.address" rows="2" class="mt-1 block w-full rounded-xl shadow-sm border p-2.5 text-sm transition-colors" 
-                          :style="{ 
-                            backgroundColor: inputBg, 
-                            borderColor: inputBorder, 
-                            color: headerTextColor 
+                <textarea id="address" v-model="form.address" rows="2" class="mt-1 block w-full rounded-xl shadow-sm border p-2.5 text-sm transition-colors"
+                          :style="{
+                            backgroundColor: inputBg,
+                            borderColor: inputBorder,
+                            color: headerTextColor
                           }"></textarea>
               </div>
 
@@ -388,7 +391,7 @@ const handleSubmit = async () => {
     </form>
 
     <template #footer>
-      <button type="button" class="nxr-btn nxr-btn-secondary" @click="handleClose">Cancelar</button>
+
       <button type="submit" :disabled="isLoading" class="nxr-btn nxr-btn-primary" @click="handleSubmit">
         <Loader2 v-if="isLoading" class="animate-spin h-4 w-4" />
         {{ isLoading ? 'Creando...' : 'Crear Empresa' }}

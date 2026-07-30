@@ -1,29 +1,42 @@
-/* ── Nexora Dental — Print Styles ───────────────────────────────────────── */
+/* ── Nexora — Print Styles (dental documents + garage work orders) ─────── */
 
 @media print {
-  /* Hide everything except the print target */
-  body > * {
-    display: none !important;
+  /*
+   * "Print only this element" technique.
+   * index.html mounts the Vue app as the sole child of <body>, so an
+   * ancestor's display:none would hide the print target too (a descendant's
+   * display:block !important cannot resurrect a subtree an ancestor removed
+   * from the render tree). visibility works differently: a hidden ancestor
+   * still generates its box, so a descendant can set visibility:visible and
+   * re-appear. We then pull the target out of the (invisible) app layout
+   * with absolute positioning so it isn't pushed down by hidden content.
+   */
+  body * {
+    visibility: hidden;
   }
 
-  #dental-print-target {
+  #dental-print-target, #dental-print-target *,
+  #garage-print-target, #garage-print-target * {
+    visibility: visible;
+  }
+
+  #dental-print-target, #garage-print-target {
     display: block !important;
-    position: fixed;
+    position: absolute;
     top: 0;
     left: 0;
     width: 100%;
-    z-index: 9999;
     background: white;
-    color: black;
-    font-family: 'Arial', sans-serif;
-    font-size: 11pt;
+    color: #333;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    font-size: 9pt;
     line-height: 1.4;
   }
 
   /* Page setup */
   @page {
-    size: A4 portrait;
-    margin: 15mm 20mm;
+    size: letter;
+    margin: 15mm 15mm;
   }
 
   /* Prevent page break inside key blocks */
@@ -31,7 +44,7 @@
     page-break-inside: avoid;
   }
 
-  /* Tables */
+  /* Generic table fallback (dental prescriptions / final reports use inline styles + this) */
   table {
     border-collapse: collapse;
     width: 100%;
@@ -55,9 +68,232 @@
     border-bottom: 1px solid #000;
     margin-bottom: 4pt;
   }
+
+  /* ── Shared print-document layout classes (dental quote + garage work order) ── */
+
+  .nxr-print-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 16pt;
+    margin-bottom: 10pt;
+    padding-bottom: 8pt;
+    border-bottom: 2px solid #2c3e50;
+  }
+
+  .nxr-print-company { flex: 1; }
+
+  .nxr-print-company-name {
+    font-size: 14pt;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 3pt;
+  }
+
+  .nxr-print-company-details {
+    font-size: 7.5pt;
+    color: #555;
+    line-height: 1.5;
+  }
+
+  .nxr-print-doc-info {
+    text-align: right;
+    flex: 1;
+  }
+
+  .nxr-print-doc-title {
+    font-size: 13pt;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 5pt;
+    text-transform: uppercase;
+  }
+
+  .nxr-print-doc-meta { font-size: 7.5pt; color: #555; }
+  .nxr-print-doc-meta div { margin-bottom: 2pt; }
+  .nxr-print-doc-meta label { font-weight: 600; color: #333; }
+
+  /* Section title (uppercase, small, bottom border) */
+  .nxr-print-section-title {
+    font-size: 8pt;
+    font-weight: 700;
+    color: #2c3e50;
+    text-transform: uppercase;
+    letter-spacing: 0.4pt;
+    margin-bottom: 6pt;
+    padding-bottom: 3pt;
+    border-bottom: 1px solid #dee2e6;
+  }
+
+  /* Info box (client / vehicle data) */
+  .nxr-print-info-row {
+    display: flex;
+    gap: 10pt;
+    margin-bottom: 10pt;
+  }
+
+  .nxr-print-info-box {
+    flex: 1;
+    padding: 8pt;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 3pt;
+  }
+
+  .nxr-print-info-row .nxr-print-info-box { margin-bottom: 0; }
+
+  .nxr-print-info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 5pt 12pt;
+    font-size: 7.5pt;
+  }
+
+  .nxr-print-info-field { display: flex; flex-direction: column; }
+  .nxr-print-info-field label {
+    font-weight: 600;
+    color: #555;
+    font-size: 6.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.3pt;
+  }
+  .nxr-print-info-field span { color: #333; }
+
+  /* Items table: dark header row repeats on every printed page via
+     display:table-header-group; rows avoid splitting across pages.
+     One continuous table bound to the full array — no manual pagination,
+     the browser paginates naturally for arbitrary-length data. */
+  .nxr-print-items-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 7.5pt;
+    margin-bottom: 10pt;
+  }
+
+  .nxr-print-items-table thead {
+    display: table-header-group;
+    background: #2c3e50;
+    color: white;
+  }
+
+  .nxr-print-items-table th {
+    padding: 6pt 5pt;
+    text-align: left;
+    font-weight: 600;
+    font-size: 6.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.2pt;
+    border: none;
+  }
+
+  .nxr-print-items-table tbody tr {
+    border-bottom: 1px solid #dee2e6;
+    page-break-inside: avoid;
+  }
+
+  .nxr-print-items-table tbody tr:last-child { border-bottom: 2px solid #2c3e50; }
+
+  .nxr-print-items-table tbody tr.nxr-print-subrow td {
+    padding-top: 0;
+    padding-left: 14pt;
+    color: #777;
+    font-size: 7pt;
+    font-style: italic;
+  }
+
+  .nxr-print-items-table td {
+    padding: 5pt;
+    vertical-align: top;
+    border: none;
+  }
+
+  .nxr-print-items-table .text-center { text-align: center; }
+  .nxr-print-items-table .text-right  { text-align: right; font-variant-numeric: tabular-nums; }
+
+  /* Totals */
+  .nxr-print-totals-wrap {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 10pt;
+    page-break-inside: avoid;
+  }
+
+  .nxr-print-totals-table {
+    width: auto;
+    min-width: 220pt;
+    border-collapse: collapse;
+    font-size: 7.5pt;
+  }
+
+  .nxr-print-totals-table td {
+    padding: 4pt 8pt;
+    border: none;
+    border-bottom: 1px solid #dee2e6;
+  }
+
+  .nxr-print-totals-table tr:last-child td {
+    border-bottom: 2px solid #2c3e50;
+    font-weight: 700;
+    font-size: 9pt;
+    color: #2c3e50;
+  }
+
+  .nxr-print-totals-label { text-align: left; color: #555; }
+  .nxr-print-totals-value { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+
+  /* Conditions / notes box */
+  .nxr-print-conditions {
+    margin-bottom: 10pt;
+    padding: 7pt;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 3pt;
+    font-size: 7.5pt;
+    color: #555;
+    page-break-inside: avoid;
+  }
+
+  .nxr-print-conditions-title {
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 4pt;
+  }
+
+  /* Footer */
+  .nxr-print-footer {
+    margin-top: 12pt;
+    padding-top: 8pt;
+    border-top: 1px solid #dee2e6;
+    font-size: 7pt;
+    color: #777;
+  }
+
+  /* Acceptance declaration (printed above the signature lines) */
+  .nxr-print-acceptance {
+    margin-top: 16pt;
+    font-size: 7.5pt;
+    color: #333;
+    page-break-inside: avoid;
+  }
+
+  /* Signature blocks */
+  .nxr-print-signatures {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20pt;
+    margin-top: 24pt;
+    font-size: 7.5pt;
+    text-align: center;
+    page-break-inside: avoid;
+  }
+
+  .nxr-print-signatures.nxr-print-signatures-3 {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14pt;
+    margin-top: 10pt;
+  }
 }
 
 /* Visible only when printing */
-#dental-print-target {
+#dental-print-target, #garage-print-target {
   display: none;
 }

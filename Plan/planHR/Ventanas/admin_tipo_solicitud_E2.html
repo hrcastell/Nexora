@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Tipos de Solicitud - Portal de Solicitudes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .sidebar-link:hover { background: linear-gradient(90deg, rgba(99,102,241,0.1) 0%, transparent 100%); }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1); }
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Table row hover */
+        .table-row:hover { background-color: #f9fafb; }
+
+        /* Status badges for request types */
+        .status-active { background: #d1fae5; color: #065f46; }
+        .status-inactive { background: #fee2e2; color: #991b1b; }
+
+        /* Type icons colors */
+        .icon-vacation { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+        .icon-permission { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); }
+        .icon-disconnection { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+        .icon-medical { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+        .icon-training { background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); }
+    </style>
+<base target="_blank">
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <!-- Layout Principal -->
+    <div class="min-h-screen flex">
+
+        <!-- Sidebar -->
+        <aside class="w-64 bg-white border-r border-gray-200 flex-col hidden lg:flex">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 gradient-bg rounded-lg flex items-center justify-center text-white">
+                        <i data-lucide="briefcase" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg text-gray-900">Portal RH</h1>
+                        <p class="text-xs text-gray-500">Solicitudes</p>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="flex-1 p-4 space-y-1">
+                <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-3 text-gray-600 rounded-lg hover:text-indigo-600 transition-colors">
+                    <i data-lucide="users" class="w-5 h-5"></i>
+                    <span class="font-medium">Usuarios y Roles</span>
+                </a>
+                <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-3 bg-indigo-50 text-indigo-700 rounded-lg border-r-4 border-indigo-600">
+                    <i data-lucide="settings" class="w-5 h-5"></i>
+                    <span class="font-medium">Tipos de Solicitud</span>
+                </a>
+                <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-3 text-gray-600 rounded-lg hover:text-indigo-600 transition-colors">
+                    <i data-lucide="calendar" class="w-5 h-5"></i>
+                    <span class="font-medium">Feriados</span>
+                </a>
+                <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-3 text-gray-600 rounded-lg hover:text-indigo-600 transition-colors">
+                    <i data-lucide="file-text" class="w-5 h-5"></i>
+                    <span class="font-medium">Plantillas PDF</span>
+                </a>
+            </nav>
+
+            <div class="p-4 border-t border-gray-200">
+                <div class="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
+                    <div class="w-10 h-10 bg-gradient-to-br from-red-400 to-red-600 rounded-full flex items-center justify-center text-white font-medium">AD</div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-gray-900 truncate">Admin Sistema</p>
+                        <p class="text-xs text-gray-500 truncate">Administrador</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col min-w-0">
+            <!-- Topbar -->
+            <header class="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-4 lg:px-8">
+                <div class="flex items-center gap-4">
+                    <button class="lg:hidden p-2 hover:bg-gray-100 rounded-lg">
+                        <i data-lucide="menu" class="w-5 h-5"></i>
+                    </button>
+                    <h2 class="text-xl font-semibold text-gray-800">Tipos de Solicitud</h2>
+                </div>
+                <div class="flex items-center gap-4">
+                    <button class="p-2 hover:bg-gray-100 rounded-lg relative">
+                        <i data-lucide="bell" class="w-5 h-5 text-gray-600"></i>
+                        <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Content -->
+            <main class="flex-1 overflow-y-auto p-4 lg:p-8 fade-in">
+                <div class="max-w-7xl mx-auto">
+
+                    <!-- Header -->
+                    <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-900">Configuración de tipos</h1>
+                            <p class="text-gray-500 mt-1">Gestiona los tipos de solicitud disponibles para los empleados</p>
+                        </div>
+                        <button onclick="showAddTypeModal()" class="gradient-bg text-white px-4 py-2.5 rounded-lg hover:opacity-90 font-medium shadow-lg shadow-indigo-500/30 flex items-center gap-2 transition-all">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                            Nuevo tipo
+                        </button>
+                    </div>
+
+                    <!-- Stats Cards -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                        <div class="card-hover bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+                            <p class="text-2xl font-bold text-gray-900">6</p>
+                            <p class="text-sm text-gray-500">Total tipos</p>
+                        </div>
+                        <div class="card-hover bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+                            <p class="text-2xl font-bold text-green-600">5</p>
+                            <p class="text-sm text-gray-500">Activos</p>
+                        </div>
+                        <div class="card-hover bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+                            <p class="text-2xl font-bold text-red-600">1</p>
+                            <p class="text-sm text-gray-500">Inactivos</p>
+                        </div>
+                        <div class="card-hover bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+                            <p class="text-2xl font-bold text-blue-600">3</p>
+                            <p class="text-sm text-gray-500">Requieren firma</p>
+                        </div>
+                    </div>
+
+                    <!-- Filters -->
+                    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-6">
+                        <div class="flex flex-col lg:flex-row gap-4">
+                            <div class="flex-1 relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i data-lucide="search" class="w-5 h-5 text-gray-400"></i>
+                                </div>
+                                <input 
+                                    type="text" 
+                                    placeholder="Buscar por nombre o descripción..."
+                                    class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                >
+                            </div>
+
+                            <div class="flex flex-wrap gap-3">
+                                <select class="px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white text-sm">
+                                    <option value="">Todos los estados</option>
+                                    <option value="active">Activo</option>
+                                    <option value="inactive">Inactivo</option>
+                                </select>
+
+                                <select class="px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white text-sm">
+                                    <option value="">Todas las categorías</option>
+                                    <option value="timeoff">Tiempo libre</option>
+                                    <option value="attendance">Asistencia</option>
+                                    <option value="hr">RRHH</option>
+                                </select>
+
+                                <button class="px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium text-sm flex items-center gap-2">
+                                    <i data-lucide="filter" class="w-4 h-4"></i>
+                                    Filtrar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Request Types Table -->
+                    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50 border-b border-gray-200">
+                                    <tr>
+                                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Tipo de solicitud</th>
+                                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Categoría</th>
+                                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Requiere firma</th>
+                                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Flujo de aprobación</th>
+                                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Estado</th>
+                                        <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    <!-- Row 1: Vacaciones -->
+                                    <tr class="table-row transition-colors">
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-10 h-10 icon-vacation rounded-lg flex items-center justify-center text-white">
+                                                    <i data-lucide="sun" class="w-5 h-5"></i>
+                                                </div>
+                                                <div>
+                                                    <p class="font-medium text-gray-900">Vacaciones</p>
+                                                    <p class="text-xs text-gray-500">Solicitud de días de vacaciones</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
+                                                Tiempo libre
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                                                <i data-lucide="check" class="w-3 h-3"></i>
+                                                Sí
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-sm text-gray-700">Gerente → RRHH</span>
+                                                <button class="text-indigo-600 hover:text-indigo-800" title="Editar flujo">
+                                                    <i data-lucide="settings" class="w-4 h-4"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium status-active">
+                                                <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                                                Activo
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 text-right">
+                                            <div class="flex items-center justify-end gap-2">
+                                                <button class="p-2 hover:bg-gray-100 rounded-lg text-gray-600" title="Configurar">
+                                                    <i data-lucide="sliders" class="w-4 h-4"></i>
+                                                </button>
+                                                <button class="p-2 hover:bg-gray-100 rounded-lg text-gray-600" title="Editar">
+                                                    <i data-lucide="edit" class="w-4 h-4"></i>
+                                                </button>
+                                                <button class="p-2 hover:bg-red-50 rounded-lg text-red-600" title="Desactivar">
+                                                    <i data-lucide="power" class="w-4 h-4"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+
+                                    <!-- Row 2: Permiso por horas -->
+                                    <tr class="table-row transition-colors">
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-10 h-10 icon-permission rounded-lg flex items-center justify-center text-white">
+                                                    <i data-lucide="clock" class="w-5 h-5"></i>
+                                                </div>
+                                                <div>
+                                                    <p class="font-medium text-gray-900">Permiso por horas</p>
+                                                    <p class="text-xs text-gray-500">Salida temporal durante jornada</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                                                Asistencia
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                                                <i data-lucide="check" class="w-3 h-3"></i>
+                                                Sí
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-sm text-gray-700">Gerente directo</span>
+                                                <button class="text-indigo-600 hover:text-indigo-800" title="Editar flujo">
+                                                    <i data-lucide="settings" class="w-4 h-4"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium status-active">
+                                                <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                                                Activo
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 text-right">
+                                            <div class="flex items-center justify-end gap-2">
+                                                <button class="p-2 hover:bg-gray-100 rounded-lg text-gray-600" title="Configurar">
+                                                    <i data-lucide="sliders" class="w-4 h-4"></i>
+                                                </button>
+                                                <button class="p-2 hover:bg-gray-100 rounded-lg text-gray-600" title="Editar">
+                                                    <i data-lucide="edit" class="w-4 h-4"></i>
+                                                </button>
+                                                <button class="p-2 hover:bg-red-50 rounded-lg text-red-600" title="Desactivar">
+                                                    <i data-lucide="power" class="w-4 h-4"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+
+                                    <!-- Row 3: Desconexión -->
+                                    <tr class="table-row transition-colors">
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-10 h-10 icon-disconnection rounded-lg flex items-center justify-center text-white">
+                                                    <i data-lucide="power-off" class="w-5 h-5"></i>
+                                                </div>
+                                                <div>
+                                                    <p class="font-medium text-gray-900">Desconexión</p>
+                                                    <p class="text-xs text-gray-500">Tiempo de desconexión digital</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">
+                                                Bienestar
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                                                <i data-lucide="check" class="w-3 h-3"></i>
+                                                Sí
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-sm text-gray-700">Auto-aprobado</span>
+                                                <button class="text-indigo-600 hover:text-indigo-800" title="Editar flujo">
+                                                    <i data-lucide="settings" class="w-4 h-4"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium status-active">
+                                                <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                                                Activo
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 text-right">
+                                            <div class="flex items-center justify-end gap-2">
+                                                <button class="p-2 hover:bg-gray-100 rounded-lg text-gray-600" title="Configurar">
+                                                    <i data-lucide="sliders" class="w-4 h-4"></i>
+                                                </button>
+                                                <button class="p-2 hover:bg-gray-100 rounded-lg text-gray-600" title="Editar">
+                                                    <i data-lucide="edit" class="w-4 h-4"></i>
+                                                </button>
+                                                <button class="p-2 hover:bg-red-50 rounded-lg text-red-600" title="Desactivar">
+                                                    <i data-lucide="power" class="w-4 h-4"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+
+                                    <!-- Row 4: Permiso médico -->
+                                    <tr class="table-row transition-colors">
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-10 h-10 icon-medical rounded-lg flex items-center justify-center text-white">
+                                                    <i data-lucide="heart-pulse" class="w-5 h-5"></i>
+                                                </div>
+                                                <div>
+                                                    <p class="font-medium text-gray-900">Permiso médico</p>
+                                                    <p class="text-xs text-gray-500">Cita médica o emergencia</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                                                Salud
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                                                <i data-lucide="x" class="w-3 h-3"></i>
+                                                No
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-sm text-gray-700">Gerente → RRHH</span>
+                                                <button class="text-indigo-600 hover:text-indigo-800" title="Editar flujo">
+                                                    <i data-lucide="settings" class="w-4 h-4"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium status-active">
+                                                <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                                                Activo
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 text-right">
+                                            <div class="flex items-center justify-end gap-2">
+                                                <button class="p-2 hover:bg-gray-100 rounded-lg text-gray-600" title="Configurar">
+                                                    <i data-lucide="sliders" class="w-4 h-4"></i>
+                                                </button>
+                                                <button class="p-2 hover:bg-gray-100 rounded-lg text-gray-600" title="Editar">
+                                                    <i data-lucide="edit" class="w-4 h-4"></i>
+                                                </button>
+                                                <button class="p-2 hover:bg-red-50 rounded-lg text-red-600" title="Desactivar">
+                                                    <i data-lucide="power" class="w-4 h-4"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+
+                                    <!-- Row 5: Capacitación -->
+                                    <tr class="table-row transition-colors">
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-10 h-10 icon-training rounded-lg flex items-center justify-center text-white">
+                                                    <i data-lucide="graduation-cap" class="w-5 h-5"></i>
+                                                </div>
+                                                <div>
+                                                    <p class="font-medium text-gray-900">Capacitación</p>
+                                                    <p class="text-xs text-gray-500">Cursos y certificaciones</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
+                                                Desarrollo
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                                                <i data-lucide="x" class="w-3 h-3"></i>
+                                                No
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-sm text-gray-700">Gerente → RRHH → Dirección</span>
+                                                <button class="text-indigo-600 hover:text-indigo-800" title="Editar flujo">
+                                                    <i data-lucide="settings" class="w-4 h-4"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium status-active">
+                                                <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                                                Activo
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 text-right">
+                                            <div class="flex items-center justify-end gap-2">
+                                                <button class="p-2 hover:bg-gray-100 rounded-lg text-gray-600" title="Configurar">
+                                                    <i data-lucide="sliders" class="w-4 h-4"></i>
+                                                </button>
+                                                <button class="p-2 hover:bg-gray-100 rounded-lg text-gray-600" title="Editar">
+                                                    <i data-lucide="edit" class="w-4 h-4"></i>
+                                                </button>
+                                                <button class="p-2 hover:bg-red-50 rounded-lg text-red-600" title="Desactivar">
+                                                    <i data-lucide="power" class="w-4 h-4"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+
+                                    <!-- Row 6: Home Office (Inactivo) -->
+                                    <tr class="table-row transition-colors opacity-60">
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-10 h-10 bg-gray-400 rounded-lg flex items-center justify-center text-white">
+                                                    <i data-lucide="home" class="w-5 h-5"></i>
+                                                </div>
+                                                <div>
+                                                    <p class="font-medium text-gray-900">Home Office</p>
+                                                    <p class="text-xs text-gray-500">Trabajo remoto temporal</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                                                Modalidad
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                                                <i data-lucide="x" class="w-3 h-3"></i>
+                                                No
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center gap-2">
+                                                <span class="text-sm text-gray-500">Gerente directo</span>
+                                                <button class="text-gray-400 cursor-not-allowed" title="Editar flujo" disabled>
+                                                    <i data-lucide="settings" class="w-4 h-4"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium status-inactive">
+                                                <span class="w-1.5 h-1.5 bg-red-500 rounded-full"></span>
+                                                Inactivo
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 text-right">
+                                            <div class="flex items-center justify-end gap-2">
+                                                <button class="p-2 hover:bg-gray-100 rounded-lg text-gray-400 cursor-not-allowed" title="Configurar" disabled>
+                                                    <i data-lucide="sliders" class="w-4 h-4"></i>
+                                                </button>
+                                                <button class="p-2 hover:bg-gray-100 rounded-lg text-gray-400 cursor-not-allowed" title="Editar" disabled>
+                                                    <i data-lucide="edit" class="w-4 h-4"></i>
+                                                </button>
+                                                <button class="p-2 hover:bg-green-50 rounded-lg text-green-600" title="Activar">
+                                                    <i data-lucide="power" class="w-4 h-4"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        <div class="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+                            <p class="text-sm text-gray-500">Mostrando 1-6 de 6 tipos</p>
+                            <div class="flex items-center gap-2">
+                                <button class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50" disabled>
+                                    <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                                </button>
+                                <button class="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-sm">1</button>
+                                <button class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50" disabled>
+                                    <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Info Card -->
+                    <div class="mt-6 bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
+                        <i data-lucide="info" class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0"></i>
+                        <div>
+                            <h4 class="text-sm font-semibold text-blue-900">Información importante</h4>
+                            <p class="text-sm text-blue-700 mt-1">
+                                Los tipos de solicitud inactivos no aparecerán en el catálogo de servicios para los empleados. 
+                                La configuración de flujos de aprobación y reglas específicas se realiza desde el botón 
+                                <strong>"Configurar"</strong> en cada tipo.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Add Type Modal -->
+    <div id="addTypeModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b border-gray-200 flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-gray-900">Nuevo tipo de solicitud</h3>
+                <button onclick="closeAddTypeModal()" class="p-2 hover:bg-gray-100 rounded-lg">
+                    <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
+                </button>
+            </div>
+
+            <div class="p-6 space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nombre del tipo *</label>
+                    <input type="text" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="Ej: Vacaciones especiales">
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
+                    <textarea class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 h-20 resize-none" placeholder="Describe brevemente este tipo de solicitud..."></textarea>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Categoría *</label>
+                        <select class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white">
+                            <option value="">Seleccionar...</option>
+                            <option value="timeoff">Tiempo libre</option>
+                            <option value="attendance">Asistencia</option>
+                            <option value="wellness">Bienestar</option>
+                            <option value="health">Salud</option>
+                            <option value="development">Desarrollo</option>
+                            <option value="hr">RRHH</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Icono</label>
+                        <select class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white">
+                            <option value="sun">Sol (Vacaciones)</option>
+                            <option value="clock">Reloj (Permiso)</option>
+                            <option value="power">Power (Desconexión)</option>
+                            <option value="heart">Corazón (Salud)</option>
+                            <option value="book">Libro (Capacitación)</option>
+                            <option value="home">Casa (Remoto)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Color identificador</label>
+                        <div class="flex gap-2">
+                            <button type="button" class="w-8 h-8 rounded-full bg-amber-500 hover:ring-2 hover:ring-offset-2 hover:ring-amber-500"></button>
+                            <button type="button" class="w-8 h-8 rounded-full bg-blue-500 hover:ring-2 hover:ring-offset-2 hover:ring-blue-500"></button>
+                            <button type="button" class="w-8 h-8 rounded-full bg-emerald-500 hover:ring-2 hover:ring-offset-2 hover:ring-emerald-500"></button>
+                            <button type="button" class="w-8 h-8 rounded-full bg-red-500 hover:ring-2 hover:ring-offset-2 hover:ring-red-500"></button>
+                            <button type="button" class="w-8 h-8 rounded-full bg-purple-500 hover:ring-2 hover:ring-offset-2 hover:ring-purple-500"></button>
+                        </div>
+                    </div>
+                    <div class="flex items-center">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500" checked>
+                            <span class="text-sm text-gray-700">Requiere firma del empleado</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Flujo de aprobación predeterminado</label>
+                    <select class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white">
+                        <option value="">Seleccionar flujo...</option>
+                        <option value="manager_only">Solo gerente directo</option>
+                        <option value="manager_hr">Gerente → RRHH</option>
+                        <option value="manager_hr_dir">Gerente → RRHH → Dirección</option>
+                        <option value="auto">Auto-aprobado</option>
+                    </select>
+                    <p class="text-xs text-gray-500 mt-1">Puedes personalizar esto más tarde en la configuración avanzada.</p>
+                </div>
+            </div>
+
+            <div class="p-6 border-t border-gray-200 flex justify-end gap-3">
+                <button onclick="closeAddTypeModal()" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium">Cancelar</button>
+                <button onclick="saveType()" class="px-6 py-2 gradient-bg text-white rounded-lg font-medium shadow-lg shadow-indigo-500/30 hover:opacity-90">Crear tipo</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        function showAddTypeModal() {
+            document.getElementById('addTypeModal').classList.remove('hidden');
+            document.getElementById('addTypeModal').classList.add('flex');
+        }
+
+        function closeAddTypeModal() {
+            document.getElementById('addTypeModal').classList.add('hidden');
+            document.getElementById('addTypeModal').classList.remove('flex');
+        }
+
+        function saveType() {
+            alert('Tipo de solicitud creado exitosamente');
+            closeAddTypeModal();
+        }
+
+        // Close modal on outside click
+        document.getElementById('addTypeModal').addEventListener('click', function(e) {
+            if (e.target === this) closeAddTypeModal();
+        });
+    </script>
+</body>
+</html>

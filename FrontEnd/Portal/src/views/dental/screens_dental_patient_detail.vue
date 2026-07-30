@@ -722,7 +722,10 @@ onMounted(async () => {
     </template>
 
     <!-- Medical history panel -->
-    <NxrSlidePanel :open="showMedHistPanel" title="Agregar registro médico" eyebrow="Historia" @close="showMedHistPanel = false">
+    <NxrSlidePanel :open="showMedHistPanel" title="Agregar registro médico" eyebrow="Historia" @close="showMedHistPanel = false"
+    draft-key="views/dental/screens_dental_patient_detail.vue#1"
+    :draft-entity="String(route.params.id)"
+    :draft-state="{ medHistForm }">
       <form class="flex flex-col gap-4" @submit.prevent="saveMedHist">
         <div class="flex flex-col gap-1.5">
           <label class="text-xs text-white/50">Fecha *</label>
@@ -758,7 +761,7 @@ onMounted(async () => {
         </div>
         <p v-if="medHistError" class="text-red-400 text-sm">{{ medHistError }}</p>
         <div class="flex justify-end gap-2 pt-1">
-          <button type="button" class="rounded-xl bg-white/10 hover:bg-white/20 transition px-4 py-2 text-sm text-white/70" @click="showMedHistPanel = false">Cancelar</button>
+
           <button type="submit" :disabled="savingMedHist" class="rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary disabled:opacity-50">
             {{ savingMedHist ? 'Guardando...' : 'Guardar' }}
           </button>
@@ -767,7 +770,10 @@ onMounted(async () => {
     </NxrSlidePanel>
 
     <!-- Edit panel -->
-    <NxrSlidePanel :open="showEditPanel" title="Editar paciente" eyebrow="Dental" @close="showEditPanel = false">
+    <NxrSlidePanel :open="showEditPanel" title="Editar paciente" eyebrow="Dental" @close="showEditPanel = false"
+    draft-key="views/dental/screens_dental_patient_detail.vue#2"
+    :draft-entity="String(route.params.id)"
+    :draft-state="{ editForm }">
       <form class="flex flex-col gap-5" @submit.prevent="saveEdit">
         <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Datos personales</p>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -876,7 +882,7 @@ onMounted(async () => {
         <p v-if="saveError" class="text-xs text-red-400">{{ saveError }}</p>
       </form>
       <template #footer>
-        <button type="button" class="flex-1 px-4 py-2 rounded-xl text-sm text-white/60 border border-white/10 hover:bg-white/5" @click="showEditPanel = false">Cancelar</button>
+
         <button type="button" class="flex-1 rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary disabled:opacity-50" :disabled="saving" @click="saveEdit">
           {{ saving ? 'Guardando...' : 'Guardar cambios' }}
         </button>

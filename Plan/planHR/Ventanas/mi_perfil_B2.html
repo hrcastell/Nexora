@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Perfil - Portal de Solicitudes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .sidebar-link:hover { background: linear-gradient(90deg, rgba(99,102,241,0.1) 0%, transparent 100%); }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1); }
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+<base target="_blank">
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <!-- Layout Principal -->
+    <div class="min-h-screen flex">
+
+        <!-- Sidebar -->
+        <aside class="w-64 bg-white border-r border-gray-200 flex-col hidden lg:flex">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 gradient-bg rounded-lg flex items-center justify-center text-white">
+                        <i data-lucide="briefcase" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg text-gray-900">Portal RH</h1>
+                        <p class="text-xs text-gray-500">Solicitudes</p>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="flex-1 p-4 space-y-1">
+                <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-3 text-gray-600 rounded-lg hover:text-indigo-600 transition-colors">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                    <span class="font-medium">Dashboard</span>
+                </a>
+                <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-3 bg-indigo-50 text-indigo-700 rounded-lg border-r-4 border-indigo-600">
+                    <i data-lucide="user" class="w-5 h-5"></i>
+                    <span class="font-medium">Mi Perfil</span>
+                </a>
+                <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-3 text-gray-600 rounded-lg hover:text-indigo-600 transition-colors">
+                    <i data-lucide="file-text" class="w-5 h-5"></i>
+                    <span class="font-medium">Mis Solicitudes</span>
+                </a>
+                <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-3 text-gray-600 rounded-lg hover:text-indigo-600 transition-colors">
+                    <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                    <span class="font-medium">Nueva Solicitud</span>
+                </a>
+            </nav>
+
+            <div class="p-4 border-t border-gray-200">
+                <div class="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
+                    <div class="w-10 h-10 gradient-bg rounded-full flex items-center justify-center text-white font-medium">JP</div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-gray-900 truncate">Juan Pérez</p>
+                        <p class="text-xs text-gray-500 truncate">Empleado</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col min-w-0">
+            <!-- Topbar -->
+            <header class="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-4 lg:px-8">
+                <div class="flex items-center gap-4">
+                    <button class="lg:hidden p-2 hover:bg-gray-100 rounded-lg">
+                        <i data-lucide="menu" class="w-5 h-5"></i>
+                    </button>
+                    <h2 class="text-xl font-semibold text-gray-800">Mi Perfil</h2>
+                </div>
+                <div class="flex items-center gap-4">
+                    <button class="p-2 hover:bg-gray-100 rounded-lg relative">
+                        <i data-lucide="bell" class="w-5 h-5 text-gray-600"></i>
+                        <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Content -->
+            <main class="flex-1 overflow-y-auto p-4 lg:p-8 fade-in">
+                <div class="max-w-5xl mx-auto">
+
+                    <!-- Header Section -->
+                    <div class="mb-8">
+                        <h1 class="text-2xl font-bold text-gray-900">Ficha del empleado</h1>
+                        <p class="text-gray-500 mt-1">Visualiza y actualiza tu información personal y laboral</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+                        <!-- Left Column: Profile Card -->
+                        <div class="lg:col-span-1">
+                            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 text-center card-hover">
+                                <!-- Avatar -->
+                                <div class="relative inline-block mb-4">
+                                    <div class="w-32 h-32 gradient-bg rounded-full flex items-center justify-center text-white text-4xl font-bold mx-auto shadow-lg">
+                                        JP
+                                    </div>
+                                    <button class="absolute bottom-0 right-0 w-10 h-10 bg-white rounded-full shadow-md border border-gray-200 flex items-center justify-center text-gray-600 hover:text-indigo-600 hover:border-indigo-300 transition-colors">
+                                        <i data-lucide="camera" class="w-5 h-5"></i>
+                                    </button>
+                                </div>
+
+                                <h2 class="text-xl font-bold text-gray-900">Juan Pérez García</h2>
+                                <p class="text-gray-500">Desarrollador Senior</p>
+
+                                <div class="mt-4 flex justify-center gap-2">
+                                    <span class="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">Activo</span>
+                                    <span class="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">Tiempo completo</span>
+                                </div>
+
+                                <div class="mt-6 pt-6 border-t border-gray-100 space-y-3 text-left">
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-gray-500">ID Empleado</span>
+                                        <span class="font-medium text-gray-900">EMP-2021-0042</span>
+                                    </div>
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-gray-500">Fecha de ingreso</span>
+                                        <span class="font-medium text-gray-900">15 Mar 2021</span>
+                                    </div>
+                                    <div class="flex justify-between text-sm">
+                                        <span class="text-gray-500">Antigüedad</span>
+                                        <span class="font-medium text-gray-900">2 años 11 meses</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Quick Stats -->
+                            <div class="mt-6 bg-white rounded-2xl shadow-sm border border-gray-200 p-6 card-hover">
+                                <h3 class="font-semibold text-gray-900 mb-4">Resumen de beneficios</h3>
+                                <div class="space-y-4">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
+                                                <i data-lucide="sun" class="w-5 h-5 text-blue-600"></i>
+                                            </div>
+                                            <span class="text-sm text-gray-600">Vacaciones</span>
+                                        </div>
+                                        <span class="font-semibold text-gray-900">15 días</span>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 bg-purple-50 rounded-lg flex items-center justify-center">
+                                                <i data-lucide="clock" class="w-5 h-5 text-purple-600"></i>
+                                            </div>
+                                            <span class="text-sm text-gray-600">Permisos</span>
+                                        </div>
+                                        <span class="font-semibold text-gray-900">3 días</span>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
+                                                <i data-lucide="trending-up" class="w-5 h-5 text-green-600"></i>
+                                            </div>
+                                            <span class="text-sm text-gray-600">Compensatorios</span>
+                                        </div>
+                                        <span class="font-semibold text-gray-900">2 días</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column: Forms -->
+                        <div class="lg:col-span-2 space-y-6">
+
+                            <!-- Personal Info Section -->
+                            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                                <div class="px-6 py-4 border-b border-gray-200 bg-gray-50/50">
+                                    <h3 class="font-semibold text-gray-900 flex items-center gap-2">
+                                        <i data-lucide="user" class="w-5 h-5 text-indigo-600"></i>
+                                        Datos Personales
+                                    </h3>
+                                    <p class="text-sm text-gray-500 mt-1">Información editable según política de la empresa</p>
+                                </div>
+
+                                <div class="p-6">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <!-- Nombre completo -->
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                                Nombre completo
+                                            </label>
+                                            <input 
+                                                type="text" 
+                                                value="Juan Pérez García"
+                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                                            >
+                                        </div>
+
+                                        <!-- Correo (solo lectura) -->
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                                Correo electrónico
+                                                <span class="text-xs text-gray-400 font-normal ml-1">(Solo lectura)</span>
+                                            </label>
+                                            <input 
+                                                type="email" 
+                                                value="juan.perez@empresa.com"
+                                                readonly
+                                                class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-500 cursor-not-allowed"
+                                            >
+                                            <p class="text-xs text-gray-400 mt-1">Contacta a RRHH para cambios</p>
+                                        </div>
+
+                                        <!-- Teléfono -->
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                                Teléfono
+                                            </label>
+                                            <input 
+                                                type="tel" 
+                                                value="+52 55 1234 5678"
+                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                                            >
+                                        </div>
+
+                                        <!-- Fecha de nacimiento -->
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                                Fecha de nacimiento
+                                            </label>
+                                            <input 
+                                                type="date" 
+                                                value="1990-05-15"
+                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                                            >
+                                        </div>
+
+                                        <!-- Dirección -->
+                                        <div class="md:col-span-2">
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                                Dirección
+                                            </label>
+                                            <textarea 
+                                                rows="2"
+                                                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors resize-none"
+                                            >Av. Insurgentes Sur 1234, Col. Del Valle, CDMX</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Work Info Section -->
+                            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+                                <div class="px-6 py-4 border-b border-gray-200 bg-gray-50/50">
+                                    <h3 class="font-semibold text-gray-900 flex items-center gap-2">
+                                        <i data-lucide="briefcase" class="w-5 h-5 text-indigo-600"></i>
+                                        Datos Laborales
+                                    </h3>
+                                    <p class="text-sm text-gray-500 mt-1">Información de solo lectura</p>
+                                </div>
+
+                                <div class="p-6">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <!-- Cargo -->
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                                Cargo
+                                            </label>
+                                            <input 
+                                                type="text" 
+                                                value="Desarrollador Senior"
+                                                readonly
+                                                class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-500 cursor-not-allowed"
+                                            >
+                                        </div>
+
+                                        <!-- Área/Proyecto -->
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                                Área / Proyecto
+                                            </label>
+                                            <input 
+                                                type="text" 
+                                                value="Tecnología - Proyecto Alpha"
+                                                readonly
+                                                class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-500 cursor-not-allowed"
+                                            >
+                                        </div>
+
+                                        <!-- Líder/Gerente -->
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                                Líder / Gerente a cargo
+                                            </label>
+                                            <div class="flex items-center gap-3 px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg">
+                                                <div class="w-8 h-8 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-700 text-xs font-bold">MG</div>
+                                                <span class="text-gray-700">María González</span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Fecha de ingreso -->
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                                Fecha de ingreso
+                                            </label>
+                                            <input 
+                                                type="text" 
+                                                value="15 Marzo 2021"
+                                                readonly
+                                                class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-500 cursor-not-allowed"
+                                            >
+                                        </div>
+
+                                        <!-- Tipo de contrato -->
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                                Tipo de contrato
+                                            </label>
+                                            <input 
+                                                type="text" 
+                                                value="Indefinido - Tiempo completo"
+                                                readonly
+                                                class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-500 cursor-not-allowed"
+                                            >
+                                        </div>
+
+                                        <!-- Ubicación -->
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                                Ubicación / Oficina
+                                            </label>
+                                            <input 
+                                                type="text" 
+                                                value="CDMX - Torre Principal Piso 8"
+                                                readonly
+                                                class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-gray-500 cursor-not-allowed"
+                                            >
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="flex justify-end gap-4">
+                                <button class="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors">
+                                    Cancelar
+                                </button>
+                                <button class="px-6 py-2.5 gradient-bg text-white rounded-lg hover:opacity-90 font-medium shadow-lg shadow-indigo-500/30 transition-all">
+                                    Guardar cambios
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

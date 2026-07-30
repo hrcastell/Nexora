@@ -165,6 +165,10 @@ async function toggleStatus(item: CatalogItem) {
       :title="`${editing ? 'Editar' : 'Nuevo'} — ${CATALOG_TABS.find(t => t.type === activeType)?.label}`"
       size="sm"
       @close="showForm = false"
+      draft-key="views/garage/screens_garage_catalogs.vue#1"
+      :draft-entity="`${activeType}:${editing?.id ?? 'create'}`"
+      :draft-state="{ formBrandId, formName, formHex }"
+      :draft-setters="{ formBrandId: (value) => formBrandId = value, formName: (value) => formName = value, formHex: (value) => formHex = value }"
     >
       <div class="flex flex-col gap-3">
             <div v-if="activeType === 'vehicle_models' && !editing">
@@ -189,7 +193,7 @@ async function toggleStatus(item: CatalogItem) {
       </div>
 
       <template #footer>
-        <button type="button" class="nxr-btn nxr-btn-secondary" @click="showForm = false">Cancelar</button>
+
         <button type="button" class="nxr-btn nxr-btn-primary" :disabled="saving" @click="saveForm">
           {{ saving ? 'Guardando...' : 'Guardar' }}
         </button>

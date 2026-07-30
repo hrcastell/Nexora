@@ -118,7 +118,10 @@ async function toggleStatus(item: Supplier) {
       </article>
     </div>
 
-    <NxrSlidePanel :open="showForm" :title="editing ? 'Editar proveedor' : 'Nuevo proveedor'" size="md" @close="showForm = false">
+    <NxrSlidePanel :open="showForm" :title="editing ? 'Editar proveedor' : 'Nuevo proveedor'" size="md" @close="showForm = false"
+    draft-key="views/inventory/screens_inventory_suppliers.vue#1"
+    :draft-entity="editing?.id ?? 'create'"
+    :draft-state="{ form }">
       <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div class="sm:col-span-2"><label class="mb-1 block text-xs text-white/50">Nombre *</label><input v-model="form.name" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none" /></div>
         <div><label class="mb-1 block text-xs text-white/50">Tipo documento</label><input v-model="form.document_type" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none" /></div>
@@ -136,7 +139,7 @@ async function toggleStatus(item: Supplier) {
         <div class="sm:col-span-2"><label class="mb-1 block text-xs text-white/50">Notas</label><textarea v-model="form.notes" rows="3" class="w-full resize-none rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none"></textarea></div>
       </div>
       <p v-if="error" class="mt-2 text-xs text-red-400">{{ error }}</p>
-      <template #footer><button class="nxr-btn nxr-btn-secondary" @click="showForm = false">Cancelar</button><button class="nxr-btn nxr-btn-primary" :disabled="saving" @click="save">{{ saving ? 'Guardando...' : 'Guardar' }}</button></template>
+      <template #footer><button class="nxr-btn nxr-btn-primary" :disabled="saving" @click="save">{{ saving ? 'Guardando...' : 'Guardar' }}</button></template>
     </NxrSlidePanel>
   </div>
 </template>

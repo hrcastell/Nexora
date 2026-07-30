@@ -231,7 +231,10 @@ const BUDGET_STATUS_COLOR: Record<string, string> = {
     </template>
 
     <!-- Create period panel -->
-    <NxrSlidePanel :open="showCreate" title="Nuevo período" eyebrow="Finanzas" @close="showCreate = false">
+    <NxrSlidePanel :open="showCreate" title="Nuevo período" eyebrow="Finanzas" @close="showCreate = false"
+    draft-key="views/financial/screens_financial_dashboard.vue#1"
+    :draft-entity="'create'"
+    :draft-state="{ form }">
       <form class="flex flex-col gap-5" @submit.prevent="createPeriod">
         <div class="flex flex-col gap-1.5">
           <label class="text-xs text-white/50">Año</label>
@@ -250,7 +253,7 @@ const BUDGET_STATUS_COLOR: Record<string, string> = {
         <p v-if="saveError" class="text-xs text-red-400">{{ saveError }}</p>
       </form>
       <template #footer>
-        <button type="button" class="flex-1 px-4 py-2 rounded-xl text-sm text-white/60 border border-white/10 hover:bg-white/5" @click="showCreate = false">Cancelar</button>
+
         <button type="button" class="flex-1 rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary disabled:opacity-50" :disabled="saving" @click="createPeriod">
           {{ saving ? 'Creando...' : 'Crear período' }}
         </button>

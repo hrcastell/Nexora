@@ -585,7 +585,10 @@ const scopeColor = (s: string) => {
       :title="isEditing ? 'Editar perfil' : 'Nuevo perfil'"
       size="sm"
       @close="showProfileModal = false"
-    >
+
+    draft-key="views/admin/ProfilesView.vue#1"
+    :draft-entity="`${selectedCompanyId ?? 'session'}:${isEditing ? form.id : 'create'}`"
+    :draft-state="{ form }">
       <div class="space-y-4">
             <div v-if="saveError" class="flex items-center gap-2 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
               <ShieldAlert class="h-4 w-4 shrink-0" /> {{ saveError }}
@@ -620,7 +623,7 @@ const scopeColor = (s: string) => {
           </div>
 
       <template #footer>
-        <button @click="showProfileModal = false" class="nxr-btn nxr-btn-secondary">Cancelar</button>
+
         <button @click="saveProfile" :disabled="isSaving" class="nxr-btn nxr-btn-primary">
           <Loader2 v-if="isSaving" class="h-4 w-4 animate-spin" />
           <Save v-else class="h-4 w-4" />

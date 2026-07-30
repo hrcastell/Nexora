@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard RRHH - Portal de Solicitudes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .sidebar-link:hover { background: linear-gradient(90deg, rgba(99,102,241,0.1) 0%, transparent 100%); }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1); }
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+<base target="_blank">
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <!-- Layout Principal -->
+    <div class="min-h-screen flex">
+
+        <!-- Sidebar -->
+        <aside class="w-64 bg-white border-r border-gray-200 flex-col hidden lg:flex">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 gradient-bg rounded-lg flex items-center justify-center text-white">
+                        <i data-lucide="briefcase" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg text-gray-900">Portal RH</h1>
+                        <p class="text-xs text-gray-500">Solicitudes</p>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="flex-1 p-4 space-y-1">
+                <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-3 bg-indigo-50 text-indigo-700 rounded-lg border-r-4 border-indigo-600">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                    <span class="font-medium">Dashboard RRHH</span>
+                </a>
+                <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-3 text-gray-600 rounded-lg hover:text-indigo-600 transition-colors">
+                    <i data-lucide="clipboard-check" class="w-5 h-5"></i>
+                    <span class="font-medium">Solicitudes Aprobadas</span>
+                    <span class="ml-auto bg-orange-500 text-white text-xs px-2 py-0.5 rounded-full">12</span>
+                </a>
+                <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-3 text-gray-600 rounded-lg hover:text-indigo-600 transition-colors">
+                    <i data-lucide="file-signature" class="w-5 h-5"></i>
+                    <span class="font-medium">Comprobantes por Firmar</span>
+                    <span class="ml-auto bg-yellow-500 text-white text-xs px-2 py-0.5 rounded-full">5</span>
+                </a>
+                <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-3 text-gray-600 rounded-lg hover:text-indigo-600 transition-colors">
+                    <i data-lucide="calculator" class="w-5 h-5"></i>
+                    <span class="font-medium">Ajustes de Saldo</span>
+                </a>
+            </nav>
+
+            <div class="p-4 border-t border-gray-200">
+                <div class="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
+                    <div class="w-10 h-10 bg-gradient-to-br from-pink-400 to-pink-600 rounded-full flex items-center justify-center text-white font-medium">RR</div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-gray-900 truncate">Rosa Ramírez</p>
+                        <p class="text-xs text-gray-500 truncate">Recursos Humanos</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col min-w-0">
+            <!-- Topbar -->
+            <header class="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-4 lg:px-8">
+                <div class="flex items-center gap-4">
+                    <button class="lg:hidden p-2 hover:bg-gray-100 rounded-lg">
+                        <i data-lucide="menu" class="w-5 h-5"></i>
+                    </button>
+                    <div>
+                        <h2 class="text-xl font-semibold text-gray-800">Dashboard</h2>
+                        <p class="text-sm text-gray-500">Vista de RRHH</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4">
+                    <button class="p-2 hover:bg-gray-100 rounded-lg relative">
+                        <i data-lucide="bell" class="w-5 h-5 text-gray-600"></i>
+                        <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Content -->
+            <main class="flex-1 overflow-y-auto p-4 lg:p-8 fade-in">
+                <div class="max-w-7xl mx-auto">
+
+                    <!-- Welcome -->
+                    <div class="mb-8">
+                        <h1 class="text-2xl font-bold text-gray-900">¡Hola, Rosa!</h1>
+                        <p class="text-gray-500 mt-1">Gestión de solicitudes aprobadas y documentación</p>
+                    </div>
+
+                    <!-- Stats Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                        <!-- Aprobadas esperando RRHH -->
+                        <div class="card-hover bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                                    <i data-lucide="clipboard-check" class="w-6 h-6 text-orange-600"></i>
+                                </div>
+                                <span class="text-2xl font-bold text-gray-900">12</span>
+                            </div>
+                            <p class="text-sm text-gray-600">Aprobadas esperando RRHH</p>
+                            <div class="mt-3 flex items-center text-xs text-orange-600">
+                                <i data-lucide="alert-circle" class="w-3 h-3 mr-1"></i>
+                                <span>Requieren gestión</span>
+                            </div>
+                        </div>
+
+                        <!-- Comprobantes por firmar -->
+                        <div class="card-hover bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                                    <i data-lucide="file-signature" class="w-6 h-6 text-yellow-600"></i>
+                                </div>
+                                <span class="text-2xl font-bold text-gray-900">5</span>
+                            </div>
+                            <p class="text-sm text-gray-600">Comprobantes por firmar</p>
+                            <div class="mt-3 flex items-center text-xs text-yellow-600">
+                                <i data-lucide="clock" class="w-3 h-3 mr-1"></i>
+                                <span>Pendientes empleado</span>
+                            </div>
+                        </div>
+
+                        <!-- Completadas esta semana -->
+                        <div class="card-hover bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                                    <i data-lucide="check-circle" class="w-6 h-6 text-green-600"></i>
+                                </div>
+                                <span class="text-2xl font-bold text-gray-900">28</span>
+                            </div>
+                            <p class="text-sm text-gray-600">Completadas esta semana</p>
+                            <div class="mt-3 flex items-center text-xs text-green-600">
+                                <i data-lucide="trending-up" class="w-3 h-3 mr-1"></i>
+                                <span>+5 vs semana pasada</span>
+                            </div>
+                        </div>
+
+                        <!-- Total activas -->
+                        <div class="card-hover bg-white p-6 rounded-xl border border-gray-100 shadow-sm">
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                    <i data-lucide="activity" class="w-6 h-6 text-blue-600"></i>
+                                </div>
+                                <span class="text-2xl font-bold text-gray-900">156</span>
+                            </div>
+                            <p class="text-sm text-gray-600">Solicitudes activas</p>
+                            <div class="mt-3 flex items-center text-xs text-blue-600">
+                                <span>En proceso este mes</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                        <!-- Main List: Aprobadas esperando -->
+                        <div class="lg:col-span-2">
+                            <div class="bg-white rounded-2xl shadow-sm border border-gray-200">
+                                <div class="p-6 border-b border-gray-100 flex items-center justify-between">
+                                    <div>
+                                        <h3 class="text-lg font-semibold text-gray-900">Aprobadas esperando gestión RRHH</h3>
+                                        <p class="text-sm text-gray-500 mt-1">Solicitudes aprobadas por gerentes pendientes de documentación</p>
+                                    </div>
+                                    <button class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                                        Ver todas →
+                                    </button>
+                                </div>
+
+                                <div class="divide-y divide-gray-100">
+                                    <!-- Item 1 -->
+                                    <div class="p-4 hover:bg-gray-50 transition-colors">
+                                        <div class="flex items-start justify-between">
+                                            <div class="flex items-start gap-4">
+                                                <div class="w-10 h-10 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-white font-medium flex-shrink-0">
+                                                    AR
+                                                </div>
+                                                <div>
+                                                    <div class="flex items-center gap-2 mb-1">
+                                                        <p class="font-medium text-gray-900">Ana Rodríguez</p>
+                                                        <span class="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full">Vacaciones</span>
+                                                    </div>
+                                                    <p class="text-sm text-gray-500">20 Mar - 25 Mar 2024 • 3 días</p>
+                                                    <div class="flex items-center gap-3 mt-2">
+                                                        <span class="text-xs text-gray-400">Aprobado por: María González</span>
+                                                        <span class="text-xs text-gray-400">•</span>
+                                                        <span class="text-xs text-gray-400">Hace 1 día</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center gap-2">
+                                                <button class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium transition-colors">
+                                                    Gestionar
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Item 2 -->
+                                    <div class="p-4 hover:bg-gray-50 transition-colors">
+                                        <div class="flex items-start justify-between">
+                                            <div class="flex items-start gap-4">
+                                                <div class="w-10 h-10 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center text-white font-medium flex-shrink-0">
+                                                    CM
+                                                </div>
+                                                <div>
+                                                    <div class="flex items-center gap-2 mb-1">
+                                                        <p class="font-medium text-gray-900">Carlos Martínez</p>
+                                                        <span class="px-2 py-0.5 bg-purple-100 text-purple-700 text-xs rounded-full">Permiso</span>
+                                                    </div>
+                                                    <p class="text-sm text-gray-500">12 Feb 2024 • 09:00 - 11:00 • 2 horas</p>
+                                                    <div class="flex items-center gap-3 mt-2">
+                                                        <span class="text-xs text-gray-400">Aprobado por: María González</span>
+                                                        <span class="text-xs text-gray-400">•</span>
+                                                        <span class="text-xs text-gray-400">Hace 2 días</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center gap-2">
+                                                <button class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium transition-colors">
+                                                    Gestionar
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Item 3 -->
+                                    <div class="p-4 hover:bg-gray-50 transition-colors">
+                                        <div class="flex items-start justify-between">
+                                            <div class="flex items-start gap-4">
+                                                <div class="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white font-medium flex-shrink-0">
+                                                    JP
+                                                </div>
+                                                <div>
+                                                    <div class="flex items-center gap-2 mb-1">
+                                                        <p class="font-medium text-gray-900">Juan Pérez</p>
+                                                        <span class="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full">Vacaciones</span>
+                                                    </div>
+                                                    <p class="text-sm text-gray-500">01 Mar - 10 Mar 2024 • 7 días</p>
+                                                    <div class="flex items-center gap-3 mt-2">
+                                                        <span class="text-xs text-gray-400">Aprobado por: María González</span>
+                                                        <span class="text-xs text-gray-400">•</span>
+                                                        <span class="text-xs text-gray-400">Hace 2 días</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="flex items-center gap-2">
+                                                <button class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium transition-colors">
+                                                    Gestionar
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="p-4 border-t border-gray-100 text-center">
+                                    <button class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                                        Ver las 9 solicitudes restantes
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Sidebar -->
+                        <div class="space-y-6">
+
+                            <!-- Comprobantes pendientes -->
+                            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h3 class="text-lg font-semibold text-gray-900">Comprobantes pendientes</h3>
+                                    <span class="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs font-medium rounded-full">5</span>
+                                </div>
+                                <p class="text-sm text-gray-500 mb-4">Esperando firma del empleado</p>
+
+                                <div class="space-y-3">
+                                    <div class="flex items-center justify-between p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
+                                                <i data-lucide="user" class="w-4 h-4 text-yellow-600"></i>
+                                            </div>
+                                            <div>
+                                                <p class="text-sm font-medium text-gray-900">Laura Sánchez</p>
+                                                <p class="text-xs text-gray-500">Vacaciones • 15-20 Feb</p>
+                                            </div>
+                                        </div>
+                                        <button class="text-xs text-yellow-700 font-medium hover:underline">Recordar</button>
+                                    </div>
+
+                                    <div class="flex items-center justify-between p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
+                                                <i data-lucide="user" class="w-4 h-4 text-yellow-600"></i>
+                                            </div>
+                                            <div>
+                                                <p class="text-sm font-medium text-gray-900">Pedro Gómez</p>
+                                                <p class="text-xs text-gray-500">Permiso • 14 Feb</p>
+                                            </div>
+                                        </div>
+                                        <button class="text-xs text-yellow-700 font-medium hover:underline">Recordar</button>
+                                    </div>
+                                </div>
+
+                                <button class="w-full mt-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                                    Ver todos
+                                </button>
+                            </div>
+
+                            <!-- Quick Actions -->
+                            <div class="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow-lg p-6 text-white">
+                                <h3 class="font-semibold mb-4">Acciones rápidas</h3>
+                                <div class="space-y-3">
+                                    <button class="w-full py-2.5 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2">
+                                        <i data-lucide="file-plus" class="w-4 h-4"></i>
+                                        Generar reporte
+                                    </button>
+                                    <button class="w-full py-2.5 bg-white/20 hover:bg-white/30 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2">
+                                        <i data-lucide="download" class="w-4 h-4"></i>
+                                        Exportar datos
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- System Status -->
+                            <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+                                <h3 class="text-lg font-semibold text-gray-900 mb-4">Estado del sistema</h3>
+                                <div class="space-y-3">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm text-gray-600">Generación de PDFs</span>
+                                        <span class="flex items-center gap-1.5 text-sm text-green-600">
+                                            <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                                            Operativo
+                                        </span>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm text-gray-600">Firma digital</span>
+                                        <span class="flex items-center gap-1.5 text-sm text-green-600">
+                                            <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                                            Operativo
+                                        </span>
+                                    </div>
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-sm text-gray-600">Notificaciones</span>
+                                        <span class="flex items-center gap-1.5 text-sm text-green-600">
+                                            <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                                            Operativo
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

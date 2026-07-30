@@ -88,7 +88,10 @@ async function save() {
     :title="workOrder ? 'Editar orden' : 'Nueva Orden de Trabajo'"
     size="md"
     @close="close"
-  >
+
+    draft-key="widgets/widgets_garage_work_order_form_modal.vue#1"
+    :draft-entity="workOrder?.id"
+    :draft-state="{ form }">
           <div class="flex flex-col gap-5">
             <widgets_garage_customer_vehicle_selector
               v-model:customer-id="form.customer_id"
@@ -141,7 +144,7 @@ async function save() {
     <p v-if="error" class="mt-3 text-xs text-red-400">{{ error }}</p>
 
     <template #footer>
-      <button type="button" class="nxr-btn nxr-btn-secondary" @click="close">Cancelar</button>
+
       <button type="button" class="nxr-btn nxr-btn-primary" :disabled="saving" @click="save">
         <Save :size="14" />{{ saving ? 'Guardando...' : 'Crear Orden' }}
       </button>

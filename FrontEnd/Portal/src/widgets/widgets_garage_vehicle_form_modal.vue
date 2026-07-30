@@ -151,7 +151,11 @@ async function save() {
     :title="vehicle ? 'Editar vehículo' : 'Nuevo vehículo'"
     size="lg"
     @close="close"
-  >
+
+    draft-key="widgets/widgets_garage_vehicle_form_modal.vue#1"
+    :draft-entity="vehicle?.id"
+    :draft-state="{ customerQuery, transferReason, form }"
+    :draft-setters="{ customerQuery: (value) => customerQuery = value, transferReason: (value) => transferReason = value }">
 
           <!-- Issue 4: Customer selector -->
           <div class="mb-4 relative">
@@ -266,7 +270,7 @@ async function save() {
     <p v-if="error" class="mt-3 text-xs text-red-400">{{ error }}</p>
 
     <template #footer>
-      <button type="button" class="nxr-btn nxr-btn-secondary" @click="close">Cancelar</button>
+
       <button type="button" class="nxr-btn nxr-btn-primary" :disabled="saving" @click="save">
         <Save :size="14" />
         {{ saving ? 'Guardando...' : 'Guardar' }}

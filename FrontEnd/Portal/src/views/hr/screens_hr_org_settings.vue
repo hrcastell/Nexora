@@ -86,9 +86,12 @@ async function toggleStatus(item: HrCatalogItem) {
       </article>
     </div>
 
-    <NxrSlidePanel :open="showForm" :title="editing ? `Editar ${tab.singular}` : `Nuevo ${tab.singular}`" size="sm" @close="showForm = false">
+    <NxrSlidePanel :open="showForm" :title="editing ? `Editar ${tab.singular}` : `Nuevo ${tab.singular}`" size="sm" @close="showForm = false"
+    draft-key="views/hr/screens_hr_org_settings.vue#1"
+    :draft-entity="`${activeTab}:${editing?.id ?? 'create'}`"
+    :draft-state="{ form }">
       <div class="space-y-3"><div><label class="mb-1 block text-xs text-white/50">Código *</label><input v-model="form.code" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none" /></div><div><label class="mb-1 block text-xs text-white/50">Nombre *</label><input v-model="form.name" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none" /></div><p v-if="formError" class="text-xs text-red-400">{{ formError }}</p></div>
-      <template #footer><button class="nxr-btn nxr-btn-secondary" @click="showForm = false">Cancelar</button><button class="nxr-btn nxr-btn-primary" :disabled="saving" @click="save">{{ saving ? 'Guardando...' : 'Guardar' }}</button></template>
+      <template #footer><button class="nxr-btn nxr-btn-primary" :disabled="saving" @click="save">{{ saving ? 'Guardando...' : 'Guardar' }}</button></template>
     </NxrSlidePanel>
   </div>
 </template>

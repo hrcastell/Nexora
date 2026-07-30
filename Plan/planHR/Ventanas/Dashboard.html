@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Portal de Solicitudes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .gradient-text { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .sidebar-link:hover { background: linear-gradient(90deg, rgba(99,102,241,0.1) 0%, transparent 100%); }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 40px -10px rgba(0,0,0,0.15); }
+        .fade-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Quick action buttons */
+        .quick-action { transition: all 0.2s; }
+        .quick-action:hover { transform: scale(1.02); }
+        .quick-action:active { transform: scale(0.98); }
+
+        /* Status indicators */
+        .pulse-dot {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .5; }
+        }
+
+        /* Welcome banner gradient */
+        .welcome-banner {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        .welcome-banner::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 400px;
+            height: 400px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+        }
+        .welcome-banner::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -5%;
+            width: 300px;
+            height: 300px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 50%;
+        }
+    </style>
+<base target="_blank">
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <!-- Layout Principal -->
+    <div class="min-h-screen flex">
+
+        <!-- Sidebar -->
+        <aside class="w-64 bg-white border-r border-gray-200 flex-col hidden lg:flex">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 gradient-bg rounded-lg flex items-center justify-center text-white">
+                        <i data-lucide="briefcase" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg text-gray-900">Portal RH</h1>
+                        <p class="text-xs text-gray-500">Solicitudes</p>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="flex-1 p-4 space-y-1">
+                <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-3 bg-indigo-50 text-indigo-700 rounded-lg border-r-4 border-indigo-600">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                    <span class="font-medium">Dashboard</span>
+                </a>
+                <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-3 text-gray-600 rounded-lg hover:text-indigo-600 transition-colors">
+                    <i data-lucide="user" class="w-5 h-5"></i>
+                    <span class="font-medium">Mi Perfil</span>
+                </a>
+                <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-3 text-gray-600 rounded-lg hover:text-indigo-600 transition-colors">
+                    <i data-lucide="file-text" class="w-5 h-5"></i>
+                    <span class="font-medium">Mis Solicitudes</span>
+                </a>
+                <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-3 text-gray-600 rounded-lg hover:text-indigo-600 transition-colors">
+                    <i data-lucide="inbox" class="w-5 h-5"></i>
+                    <span class="font-medium">Bandeja de Aprobación</span>
+                    <span class="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">3</span>
+                </a>
+                <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-3 text-gray-600 rounded-lg hover:text-indigo-600 transition-colors">
+                    <i data-lucide="heart" class="w-5 h-5"></i>
+                    <span class="font-medium">RRHH</span>
+                </a>
+                <div class="pt-4 mt-4 border-t border-gray-200">
+                    <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Administración</p>
+                    <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-3 text-gray-600 rounded-lg hover:text-indigo-600 transition-colors">
+                        <i data-lucide="users" class="w-5 h-5"></i>
+                        <span class="font-medium">Usuarios y Roles</span>
+                    </a>
+                    <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-3 text-gray-600 rounded-lg hover:text-indigo-600 transition-colors">
+                        <i data-lucide="settings" class="w-5 h-5"></i>
+                        <span class="font-medium">Configuración</span>
+                    </a>
+                </div>
+            </nav>
+
+            <div class="p-4 border-t border-gray-200">
+                <div class="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
+                    <div class="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white font-medium">JP</div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-gray-900 truncate">Juan Pérez</p>
+                        <p class="text-xs text-gray-500 truncate">Empleado • Tecnología</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col min-w-0">
+            <!-- Topbar -->
+            <header class="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-4 lg:px-8">
+                <div class="flex items-center gap-4">
+                    <button class="lg:hidden p-2 hover:bg-gray-100 rounded-lg">
+                        <i data-lucide="menu" class="w-5 h-5"></i>
+                    </button>
+                    <h2 class="text-xl font-semibold text-gray-800">Dashboard</h2>
+                </div>
+                <div class="flex items-center gap-4">
+                    <button class="p-2 hover:bg-gray-100 rounded-lg relative">
+                        <i data-lucide="bell" class="w-5 h-5 text-gray-600"></i>
+                        <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full pulse-dot"></span>
+                    </button>
+                    <button class="p-2 hover:bg-gray-100 rounded-lg">
+                        <i data-lucide="help-circle" class="w-5 h-5 text-gray-600"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Content -->
+            <main class="flex-1 overflow-y-auto p-4 lg:p-8 fade-in">
+                <div class="max-w-7xl mx-auto space-y-6">
+
+                    <!-- Welcome Banner -->
+                    <div class="welcome-banner rounded-2xl p-8 text-white relative">
+                        <div class="relative z-10">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-xs font-medium">
+                                    👋 Bienvenido de vuelta
+                                </span>
+                                <span id="greeting" class="text-sm text-white/80"></span>
+                            </div>
+                            <h1 class="text-3xl font-bold mb-2">Juan Pérez</h1>
+                            <p class="text-white/90 max-w-xl">
+                                Tienes <strong>3 solicitudes pendientes de aprobación</strong> y 
+                                <strong>15 días de vacaciones disponibles</strong>. 
+                                ¿Qué deseas hacer hoy?
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions Grid -->
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                            <i data-lucide="zap" class="w-5 h-5 text-amber-500"></i>
+                            Acciones rápidas
+                        </h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <button class="quick-action card-hover bg-white p-6 rounded-xl border border-gray-200 shadow-sm text-left group">
+                                <div class="w-12 h-12 gradient-bg rounded-xl flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform">
+                                    <i data-lucide="plus" class="w-6 h-6"></i>
+                                </div>
+                                <h4 class="font-semibold text-gray-900 mb-1">Nueva solicitud</h4>
+                                <p class="text-sm text-gray-500">Crear vacaciones, permiso o desconexión</p>
+                            </button>
+
+                            <button class="quick-action card-hover bg-white p-6 rounded-xl border border-gray-200 shadow-sm text-left group">
+                                <div class="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center text-indigo-600 mb-4 group-hover:scale-110 transition-transform">
+                                    <i data-lucide="inbox" class="w-6 h-6"></i>
+                                </div>
+                                <h4 class="font-semibold text-gray-900 mb-1">Bandeja de entrada</h4>
+                                <p class="text-sm text-gray-500">3 pendientes por aprobar</p>
+                            </button>
+
+                            <button class="quick-action card-hover bg-white p-6 rounded-xl border border-gray-200 shadow-sm text-left group">
+                                <div class="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center text-green-600 mb-4 group-hover:scale-110 transition-transform">
+                                    <i data-lucide="calendar" class="w-6 h-6"></i>
+                                </div>
+                                <h4 class="font-semibold text-gray-900 mb-1">Mi calendario</h4>
+                                <p class="text-sm text-gray-500">Ver mis próximas ausencias</p>
+                            </button>
+
+                            <button class="quick-action card-hover bg-white p-6 rounded-xl border border-gray-200 shadow-sm text-left group">
+                                <div class="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center text-amber-600 mb-4 group-hover:scale-110 transition-transform">
+                                    <i data-lucide="pie-chart" class="w-6 h-6"></i>
+                                </div>
+                                <h4 class="font-semibold text-gray-900 mb-1">Mis estadísticas</h4>
+                                <p class="text-sm text-gray-500">Resumen de mis solicitudes</p>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Main Grid: Stats + Activity -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        
+                        <!-- Left: My Summary -->
+                        <div class="lg:col-span-2 space-y-6">
+                            <!-- Benefits Cards -->
+                            <div>
+                                <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                                    <i data-lucide="award" class="w-5 h-5 text-indigo-600"></i>
+                                    Mis beneficios
+                                </h3>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div class="card-hover bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                                        <div class="flex items-center justify-between mb-4">
+                                            <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center text-amber-600">
+                                                <i data-lucide="sun" class="w-5 h-5"></i>
+                                            </div>
+                                            <span class="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">+2 este año</span>
+                                        </div>
+                                        <p class="text-3xl font-bold text-gray-900">15</p>
+                                        <p class="text-sm text-gray-500">Días de vacaciones</p>
+                                        <div class="mt-3 h-2 bg-gray-100 rounded-full overflow-hidden">
+                                            <div class="h-full bg-amber-500 rounded-full" style="width: 75%"></div>
+                                        </div>
+                                        <p class="text-xs text-gray-400 mt-1">de 20 días anuales</p>
+                                    </div>
+
+                                    <div class="card-hover bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                                        <div class="flex items-center justify-between mb-4">
+                                            <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">
+                                                <i data-lucide="clock" class="w-5 h-5"></i>
+                                            </div>
+                                            <span class="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded-full">Acumulables</span>
+                                        </div>
+                                        <p class="text-3xl font-bold text-gray-900">24</p>
+                                        <p class="text-sm text-gray-500">Horas de permiso</p>
+                                        <div class="mt-3 h-2 bg-gray-100 rounded-full overflow-hidden">
+                                            <div class="h-full bg-blue-500 rounded-full" style="width: 100%"></div>
+                                        </div>
+                                        <p class="text-xs text-gray-400 mt-1">disponibles este mes</p>
+                                    </div>
+
+                                    <div class="card-hover bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                                        <div class="flex items-center justify-between mb-4">
+                                            <div class="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center text-emerald-600">
+                                                <i data-lucide="power-off" class="w-5 h-5"></i>
+                                            </div>
+                                            <span class="text-xs font-medium text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">Ilimitado</span>
+                                        </div>
+                                        <p class="text-3xl font-bold text-gray-900">∞</p>
+                                        <p class="text-sm text-gray-500">Desconexiones</p>
+                                        <div class="mt-3 h-2 bg-gray-100 rounded-full overflow-hidden">
+                                            <div class="h-full bg-emerald-500 rounded-full" style="width: 100%"></div>
+                                        </div>
+                                        <p class="text-xs text-gray-400 mt-1">según política</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Recent Requests Table -->
+                            <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                                <div class="p-6 border-b border-gray-200 flex items-center justify-between">
+                                    <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                                        <i data-lucide="history" class="w-5 h-5 text-gray-600"></i>
+                                        Mis solicitudes recientes
+                                    </h3>
+                                    <a href="#" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1">
+                                        Ver todas
+                                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                                    </a>
+                                </div>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full">
+                                        <tbody class="divide-y divide-gray-200">
+                                            <tr class="table-row transition-colors hover:bg-gray-50">
+                                                <td class="px-6 py-4">
+                                                    <div class="flex items-center gap-3">
+                                                        <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center text-amber-600">
+                                                            <i data-lucide="sun" class="w-5 h-5"></i>
+                                                        </div>
+                                                        <div>
+                                                            <p class="font-medium text-gray-900">Vacaciones</p>
+                                                            <p class="text-xs text-gray-500">15-19 de enero, 2024</p>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="px-6 py-4">
+                                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                                                        <span class="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                                                        Aprobada
+                                                    </span>
+                                                </td>
+                                                <td class="px-6 py-4 text-right">
+                                                    <button class="text-gray-400 hover:text-gray-600">
+                                                        <i data-lucide="more-vertical" class="w-5 h-5"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr class="table-row transition-colors hover:bg-gray-50">
+                                                <td class="px-6 py-4">
+                                                    <div class="flex items-center gap-3">
+                                                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center text-blue-600">
+                                                            <i data-lucide="clock" class="w-5 h-5"></i>
+                                                        </div>
+                                                        <div>
+                                                            <p class="font-medium text-gray-900">Permiso por horas</p>
+                                                            <p class="text-xs text-gray-500">10 enero, 2024 • 14:00-16:00</p>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="px-6 py-4">
+                                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700">
+                                                        <span class="w-1.5 h-1.5 bg-amber-500 rounded-full"></span>
+                                                        Pendiente
+                                                    </span>
+                                                </td>
+                                                <td class="px-6 py-4 text-right">
+                                                    <button class="text-gray-400 hover:text-gray-600">
+                                                        <i data-lucide="more-vertical" class="w-5 h-5"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                            <tr class="table-row transition-colors hover:bg-gray-50">
+                                                <td class="px-6 py-4">
+                                                    <div class="flex items-center gap-3">
+                                                        <div class="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center text-emerald-600">
+                                                            <i data-lucide="power-off" class="w-5 h-5"></i>
+                                                        </div>
+                                                        <div>
+                                                            <p class="font-medium text-gray-900">Desconexión</p>
+                                                            <p class="text-xs text-gray-500">5 enero, 2024 • Día completo</p>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="px-6 py-4">
+                                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                                                        <span class="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
+                                                        Completada
+                                                    </span>
+                                                </td>
+                                                <td class="px-6 py-4 text-right">
+                                                    <button class="text-gray-400 hover:text-gray-600">
+                                                        <i data-lucide="more-vertical" class="w-5 h-5"></i>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right: Sidebar Info -->
+                        <div class="space-y-6">
+                            <!-- Pending Approvals (if user is approver) -->
+                            <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+                                <div class="flex items-center justify-between mb-4">
+                                    <h3 class="font-semibold text-gray-900 flex items-center gap-2">
+                                        <i data-lucide="inbox" class="w-5 h-5 text-red-500"></i>
+                                        Por aprobar
+                                    </h3>
+                                    <span class="bg-red-100 text-red-700 text-xs font-bold px-2 py-1 rounded-full">3</span>
+                                </div>
+                                <div class="space-y-3">
+                                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
+                                        <div class="w-10 h-10 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-medium">MR</div>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-sm font-medium text-gray-900 truncate">María Rodríguez</p>
+                                            <p class="text-xs text-gray-500">Vacaciones • 5 días</p>
+                                        </div>
+                                        <i data-lucide="chevron-right" class="w-4 h-4 text-gray-400"></i>
+                                    </div>
+                                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
+                                        <div class="w-10 h-10 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-white text-sm font-medium">CL</div>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-sm font-medium text-gray-900 truncate">Carlos López</p>
+                                            <p class="text-xs text-gray-500">Permiso • 2 horas</p>
+                                        </div>
+                                        <i data-lucide="chevron-right" class="w-4 h-4 text-gray-400"></i>
+                                    </div>
+                                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
+                                        <div class="w-10 h-10 bg-gradient-to-br from-pink-400 to-pink-600 rounded-full flex items-center justify-center text-white text-sm font-medium">AS</div>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-sm font-medium text-gray-900 truncate">Ana Silva</p>
+                                            <p class="text-xs text-gray-500">Desconexión • 1 día</p>
+                                        </div>
+                                        <i data-lucide="chevron-right" class="w-4 h-4 text-gray-400"></i>
+                                    </div>
+                                </div>
+                                <button class="w-full mt-4 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm font-medium">
+                                    Ver todas las pendientes
+                                </button>
+                            </div>
+
+                            <!-- Upcoming Holidays -->
+                            <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+                                <h3 class="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                                    <i data-lucide="calendar" class="w-5 h-5 text-indigo-600"></i>
+                                    Próximos feriados
+                                </h3>
+                                <div class="space-y-3">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center text-blue-700 font-bold text-sm text-center leading-tight">
+                                            12<br>FEB
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-900">Carnaval</p>
+                                            <p class="text-xs text-gray-500">Lunes • Feriado nacional</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center text-blue-700 font-bold text-sm text-center leading-tight">
+                                            13<br>FEB
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-900">Carnaval</p>
+                                            <p class="text-xs text-gray-500">Martes • Feriado nacional</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center text-green-700 font-bold text-sm text-center leading-tight">
+                                            15<br>JUL
+                                        </div>
+                                        <div>
+                                            <p class="text-sm font-medium text-gray-900">Aniversario Empresa</p>
+                                            <p class="text-xs text-gray-500">Lunes • Día empresa</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Quick Tips -->
+                            <div class="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl border border-indigo-100 p-6">
+                                <h3 class="font-semibold text-indigo-900 mb-2 flex items-center gap-2">
+                                    <i data-lucide="lightbulb" class="w-5 h-5 text-indigo-600"></i>
+                                    ¿Sabías que?
+                                </h3>
+                                <p class="text-sm text-indigo-700 mb-3">
+                                    Las vacaciones se descuentan automáticamente de tu saldo al ser aprobadas, no cuando las solicitas.
+                                </p>
+                                <a href="#" class="text-sm font-medium text-indigo-600 hover:text-indigo-800 flex items-center gap-1">
+                                    Ver política completa
+                                    <i data-lucide="external-link" class="w-3 h-3"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Admin Section (Only visible for admins) -->
+                    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+                        <div class="flex items-center justify-between mb-6">
+                            <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                                <i data-lucide="shield" class="w-5 h-5 text-red-500"></i>
+                                Panel de administración
+                            </h3>
+                            <span class="text-xs font-medium text-red-600 bg-red-50 px-3 py-1 rounded-full">Solo administradores</span>
+                        </div>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <a href="#" class="card-hover p-4 rounded-xl border border-gray-200 hover:border-indigo-300 transition-all group">
+                                <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center text-indigo-600 mb-3 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                                    <i data-lucide="users" class="w-5 h-5"></i>
+                                </div>
+                                <p class="font-medium text-gray-900 text-sm">Usuarios</p>
+                                <p class="text-xs text-gray-500 mt-1">48 registrados</p>
+                            </a>
+                            <a href="#" class="card-hover p-4 rounded-xl border border-gray-200 hover:border-indigo-300 transition-all group">
+                                <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center text-indigo-600 mb-3 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                                    <i data-lucide="settings" class="w-5 h-5"></i>
+                                </div>
+                                <p class="font-medium text-gray-900 text-sm">Tipos de solicitud</p>
+                                <p class="text-xs text-gray-500 mt-1">6 configurados</p>
+                            </a>
+                            <a href="#" class="card-hover p-4 rounded-xl border border-gray-200 hover:border-indigo-300 transition-all group">
+                                <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center text-indigo-600 mb-3 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                                    <i data-lucide="calendar" class="w-5 h-5"></i>
+                                </div>
+                                <p class="font-medium text-gray-900 text-sm">Feriados</p>
+                                <p class="text-xs text-gray-500 mt-1">15 este año</p>
+                            </a>
+                            <a href="#" class="card-hover p-4 rounded-xl border border-gray-200 hover:border-indigo-300 transition-all group">
+                                <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center text-indigo-600 mb-3 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                                    <i data-lucide="file-text" class="w-5 h-5"></i>
+                                </div>
+                                <p class="font-medium text-gray-900 text-sm">Plantillas PDF</p>
+                                <p class="text-xs text-gray-500 mt-1">8 activas</p>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Footer Info -->
+                    <div class="text-center text-sm text-gray-400 pt-4">
+                        <p>Portal RH v2.1.0 • Última actualización: 15 de enero, 2024</p>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        // Dynamic greeting based on time
+        const hour = new Date().getHours();
+        const greetingElement = document.getElementById('greeting');
+        let greeting = 'Buenos días';
+        if (hour >= 12 && hour < 18) greeting = 'Buenas tardes';
+        else if (hour >= 18) greeting = 'Buenas noches';
+        greetingElement.textContent = greeting;
+    </script>
+</body>
+</html>

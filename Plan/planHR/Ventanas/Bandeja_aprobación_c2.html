@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bandeja de Aprobaciones - Portal de Solicitudes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .sidebar-link:hover { background: linear-gradient(90deg, rgba(99,102,241,0.1) 0%, transparent 100%); }
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Table row hover */
+        .table-row:hover { background-color: #f9fafb; }
+
+        /* Status badges */
+        .status-pending { background: #fef3c7; color: #92400e; }
+    </style>
+<base target="_blank">
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <!-- Layout Principal -->
+    <div class="min-h-screen flex">
+
+        <!-- Sidebar -->
+        <aside class="w-64 bg-white border-r border-gray-200 flex-col hidden lg:flex">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 gradient-bg rounded-lg flex items-center justify-center text-white">
+                        <i data-lucide="briefcase" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg text-gray-900">Portal RH</h1>
+                        <p class="text-xs text-gray-500">Solicitudes</p>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="flex-1 p-4 space-y-1">
+                <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-3 text-gray-600 rounded-lg hover:text-indigo-600 transition-colors">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                    <span class="font-medium">Dashboard</span>
+                </a>
+                <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-3 bg-indigo-50 text-indigo-700 rounded-lg border-r-4 border-indigo-600">
+                    <i data-lucide="inbox" class="w-5 h-5"></i>
+                    <span class="font-medium">Bandeja de Entrada</span>
+                    <span class="ml-auto bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">5</span>
+                </a>
+                <a href="#" class="sidebar-link flex items-center gap-3 px-4 py-3 text-gray-600 rounded-lg hover:text-indigo-600 transition-colors">
+                    <i data-lucide="check-circle" class="w-5 h-5"></i>
+                    <span class="font-medium">Historial</span>
+                </a>
+            </nav>
+
+            <div class="p-4 border-t border-gray-200">
+                <div class="flex items-center gap-3 p-3 rounded-lg bg-gray-50">
+                    <div class="w-10 h-10 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center text-white font-medium">MG</div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-gray-900 truncate">María González</p>
+                        <p class="text-xs text-gray-500 truncate">Aprobador</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col min-w-0">
+            <!-- Topbar -->
+            <header class="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-4 lg:px-8">
+                <div class="flex items-center gap-4">
+                    <button class="lg:hidden p-2 hover:bg-gray-100 rounded-lg">
+                        <i data-lucide="menu" class="w-5 h-5"></i>
+                    </button>
+                    <h2 class="text-xl font-semibold text-gray-800">Bandeja de Aprobaciones</h2>
+                </div>
+                <div class="flex items-center gap-4">
+                    <button class="p-2 hover:bg-gray-100 rounded-lg relative">
+                        <i data-lucide="bell" class="w-5 h-5 text-gray-600"></i>
+                        <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Content -->
+            <main class="flex-1 overflow-y-auto p-4 lg:p-8 fade-in">
+                <div class="max-w-7xl mx-auto">
+
+                    <!-- Header -->
+                    <div class="mb-6">
+                        <h1 class="text-2xl font-bold text-gray-900">Solicitudes pendientes</h1>
+                        <p class="text-gray-500 mt-1">Revisa y gestiona las solicitudes de tu equipo</p>
+                    </div>
+
+                    <!-- Filters -->
+                    <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-6">
+                        <div class="flex flex-col lg:flex-row gap-4">
+                            <!-- Search -->
+                            <div class="flex-1 relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i data-lucide="search" class="w-5 h-5 text-gray-400"></i>
+                                </div>
+                                <input 
+                                    type="text" 
+                                    placeholder="Buscar por empleado, tipo o fecha..."
+                                    class="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                >
+                            </div>
+
+                            <!-- Filters -->
+                            <div class="flex flex-wrap gap-3">
+                                <select class="px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white text-sm">
+                                    <option value="">Todos los tipos</option>
+                                    <option value="vacations">Vacaciones</option>
+                                    <option value="permission">Permiso horas</option>
+                                    <option value="disconnect">Desconexión</option>
+                                </select>
+
+                                <select class="px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 bg-white text-sm">
+                                    <option value="">Todos los empleados</option>
+                                    <option value="ana">Ana Rodríguez</option>
+                                    <option value="carlos">Carlos Martínez</option>
+                                    <option value="laura">Laura Sánchez</option>
+                                    <option value="juan">Juan Pérez</option>
+                                </select>
+
+                                <div class="flex items-center gap-2">
+                                    <input type="date" class="px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm">
+                                    <span class="text-gray-400">-</span>
+                                    <input type="date" class="px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 text-sm">
+                                </div>
+
+                                <button class="px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium text-sm flex items-center gap-2">
+                                    <i data-lucide="filter" class="w-4 h-4"></i>
+                                    Filtrar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Table -->
+                    <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full">
+                                <thead class="bg-gray-50 border-b border-gray-200">
+                                    <tr>
+                                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Empleado</th>
+                                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Tipo</th>
+                                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Fechas / Horas</th>
+                                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Días solicitados</th>
+                                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Enviado</th>
+                                        <th class="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    <!-- Row 1 -->
+                                    <tr class="table-row transition-colors">
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-10 h-10 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-white font-medium">AR</div>
+                                                <div>
+                                                    <p class="font-medium text-gray-900">Ana Rodríguez</p>
+                                                    <p class="text-xs text-gray-500">Desarrolladora Senior</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                                                <i data-lucide="sun" class="w-3 h-3"></i>
+                                                Vacaciones
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <p class="text-sm text-gray-900">20 Mar - 25 Mar 2024</p>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="text-sm font-semibold text-gray-900">3 días</span>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <p class="text-sm text-gray-600">Hace 2 horas</p>
+                                        </td>
+                                        <td class="px-6 py-4 text-right">
+                                            <button onclick="showApprovalModal('Ana Rodríguez', 'vacations')" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium transition-colors">
+                                                Ver
+                                            </button>
+                                        </td>
+                                    </tr>
+
+                                    <!-- Row 2 -->
+                                    <tr class="table-row transition-colors">
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-10 h-10 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full flex items-center justify-center text-white font-medium">CM</div>
+                                                <div>
+                                                    <p class="font-medium text-gray-900">Carlos Martínez</p>
+                                                    <p class="text-xs text-gray-500">Desarrollador Backend</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
+                                                <i data-lucide="clock" class="w-3 h-3"></i>
+                                                Permiso
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <p class="text-sm text-gray-900">12 Feb 2024</p>
+                                            <p class="text-xs text-gray-500">09:00 - 11:00</p>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="text-sm font-semibold text-gray-900">2 horas</span>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <p class="text-sm text-gray-600">Hace 4 horas</p>
+                                        </td>
+                                        <td class="px-6 py-4 text-right">
+                                            <button onclick="showApprovalModal('Carlos Martínez', 'permission')" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium transition-colors">
+                                                Ver
+                                            </button>
+                                        </td>
+                                    </tr>
+
+                                    <!-- Row 3 -->
+                                    <tr class="table-row transition-colors">
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-10 h-10 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center text-white font-medium">LS</div>
+                                                <div>
+                                                    <p class="font-medium text-gray-900">Laura Sánchez</p>
+                                                    <p class="text-xs text-gray-500">Diseñadora UX</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                                                <i data-lucide="power" class="w-3 h-3"></i>
+                                                Desconexión
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <p class="text-sm text-gray-900">15 Feb 2024</p>
+                                            <p class="text-xs text-gray-500">14:00 - 16:00</p>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="text-sm font-semibold text-gray-900">2 horas</span>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <p class="text-sm text-gray-600">Hace 6 horas</p>
+                                        </td>
+                                        <td class="px-6 py-4 text-right">
+                                            <button onclick="showApprovalModal('Laura Sánchez', 'disconnect')" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium transition-colors">
+                                                Ver
+                                            </button>
+                                        </td>
+                                    </tr>
+
+                                    <!-- Row 4 -->
+                                    <tr class="table-row transition-colors">
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center text-white font-medium">JP</div>
+                                                <div>
+                                                    <p class="font-medium text-gray-900">Juan Pérez</p>
+                                                    <p class="text-xs text-gray-500">Desarrollador Frontend</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+                                                <i data-lucide="sun" class="w-3 h-3"></i>
+                                                Vacaciones
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <p class="text-sm text-gray-900">01 Mar - 10 Mar 2024</p>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="text-sm font-semibold text-gray-900">7 días</span>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <p class="text-sm text-gray-600">Hace 8 horas</p>
+                                        </td>
+                                        <td class="px-6 py-4 text-right">
+                                            <button onclick="showApprovalModal('Juan Pérez', 'vacations')" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium transition-colors">
+                                                Ver
+                                            </button>
+                                        </td>
+                                    </tr>
+
+                                    <!-- Row 5 -->
+                                    <tr class="table-row transition-colors">
+                                        <td class="px-6 py-4">
+                                            <div class="flex items-center gap-3">
+                                                <div class="w-10 h-10 bg-gradient-to-br from-pink-400 to-pink-600 rounded-full flex items-center justify-center text-white font-medium">PG</div>
+                                                <div>
+                                                    <p class="font-medium text-gray-900">Pedro Gómez</p>
+                                                    <p class="text-xs text-gray-500">QA Engineer</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-700">
+                                                <i data-lucide="clock" class="w-3 h-3"></i>
+                                                Permiso
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <p class="text-sm text-gray-900">14 Feb 2024</p>
+                                            <p class="text-xs text-gray-500">16:00 - 18:00</p>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <span class="text-sm font-semibold text-gray-900">2 horas</span>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <p class="text-sm text-gray-600">Hace 12 horas</p>
+                                        </td>
+                                        <td class="px-6 py-4 text-right">
+                                            <button onclick="showApprovalModal('Pedro Gómez', 'permission')" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium transition-colors">
+                                                Ver
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pagination -->
+                        <div class="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+                            <p class="text-sm text-gray-500">Mostrando 1-5 de 12 solicitudes</p>
+                            <div class="flex items-center gap-2">
+                                <button class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50" disabled>
+                                    <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                                </button>
+                                <button class="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-sm">1</button>
+                                <button class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">2</button>
+                                <button class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">3</button>
+                                <button class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm hover:bg-gray-50">
+                                    <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Empty State (Hidden) -->
+                    <div class="hidden bg-white rounded-xl border border-gray-200 shadow-sm p-12 text-center">
+                        <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i data-lucide="inbox" class="w-8 h-8 text-gray-400"></i>
+                        </div>
+                        <h3 class="text-lg font-medium text-gray-900 mb-2">Bandeja vacía</h3>
+                        <p class="text-gray-500">No tienes solicitudes pendientes de aprobación</p>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Approval Detail Modal -->
+    <div id="approvalModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-gray-900">Revisar solicitud</h3>
+                    <button onclick="closeApprovalModal()" class="p-2 hover:bg-gray-100 rounded-lg">
+                        <i data-lucide="x" class="w-5 h-5 text-gray-500"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="p-6">
+                <!-- Employee Info -->
+                <div class="flex items-center gap-4 mb-6 p-4 bg-gray-50 rounded-xl">
+                    <div id="modal-avatar" class="w-14 h-14 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-white text-xl font-medium">AR</div>
+                    <div>
+                        <h4 id="modal-name" class="font-semibold text-gray-900 text-lg">Ana Rodríguez</h4>
+                        <p class="text-sm text-gray-500">Desarrolladora Senior • Tecnología</p>
+                    </div>
+                </div>
+
+                <!-- Request Details -->
+                <div class="space-y-4 mb-6">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <p class="text-sm text-gray-500 mb-1">Tipo de solicitud</p>
+                            <span id="modal-type" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-700">
+                                <i data-lucide="sun" class="w-4 h-4"></i>
+                                Vacaciones
+                            </span>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500 mb-1">Días solicitados</p>
+                            <p class="font-semibold text-gray-900">3 días</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500 mb-1">Fecha inicio</p>
+                            <p class="font-semibold text-gray-900">20 Mar 2024</p>
+                        </div>
+                        <div>
+                            <p class="text-sm text-gray-500 mb-1">Fecha fin</p>
+                            <p class="font-semibold text-gray-900">25 Mar 2024</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <p class="text-sm text-blue-900">
+                            <span class="font-semibold">Saldo disponible:</span> 15 días de vacaciones
+                        </p>
+                    </div>
+
+                    <div>
+                        <p class="text-sm text-gray-500 mb-2">Observaciones del empleado</p>
+                        <p class="text-gray-700 text-sm">Solicito estas vacaciones para visitar a mi familia. Ya coordiné con el equipo para cubrir mis actividades.</p>
+                    </div>
+
+                    <div>
+                        <p class="text-sm text-gray-500 mb-2">Firma del empleado</p>
+                        <div class="w-full h-24 bg-gray-100 rounded-lg border border-gray-200 flex items-center justify-center">
+                            <span class="text-gray-400 text-sm">[Firma digital capturada]</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex gap-3 pt-4 border-t border-gray-200">
+                    <button onclick="showRejectModal()" class="flex-1 px-4 py-3 border border-red-300 text-red-600 rounded-lg hover:bg-red-50 font-medium transition-colors flex items-center justify-center gap-2">
+                        <i data-lucide="x-circle" class="w-5 h-5"></i>
+                        Rechazar
+                    </button>
+                    <button onclick="approveRequest()" class="flex-1 px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition-colors flex items-center justify-center gap-2">
+                        <i data-lucide="check-circle" class="w-5 h-5"></i>
+                        Aprobar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reject Modal -->
+    <div id="rejectModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                    <i data-lucide="x-circle" class="w-5 h-5 text-red-600"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900">Rechazar solicitud</h3>
+            </div>
+            <p class="text-gray-600 mb-4">Por favor indica el motivo del rechazo. Este comentario será visible para el empleado.</p>
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Motivo de rechazo *</label>
+                <textarea id="reject-reason" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500" rows="3" placeholder="Indica el motivo..."></textarea>
+            </div>
+            <div class="flex gap-3 justify-end">
+                <button onclick="closeRejectModal()" class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">Cancelar</button>
+                <button onclick="confirmReject()" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Confirmar rechazo</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        function showApprovalModal(employee, type) {
+            document.getElementById('modal-name').textContent = employee;
+            document.getElementById('modal-avatar').textContent = employee.split(' ').map(n => n[0]).join('');
+
+            const typeConfig = {
+                'vacations': { label: 'Vacaciones', icon: 'sun', color: 'blue' },
+                'permission': { label: 'Permiso', icon: 'clock', color: 'purple' },
+                'disconnect': { label: 'Desconexión', icon: 'power', color: 'red' }
+            };
+
+            const config = typeConfig[type];
+            const typeSpan = document.getElementById('modal-type');
+            typeSpan.className = `inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium bg-${config.color}-100 text-${config.color}-700`;
+            typeSpan.innerHTML = `<i data-lucide="${config.icon}" class="w-4 h-4"></i>${config.label}`;
+
+            document.getElementById('approvalModal').classList.remove('hidden');
+            document.getElementById('approvalModal').classList.add('flex');
+            lucide.createIcons();
+        }
+
+        function closeApprovalModal() {
+            document.getElementById('approvalModal').classList.add('hidden');
+            document.getElementById('approvalModal').classList.remove('flex');
+        }
+
+        function showRejectModal() {
+            closeApprovalModal();
+            document.getElementById('rejectModal').classList.remove('hidden');
+            document.getElementById('rejectModal').classList.add('flex');
+        }
+
+        function closeRejectModal() {
+            document.getElementById('rejectModal').classList.add('hidden');
+            document.getElementById('rejectModal').classList.remove('flex');
+        }
+
+        function approveRequest() {
+            alert('Solicitud aprobada exitosamente');
+            closeApprovalModal();
+        }
+
+        function confirmReject() {
+            const reason = document.getElementById('reject-reason').value;
+            if (!reason.trim()) {
+                alert('El motivo de rechazo es obligatorio');
+                return;
+            }
+            alert('Solicitud rechazada. Motivo: ' + reason);
+            closeRejectModal();
+        }
+
+        // Close modals on outside click
+        document.getElementById('approvalModal').addEventListener('click', function(e) {
+            if (e.target === this) closeApprovalModal();
+        });
+        document.getElementById('rejectModal').addEventListener('click', function(e) {
+            if (e.target === this) closeRejectModal();
+        });
+    </script>
+</body>
+</html>

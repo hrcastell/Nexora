@@ -142,6 +142,106 @@ exports.getById = async (req, res) => {
 };
 
 /**
+ * GET /garage/work-orders/:id/print
+ */
+exports.getPrintData = async (req, res) => {
+    try {
+        const { schema } = await resolveSchema(req);
+
+        const woRes = await db.query(
+            `SELECT wo.*,
+                    c.first_name      AS customer_first_name,
+                    c.last_name       AS customer_last_name,
+                    c.document_type   AS customer_document_type,
+                    c.document_number AS customer_document_number,
+                    c.phone           AS customer_phone,
+                    c.email           AS customer_email,
+                    c.address         AS customer_address,
+                    v.plate, v.year, v.engine_displacement, v.mileage AS vehicle_mileage, v.vin,
+                    vb.name AS brand, vm.name AS model, v.version,
+                    e.first_name || ' ' || COALESCE(e.last_name,'') AS employee_name
+             FROM ${schema}.work_orders wo
+             LEFT JOIN ${schema}.customers c        ON c.id = wo.customer_id
+             LEFT JOIN ${schema}.vehicles v         ON v.id = wo.vehicle_id
+             LEFT JOIN ${schema}.vehicle_brands vb  ON vb.id = v.brand_id
+             LEFT JOIN ${schema}.vehicle_models vm  ON vm.id = v.model_id
+             LEFT JOIN ${schema}.employees e        ON e.id = wo.assigned_employee_id
+             WHERE wo.id = $1`,
+            [req.params.id]
+        );
+        if (woRes.rows.length === 0) return res.status(404).json({ error: 'Orden no encontrada' });
+        const woRow = woRes.rows[0];
+
+        const services = await db.query(
+            `SELECT wos.*,
+                    e.first_name || ' ' || COALESCE(e.last_name,'') AS employee_name
+             FROM ${schema}.work_order_services wos
+             LEFT JOIN ${schema}.employees e ON e.id = wos.assigned_employee_id
+             WHERE wos.work_order_id = $1
+             ORDER BY wos.id ASC`,
+            [req.params.id]
+        );
+
+        const serviceIds = services.rows.map(s => s.id);
+        let productsByService = {};
+        if (serviceIds.length > 0) {
+            const prodsRes = await db.query(
+                `SELECT * FROM ${schema}.work_order_service_products
+                 WHERE work_order_service_id = ANY($1::int[])
+                 ORDER BY id ASC`,
+                [serviceIds]
+            );
+            for (const p of prodsRes.rows) {
+                if (!productsByService[p.work_order_service_id]) productsByService[p.work_order_service_id] = [];
+                productsByService[p.work_order_service_id].push(p);
+            }
+        }
+        const servicesWithProducts = services.rows.map(s => ({
+            ...s,
+            products: productsByService[s.id] || []
+        }));
+
+        const configResult = await db.query(
+            `SELECT * FROM ${schema}.config_company LIMIT 1`
+        );
+
+        const customer = {
+            first_name:      woRow.customer_first_name,
+            last_name:       woRow.customer_last_name,
+            document_type:   woRow.customer_document_type,
+            document_number: woRow.customer_document_number,
+            phone:           woRow.customer_phone,
+            email:           woRow.customer_email,
+            address:         woRow.customer_address,
+        };
+
+        const vehicle = {
+            plate:               woRow.plate,
+            brand:               woRow.brand,
+            model:               woRow.model,
+            version:             woRow.version,
+            year:                woRow.year,
+            engine_displacement: woRow.engine_displacement,
+            mileage:             woRow.vehicle_mileage,
+            vin:                 woRow.vin,
+        };
+
+        res.json({
+            data: {
+                workOrder: woRow,
+                customer,
+                vehicle,
+                services: servicesWithProducts,
+                config:   configResult.rows[0] || {},
+            }
+        });
+    } catch (err) {
+        console.error('workOrdersController.getPrintData error:', err.message);
+        res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al obtener datos de impresión') });
+    }
+};
+
+/**
  * POST /garage/work-orders
  * Crear orden directa (sin cita previa).
  */

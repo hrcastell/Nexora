@@ -152,6 +152,7 @@ router.post('/appointments/:id/convert-to-work-order',   appointmentsCtrl.conver
 router.get('/work-orders',                  workOrdersCtrl.list);
 router.post('/work-orders',                 workOrdersCtrl.create);
 router.get('/work-orders/:id',              workOrdersCtrl.getById);
+router.get('/work-orders/:id/print',        workOrdersCtrl.getPrintData);
 router.put('/work-orders/:id',              workOrdersCtrl.update);
 router.patch('/work-orders/:id/status',     workOrdersCtrl.changeStatus);
 router.patch('/work-orders/:id/assign',     workOrdersCtrl.assign);

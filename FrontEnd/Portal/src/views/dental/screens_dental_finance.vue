@@ -321,7 +321,9 @@ onMounted(async () => {
     </div>
 
     <!-- Charge detail panel -->
-    <NxrSlidePanel :open="showChargeDetail" title="Detalle del cargo" eyebrow="Dental — Finanzas" @close="showChargeDetail = false">
+    <NxrSlidePanel :open="showChargeDetail" title="Detalle del cargo" eyebrow="Dental — Finanzas" @close="showChargeDetail = false"
+    draft-key="views/dental/screens_dental_finance.vue#1"
+    :draft-entity="store.current?.id ?? 'detail'">
       <div v-if="!store.current" class="text-center text-white/30 py-10 text-sm">Cargando...</div>
       <div v-else class="flex flex-col gap-4">
 
@@ -415,12 +417,15 @@ onMounted(async () => {
         </div>
       </div>
       <template #footer>
-        <button type="button" class="flex-1 px-4 py-2 rounded-xl text-sm text-white/60 border border-white/10 hover:bg-white/5" @click="showChargeDetail = false">Cerrar</button>
+
       </template>
     </NxrSlidePanel>
 
     <!-- Register payment panel -->
-    <NxrSlidePanel :open="showPaymentPanel" title="Registrar pago" eyebrow="Dental — Finanzas" @close="showPaymentPanel = false">
+    <NxrSlidePanel :open="showPaymentPanel" title="Registrar pago" eyebrow="Dental — Finanzas" @close="showPaymentPanel = false"
+    draft-key="views/dental/screens_dental_finance.vue#2"
+    :draft-entity="store.current?.id ?? 'payment'"
+    :draft-state="{ paymentForm }">
       <form class="flex flex-col gap-5" @submit.prevent="savePayment">
         <div class="flex flex-col gap-1.5">
           <label class="text-xs text-white/50">Monto *</label>
@@ -452,7 +457,7 @@ onMounted(async () => {
         <p v-if="saveError" class="text-xs text-red-400">{{ saveError }}</p>
       </form>
       <template #footer>
-        <button type="button" class="flex-1 px-4 py-2 rounded-xl text-sm text-white/60 border border-white/10 hover:bg-white/5" @click="showPaymentPanel = false">Cancelar</button>
+
         <button type="button" class="flex-1 rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary disabled:opacity-50" :disabled="saving" @click="savePayment">
           {{ saving ? 'Guardando...' : 'Registrar pago' }}
         </button>
@@ -460,7 +465,10 @@ onMounted(async () => {
     </NxrSlidePanel>
 
     <!-- Create installment plan panel -->
-    <NxrSlidePanel :open="showInstallmentPanel" title="Plan de cuotas" eyebrow="Dental — Finanzas" @close="showInstallmentPanel = false">
+    <NxrSlidePanel :open="showInstallmentPanel" title="Plan de cuotas" eyebrow="Dental — Finanzas" @close="showInstallmentPanel = false"
+    draft-key="views/dental/screens_dental_finance.vue#3"
+    :draft-entity="store.current?.id ?? 'installments'"
+    :draft-state="{ installmentForm }">
       <form class="flex flex-col gap-5" @submit.prevent="saveInstallments">
         <div class="flex flex-col gap-1.5">
           <label class="text-xs text-white/50">Cantidad de cuotas *</label>
@@ -473,7 +481,7 @@ onMounted(async () => {
         <p v-if="saveError" class="text-xs text-red-400">{{ saveError }}</p>
       </form>
       <template #footer>
-        <button type="button" class="flex-1 px-4 py-2 rounded-xl text-sm text-white/60 border border-white/10 hover:bg-white/5" @click="showInstallmentPanel = false">Cancelar</button>
+
         <button type="button" class="flex-1 rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary disabled:opacity-50" :disabled="saving" @click="saveInstallments">
           {{ saving ? 'Creando...' : 'Crear plan' }}
         </button>

@@ -468,7 +468,8 @@ async function handlePrint(doc: DentalMedicalDocument) {
   try {
     const res = await dentalMedicalDocumentsService.getPrintData(doc.id);
     printData.value = res.data.data;
-    await printElement('dental-print-target');
+    const printed = await printElement('dental-print-target');
+    if (!printed) triggerToast('Error', 'No se pudo preparar el documento para imprimir.', 'error');
   } catch {
     triggerToast('Error', 'No se pudo cargar el documento para imprimir.', 'error');
   } finally {

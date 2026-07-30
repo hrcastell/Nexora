@@ -452,7 +452,10 @@ async function closePeriod() {
     </template>
 
     <!-- Budget plan panel -->
-    <NxrSlidePanel :open="showBudgetPanel" :title="editingBudget ? 'Editar plan' : 'Nuevo plan'" eyebrow="Finanzas" @close="showBudgetPanel = false">
+    <NxrSlidePanel :open="showBudgetPanel" :title="editingBudget ? 'Editar plan' : 'Nuevo plan'" eyebrow="Finanzas" @close="showBudgetPanel = false"
+    draft-key="views/financial/screens_financial_period_detail.vue#1"
+    :draft-entity="editingBudget ?? 'create'"
+    :draft-state="{ budgetForm }">
       <form class="flex flex-col gap-5" @submit.prevent="saveBudget">
         <div class="flex flex-col gap-1.5">
           <label class="text-xs text-white/50">Categoría</label>
@@ -491,7 +494,7 @@ async function closePeriod() {
         <p v-if="budgetError" class="text-xs text-red-400">{{ budgetError }}</p>
       </form>
       <template #footer>
-        <button type="button" class="flex-1 px-4 py-2 rounded-xl text-sm text-white/60 border border-white/10 hover:bg-white/5" @click="showBudgetPanel = false">Cancelar</button>
+
         <button type="button" class="flex-1 rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary disabled:opacity-50" :disabled="budgetSaving" @click="saveBudget">
           {{ budgetSaving ? 'Guardando...' : 'Guardar' }}
         </button>
@@ -499,7 +502,10 @@ async function closePeriod() {
     </NxrSlidePanel>
 
     <!-- Transaction panel -->
-    <NxrSlidePanel :open="showTxPanel" :title="editingTx ? 'Editar transacción' : 'Nueva transacción'" eyebrow="Finanzas" @close="showTxPanel = false">
+    <NxrSlidePanel :open="showTxPanel" :title="editingTx ? 'Editar transacción' : 'Nueva transacción'" eyebrow="Finanzas" @close="showTxPanel = false"
+    draft-key="views/financial/screens_financial_period_detail.vue#2"
+    :draft-entity="editingTx ?? 'create'"
+    :draft-state="{ txForm }">
       <form class="flex flex-col gap-5" @submit.prevent="saveTx">
         <div class="flex flex-col gap-1.5">
           <label class="text-xs text-white/50">Tipo</label>
@@ -537,7 +543,7 @@ async function closePeriod() {
         <p v-if="txError" class="text-xs text-red-400">{{ txError }}</p>
       </form>
       <template #footer>
-        <button type="button" class="flex-1 px-4 py-2 rounded-xl text-sm text-white/60 border border-white/10 hover:bg-white/5" @click="showTxPanel = false">Cancelar</button>
+
         <button type="button" class="flex-1 rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary disabled:opacity-50" :disabled="txSaving" @click="saveTx">
           {{ txSaving ? 'Guardando...' : 'Guardar' }}
         </button>

@@ -5,6 +5,7 @@ import type { User, Company } from '../types/auth';
 import { useVisualConfigStore } from './visualConfig';
 import { useMenuStore } from './menu';
 import { resetAuthCheckPromise } from '../router';
+import { clearSlidePanelDrafts } from '../utils/slidePanelDrafts';
 
 export const useAuthStore = defineStore('auth', () => {
   const user = ref<User | null>(null);
@@ -17,6 +18,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function login(email: string, password: string) {
     try {
+      clearSlidePanelDrafts();
       const response = await api.post('/auth/login', { email, password });
       
       const { user: userData, companies: userCompanies, token: tempToken } = response.data;
@@ -45,7 +47,8 @@ export const useAuthStore = defineStore('auth', () => {
       const response = await api.post('/auth/select-company', { companyId });
       
       const { company, token: finalToken, read_only } = response.data;
-      
+
+      clearSlidePanelDrafts();
       currentCompany.value = company;
       token.value = finalToken;
       readOnly.value = !!read_only;
@@ -70,6 +73,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   function logout() {
+    clearSlidePanelDrafts();
     user.value = null;
     token.value = null;
     companies.value = [];

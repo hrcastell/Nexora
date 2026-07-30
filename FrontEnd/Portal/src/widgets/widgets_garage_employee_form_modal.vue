@@ -89,7 +89,11 @@ async function onPhotoDelete() {
     :title="employee ? 'Editar empleado' : 'Nuevo empleado'"
     size="md"
     @close="close"
-  >
+
+    draft-key="widgets/widgets_garage_employee_form_modal.vue#1"
+    :draft-entity="employee?.id"
+    :draft-state="{ form, pendingPhoto }"
+    :draft-setters="{ pendingPhoto: (value) => pendingPhoto = value }">
           <div class="flex flex-col items-center mb-6">
             <widgets_garage_photo_uploader
               ref="photoRef"
@@ -98,6 +102,7 @@ async function onPhotoDelete() {
               @upload="(f) => pendingPhoto = f"
               @delete="onPhotoDelete"
             />
+            <p v-if="pendingPhoto" class="mt-2 text-xs text-white/60">Foto pendiente: {{ pendingPhoto.name }}</p>
           </div>
 
           <div class="nxr-garage-form-grid grid gap-4">
@@ -147,7 +152,7 @@ async function onPhotoDelete() {
     <p v-if="error" class="mt-3 text-xs text-red-400">{{ error }}</p>
 
     <template #footer>
-      <button type="button" class="nxr-btn nxr-btn-secondary" @click="close">Cancelar</button>
+
       <button type="button" class="nxr-btn nxr-btn-primary" :disabled="saving" @click="save">
         <Save :size="14" />{{ saving ? 'Guardando...' : 'Guardar' }}
       </button>

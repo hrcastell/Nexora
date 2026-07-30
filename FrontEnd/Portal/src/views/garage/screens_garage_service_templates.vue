@@ -254,7 +254,10 @@ async function removeProduct(templateId: number, productLineId: number) {
       :title="editing ? 'Editar servicio' : 'Nuevo servicio'"
       size="md"
       @close="showForm = false"
-    >
+
+    draft-key="views/garage/screens_garage_service_templates.vue#1"
+    :draft-entity="editing?.id ?? 'create'"
+    :draft-state="{ form, newProd }">
       <!-- Nombre y descripción -->
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
             <div class="col-span-2">
@@ -344,7 +347,7 @@ async function removeProduct(templateId: number, productLineId: number) {
               <div class="flex items-center justify-between">
                 <span class="text-xs text-white/30">Subtotal: {{ fmt((newProd.quantity || 0) * (newProd.reference_unit_price || 0)) }}</span>
                 <div class="flex gap-2">
-                  <button type="button" class="text-xs text-white/50 hover:text-white" @click="addingProduct = false">Cancelar</button>
+                  <button type="button" class="rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-secondary" @click="addingProduct = false">Cancelar</button>
                   <button type="button" class="rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary" @click="addNewProduct">Agregar</button>
                 </div>
               </div>
@@ -384,7 +387,7 @@ async function removeProduct(templateId: number, productLineId: number) {
       <p v-if="error" class="mb-3 text-xs text-red-400">{{ error }}</p>
 
       <template #footer>
-        <button type="button" class="nxr-btn nxr-btn-secondary" @click="showForm = false">Cancelar</button>
+
         <button type="button" class="nxr-btn nxr-btn-primary" :disabled="saving" @click="save">{{ saving ? 'Guardando...' : 'Guardar servicio' }}</button>
       </template>
     </NxrSlidePanel>
