@@ -357,10 +357,9 @@ const toggleModule = async (mod: CompanyModule) => {
       `${mod.name} fue ${mod.is_enabled ? 'habilitado' : 'deshabilitado'} correctamente.`,
       'success'
     );
-    // Issue 3: Auto-refresh menu if the toggle affects the current user's company
-    if (String(authStore.currentCompany?.id) === String(companyId)) {
-      await menuStore.loadMenu();
-    }
+    // Issue 3: always refresh the logged-in user's own menu. Harmless
+    // no-op if a super_admin toggled a module for some other company.
+    await menuStore.loadMenu();
   } catch (error: any) {
     triggerToast('Error', error.response?.data?.error || 'No se pudo actualizar el módulo.', 'error');
   } finally {
@@ -375,10 +374,8 @@ const saveModuleOrder = async (mod: CompanyModule) => {
       is_enabled: mod.is_enabled,
       menu_order: mod.menu_order
     });
-    // Refresh menu if this is the current user's company
-    if (String(authStore.currentCompany?.id) === String(companyId)) {
-      await menuStore.loadMenu();
-    }
+    // Always refresh the logged-in user's own menu (see toggleModule above)
+    await menuStore.loadMenu();
     triggerToast('Orden guardado', `El orden del módulo ${mod.name} fue actualizado.`, 'success');
   } catch (error: any) {
     triggerToast('Error', error.response?.data?.error || 'No se pudo guardar el orden.', 'error');
