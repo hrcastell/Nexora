@@ -82,6 +82,7 @@ const ROUTE_MODULE_MAP = {
     'GET    /catalog/transactions':        { module: 'configuration', transaction: 'modules' },
     'PUT    /catalog/transactions/:id':    { module: 'configuration', transaction: 'modules' },
     'GET    /companies/:id/modules':       { module: 'configuration', transaction: 'modules' },
+    'PUT    /companies/:id/modules/reorder':     { module: 'configuration', transaction: 'modules' },
     'PUT    /companies/:id/modules/:moduleCode': { module: 'configuration', transaction: 'modules' },
 
     // ── Configuration: Reports ──

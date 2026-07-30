@@ -4,17 +4,20 @@ import type { Component } from 'vue';
 import api from '../../utils/axios';
 import { useVisualConfigStore } from '../../stores/visualConfig';
 import { useAuthStore } from '../../stores/auth';
+import { useMenuStore } from '../../stores/menu';
 import { usePermissions } from '../../composables/usePermissions';
 import CompanySelector from '../../components/admin/CompanySelector.vue';
+import draggable from 'vuedraggable';
 import {
   Puzzle, Loader2, ChevronDown, ChevronRight, Save, Eye, EyeOff,
-  CheckCircle2, AlertCircle, Lock,
+  CheckCircle2, AlertCircle, Lock, GripVertical,
   LayoutDashboard, Building2, Users, Shield, Mail, BarChart2,
   CreditCard, Settings, Palette, FileText, ClipboardList
 } from 'lucide-vue-next';
 
 const cfg       = useVisualConfigStore();
 const authStore = useAuthStore();
+const menuStore = useMenuStore();
 const perms     = usePermissions();
 
 // ── Theme-aware palette ────────────────────────────────────────
@@ -93,6 +96,35 @@ const isLoading          = ref(true);
 const companyModulesMap  = ref<Record<string, CompanyModuleAssignment>>({}); // module code → assignment
 const savingCompanyMod   = ref<Record<string, boolean>>({});
 
+// ── Drag-and-drop ordering ───────────────────────────────────
+// `modules` stays in catalog default order (source of truth for metadata
+// edits via saveModuleMetadata). `orderedModules` is a derived, mutable
+// COPY vuedraggable can v-model — a plain `computed` can't be dragged into,
+// since Sortable/vuedraggable needs to splice the underlying array itself.
+// Excludes 'dashboard': its menu_order is permanently inert (AdminLayout.vue
+// filters it out of the sidebar), so it's not offered as draggable at all.
+// Excludes 'products': a virtual OR-derived module with NO real row in
+// public.company_modules by design (ADR-1, BackEnd/utils/moduleState.js) —
+// menuController.js always positions it by its catalog menu_order_default,
+// never by any per-company override, so dragging it would be equally inert.
+const orderedModules = ref<CatalogModule[]>([]);
+const isReordering   = ref(false);
+let dragSnapshot: CatalogModule[] = [];
+
+function effectiveOrder(mod: CatalogModule): number {
+  return companyModulesMap.value[mod.code]?.menu_order ?? mod.menu_order_default ?? 0;
+}
+
+function rebuildOrderedModules() {
+  orderedModules.value = modules.value
+    .filter(m => m.code !== 'dashboard' && m.code !== 'products')
+    .slice()
+    .sort((a, b) => {
+      const diff = effectiveOrder(a) - effectiveOrder(b);
+      return diff !== 0 ? diff : a.name.localeCompare(b.name);
+    });
+}
+
 // Feedback
 const feedback = ref<{ type: 'success' | 'error'; message: string } | null>(null);
 function showFeedback(type: 'success' | 'error', message: string) {
@@ -132,6 +164,8 @@ async function loadCatalog() {
     if (perms.isSuperAdmin.value && activeCompanyId.value) {
       await loadCompanyModules(activeCompanyId.value);
     }
+
+    rebuildOrderedModules();
   } catch (err: unknown) {
     const e = err as { response?: { data?: { error?: string } } };
     showFeedback('error', e?.response?.data?.error ?? 'Error al cargar el catálogo');
@@ -154,6 +188,8 @@ async function loadCompanyModules(companyId: number) {
         menu_order:  row.menu_order ?? row.menu_order_default ?? 0,
       };
     }
+
+    rebuildOrderedModules();
   } catch {
     // Silent — section will not be shown
   }
@@ -181,11 +217,51 @@ async function toggleCompanyModule(mod: CatalogModule) {
       is_visible: true,
     };
     showFeedback('success', `Módulo ${nextEnabled ? 'habilitado' : 'deshabilitado'}.`);
+    // Always refresh the logged-in user's own menu. Harmless no-op if a
+    // super_admin toggled a module for some other company; fixes the menu
+    // immediately when it's their own (the common case).
+    await menuStore.loadMenu();
   } catch (err: unknown) {
     const e = err as { response?: { data?: { error?: string } } };
     showFeedback('error', e?.response?.data?.error ?? 'Error al actualizar módulo de la compañía');
   } finally {
     savingCompanyMod.value[mod.code] = false;
+  }
+}
+
+// ── Drag-and-drop persistence ────────────────────────────────
+function onDragStart() {
+  dragSnapshot = [...orderedModules.value];
+}
+
+async function onDragEnd() {
+  if (!activeCompanyId.value) return;
+
+  const codes = orderedModules.value.map(m => m.code);
+  const prevCodes = dragSnapshot.map(m => m.code);
+  if (codes.length === prevCodes.length && codes.every((c, i) => c === prevCodes[i])) {
+    return; // dropped back in the same position — nothing to persist
+  }
+
+  isReordering.value = true;
+  try {
+    const { data } = await api.put<{ updated: number; order: { code: string; menu_order: number }[] }>(
+      `/companies/${activeCompanyId.value}/modules/reorder`,
+      { codes }
+    );
+    for (const { code, menu_order } of data.order) {
+      if (companyModulesMap.value[code]) {
+        companyModulesMap.value[code] = { ...companyModulesMap.value[code], menu_order };
+      }
+    }
+    showFeedback('success', 'Orden de módulos actualizado.');
+    await menuStore.loadMenu();
+  } catch (err: unknown) {
+    orderedModules.value = dragSnapshot; // rollback to pre-drag order
+    const e = err as { response?: { data?: { error?: string } } };
+    showFeedback('error', e?.response?.data?.error ?? 'Error al reordenar módulos');
+  } finally {
+    isReordering.value = false;
   }
 }
 
@@ -299,18 +375,40 @@ onMounted(loadCatalog);
     </div>
 
     <!-- Accordion list -->
-    <div v-else class="space-y-3">
-      <div v-for="mod in modules" :key="mod.id"
-           class="rounded-2xl border overflow-hidden transition-shadow"
-           :style="{ backgroundColor: cardBg, borderColor: cardBorder }">
+    <draggable
+      v-else
+      v-model="orderedModules"
+      item-key="id"
+      tag="div"
+      class="space-y-3"
+      handle=".module-drag-handle"
+      :disabled="!perms.canManageModules.value || isReordering"
+      ghost-class="module-drag-ghost"
+      chosen-class="module-drag-chosen"
+      drag-class="module-drag-active"
+      :animation="200"
+      :delay="150"
+      :delay-on-touch-only="true"
+      @start="onDragStart"
+      @end="onDragEnd">
+      <template #item="{ element: mod }">
+        <div class="rounded-2xl border overflow-hidden transition-shadow"
+             :style="{ backgroundColor: cardBg, borderColor: cardBorder }">
 
-        <!-- Accordion header -->
-        <button type="button"
-                @click="toggleExpanded(mod.id)"
-                class="flex w-full items-center gap-3 px-5 py-4 text-left transition"
-                @mouseover="(e: MouseEvent) => (e.currentTarget as HTMLElement).style.backgroundColor = rowHoverBg"
-                @mouseleave="(e: MouseEvent) => (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'">
-          <component :is="expanded[mod.id] ? ChevronDown : ChevronRight" class="h-4 w-4 shrink-0" :style="{ color: mutedColor }" />
+          <!-- Accordion header -->
+          <button type="button"
+                  @click="toggleExpanded(mod.id)"
+                  class="flex w-full items-center gap-3 px-5 py-4 text-left transition"
+                  @mouseover="(e: MouseEvent) => (e.currentTarget as HTMLElement).style.backgroundColor = rowHoverBg"
+                  @mouseleave="(e: MouseEvent) => (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'">
+            <span v-if="perms.canManageModules.value"
+                  class="module-drag-handle flex h-6 w-6 shrink-0 items-center justify-center rounded-lg cursor-grab active:cursor-grabbing"
+                  :style="{ color: mutedColor }"
+                  title="Arrastrar para reordenar"
+                  @click.stop>
+              <GripVertical class="h-4 w-4" />
+            </span>
+            <component :is="expanded[mod.id] ? ChevronDown : ChevronRight" class="h-4 w-4 shrink-0" :style="{ color: mutedColor }" />
           <div class="flex h-10 w-10 items-center justify-center rounded-2xl shrink-0" :style="{ backgroundColor: 'rgba(212,175,55,0.14)', color: '#D4AF37' }">
             <component :is="resolveIcon(mod.icon)" class="h-5 w-5" />
           </div>
@@ -525,14 +623,21 @@ onMounted(loadCatalog);
             Este módulo no tiene transacciones hijas registradas.
           </div>
         </div>
-      </div>
-
-      <!-- Empty -->
-      <div v-if="modules.length === 0"
-           class="rounded-2xl border p-10 text-center text-sm"
-           :style="{ backgroundColor: cardBg, borderColor: cardBorder, color: mutedColor }">
-        No hay módulos en el catálogo.
-      </div>
-    </div>
+        </div>
+      </template>
+      <template #footer>
+        <div v-if="orderedModules.length === 0"
+             class="rounded-2xl border p-10 text-center text-sm"
+             :style="{ backgroundColor: cardBg, borderColor: cardBorder, color: mutedColor }">
+          No hay módulos en el catálogo.
+        </div>
+      </template>
+    </draggable>
   </div>
 </template>
+
+<style scoped>
+.module-drag-ghost  { opacity: 0.45; border-style: dashed !important; }
+.module-drag-chosen { box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.55); }
+.module-drag-active  { cursor: grabbing; }
+</style>

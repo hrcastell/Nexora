@@ -185,7 +185,15 @@ exports.upsertCompanyModule = async (req, res) => {
             ON CONFLICT (company_id, module_id) DO UPDATE SET
                 is_enabled  = EXCLUDED.is_enabled,
                 is_visible  = EXCLUDED.is_visible,
-                menu_order  = COALESCE(EXCLUDED.menu_order, public.company_modules.menu_order),
+                -- Pre-existing bug fixed here: EXCLUDED.menu_order is the
+                -- INSERT-list value, which is already COALESCE($6, 0) above
+                -- — so it's never actually NULL by this point, and the old
+                -- "COALESCE(EXCLUDED.menu_order, ...)" fallback could never
+                -- fire. Every plain enable/disable (no menu_order in the
+                -- request) was silently resetting menu_order to 0. Compare
+                -- against the raw parameter $6 instead, which IS NULL when
+                -- the caller didn't send menu_order.
+                menu_order  = COALESCE($6, public.company_modules.menu_order),
                 enabled_at  = CASE WHEN EXCLUDED.is_enabled = TRUE  AND public.company_modules.is_enabled = FALSE THEN CURRENT_TIMESTAMP ELSE public.company_modules.enabled_at END,
                 disabled_at = CASE WHEN EXCLUDED.is_enabled = FALSE AND public.company_modules.is_enabled = TRUE  THEN CURRENT_TIMESTAMP ELSE public.company_modules.disabled_at END,
                 notes       = COALESCE(EXCLUDED.notes, public.company_modules.notes)
@@ -221,6 +229,85 @@ exports.upsertCompanyModule = async (req, res) => {
         await client.query('ROLLBACK');
         console.error('Upsert company module error:', error);
         res.status(500).json({ error: 'Error al actualizar módulo de compañía' });
+    } finally {
+        client.release();
+    }
+};
+
+/**
+ * PUT /api/companies/:id/modules/reorder
+ * Reordena en una sola operación transaccional los módulos de una compañía
+ * (evita N PUTs secuenciales por cada drag-and-drop).
+ *
+ * Body: { codes: string[] } — códigos de module_catalog en el orden deseado
+ *       (el índice determina el nuevo menu_order).
+ *
+ * Reglas:
+ *  - Solo super_admin (mismo gate que upsertCompanyModule).
+ *  - menu_order se asigna en huecos de 10 (10, 20, 30, ...) — nunca 0, porque
+ *    menuController.js trata cm.menu_order = 0 como "sin asignar" y cae al
+ *    menu_order_default (COALESCE(NULLIF(cm.menu_order, 0), ...)).
+ *  - Un módulo sin fila previa en company_modules se inserta con
+ *    is_enabled = FALSE — arrastrar un módulo nunca lo habilita.
+ *  - Un módulo con fila previa solo actualiza menu_order — is_enabled,
+ *    is_visible, notes, enabled_at/disabled_at quedan intactos.
+ *  - No dispara createNotification: reordenar no es un evento de negocio
+ *    como habilitar/deshabilitar, y una notificación por cada drag sería
+ *    ruido en la campana de notificaciones.
+ */
+exports.reorderCompanyModules = async (req, res) => {
+    const client = await db.getClient();
+    try {
+        if (!isSuperAdmin(req)) {
+            return res.status(403).json({ error: 'Solo super_admin puede reordenar módulos' });
+        }
+
+        const { id: companyId } = req.params;
+        const { codes } = req.body;
+
+        if (!Array.isArray(codes) || codes.length === 0) {
+            return res.status(400).json({ error: 'Se requiere un arreglo "codes" con el nuevo orden' });
+        }
+        if (new Set(codes).size !== codes.length) {
+            return res.status(400).json({ error: 'El arreglo "codes" contiene códigos duplicados' });
+        }
+
+        const menuOrders = codes.map((_, i) => (i + 1) * 10); // 10, 20, 30, ... never 0
+
+        await client.query('BEGIN');
+
+        const result = await client.query(
+            `WITH input(code, menu_order) AS (
+                SELECT * FROM UNNEST($2::text[], $3::int[])
+             ),
+             resolved AS (
+                SELECT m.id AS module_id, m.code, m.is_core, i.menu_order
+                FROM input i
+                JOIN public.module_catalog m ON m.code = i.code AND m.status = 'activo'
+             ),
+             upserted AS (
+                INSERT INTO public.company_modules
+                    (company_id, module_id, is_enabled, is_visible, is_required, menu_order)
+                SELECT $1, r.module_id, FALSE, TRUE, r.is_core, r.menu_order
+                FROM resolved r
+                ON CONFLICT (company_id, module_id) DO UPDATE SET
+                    menu_order = EXCLUDED.menu_order
+                RETURNING module_id, menu_order
+             )
+             SELECT r.code, u.menu_order
+             FROM upserted u
+             JOIN resolved r ON r.module_id = u.module_id`,
+            [companyId, codes, menuOrders]
+        );
+
+        await client.query('COMMIT');
+        invalidateCompanyModuleCache(companyId);
+
+        res.json({ updated: result.rowCount, order: result.rows }); // order: [{ code, menu_order }, ...]
+    } catch (error) {
+        await client.query('ROLLBACK');
+        console.error('Reorder company modules error:', error);
+        res.status(500).json({ error: 'Error al reordenar módulos de la compañía' });
     } finally {
         client.release();
     }
