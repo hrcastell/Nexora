@@ -89,15 +89,15 @@ const fmtDate = (d: string | null) => d ? new Date(d).toLocaleDateString('es-CL'
 <template>
   <div class="flex flex-col gap-5 p-6">
     <div class="flex items-center justify-between">
-      <h1 class="text-xl font-semibold text-white">Tarifas de Mano de Obra</h1>
+      <h1 class="text-xl font-semibold nxr-text">Tarifas de Mano de Obra</h1>
       <button class="flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-medium text-white transition nxr-btn-primary" @click="openCreate">
         <Plus :size="15" /> Nueva tarifa
       </button>
     </div>
 
     <div class="flex items-center gap-3">
-      <Users :size="14" class="text-white/30 shrink-0" />
-      <select v-model="filterEmployee" class="flex-1 px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none">
+      <Users :size="14" class="nxr-text-soft shrink-0" />
+      <select v-model="filterEmployee" class="flex-1 px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none">
         <option :value="null">Todos los empleados</option>
         <option v-for="e in empStore.items" :key="e.id" :value="e.id">{{ e.first_name }} {{ e.last_name || '' }}</option>
       </select>
@@ -107,7 +107,7 @@ const fmtDate = (d: string | null) => d ? new Date(d).toLocaleDateString('es-CL'
       <div v-for="i in 6" :key="i" class="h-16 rounded-xl bg-white/5 animate-pulse"></div>
     </div>
 
-    <div v-else-if="rateStore.items.length === 0" class="text-center text-white/30 py-16 text-sm">Sin tarifas registradas.</div>
+    <div v-else-if="rateStore.items.length === 0" class="text-center nxr-text-soft py-16 text-sm">Sin tarifas registradas.</div>
 
     <div v-else class="flex flex-col gap-2">
       <div
@@ -116,18 +116,18 @@ const fmtDate = (d: string | null) => d ? new Date(d).toLocaleDateString('es-CL'
         :style="{ background: 'var(--nexora-glass-bg)' }"
       >
         <div class="flex-1 min-w-0">
-          <p class="text-sm font-medium text-white">{{ r.rate_name }}</p>
-          <p class="text-xs text-white/40">
+          <p class="text-sm font-medium nxr-text">{{ r.rate_name }}</p>
+          <p class="text-xs nxr-text-muted">
             {{ r.employee_name || '' }} · ${{ r.hourly_rate.toLocaleString() }}/hr {{ r.currency }}
             · Desde: {{ fmtDate(r.valid_from) }}
             <span v-if="r.valid_to"> · Hasta: {{ fmtDate(r.valid_to) }}</span>
           </p>
         </div>
         <div class="flex items-center gap-2 shrink-0">
-          <button type="button" class="text-white/30 hover:text-white/70" @click="openEdit(r)"><Edit2 :size="14" /></button>
+          <button type="button" class="nxr-text-soft hover:text-[var(--nexora-text-color)]" @click="openEdit(r)"><Edit2 :size="14" /></button>
           <button type="button" @click="toggleStatus(r)">
             <ToggleRight v-if="r.status === 'active'" :size="18" class="text-green-400" />
-            <ToggleLeft v-else :size="18" class="text-white/30" />
+            <ToggleLeft v-else :size="18" class="nxr-text-soft" />
           </button>
         </div>
       </div>
@@ -144,35 +144,35 @@ const fmtDate = (d: string | null) => d ? new Date(d).toLocaleDateString('es-CL'
     :draft-state="{ form }">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div class="col-span-2">
-              <label class="block text-xs text-white/50 mb-1">Empleado *</label>
-              <select v-model="form.employee_id" :disabled="!!editing" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none disabled:opacity-50">
+              <label class="block text-xs nxr-text-muted mb-1">Empleado *</label>
+              <select v-model="form.employee_id" :disabled="!!editing" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none disabled:opacity-50">
                 <option :value="null">Seleccionar</option>
                 <option v-for="e in empStore.items" :key="e.id" :value="e.id">{{ e.first_name }} {{ e.last_name || '' }}</option>
               </select>
             </div>
             <div class="col-span-2">
-              <label class="block text-xs text-white/50 mb-1">Nombre de la tarifa *</label>
-              <input v-model="form.rate_name" type="text" placeholder="Ej: Tarifa estándar 2024" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" />
+              <label class="block text-xs nxr-text-muted mb-1">Nombre de la tarifa *</label>
+              <input v-model="form.rate_name" type="text" placeholder="Ej: Tarifa estándar 2024" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40" />
             </div>
             <div>
-              <label class="block text-xs text-white/50 mb-1">Tarifa / hora *</label>
-              <input v-model.number="form.hourly_rate" type="number" min="0" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" />
+              <label class="block text-xs nxr-text-muted mb-1">Tarifa / hora *</label>
+              <input v-model.number="form.hourly_rate" type="number" min="0" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40" />
             </div>
             <div>
-              <label class="block text-xs text-white/50 mb-1">Moneda</label>
-              <select v-model="form.currency" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none">
+              <label class="block text-xs nxr-text-muted mb-1">Moneda</label>
+              <select v-model="form.currency" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none">
                 <option value="CLP">CLP</option>
                 <option value="USD">USD</option>
                 <option value="EUR">EUR</option>
               </select>
             </div>
             <div>
-              <label class="block text-xs text-white/50 mb-1">Válida desde</label>
-              <input v-model="form.valid_from" type="date" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" />
+              <label class="block text-xs nxr-text-muted mb-1">Válida desde</label>
+              <input v-model="form.valid_from" type="date" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40" />
             </div>
             <div>
-              <label class="block text-xs text-white/50 mb-1">Válida hasta</label>
-              <input v-model="form.valid_to" type="date" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" />
+              <label class="block text-xs nxr-text-muted mb-1">Válida hasta</label>
+              <input v-model="form.valid_to" type="date" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40" />
             </div>
           </div>
       <p v-if="error" class="mt-2 text-xs text-red-400">{{ error }}</p>

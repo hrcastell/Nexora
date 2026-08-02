@@ -142,7 +142,7 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 const STATUS_CLASS: Record<string, string> = {
-  borrador:                'bg-white/10 text-white/40',
+  borrador:                'bg-white/10 nxr-text-muted',
   creada:                  'bg-blue-500/20 text-blue-400',
   en_evaluacion:           'bg-indigo-500/20 text-indigo-400',
   cotizada:                'bg-violet-500/20 text-violet-400',
@@ -172,7 +172,7 @@ const ADMIN_STATUS_CLASS: Record<string, string> = {
   partially_paid: 'bg-blue-500/20 text-blue-400',
   paid:           'bg-green-500/20 text-green-400',
   overdue:        'bg-red-500/20 text-red-400',
-  cancelled:      'bg-white/10 text-white/40',
+  cancelled:      'bg-white/10 nxr-text-muted',
 };
 
 function fmt(n: number) {
@@ -236,7 +236,7 @@ onMounted(() => {
 <template>
   <div class="flex flex-col gap-5 p-6">
     <div class="flex items-center justify-between flex-wrap gap-3">
-      <h1 class="text-xl font-semibold text-white">Consultas</h1>
+      <h1 class="text-xl font-semibold nxr-text">Consultas</h1>
       <button
         class="flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-medium text-white transition nxr-btn-primary"
         @click="openCreate"
@@ -247,7 +247,7 @@ onMounted(() => {
 
     <!-- Filters -->
     <div class="flex items-center gap-3 flex-wrap">
-      <select v-model="statusFilter" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none" @change="applyFilters">
+      <select v-model="statusFilter" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none" @change="applyFilters">
         <option value="">Todos los estados</option>
         <option value="borrador">Borrador</option>
         <option value="creada">Creada</option>
@@ -265,14 +265,14 @@ onMounted(() => {
         <option value="no_show">No Asistió</option>
         <option value="voided">Anulada</option>
       </select>
-      <select v-model="adminStatusFilter" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none" @change="applyFilters">
+      <select v-model="adminStatusFilter" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none" @change="applyFilters">
         <option value="">Todos los pagos</option>
         <option value="unpaid">Sin pagar</option>
         <option value="partially_paid">Pago parcial</option>
         <option value="paid">Pagado</option>
         <option value="overdue">Vencido</option>
       </select>
-      <span class="text-xs text-white/30">{{ store.items.length }} consultas</span>
+      <span class="text-xs nxr-text-soft">{{ store.items.length }} consultas</span>
     </div>
 
     <!-- Loading -->
@@ -285,8 +285,8 @@ onMounted(() => {
 
     <!-- Empty -->
     <div v-else-if="store.items.length === 0" class="flex flex-col items-center gap-4 py-20 text-center">
-      <Stethoscope :size="48" class="text-white/20" />
-      <p class="text-white/50 text-sm">No hay consultas registradas.</p>
+      <Stethoscope :size="48" class="nxr-text-soft" />
+      <p class="nxr-text-muted text-sm">No hay consultas registradas.</p>
       <button class="flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-medium text-white transition nxr-btn-primary" @click="openCreate">
         <Plus :size="15" /> Crear primera consulta
       </button>
@@ -295,7 +295,7 @@ onMounted(() => {
     <!-- List -->
     <div v-else class="flex flex-col gap-2">
       <!-- Desktop header -->
-      <div class="hidden md:grid md:grid-cols-[120px_1fr_1fr_130px_130px_80px] gap-4 px-4 py-2 text-xs text-white/30 font-semibold uppercase tracking-wide">
+      <div class="hidden md:grid md:grid-cols-[120px_1fr_1fr_130px_130px_80px] gap-4 px-4 py-2 text-xs nxr-text-soft font-semibold uppercase tracking-wide">
         <span>Fecha</span>
         <span>Paciente</span>
         <span>Tratamiento / Motivo</span>
@@ -313,23 +313,23 @@ onMounted(() => {
       >
         <!-- Mobile -->
         <div class="flex-1 min-w-0 md:hidden">
-          <p class="text-sm font-medium text-white truncate">{{ c.customer?.first_name }} {{ c.customer?.last_name }}</p>
-          <p class="text-xs text-white/40">{{ fmtDate(c.consultation_date) }} · {{ c.treatment?.name ?? c.reason ?? '—' }}</p>
+          <p class="text-sm font-medium nxr-text truncate">{{ c.customer?.first_name }} {{ c.customer?.last_name }}</p>
+          <p class="text-xs nxr-text-muted">{{ fmtDate(c.consultation_date) }} · {{ c.treatment?.name ?? c.reason ?? '—' }}</p>
           <div class="flex items-center gap-2 mt-1">
             <span class="px-2 py-0.5 rounded-full text-xs" :class="STATUS_CLASS[c.status]">{{ STATUS_LABEL[c.status] }}</span>
             <span class="px-2 py-0.5 rounded-full text-xs" :class="ADMIN_STATUS_CLASS[c.administrative_status]">{{ ADMIN_STATUS_LABEL[c.administrative_status] }}</span>
-            <span class="text-xs font-semibold text-white">{{ fmt(c.total_amount) }}</span>
+            <span class="text-xs font-semibold nxr-text">{{ fmt(c.total_amount) }}</span>
           </div>
         </div>
 
         <!-- Desktop -->
         <div class="hidden md:grid md:grid-cols-[120px_1fr_1fr_130px_130px_80px] gap-4 items-center flex-1">
-          <p class="text-xs text-white/60">{{ fmtDate(c.consultation_date) }}</p>
-          <p class="text-sm text-white truncate">{{ c.customer?.first_name }} {{ c.customer?.last_name }}</p>
-          <p class="text-xs text-white/60 truncate">{{ c.treatment?.name ?? c.reason ?? '—' }}</p>
+          <p class="text-xs nxr-text-muted">{{ fmtDate(c.consultation_date) }}</p>
+          <p class="text-sm nxr-text truncate">{{ c.customer?.first_name }} {{ c.customer?.last_name }}</p>
+          <p class="text-xs nxr-text-muted truncate">{{ c.treatment?.name ?? c.reason ?? '—' }}</p>
           <span class="px-2 py-0.5 rounded-full text-xs w-fit" :class="STATUS_CLASS[c.status]">{{ STATUS_LABEL[c.status] }}</span>
           <span class="px-2 py-0.5 rounded-full text-xs w-fit" :class="ADMIN_STATUS_CLASS[c.administrative_status]">{{ ADMIN_STATUS_LABEL[c.administrative_status] }}</span>
-          <p class="text-sm font-semibold text-white text-right">{{ fmt(c.total_amount) }}</p>
+          <p class="text-sm font-semibold nxr-text text-right">{{ fmt(c.total_amount) }}</p>
         </div>
       </div>
     </div>
@@ -342,20 +342,20 @@ onMounted(() => {
     :draft-setters="{ patientSearch: (value) => patientSearch = value, selectedPatient: (value) => selectedPatient = value }">
       <form class="flex flex-col gap-5" @submit.prevent="save">
         <div class="flex flex-col gap-1.5 relative">
-          <label class="text-xs text-white/50">Paciente *</label>
+          <label class="text-xs nxr-text-muted">Paciente *</label>
           <input
             v-model="patientSearch"
             type="text"
             placeholder="Buscar por nombre o documento..."
             autocomplete="off"
-            class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-white/30 outline-none focus:border-white/30"
+            class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text placeholder-[var(--nexora-soft-text)] outline-none focus:border-white/30"
             @input="onPatientInput"
             @focus="focusPatientDrop"
             @blur="blurPatientDrop"
           />
-          <div v-if="selectedPatient" class="flex items-center justify-between px-3 py-1.5 rounded-lg bg-[var(--nexora-primary)]/20 border border-[var(--nexora-primary)]/30 text-xs text-white">
+          <div v-if="selectedPatient" class="flex items-center justify-between px-3 py-1.5 rounded-lg bg-[var(--nexora-primary)]/20 border border-[var(--nexora-primary)]/30 text-xs nxr-text">
             <span>{{ selectedPatient.first_name }} {{ selectedPatient.last_name }}</span>
-            <button type="button" class="text-white/50 hover:text-white ml-2" @click="clearPatient">✕</button>
+            <button type="button" class="nxr-text-muted hover:text-[var(--nexora-text-color)] ml-2" @click="clearPatient">✕</button>
           </div>
           <div
             v-if="showPatientDrop && patientsStore.items.length > 0"
@@ -366,11 +366,11 @@ onMounted(() => {
               v-for="p in patientsStore.items"
               :key="p.id"
               type="button"
-              class="w-full text-left px-3 py-2.5 text-sm text-white hover:bg-white/10 transition-colors border-b border-white/5 last:border-0"
+              class="w-full text-left px-3 py-2.5 text-sm nxr-text hover:bg-white/10 transition-colors border-b border-white/5 last:border-0"
               @mousedown.prevent="selectPatient(p)"
             >
               {{ p.first_name }} {{ p.last_name }}
-              <span v-if="p.document_number" class="text-xs text-white/40 ml-2">{{ p.document_type }} {{ p.document_number }}</span>
+              <span v-if="p.document_number" class="text-xs nxr-text-muted ml-2">{{ p.document_type }} {{ p.document_number }}</span>
             </button>
           </div>
           <div v-if="patientSearch && !selectedPatient && showPatientDrop && patientsStore.items.length === 0" class="rounded-xl border border-yellow-500/20 bg-yellow-500/10 p-3 text-xs text-yellow-100">
@@ -380,79 +380,79 @@ onMounted(() => {
             </button>
           </div>
           <div v-if="showInlinePatientForm" class="grid gap-3 rounded-xl border border-white/10 bg-white/5 p-3 sm:grid-cols-2">
-            <input v-model="inlinePatientForm.first_name" type="text" placeholder="Nombre" class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30" />
-            <input v-model="inlinePatientForm.last_name" type="text" placeholder="Apellido" class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30" />
-            <input v-model="inlinePatientForm.document_number" type="text" placeholder="Documento" class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30" />
-            <input v-model="inlinePatientForm.phone" type="text" placeholder="Teléfono" class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30" />
+            <input v-model="inlinePatientForm.first_name" type="text" placeholder="Nombre" class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none focus:border-white/30" />
+            <input v-model="inlinePatientForm.last_name" type="text" placeholder="Apellido" class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none focus:border-white/30" />
+            <input v-model="inlinePatientForm.document_number" type="text" placeholder="Documento" class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none focus:border-white/30" />
+            <input v-model="inlinePatientForm.phone" type="text" placeholder="Teléfono" class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none focus:border-white/30" />
             <button type="button" class="rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary disabled:opacity-50 sm:col-span-2" :disabled="savingInlinePatient" @mousedown.prevent="saveInlinePatient">
               {{ savingInlinePatient ? 'Creando...' : 'Crear y seleccionar paciente' }}
             </button>
           </div>
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Tratamiento</label>
+          <label class="text-xs nxr-text-muted">Tratamiento</label>
           <select
             v-model="form.treatment_id"
-            class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30"
+            class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30"
             @change="onServiceSelect(form.treatment_id as string)"
           >
             <option value="">Sin tratamiento</option>
             <option v-for="s in treatmentsStore.items" :key="s.id" :value="s.id">{{ s.name }}</option>
           </select>
-          <div v-if="selectedService" class="flex flex-col gap-1 px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-xs text-white/60">
+          <div v-if="selectedService" class="flex flex-col gap-1 px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-xs nxr-text-muted">
             <div class="flex justify-between">
               <span>Precio total</span>
-              <span class="font-semibold text-white">${{ Math.round(selectedService.final_price ?? 0).toLocaleString('es-AR') }}</span>
+              <span class="font-semibold nxr-text">${{ Math.round(selectedService.final_price ?? 0).toLocaleString('es-AR') }}</span>
             </div>
             <div v-if="(selectedService.treatments?.length ?? 0) > 0">
-              <p class="text-white/40 mb-1">Tratamientos incluidos:</p>
+              <p class="nxr-text-muted mb-1">Tratamientos incluidos:</p>
               <p v-for="t in selectedService.treatments" :key="t.treatment_id" class="pl-2">· {{ t.treatment_name }}</p>
             </div>
           </div>
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Motivo</label>
-          <input v-model="form.reason" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+          <label class="text-xs nxr-text-muted">Motivo</label>
+          <input v-model="form.reason" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" />
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Diagnóstico</label>
-          <textarea v-model="form.diagnosis" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none"></textarea>
+          <label class="text-xs nxr-text-muted">Diagnóstico</label>
+          <textarea v-model="form.diagnosis" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30 resize-none"></textarea>
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Notas clínicas</label>
-          <textarea v-model="form.clinical_notes" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none"></textarea>
+          <label class="text-xs nxr-text-muted">Notas clínicas</label>
+          <textarea v-model="form.clinical_notes" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30 resize-none"></textarea>
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Indicaciones</label>
-          <textarea v-model="form.indications" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none"></textarea>
+          <label class="text-xs nxr-text-muted">Indicaciones</label>
+          <textarea v-model="form.indications" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30 resize-none"></textarea>
         </div>
         <!-- Seguimiento -->
         <div class="flex flex-col gap-3 pt-2 border-t border-white/10">
-          <p class="text-xs text-white/50 uppercase tracking-wide font-semibold">Seguimiento</p>
+          <p class="text-xs nxr-text-muted uppercase tracking-wide font-semibold">Seguimiento</p>
           <label class="flex items-center gap-2.5 cursor-pointer">
             <input v-model="form.requires_follow_up" type="checkbox" class="rounded" />
-            <span class="text-sm text-white/70">Requiere seguimiento</span>
+            <span class="text-sm nxr-text-muted">Requiere seguimiento</span>
           </label>
           <label class="flex items-center gap-2.5 cursor-pointer">
             <input v-model="form.requires_multiple_sessions" type="checkbox" class="rounded" />
-            <span class="text-sm text-white/70">Requiere múltiples sesiones</span>
+            <span class="text-sm nxr-text-muted">Requiere múltiples sesiones</span>
           </label>
           <template v-if="form.requires_multiple_sessions">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div class="flex flex-col gap-1.5">
-                <label class="text-xs text-white/50">Cantidad estimada de sesiones</label>
-                <input v-model.number="form.estimated_sessions" type="number" min="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" placeholder="Ej: 3" />
+                <label class="text-xs nxr-text-muted">Cantidad estimada de sesiones</label>
+                <input v-model.number="form.estimated_sessions" type="number" min="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" placeholder="Ej: 3" />
               </div>
               <div class="flex flex-col gap-1.5">
-                <label class="text-xs text-white/50">Próxima sesión</label>
-                <input v-model="form.next_session_date" type="date" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+                <label class="text-xs nxr-text-muted">Próxima sesión</label>
+                <input v-model="form.next_session_date" type="date" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" />
               </div>
             </div>
           </template>
           <template v-if="form.requires_follow_up">
             <div class="flex flex-col gap-1.5">
-              <label class="text-xs text-white/50">Observación de seguimiento</label>
-              <textarea v-model="form.follow_up_notes" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none" placeholder="Indicá qué debe controlarse en el próximo contacto..."></textarea>
+              <label class="text-xs nxr-text-muted">Observación de seguimiento</label>
+              <textarea v-model="form.follow_up_notes" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30 resize-none" placeholder="Indicá qué debe controlarse en el próximo contacto..."></textarea>
             </div>
           </template>
         </div>

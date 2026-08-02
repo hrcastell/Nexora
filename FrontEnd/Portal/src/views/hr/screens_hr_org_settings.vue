@@ -63,26 +63,26 @@ async function toggleStatus(item: HrCatalogItem) {
 <template>
   <div class="flex flex-col gap-5 p-3 sm:p-6">
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-      <div><h1 class="text-xl font-semibold text-white">Organización</h1><p class="text-xs text-white/40">Estructura organizacional de la empresa.</p></div>
+      <div><h1 class="text-xl font-semibold nxr-text">Organización</h1><p class="text-xs nxr-text-muted">Estructura organizacional de la empresa.</p></div>
       <button v-if="canEdit" class="nxr-btn nxr-btn-primary justify-center" @click="openCreate"><Plus :size="15" /> Nuevo {{ tab.singular }}</button>
     </div>
 
     <div class="flex gap-2 overflow-x-auto pb-1" role="tablist" aria-label="Catálogos de organización">
-      <button v-for="item in tabs" :key="item.key" role="tab" :aria-selected="activeTab === item.key" :class="['whitespace-nowrap rounded-xl px-3 py-2 text-sm transition', activeTab === item.key ? 'bg-white/15 text-white' : 'bg-white/5 text-white/50 hover:text-white']" @click="activeTab = item.key">{{ item.label }}</button>
+      <button v-for="item in tabs" :key="item.key" role="tab" :aria-selected="activeTab === item.key" :class="['whitespace-nowrap rounded-xl px-3 py-2 text-sm transition', activeTab === item.key ? 'nxr-nav-active' : 'bg-white/5 nxr-tab-inactive']" @click="activeTab = item.key">{{ item.label }}</button>
     </div>
 
     <div class="flex flex-col gap-3 sm:flex-row">
-      <div class="relative flex-1"><Search :size="14" class="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" /><input v-model="q" class="w-full rounded-xl border border-white/10 bg-white/5 py-2 pl-9 pr-4 text-sm text-white outline-none focus:border-white/30" :placeholder="`Buscar ${tab.label.toLowerCase()}...`" /></div>
-      <select v-model="status" class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none"><option value="active">Activos</option><option value="inactive">Inactivos</option><option value="all">Todos</option></select>
+      <div class="relative flex-1"><Search :size="14" class="absolute left-3 top-1/2 -translate-y-1/2 nxr-text-soft" /><input v-model="q" class="w-full rounded-xl border border-white/10 bg-white/5 py-2 pl-9 pr-4 text-sm nxr-text outline-none focus:border-white/30" :placeholder="`Buscar ${tab.label.toLowerCase()}...`" /></div>
+      <select v-model="status" class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none"><option value="active">Activos</option><option value="inactive">Inactivos</option><option value="all">Todos</option></select>
     </div>
 
     <div v-if="store.loading" class="space-y-2"><div v-for="index in 6" :key="index" class="h-16 animate-pulse rounded-xl bg-white/5" /></div>
     <p v-else-if="store.error" class="py-8 text-center text-sm text-red-400">{{ store.error }}</p>
-    <p v-else-if="store.items.length === 0" class="py-16 text-center text-sm text-white/30">{{ tab.empty }}</p>
+    <p v-else-if="store.items.length === 0" class="py-16 text-center text-sm nxr-text-soft">{{ tab.empty }}</p>
     <div v-else class="grid grid-cols-1 gap-3 md:grid-cols-2">
       <article v-for="item in store.items" :key="item.id" class="flex items-center justify-between gap-3 rounded-xl border border-white/10 p-4" :style="{ background: 'var(--nexora-glass-bg)' }">
-        <div class="min-w-0"><p class="truncate text-sm font-semibold text-white">{{ item.name }}</p><p class="mt-1 text-xs text-white/40">Código: {{ item.code }}</p></div>
-        <div class="flex shrink-0 items-center gap-2"><span :class="item.status === 'active' ? 'text-green-400' : 'text-white/35'" class="text-xs">{{ item.status === 'active' ? 'Activo' : 'Inactivo' }}</span><button v-if="canEdit" class="text-white/35 hover:text-white" :aria-label="`Editar ${tab.singular}`" @click="openEdit(item)"><Edit2 :size="15" /></button><button v-if="canEdit" :aria-label="item.status === 'active' ? `Desactivar ${tab.singular}` : `Activar ${tab.singular}`" @click="toggleStatus(item)"><ToggleRight v-if="item.status === 'active'" :size="19" class="text-green-400" /><ToggleLeft v-else :size="19" class="text-white/35" /></button></div>
+        <div class="min-w-0"><p class="truncate text-sm font-semibold nxr-text">{{ item.name }}</p><p class="mt-1 text-xs nxr-text-muted">Código: {{ item.code }}</p></div>
+        <div class="flex shrink-0 items-center gap-2"><span :class="item.status === 'active' ? 'text-green-400' : 'nxr-text-soft'" class="text-xs">{{ item.status === 'active' ? 'Activo' : 'Inactivo' }}</span><button v-if="canEdit" class="nxr-text-soft hover:text-[var(--nexora-text-color)]" :aria-label="`Editar ${tab.singular}`" @click="openEdit(item)"><Edit2 :size="15" /></button><button v-if="canEdit" :aria-label="item.status === 'active' ? `Desactivar ${tab.singular}` : `Activar ${tab.singular}`" @click="toggleStatus(item)"><ToggleRight v-if="item.status === 'active'" :size="19" class="text-green-400" /><ToggleLeft v-else :size="19" class="nxr-text-soft" /></button></div>
       </article>
     </div>
 
@@ -90,7 +90,7 @@ async function toggleStatus(item: HrCatalogItem) {
     draft-key="views/hr/screens_hr_org_settings.vue#1"
     :draft-entity="`${activeTab}:${editing?.id ?? 'create'}`"
     :draft-state="{ form }">
-      <div class="space-y-3"><div><label class="mb-1 block text-xs text-white/50">Código *</label><input v-model="form.code" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none" /></div><div><label class="mb-1 block text-xs text-white/50">Nombre *</label><input v-model="form.name" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none" /></div><p v-if="formError" class="text-xs text-red-400">{{ formError }}</p></div>
+      <div class="space-y-3"><div><label class="mb-1 block text-xs nxr-text-muted">Código *</label><input v-model="form.code" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none" /></div><div><label class="mb-1 block text-xs nxr-text-muted">Nombre *</label><input v-model="form.name" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none" /></div><p v-if="formError" class="text-xs text-red-400">{{ formError }}</p></div>
       <template #footer><button class="nxr-btn nxr-btn-primary" :disabled="saving" @click="save">{{ saving ? 'Guardando...' : 'Guardar' }}</button></template>
     </NxrSlidePanel>
   </div>

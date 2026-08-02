@@ -67,7 +67,7 @@ const BUDGET_STATUS_CLASS: Record<string, string> = {
   over_budget:  'text-red-400',
   under_budget: 'text-yellow-400',
   on_track:     'text-green-400',
-  no_plan:      'text-white/30',
+  no_plan:      'nxr-text-soft',
 };
 
 const BUDGET_STATUS_LABEL: Record<string, string> = {
@@ -242,10 +242,10 @@ async function closePeriod() {
     <!-- Header -->
     <div class="flex items-center justify-between">
       <div>
-        <button class="text-xs text-white/40 hover:text-white/70 mb-1 transition-colors" @click="router.push('/financial/periods')">
+        <button class="text-xs nxr-text-muted hover:text-[var(--nexora-text-color)] mb-1 transition-colors" @click="router.push('/financial/periods')">
           ← Períodos
         </button>
-        <h1 class="text-xl font-semibold text-white">
+        <h1 class="text-xl font-semibold nxr-text">
           {{ period ? `${MONTHS[period.month - 1]} ${period.year}` : 'Cargando...' }}
         </h1>
       </div>
@@ -253,7 +253,7 @@ async function closePeriod() {
         <span
           v-if="period"
           class="px-2.5 py-1 rounded-full text-xs font-semibold"
-          :class="period.status === 'open' ? 'bg-green-500/20 text-green-400' : 'bg-white/10 text-white/40'"
+          :class="period.status === 'open' ? 'bg-green-500/20 text-green-400' : 'bg-white/10 nxr-text-muted'"
         >
           {{ period.status === 'open' ? 'Abierto' : period.status === 'closed' ? 'Cerrado' : 'Archivado' }}
         </span>
@@ -279,7 +279,7 @@ async function closePeriod() {
           v-for="tab in ['summary', 'budget', 'transactions'] as const"
           :key="tab"
           class="px-4 py-1.5 rounded-lg text-sm transition-all"
-          :class="activeTab === tab ? 'bg-white/15 text-white font-semibold' : 'text-white/50 hover:text-white/80'"
+          :class="activeTab === tab ? 'nxr-nav-active font-semibold' : 'nxr-tab-inactive'"
           @click="activeTab = tab"
         >
           {{ tab === 'summary' ? 'Resumen' : tab === 'budget' ? 'Presupuesto' : 'Transacciones' }}
@@ -295,32 +295,32 @@ async function closePeriod() {
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             <div class="flex flex-col gap-2 p-5 rounded-2xl border border-white/10" :style="{ background: 'var(--nexora-glass-bg)' }">
               <TrendingUp :size="18" class="text-green-400" />
-              <p class="text-xl font-bold text-white">{{ fmt(summary.real_income) }}</p>
-              <p class="text-xs text-white/50">Ingresos reales</p>
-              <p class="text-xs text-white/30">Plan: {{ fmt(summary.planned_income) }}</p>
+              <p class="text-xl font-bold nxr-text">{{ fmt(summary.real_income) }}</p>
+              <p class="text-xs nxr-text-muted">Ingresos reales</p>
+              <p class="text-xs nxr-text-soft">Plan: {{ fmt(summary.planned_income) }}</p>
             </div>
             <div class="flex flex-col gap-2 p-5 rounded-2xl border border-white/10" :style="{ background: 'var(--nexora-glass-bg)' }">
               <TrendingDown :size="18" class="text-red-400" />
-              <p class="text-xl font-bold text-white">{{ fmt(summary.real_expenses) }}</p>
-              <p class="text-xs text-white/50">Gastos reales</p>
-              <p class="text-xs text-white/30">Plan: {{ fmt(summary.planned_expenses) }}</p>
+              <p class="text-xl font-bold nxr-text">{{ fmt(summary.real_expenses) }}</p>
+              <p class="text-xs nxr-text-muted">Gastos reales</p>
+              <p class="text-xs nxr-text-soft">Plan: {{ fmt(summary.planned_expenses) }}</p>
             </div>
             <div class="flex flex-col gap-2 p-5 rounded-2xl border border-white/10" :style="{ background: 'var(--nexora-glass-bg)' }">
               <PiggyBank :size="18" class="text-blue-400" />
-              <p class="text-xl font-bold text-white">{{ fmt(summary.real_savings) }}</p>
-              <p class="text-xs text-white/50">Ahorro</p>
-              <p class="text-xs text-white/30">Tasa: {{ pct(summary.savings_rate) }}</p>
+              <p class="text-xl font-bold nxr-text">{{ fmt(summary.real_savings) }}</p>
+              <p class="text-xs nxr-text-muted">Ahorro</p>
+              <p class="text-xs nxr-text-soft">Tasa: {{ pct(summary.savings_rate) }}</p>
             </div>
             <div class="flex flex-col gap-2 p-5 rounded-2xl border border-white/10" :style="{ background: 'var(--nexora-glass-bg)' }">
               <Wallet :size="18" class="text-cyan-400" />
-              <p class="text-xl font-bold text-white">{{ fmt(summary.final_balance) }}</p>
-              <p class="text-xs text-white/50">Saldo final</p>
+              <p class="text-xl font-bold nxr-text">{{ fmt(summary.final_balance) }}</p>
+              <p class="text-xs nxr-text-muted">Saldo final</p>
             </div>
           </div>
 
           <!-- Breakdown table -->
           <div v-if="breakdown.length > 0" class="flex flex-col gap-2">
-            <h2 class="text-sm font-semibold text-white/70">Desglose por categoría</h2>
+            <h2 class="text-sm font-semibold nxr-text">Desglose por categoría</h2>
             <div class="flex flex-col gap-1.5">
               <div
                 v-for="row in breakdown"
@@ -332,16 +332,16 @@ async function closePeriod() {
                   <span class="px-2 py-0.5 rounded-full text-xs" :class="TYPE_CLASS[row.category_type]">
                     {{ TYPE_LABEL[row.category_type] }}
                   </span>
-                  <p class="text-sm text-white truncate">{{ row.category_name }}</p>
+                  <p class="text-sm nxr-text truncate">{{ row.category_name }}</p>
                 </div>
                 <div class="flex items-center gap-4 shrink-0 text-right">
                   <div class="hidden md:block">
-                    <p class="text-xs text-white/30">Plan</p>
-                    <p class="text-xs text-white">{{ fmt(row.planned_amount) }}</p>
+                    <p class="text-xs nxr-text-soft">Plan</p>
+                    <p class="text-xs nxr-text">{{ fmt(row.planned_amount) }}</p>
                   </div>
                   <div>
-                    <p class="text-xs text-white/30">Real</p>
-                    <p class="text-sm font-semibold text-white">{{ fmt(row.real_amount) }}</p>
+                    <p class="text-xs nxr-text-soft">Real</p>
+                    <p class="text-sm font-semibold nxr-text">{{ fmt(row.real_amount) }}</p>
                   </div>
                   <span class="text-xs" :class="BUDGET_STATUS_CLASS[row.status]">
                     {{ BUDGET_STATUS_LABEL[row.status] }}
@@ -356,7 +356,7 @@ async function closePeriod() {
       <!-- BUDGET TAB -->
       <div v-else-if="activeTab === 'budget'" class="flex flex-col gap-4">
         <div class="flex items-center justify-between">
-          <p class="text-sm text-white/50">Planes de presupuesto</p>
+          <p class="text-sm nxr-text-muted">Planes de presupuesto</p>
           <button
             v-if="period.status === 'open'"
             class="flex items-center gap-1.5 rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary"
@@ -369,7 +369,7 @@ async function closePeriod() {
         <div v-if="budgetStore.loading" class="flex flex-col gap-2">
           <div v-for="i in 5" :key="i" class="h-14 rounded-xl bg-white/5 animate-pulse"></div>
         </div>
-        <div v-else-if="budgetStore.items.length === 0" class="text-center text-white/30 py-10 text-sm">
+        <div v-else-if="budgetStore.items.length === 0" class="text-center nxr-text-soft py-10 text-sm">
           No hay planes de presupuesto para este período.
         </div>
         <div v-else class="flex flex-col gap-1.5">
@@ -380,16 +380,16 @@ async function closePeriod() {
             :style="{ background: 'var(--nexora-glass-bg)' }"
           >
             <div class="flex-1 min-w-0">
-              <p class="text-sm text-white truncate">{{ plan.category_name || `Categoría #${plan.category_id}` }}</p>
-              <p v-if="plan.notes" class="text-xs text-white/30 truncate">{{ plan.notes }}</p>
+              <p class="text-sm nxr-text truncate">{{ plan.category_name || `Categoría #${plan.category_id}` }}</p>
+              <p v-if="plan.notes" class="text-xs nxr-text-soft truncate">{{ plan.notes }}</p>
             </div>
             <div class="flex items-center gap-3 shrink-0">
-              <p class="text-sm font-semibold text-white">{{ fmt(plan.planned_amount) }}</p>
+              <p class="text-sm font-semibold nxr-text">{{ fmt(plan.planned_amount) }}</p>
               <span v-if="plan.current_installment" class="text-xs text-orange-400/70">C{{ plan.current_installment }}</span>
-              <button v-if="period.status === 'open'" class="text-white/30 hover:text-white/70 transition-colors" @click="openEditBudget(plan)">
+              <button v-if="period.status === 'open'" class="nxr-text-soft hover:text-[var(--nexora-text-color)] transition-colors" @click="openEditBudget(plan)">
                 <Pencil :size="14" />
               </button>
-              <button v-if="period.status === 'open'" class="text-white/30 hover:text-red-400 transition-colors" @click="removeBudget(plan.id)">
+              <button v-if="period.status === 'open'" class="nxr-text-soft hover:text-red-400 transition-colors" @click="removeBudget(plan.id)">
                 <Trash2 :size="14" />
               </button>
             </div>
@@ -400,7 +400,7 @@ async function closePeriod() {
       <!-- TRANSACTIONS TAB -->
       <div v-else-if="activeTab === 'transactions'" class="flex flex-col gap-4">
         <div class="flex items-center justify-between gap-3 flex-wrap">
-          <select v-model="txFilter" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none">
+          <select v-model="txFilter" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none">
             <option value="">Todos los tipos</option>
             <option value="income">Ingresos</option>
             <option value="expense">Gastos</option>
@@ -420,7 +420,7 @@ async function closePeriod() {
         <div v-if="txStore.loading" class="flex flex-col gap-2">
           <div v-for="i in 6" :key="i" class="h-14 rounded-xl bg-white/5 animate-pulse"></div>
         </div>
-        <div v-else-if="txStore.items.length === 0" class="text-center text-white/30 py-10 text-sm">
+        <div v-else-if="txStore.items.length === 0" class="text-center nxr-text-soft py-10 text-sm">
           No hay transacciones para este período.
         </div>
         <div v-else class="flex flex-col gap-1.5">
@@ -434,15 +434,15 @@ async function closePeriod() {
               {{ TYPE_LABEL[tx.type] }}
             </span>
             <div class="flex-1 min-w-0">
-              <p class="text-sm text-white truncate">{{ tx.category_name || `Cat. #${tx.category_id}` }}</p>
-              <p class="text-xs text-white/30">{{ fmtDate(tx.date) }}{{ tx.description ? ` · ${tx.description}` : '' }}</p>
+              <p class="text-sm nxr-text truncate">{{ tx.category_name || `Cat. #${tx.category_id}` }}</p>
+              <p class="text-xs nxr-text-soft">{{ fmtDate(tx.date) }}{{ tx.description ? ` · ${tx.description}` : '' }}</p>
             </div>
             <div class="flex items-center gap-2 shrink-0">
-              <p class="text-sm font-semibold text-white">{{ fmt(tx.amount) }}</p>
-              <button v-if="period.status === 'open'" class="text-white/30 hover:text-white/70 transition-colors" @click="openEditTx(tx)">
+              <p class="text-sm font-semibold nxr-text">{{ fmt(tx.amount) }}</p>
+              <button v-if="period.status === 'open'" class="nxr-text-soft hover:text-[var(--nexora-text-color)] transition-colors" @click="openEditTx(tx)">
                 <Pencil :size="14" />
               </button>
-              <button v-if="period.status === 'open'" class="text-white/30 hover:text-red-400 transition-colors" @click="removeTx(tx.id)">
+              <button v-if="period.status === 'open'" class="nxr-text-soft hover:text-red-400 transition-colors" @click="removeTx(tx.id)">
                 <Trash2 :size="14" />
               </button>
             </div>
@@ -458,24 +458,24 @@ async function closePeriod() {
     :draft-state="{ budgetForm }">
       <form class="flex flex-col gap-5" @submit.prevent="saveBudget">
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Categoría</label>
-          <select v-model.number="budgetForm.category_id" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none" required>
+          <label class="text-xs nxr-text-muted">Categoría</label>
+          <select v-model.number="budgetForm.category_id" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none" required>
             <option value="0" disabled>Seleccionar categoría</option>
             <option v-for="c in filteredCategories" :key="c.id" :value="c.id">{{ c.name }}</option>
           </select>
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Monto planeado</label>
-          <input v-model.number="budgetForm.planned_amount" type="number" min="0" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" required />
+          <label class="text-xs nxr-text-muted">Monto planeado</label>
+          <input v-model.number="budgetForm.planned_amount" type="number" min="0" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" required />
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Notas (opcional)</label>
-          <input v-model="budgetForm.notes" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+          <label class="text-xs nxr-text-muted">Notas (opcional)</label>
+          <input v-model="budgetForm.notes" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" />
         </div>
         <div v-if="selectedBudgetCategory?.type === 'debt'" class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">
+          <label class="text-xs nxr-text-muted">
             Cuota actual (N° de esta cuota)
-            <span v-if="selectedBudgetCategory.total_installments" class="text-white/30 ml-1">
+            <span v-if="selectedBudgetCategory.total_installments" class="nxr-text-soft ml-1">
               de {{ selectedBudgetCategory.total_installments }} cuotas
             </span>
           </label>
@@ -485,9 +485,9 @@ async function closePeriod() {
             min="1"
             :max="selectedBudgetCategory.total_installments ?? undefined"
             placeholder="Ej: 8"
-            class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30"
+            class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30"
           />
-          <p class="text-xs text-white/30">
+          <p class="text-xs nxr-text-soft">
             Ej: si vas en la cuota 8 de 24, ingresá 8
           </p>
         </div>
@@ -508,8 +508,8 @@ async function closePeriod() {
     :draft-state="{ txForm }">
       <form class="flex flex-col gap-5" @submit.prevent="saveTx">
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Tipo</label>
-          <select v-model="txForm.type" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none" required>
+          <label class="text-xs nxr-text-muted">Tipo</label>
+          <select v-model="txForm.type" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none" required>
             <option value="income">Ingreso</option>
             <option value="expense">Gasto</option>
             <option value="saving">Ahorro</option>
@@ -518,27 +518,27 @@ async function closePeriod() {
           </select>
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Categoría</label>
-          <select v-model.number="txForm.category_id" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none" required>
+          <label class="text-xs nxr-text-muted">Categoría</label>
+          <select v-model.number="txForm.category_id" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none" required>
             <option value="0" disabled>Seleccionar categoría</option>
             <option v-for="c in filteredCategories" :key="c.id" :value="c.id">{{ c.name }}</option>
           </select>
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Monto</label>
-          <input v-model.number="txForm.amount" type="number" min="1" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" required />
+          <label class="text-xs nxr-text-muted">Monto</label>
+          <input v-model.number="txForm.amount" type="number" min="1" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" required />
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Fecha</label>
-          <input v-model="txForm.date" type="date" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" required />
+          <label class="text-xs nxr-text-muted">Fecha</label>
+          <input v-model="txForm.date" type="date" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" required />
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Descripción (opcional)</label>
-          <input v-model="txForm.description" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+          <label class="text-xs nxr-text-muted">Descripción (opcional)</label>
+          <input v-model="txForm.description" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" />
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Medio de pago (opcional)</label>
-          <input v-model="txForm.payment_method" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+          <label class="text-xs nxr-text-muted">Medio de pago (opcional)</label>
+          <input v-model="txForm.payment_method" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" />
         </div>
         <p v-if="txError" class="text-xs text-red-400">{{ txError }}</p>
       </form>

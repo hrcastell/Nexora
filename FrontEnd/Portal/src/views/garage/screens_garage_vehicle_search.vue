@@ -32,15 +32,15 @@ async function search() {
 
 <template>
   <div class="flex flex-col gap-5 p-6 max-w-3xl mx-auto">
-    <h1 class="text-xl font-semibold text-white">Búsqueda de Vehículos</h1>
+    <h1 class="text-xl font-semibold nxr-text">Búsqueda de Vehículos</h1>
 
     <div class="relative">
-      <Search :size="16" class="absolute left-4 top-1/2 -translate-y-1/2 text-white/30" />
+      <Search :size="16" class="absolute left-4 top-1/2 -translate-y-1/2 nxr-text-soft" />
       <input
         v-model="q"
         type="text"
         placeholder="Buscar por placa, VIN, marca, modelo, cliente..."
-        class="w-full pl-11 pr-4 py-3 rounded-2xl bg-white/5 border border-white/15 text-white text-sm outline-none focus:border-[var(--nexora-primary)] transition-colors"
+        class="w-full pl-11 pr-4 py-3 rounded-2xl bg-white/5 border border-white/15 nxr-text text-sm outline-none focus:border-[var(--nexora-primary)] transition-colors"
         @input="onInput"
         @keyup.enter="search"
       />
@@ -50,7 +50,7 @@ async function search() {
       <div v-for="i in 4" :key="i" class="h-20 rounded-xl bg-white/5 animate-pulse"></div>
     </div>
 
-    <div v-else-if="searched && results.length === 0" class="text-center text-white/30 py-12 text-sm">
+    <div v-else-if="searched && results.length === 0" class="text-center nxr-text-soft py-12 text-sm">
       Sin resultados para "{{ q }}"
     </div>
 
@@ -62,15 +62,15 @@ async function search() {
         :style="{ background: 'var(--nexora-glass-bg)' }"
         @click="router.push(`/garage/vehicles/${v.id}`)"
       >
-        <Car :size="22" class="text-white/20 shrink-0" />
+        <Car :size="22" class="nxr-text-soft shrink-0" />
         <div class="flex-1 min-w-0">
-          <p class="text-sm font-semibold text-white">
+          <p class="text-sm font-semibold nxr-text">
             {{ (v as any).brand_name || '' }} {{ (v as any).model_name || '' }} {{ v.version || '' }}
           </p>
-          <p class="text-xs text-white/50">{{ v.plate || 'Sin placa' }} · {{ v.year || '—' }}</p>
+          <p class="text-xs nxr-text-muted">{{ v.plate || 'Sin placa' }} · {{ v.year || '—' }}</p>
         </div>
         <div class="flex flex-col items-end gap-1 shrink-0">
-          <div class="flex items-center gap-1 text-xs text-white/40">
+          <div class="flex items-center gap-1 text-xs nxr-text-muted">
             <User :size="11" />
             <span>{{ (v as any).customer_name || 'Sin cliente' }}</span>
           </div>

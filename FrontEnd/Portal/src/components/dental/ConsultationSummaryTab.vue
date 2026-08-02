@@ -26,7 +26,7 @@ defineEmits<{ (e: 'edit-info'): void }>()
   <!-- Patient + status card -->
   <div class="rounded-xl border border-white/10 bg-white/5 p-5">
     <div class="mb-4 flex items-center justify-between">
-      <h2 class="text-sm font-semibold text-white/70">Información de la consulta</h2>
+      <h2 class="text-sm font-semibold nxr-text">Información de la consulta</h2>
       <button
         class="flex items-center gap-1.5 rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary"
         @click="$emit('edit-info')"
@@ -38,7 +38,7 @@ defineEmits<{ (e: 'edit-info'): void }>()
 
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <div>
-        <p class="mb-0.5 text-xs text-white/40">Paciente</p>
+        <p class="mb-0.5 text-xs nxr-text-muted">Paciente</p>
         <router-link
           :to="`/dental/patients/${(consultation as any)?.customer_id ?? (consultation as any)?.customer?.id}`"
           class="text-sm font-medium text-[var(--nexora-primary)] hover:underline"
@@ -47,23 +47,23 @@ defineEmits<{ (e: 'edit-info'): void }>()
         </router-link>
       </div>
       <div>
-        <p class="mb-0.5 text-xs text-white/40">Fecha de consulta</p>
+        <p class="mb-0.5 text-xs nxr-text-muted">Fecha de consulta</p>
         <p class="text-sm">{{ fmtDate?.((consultation as any)?.consultation_date) ?? '—' }}</p>
       </div>
       <div>
-        <p class="mb-0.5 text-xs text-white/40">Estado clínico</p>
+        <p class="mb-0.5 text-xs nxr-text-muted">Estado clínico</p>
         <span
           class="rounded-full px-2 py-0.5 text-xs font-medium"
-          :class="statusClass[consultation?.status ?? ''] ?? 'bg-white/10 text-white/40'"
+          :class="statusClass[consultation?.status ?? ''] ?? 'bg-white/10 nxr-text-muted'"
         >
           {{ statusLabel[consultation?.status ?? ''] ?? '—' }}
         </span>
       </div>
       <div>
-        <p class="mb-0.5 text-xs text-white/40">Estado de pago</p>
+        <p class="mb-0.5 text-xs nxr-text-muted">Estado de pago</p>
         <span
           class="rounded-full px-2 py-0.5 text-xs font-medium"
-          :class="adminStatusClass[consultation?.administrative_status ?? ''] ?? 'bg-white/10 text-white/40'"
+          :class="adminStatusClass[consultation?.administrative_status ?? ''] ?? 'bg-white/10 nxr-text-muted'"
         >
           {{ adminStatusLabel[consultation?.administrative_status ?? ''] ?? '—' }}
         </span>
@@ -76,20 +76,20 @@ defineEmits<{ (e: 'edit-info'): void }>()
       class="mt-4 grid gap-3 border-t border-white/10 pt-4 sm:grid-cols-2"
     >
       <div v-if="(consultation as any)?.reason">
-        <p class="mb-0.5 text-xs text-white/40">Motivo de consulta</p>
-        <p class="text-sm leading-relaxed text-white/80">{{ (consultation as any).reason }}</p>
+        <p class="mb-0.5 text-xs nxr-text-muted">Motivo de consulta</p>
+        <p class="text-sm leading-relaxed nxr-text">{{ (consultation as any).reason }}</p>
       </div>
       <div v-if="(consultation as any)?.diagnosis">
-        <p class="mb-0.5 text-xs text-white/40">Diagnóstico</p>
-        <p class="text-sm leading-relaxed text-white/80">{{ (consultation as any).diagnosis }}</p>
+        <p class="mb-0.5 text-xs nxr-text-muted">Diagnóstico</p>
+        <p class="text-sm leading-relaxed nxr-text">{{ (consultation as any).diagnosis }}</p>
       </div>
       <div v-if="(consultation as any)?.clinical_notes" class="sm:col-span-2">
-        <p class="mb-0.5 text-xs text-white/40">Notas clínicas</p>
-        <p class="text-sm leading-relaxed text-white/80">{{ (consultation as any).clinical_notes }}</p>
+        <p class="mb-0.5 text-xs nxr-text-muted">Notas clínicas</p>
+        <p class="text-sm leading-relaxed nxr-text">{{ (consultation as any).clinical_notes }}</p>
       </div>
       <div v-if="(consultation as any)?.indications" class="sm:col-span-2">
-        <p class="mb-0.5 text-xs text-white/40">Indicaciones</p>
-        <p class="text-sm leading-relaxed text-white/80">{{ (consultation as any).indications }}</p>
+        <p class="mb-0.5 text-xs nxr-text-muted">Indicaciones</p>
+        <p class="text-sm leading-relaxed nxr-text">{{ (consultation as any).indications }}</p>
       </div>
     </div>
   </div>
@@ -97,15 +97,15 @@ defineEmits<{ (e: 'edit-info'): void }>()
   <!-- Financial summary -->
   <div class="grid gap-4 sm:grid-cols-3">
     <div class="rounded-xl border border-white/10 bg-white/5 p-4">
-      <p class="mb-1 text-xs text-white/40">Total servicios</p>
+      <p class="mb-1 text-xs nxr-text-muted">Total servicios</p>
       <p class="text-2xl font-bold">{{ fmtCurrency?.(total) }}</p>
     </div>
     <div class="rounded-xl border border-white/10 bg-white/5 p-4">
-      <p class="mb-1 text-xs text-white/40">Total pagado</p>
+      <p class="mb-1 text-xs nxr-text-muted">Total pagado</p>
       <p class="text-2xl font-bold text-green-400">{{ fmtCurrency?.(chargeDetail?.paid_amount ?? 0) }}</p>
     </div>
     <div class="rounded-xl border border-white/10 bg-white/5 p-4">
-      <p class="mb-1 text-xs text-white/40">Saldo pendiente</p>
+      <p class="mb-1 text-xs nxr-text-muted">Saldo pendiente</p>
       <p class="text-2xl font-bold text-yellow-400">
         {{ fmtCurrency?.(total - Number(chargeDetail?.paid_amount ?? 0)) }}
       </p>
@@ -144,8 +144,8 @@ defineEmits<{ (e: 'edit-info'): void }>()
 
   <!-- Services summary -->
   <div class="rounded-xl border border-white/10 bg-white/5 p-5">
-    <h2 class="mb-4 text-sm font-semibold text-white/70">Servicios aplicados</h2>
-    <div v-if="!treatments.length" class="py-6 text-center text-sm text-white/30">
+    <h2 class="mb-4 text-sm font-semibold nxr-text">Servicios aplicados</h2>
+    <div v-if="!treatments.length" class="py-6 text-center text-sm nxr-text-soft">
       Sin servicios registrados
     </div>
     <div v-else class="space-y-2">
@@ -157,7 +157,7 @@ defineEmits<{ (e: 'edit-info'): void }>()
       >
         <div class="flex items-center gap-3">
           <span class="text-sm">{{ svc.treatment_name_snapshot }}</span>
-          <span v-if="svc.tooth_reference" class="rounded bg-white/10 px-1.5 py-0.5 text-xs text-white/50">
+          <span v-if="svc.tooth_reference" class="rounded bg-white/10 px-1.5 py-0.5 text-xs nxr-text-muted">
             Diente {{ svc.tooth_reference }}
           </span>
           <span v-if="svc.status === 'voided'" class="rounded-full bg-red-900/30 px-2 py-0.5 text-xs text-red-300">

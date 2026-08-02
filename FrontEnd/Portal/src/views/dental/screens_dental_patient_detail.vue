@@ -248,7 +248,7 @@ const ADMIN_STATUS_CLASS: Record<string, string> = {
   partially_paid: 'bg-blue-500/20 text-blue-400',
   paid:           'bg-green-500/20 text-green-400',
   overdue:        'bg-red-500/20 text-red-400',
-  cancelled:      'bg-white/10 text-white/40',
+  cancelled:      'bg-white/10 nxr-text-muted',
 };
 
 const ADMIN_STATUS_LABEL: Record<string, string> = {
@@ -264,7 +264,7 @@ const CHARGE_STATUS_CLASS: Record<string, string> = {
   partially_paid: 'bg-blue-500/20 text-blue-400',
   paid:           'bg-green-500/20 text-green-400',
   overdue:        'bg-red-500/20 text-red-400',
-  cancelled:      'bg-white/10 text-white/40',
+  cancelled:      'bg-white/10 nxr-text-muted',
   refunded:       'bg-purple-500/20 text-purple-400',
 };
 
@@ -286,7 +286,7 @@ onMounted(async () => {
   <div class="flex flex-col gap-5 p-6">
     <!-- Header -->
     <div class="flex items-center gap-3">
-      <button class="text-white/40 hover:text-white transition-colors shrink-0" @click="router.back()">
+      <button class="nxr-text-muted hover:text-[var(--nexora-text-color)] transition-colors shrink-0" @click="router.back()">
         <ArrowLeft :size="20" />
       </button>
 
@@ -323,10 +323,10 @@ onMounted(async () => {
 
       <div class="flex-1 min-w-0">
         <div v-if="store.loading" class="h-5 w-48 bg-white/5 animate-pulse rounded-lg"></div>
-        <h1 v-else class="text-xl font-semibold text-white truncate">
+        <h1 v-else class="text-xl font-semibold nxr-text truncate">
           {{ patient?.first_name }} {{ patient?.last_name }}
         </h1>
-        <p class="text-xs text-white/40">{{ patient?.document_type }} {{ patient?.document_number }}</p>
+        <p class="text-xs nxr-text-muted">{{ patient?.document_type }} {{ patient?.document_number }}</p>
         <!-- Delete photo link (only when photo exists) -->
         <button
           v-if="patient && patient.photo_url"
@@ -340,7 +340,7 @@ onMounted(async () => {
 
       <button
         v-if="patient"
-        class="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold border border-white/10 text-white/60 hover:border-white/30 hover:text-white transition-all shrink-0"
+        class="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold border border-white/10 nxr-text-muted hover:border-white/30 hover:text-[var(--nexora-text-color)] transition-all shrink-0"
         @click="openEdit"
       >
         <Pencil :size="12" /> Editar
@@ -363,7 +363,7 @@ onMounted(async () => {
         <select
           :value="activeTab"
           @change="loadTabData(($event.target as HTMLSelectElement).value as any)"
-          class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold text-white focus:outline-none focus:ring-1 focus:ring-[var(--nexora-primary)]"
+          class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold nxr-text focus:outline-none focus:ring-1 focus:ring-[var(--nexora-primary)]"
         >
           <option v-for="tab in [
             { key: 'summary',       label: 'Resumen' },
@@ -396,7 +396,7 @@ onMounted(async () => {
           class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all"
           :class="activeTab === tab.key
             ? 'bg-[var(--nexora-primary)] text-white'
-            : 'text-white/50 border border-white/10 hover:border-white/30 hover:text-white'"
+            : 'nxr-text-muted border border-white/10 hover:border-white/30 hover:text-[var(--nexora-text-color)]'"
           @click="loadTabData(tab.key as any)"
         >
           <component :is="tab.icon" :size="12" />
@@ -407,39 +407,39 @@ onMounted(async () => {
       <!-- Tab: Summary -->
       <div v-if="activeTab === 'summary'" class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div class="flex flex-col gap-2 p-5 rounded-2xl border border-white/10" :style="{ background: 'var(--nexora-glass-bg)' }">
-          <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Contacto</p>
-          <p class="text-sm text-white">{{ patient.email ?? '—' }}</p>
-          <p class="text-sm text-white">{{ patient.phone ?? patient.mobile ?? '—' }}</p>
+          <p class="text-xs nxr-text-muted uppercase tracking-wide font-semibold">Contacto</p>
+          <p class="text-sm nxr-text">{{ patient.email ?? '—' }}</p>
+          <p class="text-sm nxr-text">{{ patient.phone ?? patient.mobile ?? '—' }}</p>
         </div>
         <div v-if="patient.dental_profile_id" class="flex flex-col gap-2 p-5 rounded-2xl border border-white/10" :style="{ background: 'var(--nexora-glass-bg)' }">
-          <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Observaciones</p>
-          <p class="text-sm text-white/70">{{ patient.dental_observations || '—' }}</p>
+          <p class="text-xs nxr-text-muted uppercase tracking-wide font-semibold">Observaciones</p>
+          <p class="text-sm nxr-text">{{ patient.dental_observations || '—' }}</p>
         </div>
         <div v-if="patient.allergies" class="flex flex-col gap-2 p-5 rounded-2xl border border-red-500/20 bg-red-500/5">
           <p class="text-xs text-red-400 uppercase tracking-wide font-semibold">Alergias</p>
-          <p class="text-sm text-white/80">{{ patient.allergies }}</p>
+          <p class="text-sm nxr-text">{{ patient.allergies }}</p>
         </div>
         <div v-if="patient.emergency_contact_name" class="flex flex-col gap-2 p-5 rounded-2xl border border-white/10" :style="{ background: 'var(--nexora-glass-bg)' }">
-          <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Contacto de emergencia</p>
-          <p class="text-sm text-white">{{ patient.emergency_contact_name }}</p>
-          <p class="text-sm text-white/60">{{ patient.emergency_contact_phone ?? '—' }}</p>
+          <p class="text-xs nxr-text-muted uppercase tracking-wide font-semibold">Contacto de emergencia</p>
+          <p class="text-sm nxr-text">{{ patient.emergency_contact_name }}</p>
+          <p class="text-sm nxr-text-muted">{{ patient.emergency_contact_phone ?? '—' }}</p>
         </div>
       </div>
 
       <!-- Tab: Personal data -->
       <div v-if="activeTab === 'personal'" class="flex flex-col gap-4">
         <div class="p-5 rounded-2xl border border-white/10 flex flex-col gap-3" :style="{ background: 'var(--nexora-glass-bg)' }">
-          <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Datos personales</p>
+          <p class="text-xs nxr-text-muted uppercase tracking-wide font-semibold">Datos personales</p>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div><p class="text-xs text-white/40">Nombre</p><p class="text-sm text-white">{{ patient.first_name }} {{ patient.last_name }}</p></div>
-            <div><p class="text-xs text-white/40">Documento</p><p class="text-sm text-white">{{ patient.document_type }} {{ patient.document_number ?? '—' }}</p></div>
+            <div><p class="text-xs nxr-text-muted">Nombre</p><p class="text-sm nxr-text">{{ patient.first_name }} {{ patient.last_name }}</p></div>
+            <div><p class="text-xs nxr-text-muted">Documento</p><p class="text-sm nxr-text">{{ patient.document_type }} {{ patient.document_number ?? '—' }}</p></div>
             <div>
-              <p class="text-xs text-white/40">Teléfono</p>
+              <p class="text-xs nxr-text-muted">Teléfono</p>
               <div class="flex items-center gap-2">
-                <p class="text-sm text-white">{{ patient.phone || '—' }}</p>
+                <p class="text-sm nxr-text">{{ patient.phone || '—' }}</p>
                 <template v-if="patient.phone">
                   <a :href="`tel:${patient.phone}`" class="p-1 rounded-lg hover:bg-white/10 transition" title="Llamar">
-                    <Phone class="h-3.5 w-3.5 text-white/50" />
+                    <Phone class="h-3.5 w-3.5 nxr-text-muted" />
                   </a>
                   <a :href="`https://wa.me/${cleanPhone(patient.phone)}`" target="_blank" class="p-1 rounded-lg hover:bg-white/10 transition" title="WhatsApp">
                     <MessageCircle class="h-3.5 w-3.5 text-green-400" />
@@ -448,12 +448,12 @@ onMounted(async () => {
               </div>
             </div>
             <div>
-              <p class="text-xs text-white/40">Celular</p>
+              <p class="text-xs nxr-text-muted">Celular</p>
               <div class="flex items-center gap-2">
-                <p class="text-sm text-white">{{ patient.mobile || '—' }}</p>
+                <p class="text-sm nxr-text">{{ patient.mobile || '—' }}</p>
                 <template v-if="patient.mobile">
                   <a :href="`tel:${patient.mobile}`" class="p-1 rounded-lg hover:bg-white/10 transition" title="Llamar">
-                    <Phone class="h-3.5 w-3.5 text-white/50" />
+                    <Phone class="h-3.5 w-3.5 nxr-text-muted" />
                   </a>
                   <a :href="`https://wa.me/${cleanPhone(patient.mobile)}`" target="_blank" class="p-1 rounded-lg hover:bg-white/10 transition" title="WhatsApp">
                     <MessageCircle class="h-3.5 w-3.5 text-green-400" />
@@ -461,7 +461,7 @@ onMounted(async () => {
                 </template>
               </div>
             </div>
-            <div><p class="text-xs text-white/40">Email</p><p class="text-sm text-white">{{ patient.email ?? '—' }}</p></div>
+            <div><p class="text-xs nxr-text-muted">Email</p><p class="text-sm nxr-text">{{ patient.email ?? '—' }}</p></div>
           </div>
         </div>
       </div>
@@ -471,13 +471,13 @@ onMounted(async () => {
 
         <!-- Medical profile current -->
         <div v-if="patient.dental_profile_id" class="p-5 rounded-2xl border border-white/10 flex flex-col gap-3" :style="{ background: 'var(--nexora-glass-bg)' }">
-          <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Perfil médico actual</p>
+          <p class="text-xs nxr-text-muted uppercase tracking-wide font-semibold">Perfil médico actual</p>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div><p class="text-xs text-white/40">Grupo sanguíneo</p><p class="text-sm text-white">{{ patient.blood_type || '—' }}</p></div>
-            <div><p class="text-xs text-white/40">Alergias</p><p class="text-sm text-white/80">{{ patient.allergies || '—' }}</p></div>
-            <div><p class="text-xs text-white/40">Antecedentes</p><p class="text-sm text-white/80">{{ patient.medical_background || '—' }}</p></div>
-            <div><p class="text-xs text-white/40">Medicación actual</p><p class="text-sm text-white/80">{{ patient.current_medications || '—' }}</p></div>
-            <div><p class="text-xs text-white/40">Enfermedades crónicas</p><p class="text-sm text-white/80">{{ patient.chronic_conditions || '—' }}</p></div>
+            <div><p class="text-xs nxr-text-muted">Grupo sanguíneo</p><p class="text-sm nxr-text">{{ patient.blood_type || '—' }}</p></div>
+            <div><p class="text-xs nxr-text-muted">Alergias</p><p class="text-sm nxr-text">{{ patient.allergies || '—' }}</p></div>
+            <div><p class="text-xs nxr-text-muted">Antecedentes</p><p class="text-sm nxr-text">{{ patient.medical_background || '—' }}</p></div>
+            <div><p class="text-xs nxr-text-muted">Medicación actual</p><p class="text-sm nxr-text">{{ patient.current_medications || '—' }}</p></div>
+            <div><p class="text-xs nxr-text-muted">Enfermedades crónicas</p><p class="text-sm nxr-text">{{ patient.chronic_conditions || '—' }}</p></div>
           </div>
         </div>
 
@@ -489,9 +489,9 @@ onMounted(async () => {
 
         <!-- Medical history timeline -->
         <div class="flex items-center justify-between">
-          <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Registros médicos</p>
+          <p class="text-xs nxr-text-muted uppercase tracking-wide font-semibold">Registros médicos</p>
           <button
-            class="flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs text-white/70 bg-white/10 hover:bg-white/20 transition"
+            class="flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs nxr-text-muted bg-white/10 hover:bg-white/20 transition"
             @click="showMedHistPanel = true"
           >
             <Plus class="h-3.5 w-3.5" />
@@ -499,7 +499,7 @@ onMounted(async () => {
           </button>
         </div>
 
-        <div v-if="medicalHistory.length === 0" class="text-center text-white/30 py-6 text-sm">
+        <div v-if="medicalHistory.length === 0" class="text-center nxr-text-soft py-6 text-sm">
           No hay registros médicos en el historial.
         </div>
         <div
@@ -509,20 +509,20 @@ onMounted(async () => {
           :style="{ background: 'var(--nexora-glass-bg)' }"
         >
           <div class="flex items-center justify-between gap-2">
-            <span class="text-xs font-medium text-white">{{ fmtDate(entry.entry_date) }}</span>
-            <span v-if="entry.blood_type" class="text-xs px-2 py-0.5 rounded-full bg-white/10 text-white/60">{{ entry.blood_type }}</span>
+            <span class="text-xs font-medium nxr-text">{{ fmtDate(entry.entry_date) }}</span>
+            <span v-if="entry.blood_type" class="text-xs px-2 py-0.5 rounded-full bg-white/10 nxr-text-muted">{{ entry.blood_type }}</span>
           </div>
-          <div v-if="entry.medical_background" class="text-xs text-white/60"><span class="text-white/40">Antecedentes: </span>{{ entry.medical_background }}</div>
-          <div v-if="entry.allergies" class="text-xs text-white/60"><span class="text-white/40">Alergias: </span>{{ entry.allergies }}</div>
-          <div v-if="entry.current_medications" class="text-xs text-white/60"><span class="text-white/40">Medicación: </span>{{ entry.current_medications }}</div>
-          <div v-if="entry.chronic_conditions" class="text-xs text-white/60"><span class="text-white/40">Crónicas: </span>{{ entry.chronic_conditions }}</div>
-          <div v-if="entry.dental_observations" class="text-xs text-white/60"><span class="text-white/40">Obs. dentales: </span>{{ entry.dental_observations }}</div>
-          <div v-if="entry.notes" class="text-xs text-white/60"><span class="text-white/40">Notas: </span>{{ entry.notes }}</div>
+          <div v-if="entry.medical_background" class="text-xs nxr-text-muted"><span class="nxr-text-soft">Antecedentes: </span>{{ entry.medical_background }}</div>
+          <div v-if="entry.allergies" class="text-xs nxr-text-muted"><span class="nxr-text-soft">Alergias: </span>{{ entry.allergies }}</div>
+          <div v-if="entry.current_medications" class="text-xs nxr-text-muted"><span class="nxr-text-soft">Medicación: </span>{{ entry.current_medications }}</div>
+          <div v-if="entry.chronic_conditions" class="text-xs nxr-text-muted"><span class="nxr-text-soft">Crónicas: </span>{{ entry.chronic_conditions }}</div>
+          <div v-if="entry.dental_observations" class="text-xs nxr-text-muted"><span class="nxr-text-soft">Obs. dentales: </span>{{ entry.dental_observations }}</div>
+          <div v-if="entry.notes" class="text-xs nxr-text-muted"><span class="nxr-text-soft">Notas: </span>{{ entry.notes }}</div>
         </div>
 
         <!-- Clinical history entries -->
-        <p class="text-xs text-white/40 uppercase tracking-wide font-semibold mt-2">Historial clínico</p>
-        <div v-if="clinicalHistory.length === 0" class="text-center text-white/30 py-4 text-sm">
+        <p class="text-xs nxr-text-muted uppercase tracking-wide font-semibold mt-2">Historial clínico</p>
+        <div v-if="clinicalHistory.length === 0" class="text-center nxr-text-soft py-4 text-sm">
           No hay entradas en la historia clínica.
         </div>
         <div
@@ -532,18 +532,18 @@ onMounted(async () => {
           :style="{ background: 'var(--nexora-glass-bg)' }"
         >
           <div class="flex items-center justify-between gap-2">
-            <span class="text-xs px-2 py-0.5 rounded-full bg-white/10 text-white/60">{{ HISTORY_TYPE_LABEL[entry.type] ?? entry.type }}</span>
-            <span class="text-xs text-white/30">{{ fmtDate(entry.entry_date) }}</span>
+            <span class="text-xs px-2 py-0.5 rounded-full bg-white/10 nxr-text-muted">{{ HISTORY_TYPE_LABEL[entry.type] ?? entry.type }}</span>
+            <span class="text-xs nxr-text-soft">{{ fmtDate(entry.entry_date) }}</span>
           </div>
-          <p v-if="entry.title" class="text-sm font-medium text-white">{{ entry.title }}</p>
-          <p v-if="entry.description" class="text-xs text-white/60">{{ entry.description }}</p>
-          <p v-if="entry.diagnosis" class="text-xs text-white/60"><span class="text-white/40">Diagnóstico: </span>{{ entry.diagnosis }}</p>
+          <p v-if="entry.title" class="text-sm font-medium nxr-text">{{ entry.title }}</p>
+          <p v-if="entry.description" class="text-xs nxr-text-muted">{{ entry.description }}</p>
+          <p v-if="entry.diagnosis" class="text-xs nxr-text-muted"><span class="nxr-text-soft">Diagnóstico: </span>{{ entry.diagnosis }}</p>
         </div>
       </div>
 
       <!-- Tab: Consultations -->
       <div v-if="activeTab === 'consultations'" class="flex flex-col gap-2">
-        <div v-if="consultations.length === 0" class="text-center text-white/30 py-10 text-sm">
+        <div v-if="consultations.length === 0" class="text-center nxr-text-soft py-10 text-sm">
           No hay consultas registradas.
         </div>
         <div
@@ -554,14 +554,14 @@ onMounted(async () => {
           @click="router.push(`/dental/consultations/${c.id}`)"
         >
           <div class="flex-1 min-w-0">
-            <p class="text-sm text-white">{{ fmtDate(c.consultation_date) }}</p>
-            <p class="text-xs text-white/40 truncate">{{ c.reason ?? c.treatment?.name ?? '—' }}</p>
+            <p class="text-sm nxr-text">{{ fmtDate(c.consultation_date) }}</p>
+            <p class="text-xs nxr-text-muted truncate">{{ c.reason ?? c.treatment?.name ?? '—' }}</p>
           </div>
           <div class="flex items-center gap-2 shrink-0">
             <span class="px-2 py-0.5 rounded-full text-xs" :class="ADMIN_STATUS_CLASS[c.administrative_status]">
               {{ ADMIN_STATUS_LABEL[c.administrative_status] }}
             </span>
-            <p class="text-sm font-semibold text-white">{{ fmt(c.total_amount) }}</p>
+            <p class="text-sm font-semibold nxr-text">{{ fmt(c.total_amount) }}</p>
           </div>
         </div>
       </div>
@@ -569,7 +569,7 @@ onMounted(async () => {
       <!-- Tab: Payments -->
       <div v-if="activeTab === 'payments'" class="flex flex-col gap-4">
         <div v-if="debt.length > 0" class="flex flex-col gap-2">
-          <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Deuda pendiente</p>
+          <p class="text-xs nxr-text-muted uppercase tracking-wide font-semibold">Deuda pendiente</p>
           <div
             v-for="charge in debt"
             :key="charge.id"
@@ -577,8 +577,8 @@ onMounted(async () => {
             :style="{ background: 'var(--nexora-glass-bg)' }"
           >
             <div class="flex-1 min-w-0">
-              <p class="text-sm text-white">{{ charge.description ?? 'Cargo' }}</p>
-              <p class="text-xs text-white/40">Total: {{ fmt(charge.total_amount) }} · Pagado: {{ fmt(charge.paid_amount) }}</p>
+              <p class="text-sm nxr-text">{{ charge.description ?? 'Cargo' }}</p>
+              <p class="text-xs nxr-text-muted">Total: {{ fmt(charge.total_amount) }} · Pagado: {{ fmt(charge.paid_amount) }}</p>
             </div>
             <span class="px-2 py-0.5 rounded-full text-xs shrink-0" :class="CHARGE_STATUS_CLASS[charge.status]">
               {{ fmt(charge.pending_amount) }} pendiente
@@ -586,7 +586,7 @@ onMounted(async () => {
           </div>
         </div>
         <div v-if="payments.length > 0" class="flex flex-col gap-2">
-          <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Pagos realizados</p>
+          <p class="text-xs nxr-text-muted uppercase tracking-wide font-semibold">Pagos realizados</p>
           <div
             v-for="pay in payments"
             :key="pay.id"
@@ -594,21 +594,21 @@ onMounted(async () => {
             :style="{ background: 'var(--nexora-glass-bg)' }"
           >
             <div>
-              <p class="text-sm text-white">{{ fmt(pay.amount) }}</p>
-              <p class="text-xs text-white/40">{{ PM_LABEL[pay.payment_method] }} · {{ fmtDate(pay.payment_date) }}</p>
+              <p class="text-sm nxr-text">{{ fmt(pay.amount) }}</p>
+              <p class="text-xs nxr-text-muted">{{ PM_LABEL[pay.payment_method] }} · {{ fmtDate(pay.payment_date) }}</p>
             </div>
-            <p v-if="pay.reference" class="text-xs text-white/30">{{ pay.reference }}</p>
+            <p v-if="pay.reference" class="text-xs nxr-text-soft">{{ pay.reference }}</p>
           </div>
         </div>
-        <div v-if="debt.length === 0 && payments.length === 0" class="text-center text-white/30 py-10 text-sm">
+        <div v-if="debt.length === 0 && payments.length === 0" class="text-center nxr-text-soft py-10 text-sm">
           No hay movimientos financieros registrados.
         </div>
       </div>
 
       <!-- Tab: Appointments -->
       <div v-if="activeTab === 'appointments'" class="flex flex-col gap-2">
-        <div v-if="appointmentsStore.loading" class="text-center text-white/30 py-10 text-sm">Cargando citas...</div>
-        <div v-else-if="appointments.length === 0" class="text-center text-white/30 py-10 text-sm">
+        <div v-if="appointmentsStore.loading" class="text-center nxr-text-soft py-10 text-sm">Cargando citas...</div>
+        <div v-else-if="appointments.length === 0" class="text-center nxr-text-soft py-10 text-sm">
           No hay citas registradas para este paciente.
         </div>
         <div
@@ -618,8 +618,8 @@ onMounted(async () => {
           :style="{ background: 'var(--nexora-glass-bg)' }"
         >
           <div class="flex-1 min-w-0">
-            <p class="text-sm text-white">{{ fmtDate(appt.scheduled_start) }}</p>
-            <p class="text-xs text-white/40 truncate">
+            <p class="text-sm nxr-text">{{ fmtDate(appt.scheduled_start) }}</p>
+            <p class="text-xs nxr-text-muted truncate">
               {{ appt.treatment?.name ?? appt.reason ?? '—' }}
             </p>
           </div>
@@ -628,7 +628,7 @@ onMounted(async () => {
             :class="{
               'bg-blue-500/20 text-blue-400':   appt.status === 'scheduled',
               'bg-green-500/20 text-green-400': appt.status === 'confirmed' || appt.status === 'completed' || appt.status === 'checked_in',
-              'bg-white/10 text-white/40':      appt.status === 'cancelled' || appt.status === 'no_show' || appt.status === 'rescheduled',
+              'bg-white/10 nxr-text-muted':      appt.status === 'cancelled' || appt.status === 'no_show' || appt.status === 'rescheduled',
             }"
           >
             {{
@@ -647,9 +647,9 @@ onMounted(async () => {
       <!-- Tab: Quotes -->
       <div v-if="activeTab === 'quotes'" class="flex flex-col gap-3">
         <div class="flex items-center justify-between">
-          <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Presupuestos del paciente</p>
+          <p class="text-xs nxr-text-muted uppercase tracking-wide font-semibold">Presupuestos del paciente</p>
           <button
-            class="flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs text-white/70 bg-white/10 hover:bg-white/20 transition"
+            class="flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs nxr-text-muted bg-white/10 hover:bg-white/20 transition"
             @click="router.push(`/dental/quotes?customer_id=${route.params.id}`)"
           >
             <Plus class="h-3.5 w-3.5" />
@@ -657,8 +657,8 @@ onMounted(async () => {
           </button>
         </div>
 
-        <div v-if="quotesLoading" class="text-center text-white/30 py-10 text-sm">Cargando...</div>
-        <div v-else-if="patientQuotes.length === 0" class="text-center text-white/30 py-10 text-sm">
+        <div v-if="quotesLoading" class="text-center nxr-text-soft py-10 text-sm">Cargando...</div>
+        <div v-else-if="patientQuotes.length === 0" class="text-center nxr-text-soft py-10 text-sm">
           No hay presupuestos registrados para este paciente.
         </div>
         <div
@@ -669,25 +669,25 @@ onMounted(async () => {
           @click="router.push(`/dental/quotes/${q.id}`)"
         >
           <div class="flex-1 min-w-0">
-            <p class="text-sm text-white font-mono">{{ q.quote_number }}</p>
-            <p class="text-xs text-white/40">{{ fmtDate(q.quote_date) }}{{ q.valid_until ? ` · Vence: ${fmtDate(q.valid_until)}` : '' }}</p>
+            <p class="text-sm nxr-text font-mono">{{ q.quote_number }}</p>
+            <p class="text-xs nxr-text-muted">{{ fmtDate(q.quote_date) }}{{ q.valid_until ? ` · Vence: ${fmtDate(q.valid_until)}` : '' }}</p>
           </div>
           <div class="flex items-center gap-2 shrink-0">
             <span class="px-2 py-0.5 rounded-full text-xs" :class="QUOTE_STATUS_COLORS[q.status]">
               {{ QUOTE_STATUS_LABELS[q.status] }}
             </span>
-            <p class="text-sm font-semibold text-white">{{ fmt(q.final_amount) }}</p>
+            <p class="text-sm font-semibold nxr-text">{{ fmt(q.final_amount) }}</p>
           </div>
         </div>
       </div>
 
       <!-- Tab: Documents -->
       <div v-if="activeTab === 'documents'" class="flex flex-col gap-3">
-        <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Documentos médicos del paciente</p>
+        <p class="text-xs nxr-text-muted uppercase tracking-wide font-semibold">Documentos médicos del paciente</p>
 
-        <div v-if="docsLoading" class="text-center text-white/30 py-10 text-sm">Cargando...</div>
+        <div v-if="docsLoading" class="text-center nxr-text-soft py-10 text-sm">Cargando...</div>
 
-        <div v-else-if="patientDocs.length === 0" class="text-center text-white/30 py-10 text-sm">
+        <div v-else-if="patientDocs.length === 0" class="text-center nxr-text-soft py-10 text-sm">
           No hay documentos registrados para este paciente.
         </div>
 
@@ -706,13 +706,13 @@ onMounted(async () => {
               >
                 {{ MEDICAL_DOCUMENT_TYPE_LABELS[doc.document_type] }}
               </span>
-              <span class="text-xs font-mono text-white/60">{{ doc.document_number }}</span>
-              <span class="text-xs text-white/30">{{ fmtDate(doc.document_date) }}</span>
+              <span class="text-xs font-mono nxr-text-muted">{{ doc.document_number }}</span>
+              <span class="text-xs nxr-text-soft">{{ fmtDate(doc.document_date) }}</span>
             </div>
-            <p v-if="doc.title" class="mt-1 text-sm text-white truncate">{{ doc.title }}</p>
+            <p v-if="doc.title" class="mt-1 text-sm nxr-text truncate">{{ doc.title }}</p>
           </div>
           <button
-            class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs text-white/60 bg-white/5 hover:bg-white/10 transition shrink-0"
+            class="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs nxr-text-muted bg-white/5 hover:bg-white/10 transition shrink-0"
             @click.stop="doc.consultation_id ? router.push(`/dental/consultations/${doc.consultation_id}`) : undefined"
           >
             Ver / Imprimir
@@ -728,36 +728,36 @@ onMounted(async () => {
     :draft-state="{ medHistForm }">
       <form class="flex flex-col gap-4" @submit.prevent="saveMedHist">
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Fecha *</label>
-          <input v-model="medHistForm.entry_date" type="date" required class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+          <label class="text-xs nxr-text-muted">Fecha *</label>
+          <input v-model="medHistForm.entry_date" type="date" required class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" />
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Grupo sanguíneo</label>
-          <input v-model="medHistForm.blood_type" type="text" placeholder="Ej: A+" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+          <label class="text-xs nxr-text-muted">Grupo sanguíneo</label>
+          <input v-model="medHistForm.blood_type" type="text" placeholder="Ej: A+" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" />
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Antecedentes médicos</label>
-          <textarea v-model="medHistForm.medical_background" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none"></textarea>
+          <label class="text-xs nxr-text-muted">Antecedentes médicos</label>
+          <textarea v-model="medHistForm.medical_background" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30 resize-none"></textarea>
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Alergias</label>
-          <textarea v-model="medHistForm.allergies" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none"></textarea>
+          <label class="text-xs nxr-text-muted">Alergias</label>
+          <textarea v-model="medHistForm.allergies" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30 resize-none"></textarea>
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Medicación actual</label>
-          <textarea v-model="medHistForm.current_medications" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none"></textarea>
+          <label class="text-xs nxr-text-muted">Medicación actual</label>
+          <textarea v-model="medHistForm.current_medications" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30 resize-none"></textarea>
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Enfermedades crónicas</label>
-          <textarea v-model="medHistForm.chronic_conditions" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none"></textarea>
+          <label class="text-xs nxr-text-muted">Enfermedades crónicas</label>
+          <textarea v-model="medHistForm.chronic_conditions" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30 resize-none"></textarea>
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Observaciones dentales</label>
-          <textarea v-model="medHistForm.dental_observations" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none"></textarea>
+          <label class="text-xs nxr-text-muted">Observaciones dentales</label>
+          <textarea v-model="medHistForm.dental_observations" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30 resize-none"></textarea>
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Notas</label>
-          <textarea v-model="medHistForm.notes" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none"></textarea>
+          <label class="text-xs nxr-text-muted">Notas</label>
+          <textarea v-model="medHistForm.notes" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30 resize-none"></textarea>
         </div>
         <p v-if="medHistError" class="text-red-400 text-sm">{{ medHistError }}</p>
         <div class="flex justify-end gap-2 pt-1">
@@ -775,21 +775,21 @@ onMounted(async () => {
     :draft-entity="String(route.params.id)"
     :draft-state="{ editForm }">
       <form class="flex flex-col gap-5" @submit.prevent="saveEdit">
-        <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Datos personales</p>
+        <p class="text-xs nxr-text-muted uppercase tracking-wide font-semibold">Datos personales</p>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="flex flex-col gap-1.5">
-            <label class="text-xs text-white/50">Nombre *</label>
-            <input v-model="editForm.first_name" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" required />
+            <label class="text-xs nxr-text-muted">Nombre *</label>
+            <input v-model="editForm.first_name" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" required />
           </div>
           <div class="flex flex-col gap-1.5">
-            <label class="text-xs text-white/50">Apellido *</label>
-            <input v-model="editForm.last_name" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" required />
+            <label class="text-xs nxr-text-muted">Apellido *</label>
+            <input v-model="editForm.last_name" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" required />
           </div>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="flex flex-col gap-1.5">
-            <label class="text-xs text-white/50">Tipo documento</label>
-            <select v-model="editForm.document_type" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none">
+            <label class="text-xs nxr-text-muted">Tipo documento</label>
+            <select v-model="editForm.document_type" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none">
               <option value="DNI">DNI</option>
               <option value="Cedula">Cédula</option>
               <option value="RUT">RUT</option>
@@ -799,44 +799,44 @@ onMounted(async () => {
             </select>
           </div>
           <div class="flex flex-col gap-1.5">
-            <label class="text-xs text-white/50">Número de documento</label>
-            <input v-model="editForm.document_number" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+            <label class="text-xs nxr-text-muted">Número de documento</label>
+            <input v-model="editForm.document_number" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" />
           </div>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="flex flex-col gap-1.5">
-            <label class="text-xs text-white/50">Teléfono</label>
-            <input v-model="editForm.phone" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+            <label class="text-xs nxr-text-muted">Teléfono</label>
+            <input v-model="editForm.phone" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" />
           </div>
           <div class="flex flex-col gap-1.5">
-            <label class="text-xs text-white/50">Celular</label>
-            <input v-model="editForm.mobile" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+            <label class="text-xs nxr-text-muted">Celular</label>
+            <input v-model="editForm.mobile" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" />
           </div>
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Email</label>
-          <input v-model="editForm.email" type="email" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+          <label class="text-xs nxr-text-muted">Email</label>
+          <input v-model="editForm.email" type="email" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" />
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Fecha de nacimiento</label>
-          <input v-model="editForm.birth_date" type="date" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+          <label class="text-xs nxr-text-muted">Fecha de nacimiento</label>
+          <input v-model="editForm.birth_date" type="date" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" />
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Dirección</label>
-          <input v-model="editForm.address" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+          <label class="text-xs nxr-text-muted">Dirección</label>
+          <input v-model="editForm.address" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" />
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Ciudad</label>
-          <input v-model="editForm.city" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+          <label class="text-xs nxr-text-muted">Ciudad</label>
+          <input v-model="editForm.city" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" />
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Notas internas</label>
-          <textarea v-model="editForm.customer_notes" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none"></textarea>
+          <label class="text-xs nxr-text-muted">Notas internas</label>
+          <textarea v-model="editForm.customer_notes" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30 resize-none"></textarea>
         </div>
-        <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Historial médico</p>
+        <p class="text-xs nxr-text-muted uppercase tracking-wide font-semibold">Historial médico</p>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Grupo sanguíneo</label>
-          <select v-model="editForm.blood_type" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none">
+          <label class="text-xs nxr-text-muted">Grupo sanguíneo</label>
+          <select v-model="editForm.blood_type" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none">
             <option value="">Sin especificar</option>
             <option value="A+">A+</option>
             <option value="A-">A-</option>
@@ -849,34 +849,34 @@ onMounted(async () => {
           </select>
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Antecedentes médicos</label>
-          <textarea v-model="editForm.medical_background" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none"></textarea>
+          <label class="text-xs nxr-text-muted">Antecedentes médicos</label>
+          <textarea v-model="editForm.medical_background" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30 resize-none"></textarea>
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Alergias</label>
-          <input v-model="editForm.allergies" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+          <label class="text-xs nxr-text-muted">Alergias</label>
+          <input v-model="editForm.allergies" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" />
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Medicación actual</label>
-          <input v-model="editForm.current_medications" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+          <label class="text-xs nxr-text-muted">Medicación actual</label>
+          <input v-model="editForm.current_medications" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" />
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Enfermedades crónicas</label>
-          <input v-model="editForm.chronic_conditions" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+          <label class="text-xs nxr-text-muted">Enfermedades crónicas</label>
+          <input v-model="editForm.chronic_conditions" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" />
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Observaciones dentales</label>
-          <textarea v-model="editForm.dental_observations" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none"></textarea>
+          <label class="text-xs nxr-text-muted">Observaciones dentales</label>
+          <textarea v-model="editForm.dental_observations" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30 resize-none"></textarea>
         </div>
-        <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Contacto de emergencia</p>
+        <p class="text-xs nxr-text-muted uppercase tracking-wide font-semibold">Contacto de emergencia</p>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="flex flex-col gap-1.5">
-            <label class="text-xs text-white/50">Nombre</label>
-            <input v-model="editForm.emergency_contact_name" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+            <label class="text-xs nxr-text-muted">Nombre</label>
+            <input v-model="editForm.emergency_contact_name" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" />
           </div>
           <div class="flex flex-col gap-1.5">
-            <label class="text-xs text-white/50">Teléfono</label>
-            <input v-model="editForm.emergency_contact_phone" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+            <label class="text-xs nxr-text-muted">Teléfono</label>
+            <input v-model="editForm.emergency_contact_phone" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" />
           </div>
         </div>
         <p v-if="saveError" class="text-xs text-red-400">{{ saveError }}</p>

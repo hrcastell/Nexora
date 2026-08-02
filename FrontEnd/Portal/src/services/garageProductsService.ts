@@ -21,4 +21,8 @@ export const garageProductsService = {
   toggleStatus(id: number, status: 'active' | 'inactive') {
     return api.patch<{ id: number; status: string }>(`/garage/products/${id}/status`, { status });
   },
+
+  remove(id: number) {
+    return api.delete<{ message: string }>(`/garage/products/${id}`);
+  },
 };

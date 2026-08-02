@@ -7,7 +7,7 @@ const props = defineProps<{
 }>();
 
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
-  draft:          { label: 'Borrador',         color: 'bg-white/10 text-white/60' },
+  draft:          { label: 'Borrador',         color: 'bg-white/10 nxr-text-muted' },
   received:       { label: 'Recibida',          color: 'bg-blue-500/20 text-blue-300' },
   diagnosis:      { label: 'Diagnóstico',       color: 'bg-purple-500/20 text-purple-300' },
   approved:       { label: 'Aprobada',          color: 'bg-cyan-500/20 text-cyan-300' },
@@ -18,7 +18,7 @@ const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   cancelled:      { label: 'Cancelada',         color: 'bg-red-500/20 text-red-300' },
 };
 
-const config = STATUS_CONFIG[props.status] ?? { label: props.status, color: 'bg-white/10 text-white/60' };
+const config = STATUS_CONFIG[props.status] ?? { label: props.status, color: 'bg-white/10 nxr-text-muted' };
 </script>
 
 <template>

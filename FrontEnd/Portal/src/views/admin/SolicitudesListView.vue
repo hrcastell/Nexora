@@ -149,7 +149,7 @@ const getStatusLabel = (status: string) => {
             <Inbox class="h-5 w-5" />
           </div>
           <div>
-            <h1 class="text-lg font-semibold text-white">Solicitudes de Contacto</h1>
+            <h1 class="text-lg font-semibold nxr-text">Solicitudes de Contacto</h1>
             <p class="text-sm text-slate-400">Gestión de prospectos y leads</p>
           </div>
         </div>
@@ -170,7 +170,7 @@ const getStatusLabel = (status: string) => {
 
       <div v-else-if="requests.length === 0" class="rounded-2xl border border-white/10 bg-white/5 p-8 text-center">
         <Mail class="mx-auto h-12 w-12 text-slate-500" />
-        <h3 class="mt-2 text-sm font-medium text-white">No hay solicitudes</h3>
+        <h3 class="mt-2 text-sm font-medium nxr-text">No hay solicitudes</h3>
         <p class="mt-1 text-xs text-slate-400">Aún no se han recibido consultas desde el sitio web.</p>
       </div>
 
@@ -189,7 +189,7 @@ const getStatusLabel = (status: string) => {
                 <Users class="h-5 w-5" />
               </div>
               <div>
-                <p class="text-sm font-medium text-white">{{ request.company_name }}</p>
+                <p class="text-sm font-medium nxr-text">{{ request.company_name }}</p>
                 <p class="text-xs text-slate-400">{{ request.contact_name }}</p>
               </div>
             </div>
@@ -237,7 +237,7 @@ const getStatusLabel = (status: string) => {
               <button
                 v-if="editingNotesId !== request.id && request.status !== 'converted'"
                 @click.stop="startEditingNotes(request)"
-                class="text-xs text-slate-400 hover:text-white transition-colors"
+                class="text-xs text-slate-400 hover:text-[var(--nexora-text-color)] transition-colors"
               >
                 Editar
               </button>
@@ -248,10 +248,10 @@ const getStatusLabel = (status: string) => {
                 @click.stop
                 rows="3"
                 placeholder="Agrega notas internas sobre esta solicitud..."
-                class="w-full rounded-xl bg-white/5 border border-white/10 p-2.5 text-sm text-white placeholder-slate-500 resize-none focus:outline-none focus:border-white/20"
+                class="w-full rounded-xl bg-white/5 border border-white/10 p-2.5 text-sm nxr-text placeholder-slate-500 resize-none focus:outline-none focus:border-white/20"
               ></textarea>
               <div class="flex gap-2 mt-2 justify-end">
-                <button @click.stop="cancelEditingNotes" class="text-xs text-slate-400 hover:text-white px-3 py-1.5 rounded-xl border border-white/10 transition-colors">
+                <button @click.stop="cancelEditingNotes" class="text-xs text-slate-400 hover:text-[var(--nexora-text-color)] px-3 py-1.5 rounded-xl border border-white/10 transition-colors">
                   Cancelar
                 </button>
                 <button

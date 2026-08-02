@@ -49,7 +49,7 @@ onMounted(loadQuotes)
 
     <!-- Header -->
     <div class="flex items-center justify-between">
-      <h2 class="text-sm font-semibold text-white/70">Presupuestos vinculados</h2>
+      <h2 class="text-sm font-semibold nxr-text">Presupuestos vinculados</h2>
       <button
         class="flex items-center gap-1.5 rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary"
         @click="router.push(`/dental/quotes/new?customer_id=${customerId}&consultation_id=${consultationId}`)"
@@ -68,7 +68,7 @@ onMounted(loadQuotes)
     </div>
 
     <!-- Loading -->
-    <div v-if="loading" class="flex items-center justify-center py-12 text-sm text-white/40 gap-2">
+    <div v-if="loading" class="flex items-center justify-center py-12 text-sm nxr-text-muted gap-2">
       <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
@@ -81,9 +81,9 @@ onMounted(loadQuotes)
       v-else-if="!quotes.length"
       class="rounded-xl border border-white/10 bg-white/5 p-10 text-center"
     >
-      <Receipt class="mx-auto mb-3 h-8 w-8 text-white/20" />
-      <p class="text-sm text-white/40">No hay presupuestos vinculados a esta consulta.</p>
-      <p class="mt-1 text-xs text-white/30">Los presupuestos convertidos en consulta aparecen aqui.</p>
+      <Receipt class="mx-auto mb-3 h-8 w-8 nxr-text-soft" />
+      <p class="text-sm nxr-text-muted">No hay presupuestos vinculados a esta consulta.</p>
+      <p class="mt-1 text-xs nxr-text-soft">Los presupuestos convertidos en consulta aparecen aqui.</p>
     </div>
 
     <!-- Quotes list -->
@@ -97,23 +97,23 @@ onMounted(loadQuotes)
         <div class="flex items-start justify-between gap-3">
           <div class="flex-1 min-w-0">
             <div class="flex flex-wrap items-center gap-2 mb-1">
-              <span class="text-sm font-semibold text-white/90">{{ quote.quote_number }}</span>
+              <span class="text-sm font-semibold nxr-text">{{ quote.quote_number }}</span>
               <span
                 class="rounded-full px-2 py-0.5 text-xs font-medium"
-                :class="QUOTE_STATUS_COLORS[quote.status] ?? 'bg-white/10 text-white/40'"
+                :class="QUOTE_STATUS_COLORS[quote.status] ?? 'bg-white/10 nxr-text-muted'"
               >
                 {{ QUOTE_STATUS_LABELS[quote.status] ?? quote.status }}
               </span>
             </div>
-            <p class="text-xs text-white/40">
+            <p class="text-xs nxr-text-muted">
               Fecha: {{ fmtDate(quote.quote_date || quote.created_at) }}
               <span v-if="quote.valid_until"> · Vence: {{ fmtDate(quote.valid_until) }}</span>
             </p>
-            <p v-if="quote.notes" class="mt-1 text-xs text-white/50 line-clamp-1">{{ quote.notes }}</p>
+            <p v-if="quote.notes" class="mt-1 text-xs nxr-text-muted line-clamp-1">{{ quote.notes }}</p>
           </div>
           <div class="text-right shrink-0">
-            <p class="text-base font-semibold text-white/90">{{ fmtCurrency(quote.final_amount) }}</p>
-            <p v-if="quote.discount_amount && Number(quote.discount_amount) > 0" class="text-xs text-white/40 line-through">
+            <p class="text-base font-semibold nxr-text">{{ fmtCurrency(quote.final_amount) }}</p>
+            <p v-if="quote.discount_amount && Number(quote.discount_amount) > 0" class="text-xs nxr-text-muted line-through">
               {{ fmtCurrency(quote.total_amount) }}
             </p>
           </div>

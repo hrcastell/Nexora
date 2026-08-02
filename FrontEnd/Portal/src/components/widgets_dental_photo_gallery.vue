@@ -111,15 +111,15 @@ onMounted(loadPhotos)
         <!-- Section: Antes -->
         <div class="rounded-xl border border-white/10 bg-white/5 p-4 space-y-3">
           <div class="flex items-center justify-between">
-            <h3 class="text-sm font-semibold text-white/70 uppercase tracking-wide">Antes</h3>
-            <label v-if="!readonly" class="cursor-pointer flex items-center gap-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition px-3 py-1.5 text-xs text-white/70">
+            <h3 class="text-sm font-semibold nxr-text uppercase tracking-wide">Antes</h3>
+            <label v-if="!readonly" class="cursor-pointer flex items-center gap-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition px-3 py-1.5 text-xs nxr-text-muted">
               <Upload class="h-3.5 w-3.5" />
               <span>Subir</span>
               <input type="file" accept="image/*" class="hidden" @change="e => handleUpload(e, 'before')" />
             </label>
           </div>
 
-          <div v-if="beforePhotos.length === 0" class="py-6 text-center text-white/30 text-sm">
+          <div v-if="beforePhotos.length === 0" class="py-6 text-center nxr-text-soft text-sm">
             Sin fotos
           </div>
           <div v-else class="grid grid-cols-2 gap-2">
@@ -152,15 +152,15 @@ onMounted(loadPhotos)
         <!-- Section: Después -->
         <div class="rounded-xl border border-white/10 bg-white/5 p-4 space-y-3">
           <div class="flex items-center justify-between">
-            <h3 class="text-sm font-semibold text-white/70 uppercase tracking-wide">Después</h3>
-            <label v-if="!readonly" class="cursor-pointer flex items-center gap-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition px-3 py-1.5 text-xs text-white/70">
+            <h3 class="text-sm font-semibold nxr-text uppercase tracking-wide">Después</h3>
+            <label v-if="!readonly" class="cursor-pointer flex items-center gap-1.5 rounded-lg bg-white/10 hover:bg-white/20 transition px-3 py-1.5 text-xs nxr-text-muted">
               <Upload class="h-3.5 w-3.5" />
               <span>Subir</span>
               <input type="file" accept="image/*" class="hidden" @change="e => handleUpload(e, 'after')" />
             </label>
           </div>
 
-          <div v-if="afterPhotos.length === 0" class="py-6 text-center text-white/30 text-sm">
+          <div v-if="afterPhotos.length === 0" class="py-6 text-center nxr-text-soft text-sm">
             Sin fotos
           </div>
           <div v-else class="grid grid-cols-2 gap-2">

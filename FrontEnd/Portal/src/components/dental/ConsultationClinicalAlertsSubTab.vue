@@ -107,7 +107,7 @@ onMounted(load)
     </div>
 
     <!-- Loading -->
-    <div v-if="loading" class="flex items-center justify-center py-12 text-white/40 text-sm gap-2">
+    <div v-if="loading" class="flex items-center justify-center py-12 nxr-text-muted text-sm gap-2">
       <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
@@ -120,25 +120,25 @@ onMounted(load)
       <!-- No anamnesis yet -->
       <div
         v-if="anamnesis === null"
-        class="flex flex-col items-center justify-center py-12 text-white/40 gap-3 rounded-xl bg-white/5 border border-white/10"
+        class="flex flex-col items-center justify-center py-12 nxr-text-muted gap-3 rounded-xl bg-white/5 border border-white/10"
       >
         <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-3-3v6M12 3C7.03 3 3 7.03 3 12s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9z"/>
         </svg>
         <p class="text-sm text-center">No hay anamnesis registrada para esta consulta.</p>
-        <p class="text-xs text-white/30 text-center">Complete la anamnesis en la pestana "Anamnesis" para ver las alertas.</p>
+        <p class="text-xs nxr-text-soft text-center">Complete la anamnesis en la pestana "Anamnesis" para ver las alertas.</p>
       </div>
 
       <!-- No active alerts -->
       <div
         v-else-if="alerts.length === 0"
-        class="flex flex-col items-center justify-center py-12 text-white/40 gap-3 rounded-xl bg-green-500/5 border border-green-500/20"
+        class="flex flex-col items-center justify-center py-12 nxr-text-muted gap-3 rounded-xl bg-green-500/5 border border-green-500/20"
       >
         <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-green-400/50" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
           <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
         </svg>
         <p class="text-sm text-green-300/60">Sin alertas clinicas activas</p>
-        <p class="text-xs text-white/30">El paciente no presenta condiciones de riesgo registradas.</p>
+        <p class="text-xs nxr-text-soft">El paciente no presenta condiciones de riesgo registradas.</p>
       </div>
 
       <!-- Active alerts -->
@@ -251,7 +251,7 @@ onMounted(load)
             </div>
 
             <!-- Label -->
-            <span class="flex-1 text-sm font-medium text-white/80">{{ alert.label }}</span>
+            <span class="flex-1 text-sm font-medium nxr-text">{{ alert.label }}</span>
 
             <!-- Severity badge -->
             <span

@@ -100,20 +100,20 @@ async function save() {
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label class="block text-xs text-white/50 mb-1">Fecha y hora inicio *</label>
-                <input v-model="form.scheduled_start" type="datetime-local" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" />
+                <label class="block text-xs nxr-text-muted mb-1">Fecha y hora inicio *</label>
+                <input v-model="form.scheduled_start" type="datetime-local" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40" />
               </div>
               <div>
-                <label class="block text-xs text-white/50 mb-1">Fecha y hora fin</label>
-                <input v-model="form.scheduled_end" type="datetime-local" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" />
+                <label class="block text-xs nxr-text-muted mb-1">Fecha y hora fin</label>
+                <input v-model="form.scheduled_end" type="datetime-local" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40" />
               </div>
               <div>
-                <label class="block text-xs text-white/50 mb-1">Duración estimada (hrs)</label>
-                <input v-model.number="form.estimated_duration_hours" type="number" min="0" step="0.5" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" />
+                <label class="block text-xs nxr-text-muted mb-1">Duración estimada (hrs)</label>
+                <input v-model.number="form.estimated_duration_hours" type="number" min="0" step="0.5" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40" />
               </div>
               <div>
-                <label class="block text-xs text-white/50 mb-1">Prioridad</label>
-                <select v-model="form.priority" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40">
+                <label class="block text-xs nxr-text-muted mb-1">Prioridad</label>
+                <select v-model="form.priority" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40">
                   <option value="low">Baja</option>
                   <option value="normal">Normal</option>
                   <option value="high">Alta</option>
@@ -121,8 +121,8 @@ async function save() {
                 </select>
               </div>
               <div>
-                <label class="block text-xs text-white/50 mb-1">Canal</label>
-                <select v-model="form.channel" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40">
+                <label class="block text-xs nxr-text-muted mb-1">Canal</label>
+                <select v-model="form.channel" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40">
                   <option value="">Seleccionar</option>
                   <option value="walk_in">Presencial</option>
                   <option value="phone">Teléfono</option>
@@ -134,16 +134,16 @@ async function save() {
             </div>
 
             <div>
-              <label class="block text-xs text-white/50 mb-1">Descripción del servicio solicitado</label>
-              <input v-model="form.requested_service_summary" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" />
+              <label class="block text-xs nxr-text-muted mb-1">Descripción del servicio solicitado</label>
+              <input v-model="form.requested_service_summary" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40" />
             </div>
             <div>
-              <label class="block text-xs text-white/50 mb-1">Problema reportado por el cliente</label>
-              <textarea v-model="form.reported_issue" rows="2" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40 resize-none"></textarea>
+              <label class="block text-xs nxr-text-muted mb-1">Problema reportado por el cliente</label>
+              <textarea v-model="form.reported_issue" rows="2" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40 resize-none"></textarea>
             </div>
             <div>
-              <label class="block text-xs text-white/50 mb-1">Notas preliminares</label>
-              <textarea v-model="form.preliminary_notes" rows="2" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40 resize-none"></textarea>
+              <label class="block text-xs nxr-text-muted mb-1">Notas preliminares</label>
+              <textarea v-model="form.preliminary_notes" rows="2" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40 resize-none"></textarea>
             </div>
           </div>
     <p v-if="error" class="mt-3 text-xs text-red-400">{{ error }}</p>

@@ -72,7 +72,7 @@ defineExpose({ setPreview: (url: string | null) => { previewUrl.value = url; } }
       @drop.prevent="onDrop"
     >
       <img v-if="displayUrl" :src="displayUrl" :alt="altText || 'Foto'" class="w-full h-full object-cover" />
-      <div v-else class="flex flex-col items-center gap-1 text-white/40">
+      <div v-else class="flex flex-col items-center gap-1 nxr-text-muted">
         <Camera :size="28" />
         <span class="text-xs">Subir foto</span>
       </div>

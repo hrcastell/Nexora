@@ -1,22 +1,30 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { ArrowLeft, Save, Send, CheckCircle2, XCircle, Plus, Trash2, ExternalLink } from 'lucide-vue-next';
+import { ArrowLeft, Save, CheckCircle2, XCircle, Plus, Trash2, ExternalLink, Printer } from 'lucide-vue-next';
 import { useCotizacionesStore } from '../../stores/cotizaciones';
-import { useGarageCustomersStore } from '../../stores/garageCustomers';
-import { useGarageProductsStore } from '../../stores/garageProducts';
 import { useInventorySuppliersStore } from '../../stores/inventorySuppliers';
 import { useTreasurySettingsStore } from '../../stores/treasurySettings';
-import { QUOTE_STATUS_LABEL } from '../../types/cotizaciones';
-import type { QuoteFormData, QuoteLineFormData, QuoteLine } from '../../types/cotizaciones';
+import { usePermissions } from '../../composables/usePermissions';
+import { usePrint } from '../../composables/usePrint';
+import { useToast } from '../../composables/useToast';
+import AppToast from '../../components/AppToast.vue';
+import widgets_garage_product_combobox from '../../widgets/widgets_garage_product_combobox.vue';
+import widgets_garage_customer_combobox from '../../widgets/widgets_garage_customer_combobox.vue';
+import widgets_garage_quote_print from '../../widgets/widgets_garage_quote_print.vue';
+import { cotizacionesService } from '../../services/cotizacionesService';
+import { QUOTE_STATUS_LABEL, QUOTE_MANUAL_STATUSES } from '../../types/cotizaciones';
+import type { QuoteFormData, QuoteLineFormData, QuoteLine, QuoteStatus } from '../../types/cotizaciones';
 
 const route = useRoute();
 const router = useRouter();
 const store = useCotizacionesStore();
-const customersStore = useGarageCustomersStore();
-const productsStore = useGarageProductsStore();
 const suppliersStore = useInventorySuppliersStore();
 const treasurySettingsStore = useTreasurySettingsStore();
+const { hasModule } = usePermissions();
+const hasInventoryModule = computed(() => hasModule('inventory'));
+const { isPrinting, printElement } = usePrint();
+const { toasts, triggerToast, removeToast } = useToast();
 
 const isNew = computed(() => route.name === 'cotizaciones-new');
 const quoteId = computed(() => Number(route.params.id || 0));
@@ -58,10 +66,26 @@ const acceptError = ref('');
 const showRejectForm = ref(false);
 const rejectionReason = ref('');
 
+// print flow
+const printData = ref<Awaited<ReturnType<typeof cotizacionesService.getPrintData>>['data']['data'] | null>(null);
+
 const canEditHeader = computed(() => isNew.value || store.current?.status === 'draft');
 const canEditLines = computed(() => !isNew.value && store.current?.status === 'draft');
-const canSend = computed(() => !!store.current && store.current.status === 'draft' && (store.current.lines?.length || 0) > 0);
-const canAcceptOrReject = computed(() => !!store.current && store.current.status === 'sent');
+const canPrint = computed(() => !isNew.value && !!store.current);
+
+// Status field: locked forever once accepted (and paid/converted, which only
+// happen downstream of accepted). 'paid'/'converted' are automation-only and
+// are appended to the option list only when they're the actual current value,
+// so the <select> always has a matching option without offering them as a
+// manually-selectable target.
+const isStatusLocked = computed(() => ['accepted', 'paid', 'converted'].includes(store.current?.status || ''));
+const statusOptions = computed(() => {
+  const current = store.current?.status;
+  if (current === 'paid' || current === 'converted') {
+    return [...QUOTE_MANUAL_STATUSES, current];
+  }
+  return QUOTE_MANUAL_STATUSES;
+});
 
 const computedUnitPricePreview = computed(() => {
   const cost = Number(lineForm.value.supplier_cost || 0);
@@ -81,10 +105,6 @@ function cleanDate(value?: string | null) {
   return value ? value.slice(0, 10) : '';
 }
 
-function customerLabel(c: { first_name: string; last_name: string | null }) {
-  return `${c.first_name} ${c.last_name || ''}`.trim();
-}
-
 function loadQuoteIntoForm() {
   const q = store.current;
   if (!q) return;
@@ -98,8 +118,6 @@ function loadQuoteIntoForm() {
 
 async function boot() {
   await Promise.all([
-    customersStore.load({ status: 'active' }),
-    productsStore.load({ status: 'active', limit: 200 }),
     suppliersStore.load({ status: 'active' }),
     treasurySettingsStore.counterparties.load({ status: 'active' }),
   ]);
@@ -172,13 +190,48 @@ async function removeLine(line: QuoteLine) {
   }
 }
 
-async function sendQuote() {
-  if (!store.current) return;
-  error.value = '';
+async function loadPrintData() {
+  if (!store.current) return false;
   try {
-    await store.send(store.current.id);
+    const res = await cotizacionesService.getPrintData(store.current.id);
+    printData.value = res.data.data;
+    return true;
   } catch (e: any) {
-    error.value = e?.response?.data?.error || 'Error al enviar cotización';
+    printData.value = null;
+    triggerToast('Error', e?.response?.data?.error || 'No se pudieron cargar los datos para imprimir', 'error');
+    return false;
+  }
+}
+
+async function printQuote() {
+  if (!await loadPrintData()) return;
+  const printed = await printElement('garage-print-target');
+  if (!printed) triggerToast('Error', 'No se pudo preparar el documento para imprimir', 'error');
+}
+
+// Status field: 'accepted' and 'rejected' route through their existing
+// forms (accepted needs a Treasury counterparty; rejected can carry an
+// optional reason) instead of committing immediately — the <select> keeps
+// showing the real current status until one of those forms is confirmed,
+// since nothing here mutates store.current until then. 'draft'/'sent'/
+// 'expired' commit straight away.
+function onStatusChange(event: Event) {
+  const target = (event.target as HTMLSelectElement).value as QuoteStatus;
+  if (!store.current || target === store.current.status) return;
+  if (target === 'accepted') { showAcceptForm.value = true; return; }
+  if (target === 'rejected') { showRejectForm.value = true; return; }
+  changeStatus(target as 'draft' | 'sent' | 'expired');
+}
+
+async function changeStatus(target: 'draft' | 'sent' | 'expired') {
+  if (!store.current) return;
+  try {
+    if (target === 'draft') await store.revertToDraft(store.current.id);
+    else if (target === 'sent') await store.send(store.current.id);
+    else await store.expire(store.current.id);
+    triggerToast('Éxito', 'Estado actualizado', 'success');
+  } catch (e: any) {
+    triggerToast('Error', e?.response?.data?.error || 'Error al cambiar el estado', 'error');
   }
 }
 
@@ -211,49 +264,56 @@ async function confirmReject() {
 
 <template>
   <div class="flex min-h-[calc(100vh-5rem)] flex-col gap-5 p-6">
-    <div class="sticky top-0 z-10 -mx-6 -mt-6 border-b border-white/10 bg-black/30 px-6 py-4 backdrop-blur-xl">
+    <div class="rounded-2xl border border-white/10 p-4" :style="{ background: 'var(--nexora-glass-bg)' }">
       <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div class="flex items-center gap-3">
-          <button class="text-white/40 hover:text-white" @click="router.push('/cotizaciones')"><ArrowLeft :size="20" /></button>
+          <button class="nxr-text-muted hover:text-[var(--nexora-text-color)]" @click="router.push('/cotizaciones')"><ArrowLeft :size="20" /></button>
           <div>
-            <h1 class="text-lg font-semibold text-white">{{ isNew ? 'Nueva cotización' : store.current?.quote_number }}</h1>
-            <p class="text-xs text-white/40">{{ store.current ? (QUOTE_STATUS_LABEL[store.current.status] || store.current.status) : 'Borrador' }}</p>
+            <h1 class="text-lg font-semibold nxr-text">{{ isNew ? 'Nueva cotización' : store.current?.quote_number }}</h1>
+            <p class="text-xs nxr-text-muted">{{ store.current ? (QUOTE_STATUS_LABEL[store.current.status] || store.current.status) : 'Borrador' }}</p>
           </div>
         </div>
         <div class="flex flex-wrap gap-2">
           <button v-if="canEditHeader" class="nxr-btn nxr-btn-primary" :disabled="saving" @click="save"><Save :size="14" /> {{ saving ? 'Guardando...' : 'Guardar' }}</button>
-          <button v-if="canSend" class="nxr-btn nxr-btn-secondary" @click="sendQuote"><Send :size="14" /> Enviar</button>
-          <button v-if="canAcceptOrReject" class="nxr-btn nxr-btn-primary" @click="showAcceptForm = true"><CheckCircle2 :size="14" /> Aceptar</button>
-          <button v-if="canAcceptOrReject" class="nxr-btn nxr-btn-secondary" @click="showRejectForm = true"><XCircle :size="14" /> Rechazar</button>
+          <button v-if="canPrint" class="nxr-btn nxr-btn-secondary" :disabled="isPrinting" @click="printQuote"><Printer :size="14" /> Imprimir</button>
         </div>
       </div>
     </div>
 
     <!-- Header fields -->
-    <div class="grid grid-cols-1 gap-3 rounded-2xl border border-white/10 p-4 lg:grid-cols-4" :style="{ background: 'var(--nexora-glass-bg)' }">
+    <div class="grid grid-cols-1 gap-3 rounded-2xl border border-white/10 p-4 lg:grid-cols-5" :style="{ background: 'var(--nexora-glass-bg)' }">
       <div>
-        <label class="mb-1 block text-xs text-white/50">Cliente</label>
-        <select v-model.number="form.customer_id" :disabled="!canEditHeader" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white">
-          <option :value="null">Sin cliente</option>
-          <option v-for="c in customersStore.items" :key="c.id" :value="c.id">{{ customerLabel(c) }}</option>
+        <label class="mb-1 block text-xs nxr-text-muted">Cliente</label>
+        <widgets_garage_customer_combobox v-model="form.customer_id" :disabled="!canEditHeader" placeholder="Buscar o crear cliente..." />
+      </div>
+      <div>
+        <label class="mb-1 block text-xs nxr-text-muted">Válida hasta</label>
+        <input v-model="form.valid_until" :disabled="!canEditHeader" type="date" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text" />
+      </div>
+      <div>
+        <label class="mb-1 block text-xs nxr-text-muted">Descuento</label>
+        <input v-model.number="form.discount_amount" :disabled="!canEditHeader" type="number" min="0" step="0.01" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text" />
+      </div>
+      <div v-if="!isNew && store.current">
+        <label class="mb-1 block text-xs nxr-text-muted">Estado</label>
+        <select
+          :value="store.current.status"
+          :disabled="isStatusLocked"
+          class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text disabled:opacity-60"
+          @change="onStatusChange"
+        >
+          <option v-for="s in statusOptions" :key="s" :value="s">{{ QUOTE_STATUS_LABEL[s] }}</option>
         </select>
+        <p v-if="isStatusLocked" class="mt-1 text-[11px] nxr-text-soft">Aprobada: el estado ya no se puede cambiar.</p>
       </div>
       <div>
-        <label class="mb-1 block text-xs text-white/50">Válida hasta</label>
-        <input v-model="form.valid_until" :disabled="!canEditHeader" type="date" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white" />
-      </div>
-      <div>
-        <label class="mb-1 block text-xs text-white/50">Descuento</label>
-        <input v-model.number="form.discount_amount" :disabled="!canEditHeader" type="number" min="0" step="0.01" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white" />
-      </div>
-      <div class="lg:col-span-1">
-        <label class="mb-1 block text-xs text-white/50">Notas</label>
-        <input v-model="form.notes" :disabled="!canEditHeader" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white" />
+        <label class="mb-1 block text-xs nxr-text-muted">Notas</label>
+        <input v-model="form.notes" :disabled="!canEditHeader" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text" />
       </div>
     </div>
 
     <!-- Lifecycle info / links -->
-    <div v-if="store.current?.status === 'accepted' || store.current?.status === 'paid' || store.current?.status === 'converted'" class="rounded-2xl border border-white/10 p-4 text-sm text-white/70" :style="{ background: 'var(--nexora-glass-bg)' }">
+    <div v-if="store.current?.status === 'accepted' || store.current?.status === 'paid' || store.current?.status === 'converted'" class="rounded-2xl border border-white/10 p-4 text-sm nxr-text-muted" :style="{ background: 'var(--nexora-glass-bg)' }">
       <p v-if="store.current.accepted_at">Aceptada el {{ fmtDate(store.current.accepted_at) }}<span v-if="store.current.accepted_by_name"> por {{ store.current.accepted_by_name }}</span>.</p>
       <router-link v-if="store.current.treasury_document_id" :to="`/treasury/receivables/${store.current.treasury_document_id}`" class="mt-1 inline-flex items-center gap-1 text-xs text-blue-300 hover:underline">
         <ExternalLink :size="12" /> Ver documento de Tesorería (cobro pendiente/pagado)
@@ -270,23 +330,23 @@ async function confirmReject() {
 
     <!-- Accept form -->
     <div v-if="showAcceptForm" class="rounded-2xl border border-white/10 p-4" :style="{ background: 'var(--nexora-glass-bg)' }">
-      <h3 class="mb-3 text-sm font-semibold text-white">Aceptar cotización</h3>
-      <p class="mb-3 text-xs text-white/40">Selecciona la contraparte de Tesorería a la que se le emitirá el documento por cobrar. No existe vínculo automático cliente → contraparte.</p>
+      <h3 class="mb-3 text-sm font-semibold nxr-text">Aceptar cotización</h3>
+      <p class="mb-3 text-xs nxr-text-muted">Selecciona la contraparte de Tesorería a la que se le emitirá el documento por cobrar. No existe vínculo automático cliente → contraparte.</p>
       <div class="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <div>
-          <label class="mb-1 block text-xs text-white/50">Contraparte *</label>
-          <select v-model.number="acceptCounterpartyId" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white">
+          <label class="mb-1 block text-xs nxr-text-muted">Contraparte *</label>
+          <select v-model.number="acceptCounterpartyId" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text">
             <option :value="null">Seleccionar</option>
             <option v-for="cp in treasurySettingsStore.counterparties.items" :key="cp.id" :value="cp.id">{{ cp.name_snapshot }}</option>
           </select>
         </div>
         <div>
-          <label class="mb-1 block text-xs text-white/50">Aceptado por</label>
-          <input v-model="acceptedByName" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white" />
+          <label class="mb-1 block text-xs nxr-text-muted">Aceptado por</label>
+          <input v-model="acceptedByName" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text" />
         </div>
         <div>
-          <label class="mb-1 block text-xs text-white/50">Notas de aceptación</label>
-          <input v-model="acceptanceNotes" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white" />
+          <label class="mb-1 block text-xs nxr-text-muted">Notas de aceptación</label>
+          <input v-model="acceptanceNotes" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text" />
         </div>
       </div>
       <p v-if="acceptError" class="mt-2 text-xs text-red-400">{{ acceptError }}</p>
@@ -298,9 +358,9 @@ async function confirmReject() {
 
     <!-- Reject form -->
     <div v-if="showRejectForm" class="rounded-2xl border border-white/10 p-4" :style="{ background: 'var(--nexora-glass-bg)' }">
-      <h3 class="mb-3 text-sm font-semibold text-white">Rechazar cotización</h3>
-      <label class="mb-1 block text-xs text-white/50">Motivo (opcional)</label>
-      <input v-model="rejectionReason" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white" />
+      <h3 class="mb-3 text-sm font-semibold nxr-text">Rechazar cotización</h3>
+      <label class="mb-1 block text-xs nxr-text-muted">Motivo (opcional)</label>
+      <input v-model="rejectionReason" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text" />
       <div class="mt-3 flex gap-2">
         <button class="nxr-btn nxr-btn-primary" @click="confirmReject"><XCircle :size="14" /> Confirmar rechazo</button>
         <button class="nxr-btn nxr-btn-secondary" @click="showRejectForm = false">Cancelar</button>
@@ -309,101 +369,124 @@ async function confirmReject() {
 
     <!-- Lines -->
     <div v-if="!isNew" class="flex-1 rounded-2xl border border-white/10 p-4" :style="{ background: 'var(--nexora-glass-bg)' }">
-      <h2 class="mb-3 text-sm font-semibold text-white/70">Líneas</h2>
+      <h2 class="mb-3 text-sm font-semibold nxr-text-muted">Líneas</h2>
 
-      <div v-if="(store.current?.lines?.length || 0) === 0" class="py-6 text-center text-sm text-white/30">Sin líneas todavía.</div>
-      <div v-else class="flex flex-col gap-2">
-        <div v-for="line in store.current?.lines" :key="line.id" class="grid grid-cols-1 gap-2 rounded-xl border border-white/10 bg-white/5 p-3 sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr_1fr_auto]">
-          <div>
-            <p class="text-sm text-white">{{ line.product_name_snapshot || line.sku_snapshot || 'Ítem sin producto' }}</p>
-            <p class="text-xs text-white/40">
-              <span v-if="line.is_non_stocked">Tercerizado · {{ line.supplier_name || 'Proveedor' }}</span>
-              <span v-else>Stock</span>
-            </p>
-          </div>
-          <div class="text-sm text-white/70">Cant. {{ line.quantity }}</div>
-          <div v-if="line.is_non_stocked" class="text-sm text-white/70">Costo {{ fmtMoney(line.supplier_cost) }} · Margen {{ line.margin_pct }}%</div>
-          <div v-else class="text-sm text-white/70">-</div>
-          <div class="text-sm text-white/70">P. unit. {{ fmtMoney(line.unit_price) }}</div>
-          <div class="text-sm font-medium text-white">{{ fmtMoney(line.subtotal) }}</div>
-          <button v-if="canEditLines" class="text-white/30 hover:text-red-400" @click="removeLine(line)"><Trash2 :size="16" /></button>
-        </div>
-      </div>
-
-      <!-- Add line -->
-      <div v-if="canEditLines" class="mt-4 rounded-xl border border-dashed border-white/15 p-3">
-        <div class="mb-2 flex items-center gap-2">
+      <!-- Add line: kept at the top so it's always reachable without scrolling through items -->
+      <div v-if="canEditLines" class="mb-4 rounded-xl border border-white/15 p-3" :style="{ background: 'var(--nexora-glass-bg-strong)' }">
+        <div v-if="hasInventoryModule" class="mb-2 flex items-center gap-2">
           <input id="nonStocked" v-model="lineForm.is_non_stocked" type="checkbox" class="h-4 w-4" />
-          <label for="nonStocked" class="text-xs text-white/60">Línea tercerizada (sin stock, sourcing por proveedor)</label>
+          <label for="nonStocked" class="text-xs nxr-text-muted">Línea tercerizada (sin stock, sourcing por proveedor)</label>
         </div>
 
         <div v-if="!lineForm.is_non_stocked" class="grid grid-cols-1 gap-2 sm:grid-cols-4">
           <div>
-            <label class="mb-1 block text-xs text-white/50">Producto</label>
-            <select v-model.number="lineForm.product_id" class="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white">
-              <option :value="null">Seleccionar</option>
-              <option v-for="p in productsStore.items" :key="p.id" :value="p.id">{{ p.name }}</option>
-            </select>
+            <label class="mb-1 block text-xs nxr-text-muted">Producto</label>
+            <widgets_garage_product_combobox v-model="lineForm.product_id" :unit-price-hint="lineForm.unit_price" placeholder="Buscar o crear producto..." />
           </div>
           <div>
-            <label class="mb-1 block text-xs text-white/50">Cantidad</label>
-            <input v-model.number="lineForm.quantity" type="number" min="0" step="0.01" class="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white" />
+            <label class="mb-1 block text-xs nxr-text-muted">Cantidad</label>
+            <input v-model.number="lineForm.quantity" type="number" min="0" step="0.01" class="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm nxr-text" />
           </div>
           <div>
-            <label class="mb-1 block text-xs text-white/50">Precio unit. (opcional)</label>
-            <input v-model.number="lineForm.unit_price" type="number" min="0" step="0.01" class="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white" />
+            <label class="mb-1 block text-xs nxr-text-muted">Precio unit. (opcional)</label>
+            <input v-model.number="lineForm.unit_price" type="number" min="0" step="0.01" class="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm nxr-text" />
+          </div>
+          <div class="flex items-end">
+            <button class="nxr-btn nxr-btn-secondary w-full justify-center" :disabled="addingLine" @click="addLine"><Plus :size="14" /> Agregar línea</button>
           </div>
         </div>
 
         <div v-else class="grid grid-cols-1 gap-2 sm:grid-cols-3 lg:grid-cols-6">
           <div class="lg:col-span-2">
-            <label class="mb-1 block text-xs text-white/50">Proveedor</label>
-            <select v-model.number="lineForm.supplier_id" class="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white">
+            <label class="mb-1 block text-xs nxr-text-muted">Proveedor</label>
+            <select v-model.number="lineForm.supplier_id" class="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm nxr-text">
               <option :value="null">Seleccionar</option>
               <option v-for="s in suppliersStore.items" :key="s.id" :value="s.id">{{ s.name }}</option>
             </select>
           </div>
           <div>
-            <label class="mb-1 block text-xs text-white/50">Producto (opcional)</label>
-            <select v-model.number="lineForm.product_id" class="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white">
-              <option :value="null">Ninguno</option>
-              <option v-for="p in productsStore.items" :key="p.id" :value="p.id">{{ p.name }}</option>
-            </select>
+            <label class="mb-1 block text-xs nxr-text-muted">Producto (opcional)</label>
+            <widgets_garage_product_combobox v-model="lineForm.product_id" :unit-price-hint="computedUnitPricePreview" placeholder="Ninguno" />
           </div>
           <div>
-            <label class="mb-1 block text-xs text-white/50">Nombre (si no hay producto)</label>
-            <input v-model="lineForm.product_name" class="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white" />
+            <label class="mb-1 block text-xs nxr-text-muted">Nombre (si no hay producto)</label>
+            <input v-model="lineForm.product_name" class="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm nxr-text" />
           </div>
           <div>
-            <label class="mb-1 block text-xs text-white/50">Cantidad</label>
-            <input v-model.number="lineForm.quantity" type="number" min="0" step="0.01" class="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white" />
+            <label class="mb-1 block text-xs nxr-text-muted">Cantidad</label>
+            <input v-model.number="lineForm.quantity" type="number" min="0" step="0.01" class="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm nxr-text" />
           </div>
           <div>
-            <label class="mb-1 block text-xs text-white/50">Costo proveedor</label>
-            <input v-model.number="lineForm.supplier_cost" type="number" min="0" step="0.01" class="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white" />
+            <label class="mb-1 block text-xs nxr-text-muted">Costo proveedor</label>
+            <input v-model.number="lineForm.supplier_cost" type="number" min="0" step="0.01" class="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm nxr-text" />
           </div>
           <div>
-            <label class="mb-1 block text-xs text-white/50">Margen %</label>
-            <input v-model.number="lineForm.margin_pct" type="number" min="0" step="0.01" class="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white" />
+            <label class="mb-1 block text-xs nxr-text-muted">Margen %</label>
+            <input v-model.number="lineForm.margin_pct" type="number" min="0" step="0.01" class="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm nxr-text" />
           </div>
-          <div class="lg:col-span-6 text-xs text-white/40">Precio unitario calculado: <span class="font-medium text-white">{{ fmtMoney(computedUnitPricePreview) }}</span></div>
+          <div class="flex items-end">
+            <button class="nxr-btn nxr-btn-secondary w-full justify-center" :disabled="addingLine" @click="addLine"><Plus :size="14" /> Agregar línea</button>
+          </div>
+          <div class="lg:col-span-6 text-xs nxr-text-muted">Precio unitario calculado: <span class="font-medium nxr-text">{{ fmtMoney(computedUnitPricePreview) }}</span></div>
         </div>
 
         <p v-if="lineError" class="mt-2 text-xs text-red-400">{{ lineError }}</p>
-        <button class="nxr-btn nxr-btn-secondary mt-3" :disabled="addingLine" @click="addLine"><Plus :size="14" /> Agregar línea</button>
+      </div>
+
+      <!-- Items list: scrolls internally once it grows past a handful of rows -->
+      <div v-if="(store.current?.lines?.length || 0) === 0" class="py-6 text-center text-sm nxr-text-soft">Sin líneas todavía.</div>
+      <div v-else class="flex max-h-96 flex-col gap-2 overflow-y-auto pr-1">
+        <div v-for="line in store.current?.lines" :key="line.id" class="rounded-xl border border-white/10 bg-white/5 p-3">
+          <!-- Mobile: description, quantity, price, and delete only — keeps the card scannable on a small screen -->
+          <div class="flex items-center justify-between gap-3 sm:hidden">
+            <div class="min-w-0 flex-1">
+              <p class="truncate text-sm nxr-text">{{ line.product_name_snapshot || line.sku_snapshot || 'Ítem sin producto' }}</p>
+              <p class="text-sm nxr-text"><span class="nxr-text-muted">Cant. {{ line.quantity }} ·</span> <span class="font-medium">{{ fmtMoney(line.subtotal) }}</span></p>
+            </div>
+            <button v-if="canEditLines" class="shrink-0 p-1.5 nxr-text-soft hover:text-red-400" aria-label="Eliminar línea" @click="removeLine(line)"><Trash2 :size="18" /></button>
+          </div>
+
+          <!-- Tablet/desktop: full detail -->
+          <div class="hidden gap-2 sm:grid sm:grid-cols-2 lg:grid-cols-[2fr_1fr_1fr_1fr_1fr_auto]">
+            <div>
+              <p class="text-sm nxr-text">{{ line.product_name_snapshot || line.sku_snapshot || 'Ítem sin producto' }}</p>
+              <p class="text-xs nxr-text-muted">
+                <span v-if="line.is_non_stocked">Tercerizado · {{ line.supplier_name || 'Proveedor' }}</span>
+                <span v-else>Stock</span>
+              </p>
+            </div>
+            <div class="text-sm nxr-text-muted">Cant. {{ line.quantity }}</div>
+            <div v-if="line.is_non_stocked" class="text-sm nxr-text-muted">Costo {{ fmtMoney(line.supplier_cost) }} · Margen {{ line.margin_pct }}%</div>
+            <div v-else class="text-sm nxr-text-muted">-</div>
+            <div class="text-sm nxr-text-muted">P. unit. {{ fmtMoney(line.unit_price) }}</div>
+            <div class="text-sm font-medium nxr-text">{{ fmtMoney(line.subtotal) }}</div>
+            <button v-if="canEditLines" class="nxr-text-soft hover:text-red-400" aria-label="Eliminar línea" @click="removeLine(line)"><Trash2 :size="16" /></button>
+          </div>
+        </div>
       </div>
     </div>
-    <div v-else class="rounded-2xl border border-dashed border-white/15 p-6 text-center text-sm text-white/40">
+    <div v-else class="rounded-2xl border border-dashed border-white/15 p-6 text-center text-sm nxr-text-muted">
       Guarda la cotización para poder agregar líneas.
     </div>
 
-    <div class="sticky bottom-0 z-10 -mx-6 border-t border-white/10 bg-black/40 px-6 py-4 backdrop-blur-xl">
+    <div class="rounded-2xl border border-white/15 p-4" :style="{ background: 'var(--nexora-glass-bg-strong)' }">
       <div class="ml-auto grid max-w-md grid-cols-2 gap-2 text-sm">
-        <span class="text-white/40">Subtotal</span><span class="text-right text-white">{{ fmtMoney(store.current?.subtotal) }}</span>
-        <span class="text-white/40">Descuento</span><span class="text-right text-white">{{ fmtMoney(store.current?.discount_amount) }}</span>
-        <span class="font-semibold text-white">Total</span><span class="text-right font-semibold text-white">{{ fmtMoney(store.current?.final_amount) }}</span>
+        <span class="nxr-text-muted">Subtotal</span><span class="text-right nxr-text">{{ fmtMoney(store.current?.subtotal) }}</span>
+        <span class="nxr-text-muted">Descuento</span><span class="text-right nxr-text">{{ fmtMoney(store.current?.discount_amount) }}</span>
+        <span class="font-semibold nxr-text">Total</span><span class="text-right font-semibold nxr-text">{{ fmtMoney(store.current?.final_amount) }}</span>
       </div>
       <p v-if="error" class="mt-2 text-right text-xs text-red-400">{{ error }}</p>
     </div>
+
+    <!-- Print target (hidden by print.css until window.print() is called) -->
+    <widgets_garage_quote_print
+      v-if="store.current && printData"
+      :quote="printData.quote"
+      :lines="printData.lines"
+      :customer="printData.customer"
+      :config="printData.config"
+    />
+
+    <AppToast v-for="t in toasts" :key="t.id" :toast="t" @close="removeToast" />
   </div>
 </template>

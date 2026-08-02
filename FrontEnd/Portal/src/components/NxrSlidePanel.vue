@@ -136,10 +136,10 @@ const panelClasses = [
           :aria-label="title"
         >
           <!-- Header with title + close button -->
-          <header class="sticky top-0 z-10 flex items-center justify-between border-b border-white/10 bg-black/20 px-6 py-4 backdrop-blur-xl">
+          <header class="sticky top-0 z-10 flex items-center justify-between border-b border-white/10 px-6 py-4 backdrop-blur-xl" :style="{ background: 'var(--nexora-glass-bg-strong)' }">
             <div>
-              <p v-if="eyebrow" class="text-xs text-white/50 mb-1">{{ eyebrow }}</p>
-              <h2 class="text-lg font-semibold text-white">{{ title }}</h2>
+              <p v-if="eyebrow" class="text-xs nxr-text-soft mb-1">{{ eyebrow }}</p>
+              <h2 class="text-lg font-semibold nxr-text">{{ title }}</h2>
             </div>
             <button
               type="button"
@@ -147,7 +147,7 @@ const panelClasses = [
               aria-label="Cerrar"
               @click="requestCancel"
             >
-              <XIcon class="h-5 w-5 text-white/60" />
+              <XIcon class="h-5 w-5 nxr-text-muted" />
             </button>
           </header>
 
@@ -158,7 +158,8 @@ const panelClasses = [
 
           <!-- Footer (optional, sticky at bottom) -->
           <footer
-            class="sticky bottom-0 flex gap-3 border-t border-white/10 bg-black/20 px-6 py-4 backdrop-blur-xl"
+            class="sticky bottom-0 flex gap-3 border-t border-white/10 px-6 py-4 backdrop-blur-xl"
+            :style="{ background: 'var(--nexora-glass-bg-strong)' }"
           >
             <button type="button" class="nxr-btn nxr-btn-secondary" @click="requestCancel">
               Cancelar
@@ -166,47 +167,53 @@ const panelClasses = [
             <slot name="footer" />
           </footer>
 
-          <div
-            v-if="showDiscardWarning"
-            class="absolute inset-0 z-20 flex items-center justify-center bg-black/75 p-4"
-            role="alertdialog"
-            aria-modal="true"
-            aria-labelledby="slide-panel-discard-title"
-            aria-describedby="slide-panel-discard-description"
-          >
-            <div class="w-full max-w-md rounded-2xl border border-white/15 bg-slate-950 p-5 shadow-2xl">
-              <h3
-                id="slide-panel-discard-title"
-                ref="warningTitle"
-                tabindex="-1"
-                class="text-base font-semibold text-white outline-none"
+          <Transition name="discard-warning">
+            <div
+              v-if="showDiscardWarning"
+              class="absolute inset-0 z-20 flex items-center justify-center bg-black/75 p-4"
+              role="alertdialog"
+              aria-modal="true"
+              aria-labelledby="slide-panel-discard-title"
+              aria-describedby="slide-panel-discard-description"
+            >
+              <div
+                class="discard-warning-card w-full max-w-md rounded-2xl border border-white/15 p-5 shadow-2xl"
+                :style="{ background: 'var(--nexora-glass-bg-strong)' }"
               >
-                Cambios sin guardar
-              </h3>
-              <p id="slide-panel-discard-description" class="mt-2 text-sm text-white/65">
-                Al cerrar, se eliminará la información ingresada en este formulario. Puede conservar el borrador para continuar más tarde, descartarlo y restablecer el formulario, o continuar editando.
-              </p>
-              <div class="mt-5 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
-                <button type="button" class="nxr-btn nxr-btn-primary" @click="keepDraftAndClose">
-                  Conservar borrador y cerrar
-                </button>
-                <button
-                  type="button"
-                  class="nxr-btn border border-red-500/40 bg-red-500/15 text-red-200 hover:bg-red-500/25"
-                  @click="discardAndClose"
+                <h3
+                  id="slide-panel-discard-title"
+                  ref="warningTitle"
+                  tabindex="-1"
+                  class="text-base font-semibold nxr-text outline-none"
                 >
-                  Descartar y cerrar
-                </button>
-                <button
-                  type="button"
-                  class="nxr-btn nxr-btn-secondary"
-                  @click="showDiscardWarning = false"
-                >
-                  Continuar editando
-                </button>
+                  Cambios sin guardar
+                </h3>
+                <p id="slide-panel-discard-description" class="mt-2 text-sm nxr-text-muted">
+                  Al cerrar, se eliminará la información ingresada en este formulario. Puede conservar el borrador para continuar más tarde, descartarlo y restablecer el formulario, o continuar editando.
+                </p>
+                <div class="mt-5 flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+                  <button type="button" class="nxr-btn nxr-btn-primary" @click="keepDraftAndClose">
+                    Conservar borrador y cerrar
+                  </button>
+                  <button
+                    type="button"
+                    class="nxr-btn border border-red-500/40 bg-red-500/15 hover:bg-red-500/25"
+                    style="color: var(--nexora-danger-text)"
+                    @click="discardAndClose"
+                  >
+                    Descartar y cerrar
+                  </button>
+                  <button
+                    type="button"
+                    class="nxr-btn nxr-btn-secondary"
+                    @click="showDiscardWarning = false"
+                  >
+                    Continuar editando
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
+          </Transition>
         </div>
       </div>
     </Transition>
@@ -255,5 +262,26 @@ const panelClasses = [
 .slide-panel-enter-active > div,
 .slide-panel-leave-active > div {
   transition: transform 0.3s ease;
+}
+
+.discard-warning-enter-active,
+.discard-warning-leave-active {
+  transition: opacity 0.18s ease;
+}
+
+.discard-warning-enter-from,
+.discard-warning-leave-to {
+  opacity: 0;
+}
+
+.discard-warning-enter-active .discard-warning-card,
+.discard-warning-leave-active .discard-warning-card {
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.discard-warning-enter-from .discard-warning-card,
+.discard-warning-leave-to .discard-warning-card {
+  opacity: 0;
+  transform: translateY(6px) scale(0.97);
 }
 </style>

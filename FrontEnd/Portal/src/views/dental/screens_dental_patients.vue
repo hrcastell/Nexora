@@ -77,7 +77,7 @@ onMounted(() => store.load());
 <template>
   <div class="flex flex-col gap-5 p-6">
     <div class="flex items-center justify-between flex-wrap gap-3">
-      <h1 class="text-xl font-semibold text-white">Pacientes</h1>
+      <h1 class="text-xl font-semibold nxr-text">Pacientes</h1>
       <button
         class="flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-medium text-white transition nxr-btn-primary"
         @click="openCreate"
@@ -88,12 +88,12 @@ onMounted(() => store.load());
 
     <!-- Search -->
     <div class="relative">
-      <Search :size="15" class="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" />
+      <Search :size="15" class="absolute left-3 top-1/2 -translate-y-1/2 nxr-text-soft" />
       <input
         v-model="search"
         type="text"
         placeholder="Buscar por nombre o documento..."
-        class="w-full pl-9 pr-4 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white placeholder-white/30 outline-none focus:border-white/30"
+        class="w-full pl-9 pr-4 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text placeholder-[var(--nexora-soft-text)] outline-none focus:border-white/30"
         @input="onSearchInput"
       />
     </div>
@@ -108,8 +108,8 @@ onMounted(() => store.load());
 
     <!-- Empty -->
     <div v-else-if="store.items.length === 0" class="flex flex-col items-center gap-4 py-20 text-center">
-      <UserRound :size="48" class="text-white/20" />
-      <p class="text-white/50 text-sm">No se encontraron pacientes.</p>
+      <UserRound :size="48" class="nxr-text-soft" />
+      <p class="nxr-text-muted text-sm">No se encontraron pacientes.</p>
       <button
         class="flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-medium text-white transition nxr-btn-primary"
         @click="openCreate"
@@ -121,7 +121,7 @@ onMounted(() => store.load());
     <!-- List -->
     <div v-else class="flex flex-col gap-2">
       <!-- Desktop header -->
-      <div class="hidden md:grid md:grid-cols-[1fr_160px_160px_80px_40px] gap-4 px-4 py-2 text-xs text-white/30 font-semibold uppercase tracking-wide">
+      <div class="hidden md:grid md:grid-cols-[1fr_160px_160px_80px_40px] gap-4 px-4 py-2 text-xs nxr-text-soft font-semibold uppercase tracking-wide">
         <span>Nombre</span>
         <span>Documento</span>
         <span>Teléfono</span>
@@ -146,28 +146,28 @@ onMounted(() => store.load());
 
         <!-- Mobile -->
         <div class="flex-1 min-w-0 md:hidden">
-          <p class="text-sm font-medium text-white truncate">{{ p.first_name }} {{ p.last_name }}</p>
-          <p class="text-xs text-white/40 truncate">
+          <p class="text-sm font-medium nxr-text truncate">{{ p.first_name }} {{ p.last_name }}</p>
+          <p class="text-xs nxr-text-muted truncate">
             {{ p.document_type ?? 'DOC' }}: {{ p.document_number ?? '—' }} · {{ p.phone ?? p.mobile ?? '—' }}
           </p>
         </div>
 
         <!-- Desktop -->
         <div class="hidden md:grid md:grid-cols-[1fr_160px_160px_80px_40px] gap-4 items-center flex-1">
-          <p class="text-sm text-white truncate">{{ p.first_name }} {{ p.last_name }}</p>
-          <p class="text-xs text-white/60">{{ p.document_type ?? '—' }} {{ p.document_number ?? '—' }}</p>
-          <p class="text-xs text-white/60">{{ p.phone ?? p.mobile ?? '—' }}</p>
+          <p class="text-sm nxr-text truncate">{{ p.first_name }} {{ p.last_name }}</p>
+          <p class="text-xs nxr-text-muted">{{ p.document_type ?? '—' }} {{ p.document_number ?? '—' }}</p>
+          <p class="text-xs nxr-text-muted">{{ p.phone ?? p.mobile ?? '—' }}</p>
           <span
             class="px-2 py-0.5 rounded-full text-xs w-fit"
-            :class="p.status === 'active' ? 'bg-green-500/20 text-green-400' : 'bg-white/10 text-white/40'"
+            :class="p.status === 'active' ? 'bg-green-500/20 text-green-400' : 'bg-white/10 nxr-text-muted'"
           >
             {{ p.status === 'active' ? 'Activo' : (p.status ?? 'Activo') }}
           </span>
-          <ChevronRight :size="16" class="text-white/30" />
+          <ChevronRight :size="16" class="nxr-text-soft" />
         </div>
 
         <!-- Mobile chevron -->
-        <ChevronRight :size="16" class="text-white/30 shrink-0 md:hidden" />
+        <ChevronRight :size="16" class="nxr-text-soft shrink-0 md:hidden" />
       </div>
     </div>
 
@@ -177,23 +177,23 @@ onMounted(() => store.load());
     :draft-entity="'create'"
     :draft-state="{ form }">
       <form class="flex flex-col gap-5" @submit.prevent="save">
-        <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Datos personales</p>
+        <p class="text-xs nxr-text-muted uppercase tracking-wide font-semibold">Datos personales</p>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="flex flex-col gap-1.5">
-            <label class="text-xs text-white/50">Nombre *</label>
-            <input v-model="form.first_name" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" required />
+            <label class="text-xs nxr-text-muted">Nombre *</label>
+            <input v-model="form.first_name" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" required />
           </div>
           <div class="flex flex-col gap-1.5">
-            <label class="text-xs text-white/50">Apellido *</label>
-            <input v-model="form.last_name" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" required />
+            <label class="text-xs nxr-text-muted">Apellido *</label>
+            <input v-model="form.last_name" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" required />
           </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="flex flex-col gap-1.5">
-            <label class="text-xs text-white/50">Tipo documento</label>
-            <select v-model="form.document_type" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none">
+            <label class="text-xs nxr-text-muted">Tipo documento</label>
+            <select v-model="form.document_type" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none">
               <option value="DNI">DNI</option>
               <option value="Cedula">Cédula</option>
               <option value="RUT">RUT</option>
@@ -203,57 +203,57 @@ onMounted(() => store.load());
             </select>
           </div>
           <div class="flex flex-col gap-1.5">
-            <label class="text-xs text-white/50">N° documento</label>
-            <input v-model="form.document_number" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+            <label class="text-xs nxr-text-muted">N° documento</label>
+            <input v-model="form.document_number" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" />
           </div>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="flex flex-col gap-1.5">
-            <label class="text-xs text-white/50">Teléfono</label>
-            <input v-model="form.phone" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+            <label class="text-xs nxr-text-muted">Teléfono</label>
+            <input v-model="form.phone" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" />
           </div>
           <div class="flex flex-col gap-1.5">
-            <label class="text-xs text-white/50">Celular</label>
-            <input v-model="form.mobile" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+            <label class="text-xs nxr-text-muted">Celular</label>
+            <input v-model="form.mobile" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" />
           </div>
         </div>
 
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Email</label>
-          <input v-model="form.email" type="email" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+          <label class="text-xs nxr-text-muted">Email</label>
+          <input v-model="form.email" type="email" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" />
         </div>
 
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Fecha de nacimiento</label>
-          <input v-model="form.birth_date" type="date" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+          <label class="text-xs nxr-text-muted">Fecha de nacimiento</label>
+          <input v-model="form.birth_date" type="date" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" />
         </div>
 
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Dirección</label>
-          <input v-model="form.address" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+          <label class="text-xs nxr-text-muted">Dirección</label>
+          <input v-model="form.address" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" />
         </div>
 
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Ciudad</label>
-          <input v-model="form.city" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+          <label class="text-xs nxr-text-muted">Ciudad</label>
+          <input v-model="form.city" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" />
         </div>
 
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Notas internas</label>
-          <textarea v-model="form.customer_notes" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none"></textarea>
+          <label class="text-xs nxr-text-muted">Notas internas</label>
+          <textarea v-model="form.customer_notes" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30 resize-none"></textarea>
         </div>
 
-        <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Historial médico</p>
+        <p class="text-xs nxr-text-muted uppercase tracking-wide font-semibold">Historial médico</p>
 
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Antecedentes médicos</label>
-          <textarea v-model="form.medical_background" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none"></textarea>
+          <label class="text-xs nxr-text-muted">Antecedentes médicos</label>
+          <textarea v-model="form.medical_background" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30 resize-none"></textarea>
         </div>
 
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Grupo sanguíneo</label>
-          <select v-model="form.blood_type" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none">
+          <label class="text-xs nxr-text-muted">Grupo sanguíneo</label>
+          <select v-model="form.blood_type" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none">
             <option value="">Sin especificar</option>
             <option value="A+">A+</option>
             <option value="A-">A-</option>
@@ -267,35 +267,35 @@ onMounted(() => store.load());
         </div>
 
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Alergias</label>
-          <input v-model="form.allergies" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+          <label class="text-xs nxr-text-muted">Alergias</label>
+          <input v-model="form.allergies" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" />
         </div>
 
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Medicación actual</label>
-          <input v-model="form.current_medications" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+          <label class="text-xs nxr-text-muted">Medicación actual</label>
+          <input v-model="form.current_medications" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" />
         </div>
 
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Enfermedades crónicas</label>
-          <input v-model="form.chronic_conditions" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+          <label class="text-xs nxr-text-muted">Enfermedades crónicas</label>
+          <input v-model="form.chronic_conditions" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" />
         </div>
 
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Observaciones dentales</label>
-          <textarea v-model="form.dental_observations" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none"></textarea>
+          <label class="text-xs nxr-text-muted">Observaciones dentales</label>
+          <textarea v-model="form.dental_observations" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30 resize-none"></textarea>
         </div>
 
-        <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Contacto de emergencia</p>
+        <p class="text-xs nxr-text-muted uppercase tracking-wide font-semibold">Contacto de emergencia</p>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="flex flex-col gap-1.5">
-            <label class="text-xs text-white/50">Nombre</label>
-            <input v-model="form.emergency_contact_name" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+            <label class="text-xs nxr-text-muted">Nombre</label>
+            <input v-model="form.emergency_contact_name" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" />
           </div>
           <div class="flex flex-col gap-1.5">
-            <label class="text-xs text-white/50">Teléfono</label>
-            <input v-model="form.emergency_contact_phone" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+            <label class="text-xs nxr-text-muted">Teléfono</label>
+            <input v-model="form.emergency_contact_phone" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" />
           </div>
         </div>
 

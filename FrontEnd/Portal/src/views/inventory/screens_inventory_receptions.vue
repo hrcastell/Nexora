@@ -136,35 +136,35 @@ async function confirmReceipt() {
     <template v-if="!isDetail">
       <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 class="text-xl font-semibold text-white">Recepciones</h1>
-          <p class="text-xs text-white/40">Entrada física de productos desde documentos emitidos.</p>
+          <h1 class="text-xl font-semibold nxr-text">Recepciones</h1>
+          <p class="text-xs nxr-text-muted">Entrada física de productos desde documentos emitidos.</p>
         </div>
         <button class="nxr-btn nxr-btn-primary justify-center" @click="router.push('/inventory/receptions/new')"><Plus :size="15" /> Nueva recepción</button>
       </div>
 
       <div v-if="store.loading" class="space-y-2"><div v-for="i in 6" :key="i" class="h-16 animate-pulse rounded-xl bg-white/5"></div></div>
-      <div v-else-if="store.items.length === 0" class="py-16 text-center text-sm text-white/30">Sin recepciones registradas.</div>
+      <div v-else-if="store.items.length === 0" class="py-16 text-center text-sm nxr-text-soft">Sin recepciones registradas.</div>
       <div v-else class="flex flex-col gap-2">
         <button v-for="receipt in store.items" :key="receipt.id" class="rounded-xl border border-white/10 p-4 text-left transition hover:border-white/25" :style="{ background: 'var(--nexora-glass-bg)' }" @click="router.push(`/inventory/receptions/${receipt.id}`)">
           <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p class="text-sm font-semibold text-white">{{ receipt.receipt_number }}</p>
-              <p class="text-xs text-white/40">{{ receipt.internal_number }} · {{ receipt.warehouse_name }}</p>
+              <p class="text-sm font-semibold nxr-text">{{ receipt.receipt_number }}</p>
+              <p class="text-xs nxr-text-muted">{{ receipt.internal_number }} · {{ receipt.warehouse_name }}</p>
             </div>
-            <div class="text-left sm:text-right"><p class="text-sm text-white">{{ fmtDate(receipt.reception_date) }}</p><p class="text-xs text-white/40">{{ receipt.status }}</p></div>
+            <div class="text-left sm:text-right"><p class="text-sm nxr-text">{{ fmtDate(receipt.reception_date) }}</p><p class="text-xs nxr-text-muted">{{ receipt.status }}</p></div>
           </div>
         </button>
       </div>
     </template>
 
     <template v-else>
-      <div class="sticky top-0 z-10 -mx-6 -mt-6 border-b border-white/10 bg-black/30 px-6 py-4 backdrop-blur-xl">
+      <div class="rounded-2xl border border-white/10 p-4" :style="{ background: 'var(--nexora-glass-bg)' }">
         <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div class="flex items-center gap-3">
-            <button class="text-white/40 hover:text-white" @click="router.push('/inventory/receptions')"><ArrowLeft :size="20" /></button>
+            <button class="nxr-text-muted hover:text-[var(--nexora-text-color)]" @click="router.push('/inventory/receptions')"><ArrowLeft :size="20" /></button>
             <div>
-              <h1 class="text-lg font-semibold text-white">{{ isNew ? 'Nueva recepción' : store.current?.receipt_number }}</h1>
-              <p class="text-xs text-white/40">{{ store.current?.status || 'draft' }}</p>
+              <h1 class="text-lg font-semibold nxr-text">{{ isNew ? 'Nueva recepción' : store.current?.receipt_number }}</h1>
+              <p class="text-xs nxr-text-muted">{{ store.current?.status || 'draft' }}</p>
             </div>
           </div>
           <div class="flex flex-wrap gap-2">
@@ -175,23 +175,23 @@ async function confirmReceipt() {
       </div>
 
       <div class="grid grid-cols-1 gap-3 rounded-2xl border border-white/10 p-4 lg:grid-cols-4" :style="{ background: 'var(--nexora-glass-bg)' }">
-        <div class="lg:col-span-2"><label class="mb-1 block text-xs text-white/50">Documento origen</label><select v-model.number="form.purchase_document_id" :disabled="!isNew" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white" @change="loadSourceDocument(form.purchase_document_id)"><option :value="0">Seleccionar</option><option v-for="doc in availableDocuments" :key="doc.id" :value="doc.id">{{ doc.internal_number }} · {{ doc.supplier_name }} · {{ fmtMoney(doc.total) }}</option></select></div>
-        <div><label class="mb-1 block text-xs text-white/50">Bodega</label><select v-model.number="form.warehouse_id" :disabled="!isNew" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white"><option :value="0">Seleccionar</option><option v-for="warehouse in warehousesStore.items" :key="warehouse.id" :value="warehouse.id">{{ warehouse.name }}</option></select></div>
-        <div><label class="mb-1 block text-xs text-white/50">Fecha</label><input v-model="form.reception_date" :disabled="!isNew" type="date" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white" /></div>
+        <div class="lg:col-span-2"><label class="mb-1 block text-xs nxr-text-muted">Documento origen</label><select v-model.number="form.purchase_document_id" :disabled="!isNew" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text" @change="loadSourceDocument(form.purchase_document_id)"><option :value="0">Seleccionar</option><option v-for="doc in availableDocuments" :key="doc.id" :value="doc.id">{{ doc.internal_number }} · {{ doc.supplier_name }} · {{ fmtMoney(doc.total) }}</option></select></div>
+        <div><label class="mb-1 block text-xs nxr-text-muted">Bodega</label><select v-model.number="form.warehouse_id" :disabled="!isNew" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text"><option :value="0">Seleccionar</option><option v-for="warehouse in warehousesStore.items" :key="warehouse.id" :value="warehouse.id">{{ warehouse.name }}</option></select></div>
+        <div><label class="mb-1 block text-xs nxr-text-muted">Fecha</label><input v-model="form.reception_date" :disabled="!isNew" type="date" class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text" /></div>
       </div>
 
       <div class="flex-1 rounded-2xl border border-white/10 p-4" :style="{ background: 'var(--nexora-glass-bg)' }">
-        <div class="mb-3"><h2 class="text-sm font-semibold text-white/70">Líneas a recibir</h2><p class="text-xs text-white/35">La cantidad no puede superar el pendiente del documento origen.</p></div>
-        <div v-if="!sourceDocument" class="py-12 text-center text-sm text-white/30">Selecciona un documento emitido para cargar pendientes.</div>
-        <div v-else-if="confirmLines.length === 0" class="py-12 text-center text-sm text-white/30">El documento no tiene pendientes por recibir.</div>
+        <div class="mb-3"><h2 class="text-sm font-semibold nxr-text">Líneas a recibir</h2><p class="text-xs nxr-text-soft">La cantidad no puede superar el pendiente del documento origen.</p></div>
+        <div v-if="!sourceDocument" class="py-12 text-center text-sm nxr-text-soft">Selecciona un documento emitido para cargar pendientes.</div>
+        <div v-else-if="confirmLines.length === 0" class="py-12 text-center text-sm nxr-text-soft">El documento no tiene pendientes por recibir.</div>
         <div v-else class="flex flex-col gap-2">
           <div v-for="line in confirmLines" :key="line.purchase_document_line_id" class="grid grid-cols-1 gap-2 rounded-xl border border-white/10 bg-white/5 p-3 lg:grid-cols-[2fr_repeat(5,1fr)]">
-            <div><p class="text-sm font-medium text-white">{{ line.product_name_snapshot || `Producto #${line.product_id}` }}</p><p class="text-xs text-white/35">Pendiente: {{ maxFor(line) }} {{ line.unit }}</p></div>
-            <div><label class="mb-1 block text-xs text-white/40">Recibir</label><input v-model.number="line.quantity_received" :disabled="store.current?.status !== 'draft'" type="number" min="0" :max="maxFor(line)" step="0.01" class="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white" /></div>
-            <div><label class="mb-1 block text-xs text-white/40">Costo</label><input v-model.number="line.unit_cost" :disabled="store.current?.status !== 'draft'" type="number" min="0" step="0.01" class="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white" /></div>
-            <div><label class="mb-1 block text-xs text-white/40">Lote</label><input v-model="line.batch_number" :disabled="store.current?.status !== 'draft'" class="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white" /></div>
-            <div><label class="mb-1 block text-xs text-white/40">Serie</label><input v-model="line.serial_number" :disabled="store.current?.status !== 'draft'" class="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white" /></div>
-            <div><label class="mb-1 block text-xs text-white/40">Vence</label><input v-model="line.expiration_date" :disabled="store.current?.status !== 'draft'" type="date" class="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm text-white" /></div>
+            <div><p class="text-sm font-medium nxr-text">{{ line.product_name_snapshot || `Producto #${line.product_id}` }}</p><p class="text-xs nxr-text-soft">Pendiente: {{ maxFor(line) }} {{ line.unit }}</p></div>
+            <div><label class="mb-1 block text-xs nxr-text-muted">Recibir</label><input v-model.number="line.quantity_received" :disabled="store.current?.status !== 'draft'" type="number" min="0" :max="maxFor(line)" step="0.01" class="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm nxr-text" /></div>
+            <div><label class="mb-1 block text-xs nxr-text-muted">Costo</label><input v-model.number="line.unit_cost" :disabled="store.current?.status !== 'draft'" type="number" min="0" step="0.01" class="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm nxr-text" /></div>
+            <div><label class="mb-1 block text-xs nxr-text-muted">Lote</label><input v-model="line.batch_number" :disabled="store.current?.status !== 'draft'" class="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm nxr-text" /></div>
+            <div><label class="mb-1 block text-xs nxr-text-muted">Serie</label><input v-model="line.serial_number" :disabled="store.current?.status !== 'draft'" class="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm nxr-text" /></div>
+            <div><label class="mb-1 block text-xs nxr-text-muted">Vence</label><input v-model="line.expiration_date" :disabled="store.current?.status !== 'draft'" type="date" class="w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-sm nxr-text" /></div>
           </div>
         </div>
         <p v-if="error" class="mt-3 text-xs text-red-400">{{ error }}</p>

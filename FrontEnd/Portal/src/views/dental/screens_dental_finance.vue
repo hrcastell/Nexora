@@ -49,7 +49,7 @@ const CHARGE_STATUS_CLASS: Record<string, string> = {
   partially_paid: 'bg-blue-500/20 text-blue-400',
   paid:           'bg-green-500/20 text-green-400',
   overdue:        'bg-red-500/20 text-red-400',
-  cancelled:      'bg-white/10 text-white/40',
+  cancelled:      'bg-white/10 nxr-text-muted',
   refunded:       'bg-purple-500/20 text-purple-400',
 };
 
@@ -58,7 +58,7 @@ const INSTALLMENT_STATUS_CLASS: Record<string, string> = {
   partially_paid: 'bg-blue-500/20 text-blue-400',
   paid:           'bg-green-500/20 text-green-400',
   overdue:        'bg-red-500/20 text-red-400',
-  cancelled:      'bg-white/10 text-white/40',
+  cancelled:      'bg-white/10 nxr-text-muted',
 };
 
 const PM_LABEL: Record<string, string> = {
@@ -172,8 +172,8 @@ onMounted(async () => {
   <div class="flex flex-col gap-6 p-6">
     <div class="flex items-center justify-between flex-wrap gap-3">
       <div>
-        <h1 class="text-xl font-semibold text-white">Finanzas Dental</h1>
-        <p class="text-xs text-white/40 mt-0.5">Vista administrativa — los pagos se originan desde cada consulta</p>
+        <h1 class="text-xl font-semibold nxr-text">Finanzas Dental</h1>
+        <p class="text-xs nxr-text-muted mt-0.5">Vista administrativa — los pagos se originan desde cada consulta</p>
       </div>
     </div>
 
@@ -186,23 +186,23 @@ onMounted(async () => {
     <div v-else-if="store.financeSummary" class="grid grid-cols-2 md:grid-cols-4 gap-4">
       <div class="flex flex-col gap-2 p-5 rounded-2xl border border-white/10" :style="{ background: 'var(--nexora-glass-bg)' }">
         <DollarSign :size="20" class="text-green-400" />
-        <p class="text-2xl font-bold text-white">{{ fmt(store.financeSummary.daily_total) }}</p>
-        <p class="text-xs text-white/50">Cobrado hoy</p>
+        <p class="text-2xl font-bold nxr-text">{{ fmt(store.financeSummary.daily_total) }}</p>
+        <p class="text-xs nxr-text-muted">Cobrado hoy</p>
       </div>
       <div class="flex flex-col gap-2 p-5 rounded-2xl border border-white/10" :style="{ background: 'var(--nexora-glass-bg)' }">
         <TrendingUp :size="20" class="text-purple-400" />
-        <p class="text-2xl font-bold text-white">{{ fmt(store.financeSummary.monthly_total) }}</p>
-        <p class="text-xs text-white/50">Cobrado este mes</p>
+        <p class="text-2xl font-bold nxr-text">{{ fmt(store.financeSummary.monthly_total) }}</p>
+        <p class="text-xs nxr-text-muted">Cobrado este mes</p>
       </div>
       <div class="flex flex-col gap-2 p-5 rounded-2xl border border-white/10" :style="{ background: 'var(--nexora-glass-bg)' }">
         <Clock :size="20" class="text-yellow-400" />
-        <p class="text-2xl font-bold text-white">{{ fmt(store.financeSummary.total_pending) }}</p>
-        <p class="text-xs text-white/50">Total pendiente</p>
+        <p class="text-2xl font-bold nxr-text">{{ fmt(store.financeSummary.total_pending) }}</p>
+        <p class="text-xs nxr-text-muted">Total pendiente</p>
       </div>
       <div class="flex flex-col gap-2 p-5 rounded-2xl border border-white/10" :style="{ background: 'var(--nexora-glass-bg)' }">
         <AlertTriangle :size="20" class="text-red-400" />
-        <p class="text-2xl font-bold text-white">{{ store.financeSummary.overdue_charges_count }}</p>
-        <p class="text-xs text-white/50">Cargos vencidos</p>
+        <p class="text-2xl font-bold nxr-text">{{ store.financeSummary.overdue_charges_count }}</p>
+        <p class="text-xs nxr-text-muted">Cargos vencidos</p>
       </div>
     </div>
 
@@ -211,14 +211,14 @@ onMounted(async () => {
       <div class="flex items-center justify-between flex-wrap gap-3">
         <div class="flex items-center gap-2">
           <CreditCard :size="16" class="text-blue-400" />
-          <h2 class="text-sm font-semibold text-white">Cargos por consulta</h2>
+          <h2 class="text-sm font-semibold nxr-text">Cargos por consulta</h2>
         </div>
 
         <!-- Filters -->
         <div class="flex items-center gap-2 flex-wrap">
           <select
             v-model="statusFilter"
-            class="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none"
+            class="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none"
             @change="applyFilter"
           >
             <option value="">Todos los estados</option>
@@ -233,20 +233,20 @@ onMounted(async () => {
             v-model="dateFromFilter"
             type="date"
             title="Desde"
-            class="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none"
+            class="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none"
             @change="applyFilter"
           />
           <input
             v-model="dateToFilter"
             type="date"
             title="Hasta"
-            class="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none"
+            class="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none"
             @change="applyFilter"
           />
 
           <button
             v-if="statusFilter || dateFromFilter || dateToFilter"
-            class="px-3 py-1.5 rounded-xl text-xs text-white/40 hover:text-white/70 border border-white/10 hover:bg-white/5 transition-all"
+            class="px-3 py-1.5 rounded-xl text-xs nxr-text-muted hover:text-[var(--nexora-text-color)] border border-white/10 hover:bg-white/5 transition-all"
             @click="clearFilters"
           >
             Limpiar
@@ -260,13 +260,13 @@ onMounted(async () => {
 
       <div v-else-if="store.error" class="text-center text-red-400 py-8 text-sm">{{ store.error }}</div>
 
-      <div v-else-if="store.items.length === 0" class="text-center text-white/30 py-12 text-sm">
+      <div v-else-if="store.items.length === 0" class="text-center nxr-text-soft py-12 text-sm">
         No hay cargos para mostrar.
       </div>
 
       <div v-else class="flex flex-col gap-2">
         <!-- Desktop header -->
-        <div class="hidden md:grid md:grid-cols-[100px_1fr_140px_110px_110px_110px_90px_40px] gap-3 px-4 py-2 text-xs text-white/30 font-semibold uppercase tracking-wide">
+        <div class="hidden md:grid md:grid-cols-[100px_1fr_140px_110px_110px_110px_90px_40px] gap-3 px-4 py-2 text-xs nxr-text-soft font-semibold uppercase tracking-wide">
           <span>Fecha</span>
           <span>Paciente</span>
           <span>Descripción</span>
@@ -286,9 +286,9 @@ onMounted(async () => {
         >
           <!-- Mobile -->
           <div class="flex-1 min-w-0 md:hidden">
-            <p class="text-sm text-white truncate font-medium">{{ (c as any).patient_name ?? '—' }}</p>
-            <p class="text-xs text-white/40 truncate">{{ c.description ?? 'Cargo' }}</p>
-            <p class="text-xs text-white/40">{{ fmtDate(c.created_at) }} · Pendiente: {{ fmt(c.pending_amount) }}</p>
+            <p class="text-sm nxr-text truncate font-medium">{{ (c as any).patient_name ?? '—' }}</p>
+            <p class="text-xs nxr-text-muted truncate">{{ c.description ?? 'Cargo' }}</p>
+            <p class="text-xs nxr-text-muted">{{ fmtDate(c.created_at) }} · Pendiente: {{ fmt(c.pending_amount) }}</p>
           </div>
           <span class="px-2 py-0.5 rounded-full text-xs shrink-0 md:hidden" :class="CHARGE_STATUS_CLASS[c.status]">
             {{ CHARGE_STATUS_LABEL[c.status] }}
@@ -296,10 +296,10 @@ onMounted(async () => {
 
           <!-- Desktop -->
           <div class="hidden md:grid md:grid-cols-[100px_1fr_140px_110px_110px_110px_90px_40px] gap-3 items-center flex-1">
-            <p class="text-xs text-white/60">{{ fmtDate(c.created_at) }}</p>
-            <p class="text-sm text-white font-medium truncate">{{ (c as any).patient_name ?? '—' }}</p>
-            <p class="text-xs text-white/60 truncate">{{ c.description ?? 'Cargo' }}</p>
-            <p class="text-sm font-semibold text-white text-right">{{ fmt(c.total_amount) }}</p>
+            <p class="text-xs nxr-text-muted">{{ fmtDate(c.created_at) }}</p>
+            <p class="text-sm nxr-text font-medium truncate">{{ (c as any).patient_name ?? '—' }}</p>
+            <p class="text-xs nxr-text-muted truncate">{{ c.description ?? 'Cargo' }}</p>
+            <p class="text-sm font-semibold nxr-text text-right">{{ fmt(c.total_amount) }}</p>
             <p class="text-sm text-green-400 text-right">{{ fmt(c.paid_amount) }}</p>
             <p class="text-sm text-yellow-400 text-right">{{ fmt(c.pending_amount) }}</p>
             <span class="px-2 py-0.5 rounded-full text-xs w-fit mx-auto" :class="CHARGE_STATUS_CLASS[c.status]">
@@ -308,7 +308,7 @@ onMounted(async () => {
             <div class="flex justify-center" @click.stop>
               <button
                 v-if="(c as any).consultation_id"
-                class="text-white/30 hover:text-blue-400 transition-colors"
+                class="nxr-text-soft hover:text-blue-400 transition-colors"
                 title="Ver consulta"
                 @click="goToConsultation((c as any).consultation_id)"
               >
@@ -324,14 +324,14 @@ onMounted(async () => {
     <NxrSlidePanel :open="showChargeDetail" title="Detalle del cargo" eyebrow="Dental — Finanzas" @close="showChargeDetail = false"
     draft-key="views/dental/screens_dental_finance.vue#1"
     :draft-entity="store.current?.id ?? 'detail'">
-      <div v-if="!store.current" class="text-center text-white/30 py-10 text-sm">Cargando...</div>
+      <div v-if="!store.current" class="text-center nxr-text-soft py-10 text-sm">Cargando...</div>
       <div v-else class="flex flex-col gap-4">
 
         <!-- Patient + consultation link -->
         <div class="flex items-center justify-between p-3 rounded-xl border border-white/10" :style="{ background: 'var(--nexora-glass-bg)' }">
           <div>
-            <p class="text-xs text-white/40">Paciente</p>
-            <p class="text-sm text-white font-medium">{{ (store.current as any).patient_name ?? '—' }}</p>
+            <p class="text-xs nxr-text-muted">Paciente</p>
+            <p class="text-sm nxr-text font-medium">{{ (store.current as any).patient_name ?? '—' }}</p>
           </div>
           <button
             v-if="(store.current as any).consultation_id"
@@ -345,15 +345,15 @@ onMounted(async () => {
         <!-- Status + amounts -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div class="flex flex-col gap-1 p-3 rounded-xl border border-white/10" :style="{ background: 'var(--nexora-glass-bg)' }">
-            <p class="text-xs text-white/40">Total</p>
-            <p class="text-sm font-bold text-white">{{ fmt(store.current.total_amount) }}</p>
+            <p class="text-xs nxr-text-muted">Total</p>
+            <p class="text-sm font-bold nxr-text">{{ fmt(store.current.total_amount) }}</p>
           </div>
           <div class="flex flex-col gap-1 p-3 rounded-xl border border-white/10" :style="{ background: 'var(--nexora-glass-bg)' }">
-            <p class="text-xs text-white/40">Pagado</p>
+            <p class="text-xs nxr-text-muted">Pagado</p>
             <p class="text-sm font-bold text-green-400">{{ fmt(store.current.paid_amount) }}</p>
           </div>
           <div class="flex flex-col gap-1 p-3 rounded-xl border border-white/10" :style="{ background: 'var(--nexora-glass-bg)' }">
-            <p class="text-xs text-white/40">Pendiente</p>
+            <p class="text-xs nxr-text-muted">Pendiente</p>
             <p class="text-sm font-bold text-yellow-400">{{ fmt(store.current.pending_amount) }}</p>
           </div>
         </div>
@@ -364,7 +364,7 @@ onMounted(async () => {
 
         <!-- Payments -->
         <div v-if="(store.current.payments?.length ?? 0) > 0" class="flex flex-col gap-2">
-          <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Pagos registrados</p>
+          <p class="text-xs nxr-text-muted uppercase tracking-wide font-semibold">Pagos registrados</p>
           <div
             v-for="pay in store.current.payments"
             :key="pay.id"
@@ -372,16 +372,16 @@ onMounted(async () => {
             :style="{ background: 'var(--nexora-glass-bg)' }"
           >
             <div>
-              <p class="text-sm text-white">{{ fmt(pay.amount) }}</p>
-              <p class="text-xs text-white/40">{{ PM_LABEL[pay.payment_method] ?? pay.payment_method }} · {{ fmtDate(pay.payment_date) }}</p>
+              <p class="text-sm nxr-text">{{ fmt(pay.amount) }}</p>
+              <p class="text-xs nxr-text-muted">{{ PM_LABEL[pay.payment_method] ?? pay.payment_method }} · {{ fmtDate(pay.payment_date) }}</p>
             </div>
-            <p v-if="pay.reference" class="text-xs text-white/30">{{ pay.reference }}</p>
+            <p v-if="pay.reference" class="text-xs nxr-text-soft">{{ pay.reference }}</p>
           </div>
         </div>
 
         <!-- Installments -->
         <div v-if="(store.current.installments?.length ?? 0) > 0" class="flex flex-col gap-2">
-          <p class="text-xs text-white/40 uppercase tracking-wide font-semibold">Plan de cuotas</p>
+          <p class="text-xs nxr-text-muted uppercase tracking-wide font-semibold">Plan de cuotas</p>
           <div
             v-for="inst in store.current.installments"
             :key="inst.id"
@@ -389,11 +389,11 @@ onMounted(async () => {
             :style="{ background: 'var(--nexora-glass-bg)' }"
           >
             <div>
-              <p class="text-sm text-white">Cuota {{ inst.installment_number }}</p>
-              <p class="text-xs text-white/40">Vence: {{ fmtDate(inst.due_date) }}</p>
+              <p class="text-sm nxr-text">Cuota {{ inst.installment_number }}</p>
+              <p class="text-xs nxr-text-muted">Vence: {{ fmtDate(inst.due_date) }}</p>
             </div>
             <div class="text-right">
-              <p class="text-sm font-semibold text-white">{{ fmt(inst.amount) }}</p>
+              <p class="text-sm font-semibold nxr-text">{{ fmt(inst.amount) }}</p>
               <span class="px-2 py-0.5 rounded-full text-xs" :class="INSTALLMENT_STATUS_CLASS[inst.status]">{{ inst.status }}</span>
             </div>
           </div>
@@ -428,12 +428,12 @@ onMounted(async () => {
     :draft-state="{ paymentForm }">
       <form class="flex flex-col gap-5" @submit.prevent="savePayment">
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Monto *</label>
-          <input v-model.number="paymentForm.amount" type="number" min="0.01" step="0.01" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" required />
+          <label class="text-xs nxr-text-muted">Monto *</label>
+          <input v-model.number="paymentForm.amount" type="number" min="0.01" step="0.01" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" required />
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Método de pago *</label>
-          <select v-model="paymentForm.payment_method" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none">
+          <label class="text-xs nxr-text-muted">Método de pago *</label>
+          <select v-model="paymentForm.payment_method" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none">
             <option value="cash">Efectivo</option>
             <option value="card">Tarjeta</option>
             <option value="bank_transfer">Transferencia</option>
@@ -443,16 +443,16 @@ onMounted(async () => {
           </select>
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Fecha *</label>
-          <input v-model="paymentForm.payment_date" type="date" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" required />
+          <label class="text-xs nxr-text-muted">Fecha *</label>
+          <input v-model="paymentForm.payment_date" type="date" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" required />
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Referencia</label>
-          <input v-model="paymentForm.reference" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" placeholder="Nro. comprobante, etc." />
+          <label class="text-xs nxr-text-muted">Referencia</label>
+          <input v-model="paymentForm.reference" type="text" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" placeholder="Nro. comprobante, etc." />
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Notas</label>
-          <textarea v-model="paymentForm.notes" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none"></textarea>
+          <label class="text-xs nxr-text-muted">Notas</label>
+          <textarea v-model="paymentForm.notes" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30 resize-none"></textarea>
         </div>
         <p v-if="saveError" class="text-xs text-red-400">{{ saveError }}</p>
       </form>
@@ -471,12 +471,12 @@ onMounted(async () => {
     :draft-state="{ installmentForm }">
       <form class="flex flex-col gap-5" @submit.prevent="saveInstallments">
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Cantidad de cuotas *</label>
-          <input v-model.number="installmentForm.installments_count" type="number" min="2" max="12" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" required />
+          <label class="text-xs nxr-text-muted">Cantidad de cuotas *</label>
+          <input v-model.number="installmentForm.installments_count" type="number" min="2" max="12" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" required />
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Fecha primer vencimiento *</label>
-          <input v-model="installmentForm.first_due_date" type="date" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" required />
+          <label class="text-xs nxr-text-muted">Fecha primer vencimiento *</label>
+          <input v-model="installmentForm.first_due_date" type="date" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" required />
         </div>
         <p v-if="saveError" class="text-xs text-red-400">{{ saveError }}</p>
       </form>

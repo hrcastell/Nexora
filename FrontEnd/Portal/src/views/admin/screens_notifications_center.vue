@@ -127,7 +127,7 @@ function timeAgo(dateStr: string): string {
           <Bell class="h-5 w-5 text-violet-400" />
         </div>
         <div>
-          <h2 class="text-lg font-semibold text-white">Centro de Notificaciones</h2>
+          <h2 class="text-lg font-semibold nxr-text">Centro de Notificaciones</h2>
           <p class="text-xs text-slate-400">
             {{ notifStore.total }} notificaciones
             <span v-if="notifStore.unreadCount > 0" class="text-violet-400">&nbsp;· {{ notifStore.unreadCount }} sin leer</span>
@@ -139,14 +139,14 @@ function timeAgo(dateStr: string): string {
         <button
           v-if="notifStore.unreadCount > 0"
           @click="onMarkAllRead"
-          class="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium text-slate-300 transition hover:bg-white/10 hover:text-white"
+          class="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium text-slate-300 transition hover:bg-white/10 hover:text-[var(--nexora-text-color)]"
         >
           <CheckCheck class="h-4 w-4" />
           Marcar todas como leídas
         </button>
         <button
           @click="router.push('/admin/notifications/settings')"
-          class="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium text-slate-300 transition hover:bg-white/10 hover:text-white"
+          class="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-xs font-medium text-slate-300 transition hover:bg-white/10 hover:text-[var(--nexora-text-color)]"
         >
           <Settings class="h-4 w-4" />
           Preferencias
@@ -164,7 +164,7 @@ function timeAgo(dateStr: string): string {
           'rounded-2xl border px-4 py-1.5 text-xs font-medium transition',
           activeTab === tab.key && activeCategory === ''
             ? 'border-violet-500/40 bg-violet-500/20 text-violet-300'
-            : 'border-white/10 bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white'
+            : 'border-white/10 bg-white/5 text-slate-400 hover:bg-white/10 hover:text-[var(--nexora-text-color)]'
         ]"
       >
         {{ tab.label }}
@@ -243,7 +243,7 @@ function timeAgo(dateStr: string): string {
         <div class="min-w-0 flex-1">
           <div class="flex flex-wrap items-start justify-between gap-2">
             <div class="min-w-0">
-              <p :class="['text-sm font-medium leading-tight', n.is_read ? 'text-slate-300' : 'text-white']">
+              <p :class="['text-sm font-medium leading-tight', n.is_read ? 'text-slate-300' : 'nxr-text']">
                 {{ n.title }}
               </p>
               <p v-if="n.body" class="mt-1 text-xs leading-relaxed text-slate-500">{{ n.body }}</p>
@@ -288,7 +288,7 @@ function timeAgo(dateStr: string): string {
         <button
           @click="loadMore"
           :disabled="notifStore.loading"
-          class="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-6 py-2.5 text-xs font-medium text-slate-300 transition hover:bg-white/10 hover:text-white disabled:opacity-50"
+          class="flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-6 py-2.5 text-xs font-medium text-slate-300 transition hover:bg-white/10 hover:text-[var(--nexora-text-color)] disabled:opacity-50"
         >
           <ChevronDown v-if="!notifStore.loading" class="h-4 w-4" />
           <span>{{ notifStore.loading ? 'Cargando...' : 'Cargar más' }}</span>

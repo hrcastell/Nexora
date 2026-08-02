@@ -138,9 +138,9 @@ const totalAll = computed(() => props.services.reduce((s, svc) => s + (svc.servi
 <template>
   <div class="flex flex-col gap-3">
     <div class="flex items-center justify-between">
-      <h3 class="text-sm font-semibold text-white/70">Servicios</h3>
+      <h3 class="text-sm font-semibold nxr-text">Servicios</h3>
       <div class="flex items-center gap-2">
-        <span class="text-xs text-white/40">Total: {{ fmt(totalAll) }}</span>
+        <span class="text-xs nxr-text-muted">Total: {{ fmt(totalAll) }}</span>
         <button
           v-if="!disabled"
           type="button"
@@ -154,25 +154,25 @@ const totalAll = computed(() => props.services.reduce((s, svc) => s + (svc.servi
 
     <div v-if="addingService" class="rounded-xl bg-white/5 border border-white/10 p-4 flex flex-col gap-3">
       <div>
-        <label class="block text-xs text-white/50 mb-1">Plantilla de servicio</label>
-        <select v-model="templateId" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none"
+        <label class="block text-xs nxr-text-muted mb-1">Plantilla de servicio</label>
+        <select v-model="templateId" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none"
           @change="() => { if(templateId) { const t = templates.find(t=>t.id===templateId); if(t) { newServiceName = t.name; if((t as any).estimated_hours) estimatedHours = (t as any).estimated_hours; } } }">
           <option :value="null">Sin plantilla (servicio libre)</option>
           <option v-for="t in templates" :key="t.id" :value="t.id">{{ t.name }}</option>
         </select>
       </div>
       <div>
-        <label class="block text-xs text-white/50 mb-1">Nombre del servicio *</label>
-        <input v-model="newServiceName" type="text" placeholder="Ej: Cambio de aceite" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" />
+        <label class="block text-xs nxr-text-muted mb-1">Nombre del servicio *</label>
+        <input v-model="newServiceName" type="text" placeholder="Ej: Cambio de aceite" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40" />
       </div>
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label class="block text-xs text-white/50 mb-1">Horas estimadas</label>
-          <input v-model.number="estimatedHours" type="number" min="0" step="0.5" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" />
+          <label class="block text-xs nxr-text-muted mb-1">Horas estimadas</label>
+          <input v-model.number="estimatedHours" type="number" min="0" step="0.5" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40" />
         </div>
         <div>
-          <label class="block text-xs text-white/50 mb-1">Asignar empleado</label>
-          <select v-model="selectedEmployeeId" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none"
+          <label class="block text-xs nxr-text-muted mb-1">Asignar empleado</label>
+          <select v-model="selectedEmployeeId" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none"
             @focus="loadEmployees()">
             <option :value="null">Sin asignar</option>
             <option v-for="e in employees" :key="e.id" :value="e.id">{{ e.first_name }} {{ e.last_name || '' }}</option>
@@ -181,7 +181,7 @@ const totalAll = computed(() => props.services.reduce((s, svc) => s + (svc.servi
       </div>
       <p v-if="error" class="text-xs text-red-400">{{ error }}</p>
       <div class="flex gap-2">
-        <button type="button" class="px-3 py-1.5 rounded-lg text-xs text-white/60 hover:text-white" @click="addingService=false; error=''">Cancelar</button>
+        <button type="button" class="px-3 py-1.5 rounded-lg text-xs nxr-text-muted hover:text-[var(--nexora-text-color)]" @click="addingService=false; error=''">Cancelar</button>
         <button type="button" class="px-3 py-1.5 rounded-lg text-xs bg-[var(--nexora-primary)] text-white hover:opacity-90" @click="addService">Agregar</button>
       </div>
     </div>
@@ -196,21 +196,21 @@ const totalAll = computed(() => props.services.reduce((s, svc) => s + (svc.servi
             <Trash2 :size="13" />
           </button>
           <div>
-            <p class="text-sm text-white font-medium">{{ svc.service_name }}</p>
-            <p class="text-xs text-white/40">
+            <p class="text-sm nxr-text font-medium">{{ svc.service_name }}</p>
+            <p class="text-xs nxr-text-muted">
               {{ svc.estimated_hours }}h est. · {{ svc.actual_hours }}h real · {{ svc.products?.length || 0 }} repuestos
             </p>
           </div>
         </div>
         <div class="flex items-center gap-3">
           <div class="text-right">
-            <p class="text-sm text-white/80 font-medium">{{ fmt(svc.service_total || 0) }}</p>
-            <p class="text-xs text-white/40">MO: {{ fmt(svc.labor_total || 0) }} + Rep: {{ fmt(svc.products_total || 0) }}</p>
+            <p class="text-sm nxr-text font-medium">{{ fmt(svc.service_total || 0) }}</p>
+            <p class="text-xs nxr-text-muted">MO: {{ fmt(svc.labor_total || 0) }} + Rep: {{ fmt(svc.products_total || 0) }}</p>
           </div>
           <select
             v-if="!disabled"
             :value="svc.status"
-            class="text-xs px-2 py-1 rounded-lg bg-white/10 border-none text-white/70 outline-none cursor-pointer"
+            class="text-xs px-2 py-1 rounded-lg bg-white/10 border-none nxr-text-muted outline-none cursor-pointer"
             @click.stop
             @change="changeServiceStatus(svc.id, ($event.target as HTMLSelectElement).value)"
           >
@@ -219,14 +219,14 @@ const totalAll = computed(() => props.services.reduce((s, svc) => s + (svc.servi
             <option value="completed">Completado</option>
             <option value="cancelled">Cancelado</option>
           </select>
-          <component :is="expandedService === svc.id ? ChevronUp : ChevronDown" :size="14" class="text-white/40" />
+          <component :is="expandedService === svc.id ? ChevronUp : ChevronDown" :size="14" class="nxr-text-muted" />
         </div>
       </div>
 
       <div v-if="expandedService === svc.id" class="border-t border-white/10 px-4 py-3 bg-white/2 flex flex-col gap-3">
         <div v-if="(svc.products?.length ?? 0) > 0" class="flex flex-col gap-1">
-          <p class="text-xs text-white/50 mb-1 flex items-center gap-1"><Package :size="12" /> Repuestos / Materiales</p>
-          <div v-for="prod in svc.products" :key="prod.id" class="flex items-center justify-between text-xs text-white/70">
+          <p class="text-xs nxr-text-muted mb-1 flex items-center gap-1"><Package :size="12" /> Repuestos / Materiales</p>
+          <div v-for="prod in svc.products" :key="prod.id" class="flex items-center justify-between text-xs nxr-text-muted">
             <span>{{ prod.quantity }} {{ prod.unit || 'u.' }} × {{ prod.product_name }}</span>
             <div class="flex items-center gap-2">
               <span>{{ fmt(prod.total_price) }}</span>
@@ -239,7 +239,7 @@ const totalAll = computed(() => props.services.reduce((s, svc) => s + (svc.servi
           <button
             v-if="addingProduct !== svc.id"
             type="button"
-            class="flex items-center gap-1 text-xs text-white/40 hover:text-white/70"
+            class="flex items-center gap-1 text-xs nxr-text-muted hover:text-[var(--nexora-text-color)]"
             @click="addingProduct = svc.id; loadProducts()"
           >
             <Plus :size="12" /> Agregar repuesto
@@ -248,23 +248,23 @@ const totalAll = computed(() => props.services.reduce((s, svc) => s + (svc.servi
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <div class="col-span-2">
                 <select
-                  class="w-full px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white text-xs outline-none"
+                  class="w-full px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 nxr-text text-xs outline-none"
                   @change="(e) => { const p = products.find(x => x.id === parseInt((e.target as HTMLSelectElement).value)); if(p) { newProd.product_name = p.name; newProd.unit = p.unit || ''; newProd.unit_price = p.reference_price ?? 0; } }"
                 >
                   <option value="">— Seleccionar del catálogo (opcional) —</option>
                   <option v-for="p in products" :key="p.id" :value="p.id">{{ p.name }} · {{ fmt(p.reference_price ?? 0) }}/{{ p.unit || 'u.' }}</option>
                 </select>
               </div>
-              <input v-model="newProd.product_name" type="text" placeholder="Nombre del producto *" class="col-span-2 px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white text-xs outline-none" />
-              <input v-model.number="newProd.quantity" type="number" min="1" step="0.01" placeholder="Cantidad" class="px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white text-xs outline-none" />
+              <input v-model="newProd.product_name" type="text" placeholder="Nombre del producto *" class="col-span-2 px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 nxr-text text-xs outline-none" />
+              <input v-model.number="newProd.quantity" type="number" min="1" step="0.01" placeholder="Cantidad" class="px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 nxr-text text-xs outline-none" />
               <div class="relative">
-                <input v-model.number="newProd.unit_price" type="number" min="0" placeholder="Precio unit." class="w-full px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 text-white text-xs outline-none" />
+                <input v-model.number="newProd.unit_price" type="number" min="0" placeholder="Precio unit." class="w-full px-2 py-1.5 rounded-lg bg-white/5 border border-white/10 nxr-text text-xs outline-none" />
               </div>
             </div>
             <div class="flex items-center justify-between">
-              <span class="text-xs text-white/30">Subtotal: {{ fmt((newProd.quantity || 0) * (newProd.unit_price || 0)) }}</span>
+              <span class="text-xs nxr-text-soft">Subtotal: {{ fmt((newProd.quantity || 0) * (newProd.unit_price || 0)) }}</span>
               <div class="flex gap-2">
-                <button type="button" class="text-xs text-white/50 hover:text-white" @click="addingProduct=null; error=''">Cancelar</button>
+                <button type="button" class="text-xs nxr-text-muted hover:text-[var(--nexora-text-color)]" @click="addingProduct=null; error=''">Cancelar</button>
                 <button type="button" class="text-xs px-3 py-1 rounded-lg bg-[var(--nexora-primary)] text-white hover:opacity-90" @click="addProduct(svc.id)">Agregar</button>
               </div>
             </div>
@@ -273,7 +273,7 @@ const totalAll = computed(() => props.services.reduce((s, svc) => s + (svc.servi
       </div>
     </div>
 
-    <div v-if="services.length === 0" class="text-center text-xs text-white/30 py-6 rounded-xl border border-dashed border-white/10">
+    <div v-if="services.length === 0" class="text-center text-xs nxr-text-soft py-6 rounded-xl border border-dashed border-white/10">
       Sin servicios. Agrega el primer servicio para esta orden.
     </div>
 

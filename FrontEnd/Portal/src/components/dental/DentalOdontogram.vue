@@ -398,13 +398,13 @@ watch(
         class="relative flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-medium transition"
         :class="dentitionMode === tab.key
           ? 'bg-[var(--nexora-primary)] text-white'
-          : 'text-white/50 bg-white/5 hover:bg-white/10 hover:text-white'"
+          : 'nxr-text-muted bg-white/5 hover:bg-white/10 hover:text-[var(--nexora-text-color)]'"
         @click="dentitionMode = tab.key"
       >
         {{ tab.label }}
         <span
           v-if="tab.key !== 'permanent'"
-          class="ml-1 rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-white/40"
+          class="ml-1 rounded-full bg-white/10 px-2 py-0.5 text-[10px] nxr-text-muted"
         >Proximamente</span>
       </button>
     </div>
@@ -538,7 +538,7 @@ watch(
             { color: '#d1d5db', label: 'Planificado' },
           ]" :key="item.label" class="flex items-center gap-1.5">
             <span class="h-3 w-3 rounded-sm border border-gray-300 flex-shrink-0" :style="{ background: item.color }"></span>
-            <span class="text-[10px] text-white/50">{{ item.label }}</span>
+            <span class="text-[10px] nxr-text-muted">{{ item.label }}</span>
           </span>
         </div>
       </div>
@@ -555,17 +555,17 @@ watch(
         <div
           v-if="panelVisible && selectedTooth !== null"
           class="fixed inset-y-0 right-0 z-50 flex w-full max-w-sm flex-col border-l border-white/10 shadow-2xl"
-          :style="{ background: 'var(--nexora-bg, #0f172a)' }"
+          :style="{ background: 'var(--nexora-glass-bg-strong)' }"
         >
           <!-- Panel header -->
           <div class="flex items-center justify-between border-b border-white/10 px-5 py-4">
             <div>
-              <p class="text-[10px] uppercase tracking-widest text-white/40 font-semibold">Diente {{ selectedTooth }}</p>
-              <p class="text-sm font-medium text-white mt-0.5">{{ toothName(selectedTooth) }}</p>
+              <p class="text-[10px] uppercase tracking-widest nxr-text-soft font-semibold">Diente {{ selectedTooth }}</p>
+              <p class="text-sm font-medium nxr-text mt-0.5">{{ toothName(selectedTooth) }}</p>
             </div>
             <button
               type="button"
-              class="flex h-8 w-8 items-center justify-center rounded-xl text-white/40 hover:bg-white/10 hover:text-white transition"
+              class="flex h-8 w-8 items-center justify-center rounded-xl nxr-text-soft hover:bg-white/10 transition"
               aria-label="Cerrar panel"
               @click="closePanel"
             >
@@ -580,7 +580,7 @@ watch(
 
             <!-- Existing findings -->
             <div v-if="(entriesByTooth.get(selectedTooth) ?? []).length > 0" class="flex flex-col gap-2">
-              <p class="text-[10px] uppercase tracking-widest text-white/40 font-semibold">Hallazgos registrados</p>
+              <p class="text-[10px] uppercase tracking-widest nxr-text-soft font-semibold">Hallazgos registrados</p>
               <div
                 v-for="entry in entriesByTooth.get(selectedTooth)"
                 :key="entry.id"
@@ -588,10 +588,10 @@ watch(
                 :class="consultationEntryIds.has(entry.id) ? 'border-violet-500/30 bg-violet-500/5' : ''"
               >
                 <div class="flex items-center gap-2 flex-wrap">
-                  <span v-if="entry.surface" class="rounded-md bg-white/10 px-2 py-0.5 text-[10px] text-white/60">
+                  <span v-if="entry.surface" class="rounded-md bg-white/10 px-2 py-0.5 text-[10px] nxr-text-muted">
                     {{ surfaceLabels[entry.surface] ?? entry.surface }}
                   </span>
-                  <span class="rounded-md bg-white/10 px-2 py-0.5 text-[10px] font-medium text-white/80">
+                  <span class="rounded-md bg-white/10 px-2 py-0.5 text-[10px] font-medium nxr-text">
                     {{ findingTypeLabels[entry.finding_type] ?? entry.finding_type }}
                   </span>
                   <span class="rounded-full px-2 py-0.5 text-[10px]" :class="statusColors[entry.finding_status] ?? 'bg-gray-500/20 text-gray-300'">
@@ -601,9 +601,9 @@ watch(
                     {{ priorityLabels[entry.priority] ?? entry.priority }}
                   </span>
                 </div>
-                <p v-if="entry.observation" class="text-xs text-white/60">{{ entry.observation }}</p>
+                <p v-if="entry.observation" class="text-xs nxr-text-muted">{{ entry.observation }}</p>
                 <div class="flex items-center justify-between mt-0.5">
-                  <span class="text-[10px] text-white/30">{{ new Date(entry.created_at).toLocaleDateString('es-AR') }}</span>
+                  <span class="text-[10px] nxr-text-soft">{{ new Date(entry.created_at).toLocaleDateString('es-AR') }}</span>
                   <button
                     v-if="!readonly && consultationEntryIds.has(entry.id) && consultationId"
                     class="text-[10px] text-red-400 hover:text-red-300 transition"
@@ -618,7 +618,7 @@ watch(
 
             <div
               v-else
-              class="rounded-xl border border-white/5 px-4 py-6 text-center text-xs text-white/30"
+              class="rounded-xl border border-white/5 px-4 py-6 text-center text-xs nxr-text-soft"
             >
               Sin hallazgos para este diente
             </div>
@@ -626,13 +626,13 @@ watch(
             <!-- Add finding form -->
             <template v-if="!readonly && consultationId">
               <div class="border-t border-white/10 pt-4 flex flex-col gap-3">
-                <p class="text-[10px] uppercase tracking-widest text-white/40 font-semibold">Registrar hallazgo</p>
+                <p class="text-[10px] uppercase tracking-widest nxr-text-soft font-semibold">Registrar hallazgo</p>
 
                 <div class="flex flex-col gap-1">
-                  <label class="text-xs text-white/50">Superficie</label>
+                  <label class="text-xs nxr-text-muted">Superficie</label>
                   <select
                     v-model="formSurface"
-                    class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+                    class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none focus:border-white/30"
                   >
                     <option value="">Sin especificar</option>
                     <option value="mesial">Mesial</option>
@@ -645,10 +645,10 @@ watch(
                 </div>
 
                 <div class="flex flex-col gap-1">
-                  <label class="text-xs text-white/50">Tipo de hallazgo <span class="text-red-400">*</span></label>
+                  <label class="text-xs nxr-text-muted">Tipo de hallazgo <span class="text-red-400">*</span></label>
                   <select
                     v-model="formFindingType"
-                    class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+                    class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none focus:border-white/30"
                   >
                     <option value="caries">Caries</option>
                     <option value="restoration">Restauracion</option>
@@ -664,10 +664,10 @@ watch(
 
                 <div class="grid grid-cols-2 gap-2">
                   <div class="flex flex-col gap-1">
-                    <label class="text-xs text-white/50">Estado</label>
+                    <label class="text-xs nxr-text-muted">Estado</label>
                     <select
                       v-model="formFindingStatus"
-                      class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+                      class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none focus:border-white/30"
                     >
                       <option value="active">Activa</option>
                       <option value="resolved">Resuelta</option>
@@ -675,10 +675,10 @@ watch(
                     </select>
                   </div>
                   <div class="flex flex-col gap-1">
-                    <label class="text-xs text-white/50">Prioridad</label>
+                    <label class="text-xs nxr-text-muted">Prioridad</label>
                     <select
                       v-model="formPriority"
-                      class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+                      class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none focus:border-white/30"
                     >
                       <option value="urgent">Urgente</option>
                       <option value="high">Alta</option>
@@ -689,12 +689,12 @@ watch(
                 </div>
 
                 <div class="flex flex-col gap-1">
-                  <label class="text-xs text-white/50">Observacion</label>
+                  <label class="text-xs nxr-text-muted">Observacion</label>
                   <textarea
                     v-model="formObservation"
                     rows="2"
                     placeholder="Detalle clinico opcional..."
-                    class="w-full resize-none rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30 placeholder:text-white/20"
+                    class="w-full resize-none rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none focus:border-white/30 placeholder:text-[var(--nexora-soft-text)]"
                   ></textarea>
                 </div>
 
@@ -712,49 +712,55 @@ watch(
 
           </div>
 
-          <div class="border-t border-white/10 bg-black/20 px-5 py-4">
+          <div class="border-t border-white/10 px-5 py-4" :style="{ background: 'var(--nexora-glass-bg-strong)' }">
             <button type="button" class="nxr-btn nxr-btn-secondary w-full" @click="closePanel">
               Cancelar
             </button>
           </div>
 
-          <div
-            v-if="showDiscardWarning"
-            class="absolute inset-0 z-20 flex items-center justify-center bg-black/75 p-4"
-            role="alertdialog"
-            aria-modal="true"
-            aria-labelledby="odontogram-discard-title"
-            aria-describedby="odontogram-discard-description"
-          >
-            <div class="w-full rounded-2xl border border-white/15 bg-slate-950 p-5 shadow-2xl">
-              <h3
-                id="odontogram-discard-title"
-                ref="warningTitle"
-                tabindex="-1"
-                class="text-base font-semibold text-white outline-none"
+          <Transition name="odontogram-discard-warning">
+            <div
+              v-if="showDiscardWarning"
+              class="absolute inset-0 z-20 flex items-center justify-center bg-black/75 p-4"
+              role="alertdialog"
+              aria-modal="true"
+              aria-labelledby="odontogram-discard-title"
+              aria-describedby="odontogram-discard-description"
+            >
+              <div
+                class="odontogram-discard-warning-card w-full rounded-2xl border border-white/15 p-5 shadow-2xl"
+                :style="{ background: 'var(--nexora-glass-bg-strong)' }"
               >
-                Cambios sin guardar
-              </h3>
-              <p id="odontogram-discard-description" class="mt-2 text-sm text-white/65">
-                Al cerrar, se eliminará la información ingresada en este formulario. Puede conservar el borrador para continuar más tarde, descartarlo y restablecer el formulario, o continuar editando.
-              </p>
-              <div class="mt-5 flex flex-col gap-2">
-                <button type="button" class="nxr-btn nxr-btn-primary" @click="keepFindingDraftAndClose">
-                  Conservar borrador y cerrar
-                </button>
-                <button
-                  type="button"
-                  class="nxr-btn border border-red-500/40 bg-red-500/15 text-red-200 hover:bg-red-500/25"
-                  @click="discardFindingDraftAndClose"
+                <h3
+                  id="odontogram-discard-title"
+                  ref="warningTitle"
+                  tabindex="-1"
+                  class="text-base font-semibold nxr-text outline-none"
                 >
-                  Descartar y cerrar
-                </button>
-                <button type="button" class="nxr-btn nxr-btn-secondary" @click="showDiscardWarning = false">
-                  Continuar editando
-                </button>
+                  Cambios sin guardar
+                </h3>
+                <p id="odontogram-discard-description" class="mt-2 text-sm nxr-text-muted">
+                  Al cerrar, se eliminará la información ingresada en este formulario. Puede conservar el borrador para continuar más tarde, descartarlo y restablecer el formulario, o continuar editando.
+                </p>
+                <div class="mt-5 flex flex-col gap-2">
+                  <button type="button" class="nxr-btn nxr-btn-primary" @click="keepFindingDraftAndClose">
+                    Conservar borrador y cerrar
+                  </button>
+                  <button
+                    type="button"
+                    class="nxr-btn border border-red-500/40 bg-red-500/15 hover:bg-red-500/25"
+                    style="color: var(--nexora-danger-text)"
+                    @click="discardFindingDraftAndClose"
+                  >
+                    Descartar y cerrar
+                  </button>
+                  <button type="button" class="nxr-btn nxr-btn-secondary" @click="showDiscardWarning = false">
+                    Continuar editando
+                  </button>
+                </div>
               </div>
             </div>
-          </div>
+          </Transition>
         </div>
       </transition>
 
@@ -774,4 +780,25 @@ watch(
 <style scoped>
 .fade-enter-active, .fade-leave-active { transition: opacity 0.2s; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
+
+.odontogram-discard-warning-enter-active,
+.odontogram-discard-warning-leave-active {
+  transition: opacity 0.18s ease;
+}
+
+.odontogram-discard-warning-enter-from,
+.odontogram-discard-warning-leave-to {
+  opacity: 0;
+}
+
+.odontogram-discard-warning-enter-active .odontogram-discard-warning-card,
+.odontogram-discard-warning-leave-active .odontogram-discard-warning-card {
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.odontogram-discard-warning-enter-from .odontogram-discard-warning-card,
+.odontogram-discard-warning-leave-to .odontogram-discard-warning-card {
+  opacity: 0;
+  transform: translateY(6px) scale(0.97);
+}
 </style>

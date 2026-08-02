@@ -14,7 +14,7 @@ defineProps<{
 
     <!-- Medical Documents -->
     <div class="space-y-2">
-      <p class="text-xs font-semibold uppercase tracking-wide text-white/40">Documentos medicos</p>
+      <p class="text-xs font-semibold uppercase tracking-wide nxr-text-muted">Documentos medicos</p>
       <ConsultationDocumentsSection
         :consultation-id="consultationId"
         :customer-id="customerId"
@@ -27,7 +27,7 @@ defineProps<{
 
     <!-- Attached Files -->
     <div class="space-y-2">
-      <p class="text-xs font-semibold uppercase tracking-wide text-white/40">Archivos adjuntos</p>
+      <p class="text-xs font-semibold uppercase tracking-wide nxr-text-muted">Archivos adjuntos</p>
       <ConsultationAttachmentsTab
         :consultation-id="consultationId"
         :read-only="readOnly ?? false"

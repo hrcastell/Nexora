@@ -108,10 +108,10 @@ onMounted(load)
 
     <!-- Header + action -->
     <div class="flex items-center justify-between gap-3">
-      <h3 class="text-sm font-semibold uppercase tracking-wide text-white/40">Diagnósticos</h3>
+      <h3 class="text-sm font-semibold uppercase tracking-wide nxr-text-muted">Diagnósticos</h3>
       <button
         v-if="!readOnly"
-        class="flex items-center gap-1.5 rounded-xl border border-white/10 px-3 py-1.5 text-xs font-medium text-white/70 transition hover:bg-white/10 disabled:opacity-50"
+        class="flex items-center gap-1.5 rounded-xl border border-white/10 px-3 py-1.5 text-xs font-medium nxr-text-muted transition hover:bg-white/10 disabled:opacity-50"
         :disabled="generating"
         @click="generateFromOdontogram"
       >
@@ -124,33 +124,33 @@ onMounted(load)
 
     <!-- Add form -->
     <div v-if="!readOnly" class="rounded-xl border border-white/10 bg-white/5 p-4 space-y-3">
-      <p class="text-xs font-semibold uppercase tracking-wide text-white/40">Agregar diagnóstico</p>
+      <p class="text-xs font-semibold uppercase tracking-wide nxr-text-muted">Agregar diagnóstico</p>
 
       <div>
-        <label class="mb-1.5 block text-xs text-white/50">Descripción del diagnóstico <span class="text-red-400">*</span></label>
+        <label class="mb-1.5 block text-xs nxr-text-muted">Descripción del diagnóstico <span class="text-red-400">*</span></label>
         <textarea
           v-model="form.diagnosis_text"
           rows="2"
           placeholder="Ej: Caries profunda en cara mesial del diente 21..."
-          class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder-white/20 outline-none focus:border-white/30"
+          class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text placeholder-[var(--nexora-soft-text)] outline-none focus:border-white/30"
         />
       </div>
 
       <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div>
-          <label class="mb-1.5 block text-xs text-white/50">Codigo CIE-10 (opcional)</label>
+          <label class="mb-1.5 block text-xs nxr-text-muted">Codigo CIE-10 (opcional)</label>
           <input
             v-model="form.diagnosis_code"
             type="text"
             placeholder="Ej: K02.1"
-            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder-white/20 outline-none focus:border-white/30"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text placeholder-[var(--nexora-soft-text)] outline-none focus:border-white/30"
           />
         </div>
         <div>
-          <label class="mb-1.5 block text-xs text-white/50">Severidad</label>
+          <label class="mb-1.5 block text-xs nxr-text-muted">Severidad</label>
           <select
             v-model="form.severity"
-            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-white/30"
+            class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text outline-none focus:border-white/30"
           >
             <option value="mild">Leve</option>
             <option value="moderate">Moderada</option>
@@ -160,12 +160,12 @@ onMounted(load)
       </div>
 
       <div>
-        <label class="mb-1.5 block text-xs text-white/50">Notas adicionales (opcional)</label>
+        <label class="mb-1.5 block text-xs nxr-text-muted">Notas adicionales (opcional)</label>
         <textarea
           v-model="form.notes"
           rows="2"
           placeholder="Observaciones adicionales..."
-          class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder-white/20 outline-none focus:border-white/30"
+          class="w-full rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm nxr-text placeholder-[var(--nexora-soft-text)] outline-none focus:border-white/30"
         />
       </div>
 
@@ -181,11 +181,11 @@ onMounted(load)
     </div>
 
     <!-- Loading -->
-    <div v-if="loading" class="py-6 text-center text-sm text-white/30">Cargando...</div>
+    <div v-if="loading" class="py-6 text-center text-sm nxr-text-soft">Cargando...</div>
     <p v-else-if="error" class="text-sm text-red-400">{{ error }}</p>
 
     <!-- Empty -->
-    <div v-else-if="diagnoses.length === 0" class="rounded-xl border border-white/10 bg-white/5 px-4 py-8 text-center text-sm text-white/30">
+    <div v-else-if="diagnoses.length === 0" class="rounded-xl border border-white/10 bg-white/5 px-4 py-8 text-center text-sm nxr-text-soft">
       Sin diagnósticos registrados para esta consulta.
     </div>
 
@@ -201,13 +201,13 @@ onMounted(load)
             <div class="flex flex-wrap items-center gap-2">
               <span
                 class="rounded-full px-2.5 py-0.5 text-xs font-medium"
-                :class="SEVERITY_CLASS[d.severity] ?? 'bg-white/10 text-white/40'"
+                :class="SEVERITY_CLASS[d.severity] ?? 'bg-white/10 nxr-text-muted'"
               >
                 {{ SEVERITY_LABEL[d.severity] ?? d.severity }}
               </span>
               <span
                 v-if="d.diagnosis_code"
-                class="rounded-md border border-white/10 bg-white/5 px-2 py-0.5 font-mono text-xs text-white/60"
+                class="rounded-md border border-white/10 bg-white/5 px-2 py-0.5 font-mono text-xs nxr-text-muted"
               >
                 {{ d.diagnosis_code }}
               </span>
@@ -218,12 +218,12 @@ onMounted(load)
                 Diente {{ d.odontogram_tooth }} &mdash; {{ d.odontogram_finding }}
               </span>
             </div>
-            <p class="text-sm text-white">{{ d.diagnosis_text }}</p>
-            <p v-if="d.notes" class="text-xs text-white/50">{{ d.notes }}</p>
+            <p class="text-sm nxr-text">{{ d.diagnosis_text }}</p>
+            <p v-if="d.notes" class="text-xs nxr-text-muted">{{ d.notes }}</p>
           </div>
           <button
             v-if="!readOnly"
-            class="shrink-0 rounded-lg p-1.5 text-white/30 transition hover:bg-red-500/10 hover:text-red-400"
+            class="shrink-0 rounded-lg p-1.5 nxr-text-soft transition hover:bg-red-500/10 hover:text-red-400"
             title="Eliminar diagnóstico"
             @click="remove(d.id)"
           >

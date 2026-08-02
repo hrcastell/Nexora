@@ -36,7 +36,7 @@ const CARDS = [
 <template>
   <div class="flex flex-col gap-6 p-6">
     <div class="flex items-center justify-between">
-      <h1 class="text-xl font-semibold text-white">Dashboard — Taller</h1>
+      <h1 class="text-xl font-semibold nxr-text">Dashboard — Taller</h1>
     </div>
 
     <div v-if="loading" class="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -54,8 +54,8 @@ const CARDS = [
         @click="router.push(card.route)"
       >
         <component :is="card.icon" :size="22" :class="card.color" />
-        <p class="text-2xl font-bold text-white">{{ (data as any)[card.key] ?? 0 }}</p>
-        <p class="text-xs text-white/50">{{ card.label }}</p>
+        <p class="text-2xl font-bold nxr-text">{{ (data as any)[card.key] ?? 0 }}</p>
+        <p class="text-xs nxr-text-muted">{{ card.label }}</p>
       </button>
     </div>
 
@@ -63,15 +63,15 @@ const CARDS = [
       <button class="flex items-center gap-3 p-5 rounded-2xl border border-white/10 hover:border-white/25 transition-all text-left" :style="{ background: 'var(--nexora-glass-bg)' }" @click="router.push('/garage/work-orders/new')">
         <ClipboardList :size="20" class="text-[var(--nexora-primary)]" />
         <div>
-          <p class="text-sm font-semibold text-white">Nueva Orden de Trabajo</p>
-          <p class="text-xs text-white/40">Crear orden directa sin cita previa</p>
+          <p class="text-sm font-semibold nxr-text">Nueva Orden de Trabajo</p>
+          <p class="text-xs nxr-text-muted">Crear orden directa sin cita previa</p>
         </div>
       </button>
       <button class="flex items-center gap-3 p-5 rounded-2xl border border-white/10 hover:border-white/25 transition-all text-left" :style="{ background: 'var(--nexora-glass-bg)' }" @click="router.push('/garage/appointments/new')">
         <Calendar :size="20" class="text-[var(--nexora-primary)]" />
         <div>
-          <p class="text-sm font-semibold text-white">Nueva Cita</p>
-          <p class="text-xs text-white/40">Agendar cita para un cliente</p>
+          <p class="text-sm font-semibold nxr-text">Nueva Cita</p>
+          <p class="text-xs nxr-text-muted">Agendar cita para un cliente</p>
         </div>
       </button>
     </div>

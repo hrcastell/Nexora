@@ -262,19 +262,19 @@ onMounted(async () => {
   <div class="flex flex-col gap-5 p-6">
     <!-- Header -->
     <div class="flex items-center gap-3 flex-wrap">
-      <button class="text-white/40 hover:text-white transition-colors shrink-0" @click="router.back()">
+      <button class="nxr-text-muted hover:text-[var(--nexora-text-color)] transition-colors shrink-0" @click="router.back()">
         <ArrowLeft :size="20" />
       </button>
       <div class="flex-1 min-w-0">
         <div v-if="loading" class="h-5 w-48 bg-white/5 animate-pulse rounded-lg"></div>
         <template v-else-if="quote">
           <div class="flex items-center gap-3 flex-wrap">
-            <h1 class="text-xl font-semibold text-white font-mono">{{ quote.quote_number }}</h1>
+            <h1 class="text-xl font-semibold nxr-text font-mono">{{ quote.quote_number }}</h1>
             <span class="px-2 py-0.5 rounded-full text-xs font-medium" :class="QUOTE_STATUS_COLORS[quote.status]">
               {{ QUOTE_STATUS_LABELS[quote.status] }}
             </span>
           </div>
-          <p class="text-sm text-white/50 mt-0.5">{{ quote.customer_first_name }} {{ quote.customer_last_name }}</p>
+          <p class="text-sm nxr-text-muted mt-0.5">{{ quote.customer_first_name }} {{ quote.customer_last_name }}</p>
         </template>
       </div>
 
@@ -284,14 +284,14 @@ onMounted(async () => {
           <!-- Draft actions -->
           <template v-if="isDraft">
             <button
-              class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/10 text-white/70 hover:bg-white/20 transition"
+              class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/10 nxr-text-muted hover:bg-white/20 transition"
               :disabled="actionLoading"
               @click="openAddItem"
             >
               <Plus :size="13" /> Agregar ítem
             </button>
             <button
-              class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/10 text-white/70 hover:bg-white/20 transition"
+              class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/10 nxr-text-muted hover:bg-white/20 transition"
               :disabled="actionLoading"
               @click="openEdit"
             >
@@ -338,7 +338,7 @@ onMounted(async () => {
           <!-- Print (accepted, rejected, expired, converted) -->
           <button
             v-if="!isDraft"
-            class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/10 text-white/70 hover:bg-white/20 transition"
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/10 nxr-text-muted hover:bg-white/20 transition"
             :disabled="isPrinting"
             @click="print"
           >
@@ -361,57 +361,57 @@ onMounted(async () => {
       <!-- Info cards -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <div class="p-4 rounded-2xl border border-white/10 flex flex-col gap-1" :style="{ background: 'var(--nexora-glass-bg)' }">
-          <p class="text-xs text-white/40 uppercase tracking-wide">Fecha</p>
-          <p class="text-sm text-white">{{ fmtDate(quote.quote_date) }}</p>
+          <p class="text-xs nxr-text-muted uppercase tracking-wide">Fecha</p>
+          <p class="text-sm nxr-text">{{ fmtDate(quote.quote_date) }}</p>
         </div>
         <div class="p-4 rounded-2xl border border-white/10 flex flex-col gap-1" :style="{ background: 'var(--nexora-glass-bg)' }">
-          <p class="text-xs text-white/40 uppercase tracking-wide">Válido hasta</p>
-          <p class="text-sm text-white">{{ fmtDate(quote.valid_until) }}</p>
+          <p class="text-xs nxr-text-muted uppercase tracking-wide">Válido hasta</p>
+          <p class="text-sm nxr-text">{{ fmtDate(quote.valid_until) }}</p>
         </div>
         <div class="p-4 rounded-2xl border border-white/10 flex flex-col gap-1" :style="{ background: 'var(--nexora-glass-bg)' }">
-          <p class="text-xs text-white/40 uppercase tracking-wide">Total</p>
-          <p class="text-lg font-semibold text-white">{{ fmt(quote.final_amount) }}</p>
-          <p v-if="quote.discount_amount > 0" class="text-xs text-white/40">Descuento: {{ fmt(quote.discount_amount) }}</p>
+          <p class="text-xs nxr-text-muted uppercase tracking-wide">Total</p>
+          <p class="text-lg font-semibold nxr-text">{{ fmt(quote.final_amount) }}</p>
+          <p v-if="quote.discount_amount > 0" class="text-xs nxr-text-muted">Descuento: {{ fmt(quote.discount_amount) }}</p>
         </div>
         <div v-if="quote.accepted_by_name" class="p-4 rounded-2xl border border-green-500/20 bg-green-500/5 flex flex-col gap-1">
           <p class="text-xs text-green-400 uppercase tracking-wide">Aceptado por</p>
-          <p class="text-sm text-white">{{ quote.accepted_by_name }}</p>
-          <p class="text-xs text-white/40">{{ fmtDate(quote.accepted_at) }}</p>
+          <p class="text-sm nxr-text">{{ quote.accepted_by_name }}</p>
+          <p class="text-xs nxr-text-muted">{{ fmtDate(quote.accepted_at) }}</p>
         </div>
       </div>
 
       <!-- Notes -->
       <div v-if="quote.notes || quote.conditions_text" class="p-4 rounded-2xl border border-white/10 flex flex-col gap-2" :style="{ background: 'var(--nexora-glass-bg)' }">
         <div v-if="quote.notes">
-          <p class="text-xs text-white/40 uppercase tracking-wide mb-1">Notas</p>
-          <p class="text-sm text-white/80 whitespace-pre-wrap">{{ quote.notes }}</p>
+          <p class="text-xs nxr-text-muted uppercase tracking-wide mb-1">Notas</p>
+          <p class="text-sm nxr-text whitespace-pre-wrap">{{ quote.notes }}</p>
         </div>
         <div v-if="quote.conditions_text">
-          <p class="text-xs text-white/40 uppercase tracking-wide mb-1">Condiciones</p>
-          <p class="text-sm text-white/80 whitespace-pre-wrap">{{ quote.conditions_text }}</p>
+          <p class="text-xs nxr-text-muted uppercase tracking-wide mb-1">Condiciones</p>
+          <p class="text-sm nxr-text whitespace-pre-wrap">{{ quote.conditions_text }}</p>
         </div>
       </div>
 
       <!-- Items table -->
       <div class="flex flex-col gap-3">
         <div class="flex items-center justify-between">
-          <p class="text-sm font-semibold text-white">Ítems</p>
+          <p class="text-sm font-semibold nxr-text">Ítems</p>
           <button
             v-if="isDraft"
-            class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/10 text-white/70 hover:bg-white/20 transition"
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/10 nxr-text-muted hover:bg-white/20 transition"
             @click="openAddItem"
           >
             <Plus :size="12" /> Agregar ítem
           </button>
         </div>
 
-        <div v-if="!quote.items || quote.items.length === 0" class="text-center text-white/30 py-6 text-sm border border-white/5 rounded-xl">
+        <div v-if="!quote.items || quote.items.length === 0" class="text-center nxr-text-soft py-6 text-sm border border-white/5 rounded-xl">
           Sin ítems. Agregá tratamientos al presupuesto.
         </div>
 
         <template v-else>
           <!-- Desktop header -->
-          <div class="hidden md:grid md:grid-cols-[2fr_80px_80px_100px_100px_36px] gap-3 px-3 text-xs text-white/30 font-semibold uppercase tracking-wide">
+          <div class="hidden md:grid md:grid-cols-[2fr_80px_80px_100px_100px_36px] gap-3 px-3 text-xs nxr-text-soft font-semibold uppercase tracking-wide">
             <span>Tratamiento</span>
             <span>Diente</span>
             <span class="text-center">Cant.</span>
@@ -428,21 +428,21 @@ onMounted(async () => {
           >
             <!-- Mobile layout -->
             <div class="md:hidden flex-1 min-w-0">
-              <p class="text-sm text-white font-medium">{{ item.treatment_name_snapshot }}</p>
-              <p v-if="item.tooth_reference" class="text-xs text-white/40">Diente: {{ item.tooth_reference }}</p>
-              <p class="text-xs text-white/50 mt-0.5">{{ item.quantity }} × {{ fmt(item.unit_price) }} = {{ fmt(item.subtotal) }}</p>
+              <p class="text-sm nxr-text font-medium">{{ item.treatment_name_snapshot }}</p>
+              <p v-if="item.tooth_reference" class="text-xs nxr-text-muted">Diente: {{ item.tooth_reference }}</p>
+              <p class="text-xs nxr-text-muted mt-0.5">{{ item.quantity }} × {{ fmt(item.unit_price) }} = {{ fmt(item.subtotal) }}</p>
             </div>
 
             <!-- Desktop layout -->
             <div class="hidden md:contents">
               <div class="min-w-0">
-                <p class="text-sm text-white truncate">{{ item.treatment_name_snapshot }}</p>
-                <p v-if="item.description" class="text-xs text-white/40 truncate">{{ item.description }}</p>
+                <p class="text-sm nxr-text truncate">{{ item.treatment_name_snapshot }}</p>
+                <p v-if="item.description" class="text-xs nxr-text-muted truncate">{{ item.description }}</p>
               </div>
-              <p class="text-xs text-white/60">{{ item.tooth_reference || '—' }}</p>
-              <p class="text-sm text-white text-center">{{ item.quantity }}</p>
-              <p class="text-sm text-white text-right">{{ fmt(item.unit_price) }}</p>
-              <p class="text-sm font-semibold text-white text-right">{{ fmt(item.subtotal) }}</p>
+              <p class="text-xs nxr-text-muted">{{ item.tooth_reference || '—' }}</p>
+              <p class="text-sm nxr-text text-center">{{ item.quantity }}</p>
+              <p class="text-sm nxr-text text-right">{{ fmt(item.unit_price) }}</p>
+              <p class="text-sm font-semibold nxr-text text-right">{{ fmt(item.subtotal) }}</p>
             </div>
 
             <button
@@ -459,16 +459,16 @@ onMounted(async () => {
           <!-- Totals -->
           <div class="flex flex-col gap-1 items-end pr-3 pt-2 border-t border-white/10">
             <div class="flex items-center gap-8 text-sm">
-              <span class="text-white/40">Subtotal</span>
-              <span class="text-white font-mono w-28 text-right">{{ fmt(quote.total_amount) }}</span>
+              <span class="nxr-text-muted">Subtotal</span>
+              <span class="nxr-text font-mono w-28 text-right">{{ fmt(quote.total_amount) }}</span>
             </div>
             <div v-if="quote.discount_amount > 0" class="flex items-center gap-8 text-sm">
-              <span class="text-white/40">Descuento</span>
+              <span class="nxr-text-muted">Descuento</span>
               <span class="text-red-400 font-mono w-28 text-right">- {{ fmt(quote.discount_amount) }}</span>
             </div>
             <div class="flex items-center gap-8 text-base font-semibold mt-1">
-              <span class="text-white">TOTAL</span>
-              <span class="text-white font-mono w-28 text-right">{{ fmt(quote.final_amount) }}</span>
+              <span class="nxr-text">TOTAL</span>
+              <span class="nxr-text font-mono w-28 text-right">{{ fmt(quote.final_amount) }}</span>
             </div>
           </div>
         </template>
@@ -491,9 +491,9 @@ onMounted(async () => {
     :draft-state="{ itemForm }">
       <form class="flex flex-col gap-5" @submit.prevent="saveItem">
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Tratamiento del catálogo</label>
+          <label class="text-xs nxr-text-muted">Tratamiento del catálogo</label>
           <select
-            class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30"
+            class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30"
             @change="onTreatmentSelect(($event.target as HTMLSelectElement).value)"
           >
             <option value="">— Sin seleccionar —</option>
@@ -501,49 +501,49 @@ onMounted(async () => {
           </select>
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Nombre del tratamiento *</label>
+          <label class="text-xs nxr-text-muted">Nombre del tratamiento *</label>
           <input
             v-model="itemForm.treatment_name_snapshot"
             type="text"
             required
-            class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30"
+            class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30"
           />
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div class="flex flex-col gap-1.5">
-            <label class="text-xs text-white/50">Precio unitario</label>
+            <label class="text-xs nxr-text-muted">Precio unitario</label>
             <input
               v-model="itemForm.unit_price"
               type="number"
               min="0"
               step="0.01"
-              class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30"
+              class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30"
             />
           </div>
           <div class="flex flex-col gap-1.5">
-            <label class="text-xs text-white/50">Cantidad</label>
+            <label class="text-xs nxr-text-muted">Cantidad</label>
             <input
               v-model="itemForm.quantity"
               type="number"
               min="1"
-              class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30"
+              class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30"
             />
           </div>
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Referencia dental (ej: 11, 12)</label>
+          <label class="text-xs nxr-text-muted">Referencia dental (ej: 11, 12)</label>
           <input
             v-model="itemForm.tooth_reference"
             type="text"
-            class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30"
+            class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30"
           />
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Descripción adicional</label>
+          <label class="text-xs nxr-text-muted">Descripción adicional</label>
           <textarea
             v-model="itemForm.description"
             rows="2"
-            class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none"
+            class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30 resize-none"
           />
         </div>
         <p v-if="addItemError" class="text-xs text-red-400">{{ addItemError }}</p>
@@ -563,20 +563,20 @@ onMounted(async () => {
     :draft-state="{ editForm }">
       <form class="flex flex-col gap-5" @submit.prevent="saveEdit">
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Válido hasta</label>
-          <input v-model="editForm.valid_until" type="date" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+          <label class="text-xs nxr-text-muted">Válido hasta</label>
+          <input v-model="editForm.valid_until" type="date" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" />
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Descuento</label>
-          <input v-model="editForm.discount_amount" type="number" min="0" step="0.01" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+          <label class="text-xs nxr-text-muted">Descuento</label>
+          <input v-model="editForm.discount_amount" type="number" min="0" step="0.01" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" />
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Notas</label>
-          <textarea v-model="editForm.notes" rows="3" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none" />
+          <label class="text-xs nxr-text-muted">Notas</label>
+          <textarea v-model="editForm.notes" rows="3" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30 resize-none" />
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Condiciones</label>
-          <textarea v-model="editForm.conditions_text" rows="3" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none" />
+          <label class="text-xs nxr-text-muted">Condiciones</label>
+          <textarea v-model="editForm.conditions_text" rows="3" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30 resize-none" />
         </div>
         <p v-if="editError" class="text-xs text-red-400">{{ editError }}</p>
         <div class="flex gap-3 pt-2">
@@ -595,12 +595,12 @@ onMounted(async () => {
     :draft-state="{ acceptForm }">
       <form class="flex flex-col gap-5" @submit.prevent="saveAccept">
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Nombre del paciente que acepta *</label>
-          <input v-model="acceptForm.accepted_by_name" type="text" required class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" />
+          <label class="text-xs nxr-text-muted">Nombre del paciente que acepta *</label>
+          <input v-model="acceptForm.accepted_by_name" type="text" required class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" />
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Notas de aceptación</label>
-          <textarea v-model="acceptForm.acceptance_notes" rows="3" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none" />
+          <label class="text-xs nxr-text-muted">Notas de aceptación</label>
+          <textarea v-model="acceptForm.acceptance_notes" rows="3" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30 resize-none" />
         </div>
         <p v-if="acceptError" class="text-xs text-red-400">{{ acceptError }}</p>
         <div class="flex gap-3 pt-2">
@@ -619,8 +619,8 @@ onMounted(async () => {
     :draft-state="{ rejectForm }">
       <form class="flex flex-col gap-5" @submit.prevent="saveReject">
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Motivo del rechazo</label>
-          <textarea v-model="rejectForm.rejection_reason" rows="3" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30 resize-none" />
+          <label class="text-xs nxr-text-muted">Motivo del rechazo</label>
+          <textarea v-model="rejectForm.rejection_reason" rows="3" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30 resize-none" />
         </div>
         <p v-if="rejectError" class="text-xs text-red-400">{{ rejectError }}</p>
         <div class="flex gap-3 pt-2">

@@ -47,8 +47,8 @@ function go(item: ChecklistItem) { if (item.to) router.push(item.to); }
     <div class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(280px,.8fr)]">
       <SetupChecklist title="Prepará Inventario" :items="checklist" @navigate="go" />
       <section class="rounded-2xl border border-white/10 bg-white/[.035] p-4 sm:p-5">
-        <h2 class="text-base font-semibold text-white">Flujo recomendado</h2>
-        <ol class="mt-4 space-y-3 text-sm leading-6 text-white/65"><li><strong class="text-white">1. Maestros:</strong> productos, proveedores y bodegas.</li><li><strong class="text-white">2. Compra:</strong> creá el documento y confirmá sus líneas.</li><li><strong class="text-white">3. Recepción:</strong> ingresá lo recibido a una bodega.</li><li><strong class="text-white">4. Control:</strong> revisá existencias y alertas de reposición.</li></ol>
+        <h2 class="text-base font-semibold nxr-text">Flujo recomendado</h2>
+        <ol class="mt-4 space-y-3 text-sm leading-6 nxr-text-muted"><li><strong class="nxr-text">1. Maestros:</strong> productos, proveedores y bodegas.</li><li><strong class="nxr-text">2. Compra:</strong> creá el documento y confirmá sus líneas.</li><li><strong class="nxr-text">3. Recepción:</strong> ingresá lo recibido a una bodega.</li><li><strong class="nxr-text">4. Control:</strong> revisá existencias y alertas de reposición.</li></ol>
       </section>
     </div>
   </div>

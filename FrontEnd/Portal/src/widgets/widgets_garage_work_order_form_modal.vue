@@ -100,8 +100,8 @@ async function save() {
 
             <div class="nxr-garage-form-grid grid gap-4">
               <div>
-                <label class="block text-xs text-white/50 mb-1">Prioridad</label>
-                <select v-model="form.priority" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40">
+                <label class="block text-xs nxr-text-muted mb-1">Prioridad</label>
+                <select v-model="form.priority" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40">
                   <option value="low">Baja</option>
                   <option value="normal">Normal</option>
                   <option value="high">Alta</option>
@@ -109,8 +109,8 @@ async function save() {
                 </select>
               </div>
               <div>
-                <label class="block text-xs text-white/50 mb-1">Nivel de combustible</label>
-                <select v-model="form.fuel_level" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40">
+                <label class="block text-xs nxr-text-muted mb-1">Nivel de combustible</label>
+                <select v-model="form.fuel_level" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40">
                   <option value="">Seleccionar</option>
                   <option value="empty">Vacío</option>
                   <option value="quarter">1/4</option>
@@ -120,24 +120,24 @@ async function save() {
                 </select>
               </div>
               <div>
-                <label class="block text-xs text-white/50 mb-1">Kilometraje de ingreso</label>
-                <input v-model.number="form.mileage_in" type="number" min="0" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" />
+                <label class="block text-xs nxr-text-muted mb-1">Kilometraje de ingreso</label>
+                <input v-model.number="form.mileage_in" type="number" min="0" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40" />
               </div>
               <div>
-                <label class="block text-xs text-white/50 mb-1">Entrega estimada</label>
-                <input v-model="form.estimated_delivery_date" type="datetime-local" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" />
+                <label class="block text-xs nxr-text-muted mb-1">Entrega estimada</label>
+                <input v-model="form.estimated_delivery_date" type="datetime-local" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40" />
               </div>
               <div class="col-span-2">
-                <label class="block text-xs text-white/50 mb-1">Problema reportado</label>
-                <textarea v-model="form.reported_issue" rows="2" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40 resize-none"></textarea>
+                <label class="block text-xs nxr-text-muted mb-1">Problema reportado</label>
+                <textarea v-model="form.reported_issue" rows="2" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40 resize-none"></textarea>
               </div>
               <div class="col-span-2">
-                <label class="block text-xs text-white/50 mb-1">Estado del vehículo al ingreso</label>
-                <textarea v-model="form.vehicle_condition_notes" rows="2" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40 resize-none" placeholder="Rayones, golpes, accesorios..."></textarea>
+                <label class="block text-xs nxr-text-muted mb-1">Estado del vehículo al ingreso</label>
+                <textarea v-model="form.vehicle_condition_notes" rows="2" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40 resize-none" placeholder="Rayones, golpes, accesorios..."></textarea>
               </div>
               <div class="col-span-2">
-                <label class="block text-xs text-white/50 mb-1">Notas de recepción</label>
-                <textarea v-model="form.reception_notes" rows="2" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40 resize-none"></textarea>
+                <label class="block text-xs nxr-text-muted mb-1">Notas de recepción</label>
+                <textarea v-model="form.reception_notes" rows="2" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40 resize-none"></textarea>
               </div>
             </div>
           </div>

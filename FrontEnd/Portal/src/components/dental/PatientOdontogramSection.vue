@@ -29,7 +29,7 @@ const hasEntries = computed(() => store.entries.length > 0)
       class="rounded-2xl border border-white/10 px-6 py-10 text-center"
       :style="{ background: 'var(--nexora-glass-bg)' }"
     >
-      <p class="text-sm text-white/30">Sin hallazgos registrados</p>
+      <p class="text-sm nxr-text-soft">Sin hallazgos registrados</p>
     </div>
 
     <!-- Odontogram chart (always render to trigger load) -->

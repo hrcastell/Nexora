@@ -159,33 +159,33 @@ async function save() {
 
           <!-- Issue 4: Customer selector -->
           <div class="mb-4 relative">
-            <label class="block text-xs text-white/50 mb-1">Cliente *</label>
-            <div v-if="form.customer_id && selectedCustomerLabel" class="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white">
+            <label class="block text-xs nxr-text-muted mb-1">Cliente *</label>
+            <div v-if="form.customer_id && selectedCustomerLabel" class="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text">
               <span class="flex-1">{{ selectedCustomerLabel }}</span>
-              <button v-if="!props.customerId" type="button" class="text-white/30 hover:text-white/70 text-xs" @click="form.customer_id = null; selectedCustomerLabel = ''">Cambiar</button>
+              <button v-if="!props.customerId" type="button" class="nxr-text-soft hover:text-[var(--nexora-text-color)] text-xs" @click="form.customer_id = null; selectedCustomerLabel = ''">Cambiar</button>
             </div>
             <div v-else class="relative">
               <div class="flex items-center gap-2 px-3 py-2 rounded-xl bg-white/5 border border-white/10">
-                <Search :size="14" class="text-white/30 shrink-0" />
+                <Search :size="14" class="nxr-text-soft shrink-0" />
                 <input
                   v-model="customerQuery"
                   type="text"
                   placeholder="Buscar cliente por nombre, email o teléfono..."
-                  class="flex-1 bg-transparent text-white text-sm outline-none placeholder:text-white/30"
+                  class="flex-1 bg-transparent nxr-text text-sm outline-none placeholder:text-[var(--nexora-soft-text)]"
                   @input="onCustomerInput"
                   @blur="hideCustomerDrop"
                 />
-                <span v-if="customerSearching" class="text-xs text-white/30">...</span>
+                <span v-if="customerSearching" class="text-xs nxr-text-soft">...</span>
               </div>
               <div v-if="showCustomerDrop && customerResults.length > 0" class="absolute z-50 left-0 right-0 top-full mt-1 rounded-xl border border-white/10 shadow-xl overflow-hidden" style="background: var(--nexora-glass-bg, #0b1326)">
                 <button
                   v-for="c in customerResults" :key="c.id"
                   type="button"
-                  class="w-full text-left px-4 py-2.5 text-sm text-white hover:bg-white/10 transition-colors"
+                  class="w-full text-left px-4 py-2.5 text-sm nxr-text hover:bg-white/10 transition-colors"
                   @mousedown.prevent="selectCustomer(c)"
                 >
                   {{ c.first_name }} {{ c.last_name || '' }}
-                  <span v-if="c.document_number" class="ml-2 text-xs text-white/40">{{ c.document_number }}</span>
+                  <span v-if="c.document_number" class="ml-2 text-xs nxr-text-muted">{{ c.document_number }}</span>
                 </button>
               </div>
             </div>
@@ -201,70 +201,70 @@ async function save() {
               v-model="transferReason"
               rows="2"
               placeholder="Motivo del traspaso (requerido)..."
-              class="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white text-xs outline-none focus:border-white/40 resize-none"
+              class="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 nxr-text text-xs outline-none focus:border-white/40 resize-none"
             ></textarea>
           </div>
 
           <div class="nxr-garage-form-grid grid gap-4">
             <div>
-              <label class="block text-xs text-white/50 mb-1">Tipo de vehículo</label>
+              <label class="block text-xs nxr-text-muted mb-1">Tipo de vehículo</label>
               <widgets_garage_catalog_combobox v-model="form.vehicle_type_id" type="vehicle_types" placeholder="Tipo..." :allow-create="true" />
             </div>
             <div>
-              <label class="block text-xs text-white/50 mb-1">Carrocería</label>
+              <label class="block text-xs nxr-text-muted mb-1">Carrocería</label>
               <widgets_garage_catalog_combobox v-model="form.body_type_id" type="vehicle_body_types" placeholder="Carrocería..." :allow-create="true" />
             </div>
             <div>
-              <label class="block text-xs text-white/50 mb-1">Marca</label>
+              <label class="block text-xs nxr-text-muted mb-1">Marca</label>
               <widgets_garage_catalog_combobox v-model="form.brand_id" type="vehicle_brands" placeholder="Marca..." :allow-create="true" />
             </div>
             <div>
-              <label class="block text-xs text-white/50 mb-1">Modelo</label>
+              <label class="block text-xs nxr-text-muted mb-1">Modelo</label>
               <widgets_garage_catalog_combobox v-model="form.model_id" type="vehicle_models" placeholder="Modelo..." :brand-id="form.brand_id ?? undefined" :allow-create="true" />
             </div>
             <div>
-              <label class="block text-xs text-white/50 mb-1">Versión</label>
-              <input v-model="form.version" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" placeholder="Ej: 1.6 TDI Comfortline" />
+              <label class="block text-xs nxr-text-muted mb-1">Versión</label>
+              <input v-model="form.version" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40" placeholder="Ej: 1.6 TDI Comfortline" />
             </div>
             <div>
-              <label class="block text-xs text-white/50 mb-1">Año</label>
-              <input v-model.number="form.year" type="number" min="1900" :max="new Date().getFullYear() + 1" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" />
+              <label class="block text-xs nxr-text-muted mb-1">Año</label>
+              <input v-model.number="form.year" type="number" min="1900" :max="new Date().getFullYear() + 1" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40" />
             </div>
             <div>
-              <label class="block text-xs text-white/50 mb-1">Placa / Patente</label>
-              <input v-model="form.plate" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40 uppercase" />
+              <label class="block text-xs nxr-text-muted mb-1">Placa / Patente</label>
+              <input v-model="form.plate" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40 uppercase" />
             </div>
             <div>
-              <label class="block text-xs text-white/50 mb-1">Color</label>
+              <label class="block text-xs nxr-text-muted mb-1">Color</label>
               <widgets_garage_catalog_combobox v-model="form.color_id" type="vehicle_colors" placeholder="Color..." :allow-create="true" />
             </div>
             <div>
-              <label class="block text-xs text-white/50 mb-1">Transmisión</label>
+              <label class="block text-xs nxr-text-muted mb-1">Transmisión</label>
               <widgets_garage_catalog_combobox v-model="form.transmission_id" type="vehicle_transmissions" placeholder="Transmisión..." :allow-create="true" />
             </div>
             <div>
-              <label class="block text-xs text-white/50 mb-1">Combustible</label>
+              <label class="block text-xs nxr-text-muted mb-1">Combustible</label>
               <widgets_garage_catalog_combobox v-model="form.fuel_type_id" type="vehicle_fuel_types" placeholder="Combustible..." :allow-create="true" />
             </div>
             <div>
-              <label class="block text-xs text-white/50 mb-1">Cilindrada</label>
-              <input v-model="form.engine_displacement" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" placeholder="Ej: 1600cc" />
+              <label class="block text-xs nxr-text-muted mb-1">Cilindrada</label>
+              <input v-model="form.engine_displacement" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40" placeholder="Ej: 1600cc" />
             </div>
             <div>
-              <label class="block text-xs text-white/50 mb-1">Kilometraje actual</label>
-              <input v-model.number="form.mileage" type="number" min="0" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40" />
+              <label class="block text-xs nxr-text-muted mb-1">Kilometraje actual</label>
+              <input v-model.number="form.mileage" type="number" min="0" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40" />
             </div>
             <div>
-              <label class="block text-xs text-white/50 mb-1">VIN / Chasis</label>
-              <input v-model="form.vin" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40 uppercase" />
+              <label class="block text-xs nxr-text-muted mb-1">VIN / Chasis</label>
+              <input v-model="form.vin" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40 uppercase" />
             </div>
             <div>
-              <label class="block text-xs text-white/50 mb-1">Número de motor</label>
-              <input v-model="form.engine_number" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40 uppercase" />
+              <label class="block text-xs nxr-text-muted mb-1">Número de motor</label>
+              <input v-model="form.engine_number" type="text" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40 uppercase" />
             </div>
             <div class="col-span-2">
-              <label class="block text-xs text-white/50 mb-1">Notas</label>
-              <textarea v-model="form.notes" rows="2" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-white text-sm outline-none focus:border-white/40 resize-none"></textarea>
+              <label class="block text-xs nxr-text-muted mb-1">Notas</label>
+              <textarea v-model="form.notes" rows="2" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40 resize-none"></textarea>
             </div>
           </div>
     <p v-if="error" class="mt-3 text-xs text-red-400">{{ error }}</p>

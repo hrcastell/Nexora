@@ -4,17 +4,40 @@ const { allocateNumber } = require('../../services/inventory/sequenceService');
 const { getNextNumber } = require('../../services/treasury/sequenceService');
 
 // Lifecycle (spec: Cotizaciones Module domain — Quote lifecycle requirement;
-// design §6): draft -> sent -> accepted|rejected -> paid -> converted.
-// `paid` is ONLY reachable via the Treasury settle hook
-// (paymentApplicationsControllerFactory.js -> quotePaymentService), and
-// `converted` ONLY via a confirmed stock receipt on the auto-generated
-// purchase document (stockReceiptsController.confirm) — neither is a
-// directly-callable action here, by design (no direct-to-customer bypass).
+// design §6): manual free-form status field — draft, sent ("por aprobar"),
+// rejected, and expired can all move to any other one of those four states
+// (including into 'accepted'). Once a quote reaches 'accepted' it is
+// PERMANENTLY LOCKED: no further manual status change is allowed, matching
+// the product decision that approval is final. `paid` is ONLY reachable via
+// the Treasury settle hook (paymentApplicationsControllerFactory.js ->
+// quotePaymentService), and `converted` ONLY via a confirmed stock receipt
+// on the auto-generated purchase document (stockReceiptsController.confirm)
+// — neither is a directly-callable action here, by design (no
+// direct-to-customer bypass); both are downstream of 'accepted' so they
+// inherit its lock automatically.
+const UNLOCKED_STATUSES = ['draft', 'sent', 'rejected', 'expired'];
+
 const TRANSITIONS = {
-    send:   { from: ['draft'], to: 'sent' },
-    accept: { from: ['sent'],  to: 'accepted' },
-    reject: { from: ['sent'],  to: 'rejected' }
+    send:   { from: UNLOCKED_STATUSES, to: 'sent' },
+    accept: { from: UNLOCKED_STATUSES, to: 'accepted' },
+    reject: { from: UNLOCKED_STATUSES, to: 'rejected' },
+    draft:  { from: UNLOCKED_STATUSES, to: 'draft' },
+    expire: { from: UNLOCKED_STATUSES, to: 'expired' }
 };
+
+/**
+ * Auto-expires quotes whose validity date has passed while still awaiting a
+ * decision (draft or sent). Runs opportunistically on every read instead of
+ * a scheduled job — Bluehost shared hosting has no persistent cron/worker
+ * runtime available to this app, so "automatic" here means self-healing on
+ * next access rather than a background sweep.
+ */
+async function expireOverdueQuotes(schema) {
+    await db.query(
+        `UPDATE ${schema}.quotes SET status = 'expired', updated_at = CURRENT_TIMESTAMP
+         WHERE status IN ('draft', 'sent') AND valid_until IS NOT NULL AND valid_until < CURRENT_DATE`
+    );
+}
 
 function createError(message, statusCode) {
     const error = new Error(message);
@@ -120,6 +143,7 @@ async function recalcTotals(client, schema, quoteId, discountAmount = null) {
 exports.list = async (req, res) => {
     try {
         const { schema } = await resolveSchema(req);
+        await expireOverdueQuotes(schema);
         const { status, customer_id } = req.query;
         const params = [];
         const conditions = [];
@@ -144,6 +168,7 @@ exports.list = async (req, res) => {
 exports.getById = async (req, res) => {
     try {
         const { schema } = await resolveSchema(req);
+        await expireOverdueQuotes(schema);
         const header = await db.query(
             `SELECT q.*, c.first_name || ' ' || COALESCE(c.last_name, '') AS customer_name
              FROM ${schema}.quotes q
@@ -162,6 +187,66 @@ exports.getById = async (req, res) => {
     } catch (err) {
         console.error('quotesController.getById error:', err.message);
         res.status(err.statusCode || 500).json({ error: err.message || 'Error al obtener cotización' });
+    }
+};
+
+/**
+ * GET /cotizaciones/quotes/:id/print
+ */
+exports.getPrintData = async (req, res) => {
+    try {
+        const { schema } = await resolveSchema(req);
+        await expireOverdueQuotes(schema);
+
+        const header = await db.query(
+            `SELECT q.*,
+                    c.first_name      AS customer_first_name,
+                    c.last_name       AS customer_last_name,
+                    c.document_type   AS customer_document_type,
+                    c.document_number AS customer_document_number,
+                    c.phone           AS customer_phone,
+                    c.email           AS customer_email,
+                    c.address         AS customer_address,
+                    c.city            AS customer_city
+             FROM ${schema}.quotes q
+             LEFT JOIN ${schema}.customers c ON c.id = q.customer_id
+             WHERE q.id = $1`,
+            [req.params.id]
+        );
+        if (!header.rows.length) return res.status(404).json({ error: 'Cotización no encontrada' });
+        const quoteRow = header.rows[0];
+
+        const lines = await db.query(
+            `SELECT ql.*, s.name AS supplier_name FROM ${schema}.quote_lines ql
+             LEFT JOIN ${schema}.suppliers s ON s.id = ql.supplier_id
+             WHERE ql.quote_id = $1 ORDER BY ql.id ASC`,
+            [req.params.id]
+        );
+
+        const configResult = await db.query(`SELECT * FROM ${schema}.config_company LIMIT 1`);
+
+        const customer = {
+            first_name:      quoteRow.customer_first_name,
+            last_name:       quoteRow.customer_last_name,
+            document_type:   quoteRow.customer_document_type,
+            document_number: quoteRow.customer_document_number,
+            phone:           quoteRow.customer_phone,
+            email:           quoteRow.customer_email,
+            address:         quoteRow.customer_address,
+            city:            quoteRow.customer_city,
+        };
+
+        res.json({
+            data: {
+                quote: quoteRow,
+                lines: lines.rows,
+                customer,
+                config: configResult.rows[0] || {},
+            }
+        });
+    } catch (err) {
+        console.error('quotesController.getPrintData error:', err.message);
+        res.status(err.statusCode || 500).json({ error: err.message || 'Error al obtener datos de impresión' });
     }
 };
 
@@ -346,9 +431,15 @@ exports.reject = makeTransitionHandler('reject', (body) => ({
     values: [body.rejection_reason || body.reason || null]
 }));
 
+exports.revertToDraft = makeTransitionHandler('draft');
+
+exports.expire = makeTransitionHandler('expire');
+
 /**
  * POST /cotizaciones/quotes/:id/accept
- * sent -> accepted. Also creates the treasury_documents row that becomes
+ * Any unlocked status (draft/sent/rejected/expired) -> accepted, a
+ * permanent lock — see TRANSITIONS/UNLOCKED_STATUSES above. Also creates
+ * the treasury_documents row that becomes
  * the payment source of truth (spec: Treasury Integration for Quote Payment
  * domain — "An app-only flag MUST NOT be used"; design §6, corrected FK per
  * tasks' flagged ambiguity: quotes.treasury_document_id, not a nonexistent

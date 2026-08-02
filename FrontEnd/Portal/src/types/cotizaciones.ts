@@ -89,10 +89,16 @@ export interface QuoteRejectPayload {
 
 export const QUOTE_STATUS_LABEL: Record<QuoteStatus, string> = {
   draft: 'Borrador',
-  sent: 'Enviada',
-  accepted: 'Aceptada',
+  sent: 'Por aprobar',
+  accepted: 'Aprobada',
   rejected: 'Rechazada',
-  expired: 'Expirada',
+  expired: 'Vencida',
   paid: 'Pagada',
   converted: 'Convertida',
 };
+
+// Statuses the "Estado" field can freely move between. Once a quote reaches
+// 'accepted' it is permanently locked (see BackEnd quotesController's
+// UNLOCKED_STATUSES) — 'paid'/'converted' are automation-only and never
+// offered here.
+export const QUOTE_MANUAL_STATUSES: QuoteStatus[] = ['draft', 'sent', 'expired', 'rejected', 'accepted'];

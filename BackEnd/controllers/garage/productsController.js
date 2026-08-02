@@ -242,3 +242,36 @@ exports.toggleStatus = async (req, res) => {
         res.status(err.statusCode || 500).json({ error: err.message || 'Error al cambiar estado' });
     }
 };
+
+/**
+ * DELETE /garage/products/:id
+ */
+exports.remove = async (req, res) => {
+    try {
+        if (req.user?.read_only) return res.status(403).json({ error: 'Operación no permitida en modo solo lectura' });
+
+        const { schema } = await resolveSchema(req);
+
+        // Pre-check the tables whose FK to products blocks deletion
+        // (ON DELETE RESTRICT, or no ON DELETE clause which defaults to it)
+        // so a raw DB FK-violation never bubbles up to the client.
+        const [inUseTemplates, inUsePurchaseLines, inUseReceiptLines, inUseMovements] = await Promise.all([
+            db.query(`SELECT 1 FROM ${schema}.service_template_products WHERE product_id = $1 LIMIT 1`, [req.params.id]),
+            db.query(`SELECT 1 FROM ${schema}.purchase_document_lines WHERE product_id = $1 LIMIT 1`, [req.params.id]),
+            db.query(`SELECT 1 FROM ${schema}.stock_receipt_lines WHERE product_id = $1 LIMIT 1`, [req.params.id]),
+            db.query(`SELECT 1 FROM ${schema}.stock_movements WHERE product_id = $1 LIMIT 1`, [req.params.id])
+        ]);
+
+        if ([inUseTemplates, inUsePurchaseLines, inUseReceiptLines, inUseMovements].some(r => r.rows.length > 0)) {
+            return res.status(409).json({ error: 'El producto está en uso y no puede eliminarse' });
+        }
+
+        const result = await db.query(`DELETE FROM ${schema}.products WHERE id = $1 RETURNING id`, [req.params.id]);
+        if (result.rows.length === 0) return res.status(404).json({ error: 'Producto no encontrado' });
+
+        res.json({ message: 'Producto eliminado' });
+    } catch (err) {
+        console.error('productsController.remove error:', err.message);
+        res.status(err.statusCode || 500).json({ error: err.message || 'Error al eliminar producto' });
+    }
+};

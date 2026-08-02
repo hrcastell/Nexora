@@ -67,17 +67,17 @@ const BUDGET_STATUS_COLOR: Record<string, string> = {
   over_budget:  'text-red-400',
   under_budget: 'text-yellow-400',
   on_track:     'text-green-400',
-  no_plan:      'text-white/30',
+  no_plan:      'nxr-text-soft',
 };
 </script>
 
 <template>
   <div class="flex flex-col gap-6 p-6">
     <div class="flex items-center justify-between">
-      <h1 class="text-xl font-semibold text-white">Finanzas Personales</h1>
+      <h1 class="text-xl font-semibold nxr-text">Finanzas Personales</h1>
       <button
         v-if="period"
-        class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border border-white/10 text-white/70 hover:border-white/30 hover:text-white transition-all"
+        class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border border-white/10 nxr-text-muted hover:border-white/30 hover:text-[var(--nexora-text-color)] transition-all"
         @click="router.push(`/financial/periods/${period.id}`)"
       >
         Ver detalle <ArrowRight :size="14" />
@@ -93,8 +93,8 @@ const BUDGET_STATUS_COLOR: Record<string, string> = {
       v-else-if="!period"
       class="flex flex-col items-center justify-center gap-4 py-20 text-center"
     >
-      <Wallet :size="48" class="text-white/20" />
-      <p class="text-white/50 text-sm">No hay un período financiero activo para este mes.</p>
+      <Wallet :size="48" class="nxr-text-soft" />
+      <p class="nxr-text-muted text-sm">No hay un período financiero activo para este mes.</p>
       <button
         class="flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-medium text-white transition nxr-btn-primary"
         @click="showCreate = true"
@@ -107,12 +107,12 @@ const BUDGET_STATUS_COLOR: Record<string, string> = {
     <template v-else>
       <div class="flex items-center gap-3">
         <div class="px-3 py-1.5 rounded-xl text-xs font-semibold" :style="{ background: 'var(--nexora-glass-bg)' }" style="border: 1px solid rgba(255,255,255,0.1)">
-          <span class="text-white/50">Período:</span>
-          <span class="text-white ml-1">{{ MONTHS[period.month - 1] }} {{ period.year }}</span>
+          <span class="nxr-text-muted">Período:</span>
+          <span class="nxr-text ml-1">{{ MONTHS[period.month - 1] }} {{ period.year }}</span>
         </div>
         <span
           class="px-2.5 py-1 rounded-full text-xs font-semibold"
-          :class="period.status === 'open' ? 'bg-green-500/20 text-green-400' : 'bg-white/10 text-white/40'"
+          :class="period.status === 'open' ? 'bg-green-500/20 text-green-400' : 'bg-white/10 nxr-text-muted'"
         >
           {{ period.status === 'open' ? 'Abierto' : period.status === 'closed' ? 'Cerrado' : 'Archivado' }}
         </span>
@@ -124,9 +124,9 @@ const BUDGET_STATUS_COLOR: Record<string, string> = {
           :style="{ background: 'var(--nexora-glass-bg)' }"
         >
           <TrendingUp :size="20" class="text-green-400" />
-          <p class="text-2xl font-bold text-white">{{ fmt(summary.real_income) }}</p>
-          <p class="text-xs text-white/50">Ingresos reales</p>
-          <p class="text-xs text-white/30">Planeado: {{ fmt(summary.planned_income) }}</p>
+          <p class="text-2xl font-bold nxr-text">{{ fmt(summary.real_income) }}</p>
+          <p class="text-xs nxr-text-muted">Ingresos reales</p>
+          <p class="text-xs nxr-text-soft">Planeado: {{ fmt(summary.planned_income) }}</p>
         </div>
 
         <div
@@ -134,9 +134,9 @@ const BUDGET_STATUS_COLOR: Record<string, string> = {
           :style="{ background: 'var(--nexora-glass-bg)' }"
         >
           <TrendingDown :size="20" class="text-red-400" />
-          <p class="text-2xl font-bold text-white">{{ fmt(summary.real_expenses) }}</p>
-          <p class="text-xs text-white/50">Gastos reales</p>
-          <p class="text-xs text-white/30">Planeado: {{ fmt(summary.planned_expenses) }}</p>
+          <p class="text-2xl font-bold nxr-text">{{ fmt(summary.real_expenses) }}</p>
+          <p class="text-xs nxr-text-muted">Gastos reales</p>
+          <p class="text-xs nxr-text-soft">Planeado: {{ fmt(summary.planned_expenses) }}</p>
         </div>
 
         <div
@@ -144,9 +144,9 @@ const BUDGET_STATUS_COLOR: Record<string, string> = {
           :style="{ background: 'var(--nexora-glass-bg)' }"
         >
           <PiggyBank :size="20" class="text-blue-400" />
-          <p class="text-2xl font-bold text-white">{{ fmt(summary.real_savings) }}</p>
-          <p class="text-xs text-white/50">Ahorro real</p>
-          <p class="text-xs text-white/30">Tasa: {{ pct(summary.savings_rate) }}</p>
+          <p class="text-2xl font-bold nxr-text">{{ fmt(summary.real_savings) }}</p>
+          <p class="text-xs nxr-text-muted">Ahorro real</p>
+          <p class="text-xs nxr-text-soft">Tasa: {{ pct(summary.savings_rate) }}</p>
         </div>
 
         <div
@@ -154,9 +154,9 @@ const BUDGET_STATUS_COLOR: Record<string, string> = {
           :style="{ background: 'var(--nexora-glass-bg)' }"
         >
           <Wallet :size="20" class="text-cyan-400" />
-          <p class="text-2xl font-bold text-white">{{ fmt(summary.final_balance) }}</p>
-          <p class="text-xs text-white/50">Saldo final</p>
-          <p class="text-xs text-white/30">
+          <p class="text-2xl font-bold nxr-text">{{ fmt(summary.final_balance) }}</p>
+          <p class="text-xs nxr-text-muted">Saldo final</p>
+          <p class="text-xs nxr-text-soft">
             Flujo neto: {{ fmt(summary.net_cashflow) }}
             <template v-if="period.initial_balance > 0"> · Inicial: {{ fmt(period.initial_balance) }}</template>
           </p>
@@ -167,9 +167,9 @@ const BUDGET_STATUS_COLOR: Record<string, string> = {
           :style="{ background: 'var(--nexora-glass-bg)' }"
         >
           <BarChart2 :size="20" class="text-purple-400" />
-          <p class="text-2xl font-bold text-white">{{ pct(summary.expense_execution_rate) }}</p>
-          <p class="text-xs text-white/50">Ejecución de gastos</p>
-          <p class="text-xs text-white/30">Gasto real vs presupuestado</p>
+          <p class="text-2xl font-bold nxr-text">{{ pct(summary.expense_execution_rate) }}</p>
+          <p class="text-xs nxr-text-muted">Ejecución de gastos</p>
+          <p class="text-xs nxr-text-soft">Gasto real vs presupuestado</p>
         </div>
       </div>
 
@@ -181,19 +181,19 @@ const BUDGET_STATUS_COLOR: Record<string, string> = {
       >
         <div class="flex items-center gap-2">
           <CreditCard :size="18" class="text-orange-400" />
-          <p class="text-sm font-semibold text-white">Deudas</p>
+          <p class="text-sm font-semibold nxr-text">Deudas</p>
         </div>
-        <p class="text-2xl font-bold text-white">{{ fmt(summaryStore.summary?.debt_summary?.total_estimated_debt ?? 0) }}</p>
-        <p class="text-xs text-white/50">Deuda total estimada pendiente</p>
+        <p class="text-2xl font-bold nxr-text">{{ fmt(summaryStore.summary?.debt_summary?.total_estimated_debt ?? 0) }}</p>
+        <p class="text-xs nxr-text-muted">Deuda total estimada pendiente</p>
         <div class="flex flex-col gap-2 mt-1">
           <div
             v-for="d in summaryStore.summary?.debt_summary?.debts"
             :key="d.category_id"
             class="flex items-center justify-between text-xs"
           >
-            <span class="text-white/70">{{ d.category_name }}</span>
+            <span class="nxr-text-muted">{{ d.category_name }}</span>
             <div class="flex items-center gap-3 text-right">
-              <span v-if="d.total_installments" class="text-white/40">
+              <span v-if="d.total_installments" class="nxr-text-muted">
                 Cuota {{ d.current_installment ?? '?' }}/{{ d.total_installments }}
               </span>
               <span class="text-orange-300 font-semibold">
@@ -208,7 +208,7 @@ const BUDGET_STATUS_COLOR: Record<string, string> = {
       <div v-if="summaryStore.deviations.length > 0" class="flex flex-col gap-3">
         <div class="flex items-center gap-2">
           <AlertTriangle :size="16" class="text-red-400" />
-          <h2 class="text-sm font-semibold text-white">Categorías con desvío</h2>
+          <h2 class="text-sm font-semibold nxr-text">Categorías con desvío</h2>
         </div>
         <div class="flex flex-col gap-2">
           <div
@@ -218,8 +218,8 @@ const BUDGET_STATUS_COLOR: Record<string, string> = {
             :style="{ background: 'var(--nexora-glass-bg)' }"
           >
             <div>
-              <p class="text-sm text-white">{{ d.category_name }}</p>
-              <p class="text-xs text-white/40">Planeado: {{ fmt(d.planned_amount) }}</p>
+              <p class="text-sm nxr-text">{{ d.category_name }}</p>
+              <p class="text-xs nxr-text-muted">Planeado: {{ fmt(d.planned_amount) }}</p>
             </div>
             <div class="text-right">
               <p class="text-sm font-semibold" :class="BUDGET_STATUS_COLOR[d.status]">{{ fmt(d.real_amount) }}</p>
@@ -237,18 +237,18 @@ const BUDGET_STATUS_COLOR: Record<string, string> = {
     :draft-state="{ form }">
       <form class="flex flex-col gap-5" @submit.prevent="createPeriod">
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Año</label>
-          <input v-model.number="form.year" type="number" min="2020" max="2099" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" required />
+          <label class="text-xs nxr-text-muted">Año</label>
+          <input v-model.number="form.year" type="number" min="2020" max="2099" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" required />
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Mes</label>
-          <select v-model.number="form.month" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none">
+          <label class="text-xs nxr-text-muted">Mes</label>
+          <select v-model.number="form.month" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none">
             <option v-for="(m, i) in MONTHS" :key="i" :value="i + 1">{{ m }}</option>
           </select>
         </div>
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs text-white/50">Saldo inicial</label>
-          <input v-model.number="form.initial_balance" type="number" min="0" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm text-white outline-none focus:border-white/30" required />
+          <label class="text-xs nxr-text-muted">Saldo inicial</label>
+          <input v-model.number="form.initial_balance" type="number" min="0" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" required />
         </div>
         <p v-if="saveError" class="text-xs text-red-400">{{ saveError }}</p>
       </form>

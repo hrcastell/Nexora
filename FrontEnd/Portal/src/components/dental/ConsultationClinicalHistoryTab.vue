@@ -144,7 +144,7 @@ const { hasCritical, hasHigh, alerts: activeAlerts, refresh: refreshAlerts } = u
       <select
         :value="activeSubTab"
         @change="activeSubTab = ($event.target as HTMLSelectElement).value as HistorySubKey"
-        class="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium text-white focus:outline-none focus:ring-1 focus:ring-[var(--nexora-primary)]"
+        class="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm font-medium nxr-text focus:outline-none focus:ring-1 focus:ring-[var(--nexora-primary)]"
       >
         <option v-for="sub in ACTIVE_SUB_TABS" :key="sub.key" :value="sub.key">{{ sub.label }}</option>
       </select>
@@ -157,7 +157,7 @@ const { hasCritical, hasHigh, alerts: activeAlerts, refresh: refreshAlerts } = u
         class="rounded-lg px-4 py-2 text-sm font-medium transition"
         :class="activeSubTab === sub.key
           ? 'bg-[var(--nexora-primary)] text-white'
-          : 'text-white/50 hover:bg-white/5 hover:text-white'"
+          : 'nxr-text-muted hover:bg-white/5 hover:text-[var(--nexora-text-color)]'"
         @click="activeSubTab = sub.key"
       >
         {{ sub.label }}

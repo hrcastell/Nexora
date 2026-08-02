@@ -30,8 +30,8 @@ const emit = defineEmits<{
   <div class="space-y-4">
 
     <div class="rounded-xl border border-white/10 bg-white/5 px-4 py-3">
-      <p class="text-xs font-semibold uppercase tracking-wide text-white/40">Evoluciones clinicas</p>
-      <p class="mt-1 text-sm text-white/50">
+      <p class="text-xs font-semibold uppercase tracking-wide nxr-text-muted">Evoluciones clinicas</p>
+      <p class="mt-1 text-sm nxr-text-muted">
         Las evoluciones registran el avance clinico por sesion. Cada sesion ejecutada genera un registro de evolucion.
       </p>
     </div>

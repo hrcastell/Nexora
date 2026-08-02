@@ -48,6 +48,14 @@
   color: rgba(var(--nexora-primary-rgb), 1) !important;
 }
 
+/* --- Inactive tab/pill text (pair with .nxr-nav-active for the active state) --- */
+.nxr-tab-inactive {
+  color: var(--nexora-muted-text) !important;
+}
+.nxr-tab-inactive:hover {
+  color: var(--nexora-text-color) !important;
+}
+
 /* --- Accent badge/pill (header eyebrow) --- */
 .nxr-badge-accent {
   border-color: rgba(var(--nexora-accent-rgb), 0.30) !important;
