@@ -3,17 +3,20 @@ import { ref, onMounted, watch } from 'vue';
 import { Plus, Search, Edit2, ToggleLeft, ToggleRight, Trash2 } from 'lucide-vue-next';
 import { useGarageProductsStore } from '../../stores/garageProducts';
 import { useInventorySuppliersStore } from '../../stores/inventorySuppliers';
+import { useGarageCatalogsStore } from '../../stores/garageCatalogs';
 import NxrSlidePanel from '../../components/NxrSlidePanel.vue';
 import Field from '../../components/ui/Field.vue';
 import FormSection from '../../components/ui/FormSection.vue';
 import Checkbox from '../../components/ui/Checkbox.vue';
 import AppToast from '../../components/AppToast.vue';
 import ConfirmActionModal from '../../components/admin/ConfirmActionModal.vue';
+import widgets_garage_catalog_combobox from '../../widgets/widgets_garage_catalog_combobox.vue';
 import { useToast } from '../../composables/useToast';
 import type { Product, ProductFormData } from '../../types/garage';
 
 const store = useGarageProductsStore();
 const suppliersStore = useInventorySuppliersStore();
+const catalogsStore = useGarageCatalogsStore();
 const { toasts, triggerToast, removeToast } = useToast();
 
 const confirmModal = ref<{ open: boolean; title: string; message: string; onConfirm: () => void }>({
@@ -24,6 +27,7 @@ function askConfirm(title: string, message: string, onConfirm: () => void) {
 }
 const q = ref('');
 const status = ref('active');
+const typeFilter = ref<number | null>(null);
 const page = ref(1);
 const showForm = ref(false);
 const editing = ref<Product | null>(null);
@@ -35,7 +39,7 @@ const emptyForm = (): ProductFormData => ({
   name: '',
   sku: '',
   description: '',
-  product_type: 'consumable',
+  product_type_id: null,
   unit: 'unidad',
   reference_price: 0,
   currency: 'CLP',
@@ -58,13 +62,13 @@ const emptyForm = (): ProductFormData => ({
 const form = ref<ProductFormData>(emptyForm());
 
 async function load() {
-  await store.load({ q: q.value || undefined, status: status.value, page: page.value, limit: 50 });
+  await store.load({ q: q.value || undefined, status: status.value, product_type_id: typeFilter.value ?? undefined, page: page.value, limit: 50 });
 }
 
 onMounted(async () => {
-  await Promise.all([load(), suppliersStore.load({ status: 'active' })]);
+  await Promise.all([load(), suppliersStore.load({ status: 'active' }), catalogsStore.loadCatalog('product_types')]);
 });
-watch([q, status], () => { page.value = 1; load(); });
+watch([q, status, typeFilter], () => { page.value = 1; load(); });
 
 function openCreate() {
   editing.value = null;
@@ -80,7 +84,7 @@ function openEdit(p: Product) {
     name: p.name,
     sku: p.sku || '',
     description: p.description || '',
-    product_type: p.product_type,
+    product_type_id: p.product_type_id,
     unit: p.unit,
     reference_price: Number(p.reference_price || 0),
     currency: p.currency,
@@ -164,7 +168,6 @@ function confirmRemove() {
   );
 }
 
-const PRODUCT_TYPE_LABEL: Record<string, string> = { consumable: 'Consumible', part: 'Repuesto', tool: 'Herramienta', other: 'Otro' };
 const tabs = [
   { id: 'general', label: 'General' },
   { id: 'inventory', label: 'Inventario' },
@@ -194,6 +197,10 @@ const tabs = [
         <option value="inactive">Inactivos</option>
         <option value="all">Todos</option>
       </select>
+      <select v-model.number="typeFilter" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none">
+        <option :value="null">Todos los tipos</option>
+        <option v-for="t in catalogsStore.catalogs.product_types" :key="t.id" :value="t.id">{{ t.name }}</option>
+      </select>
     </div>
 
     <div v-if="store.loading" class="flex flex-col gap-2">
@@ -211,7 +218,7 @@ const tabs = [
         <div class="flex-1 min-w-0">
           <div class="flex flex-wrap items-center gap-2">
             <p class="text-sm font-medium nxr-text truncate">{{ p.name }}</p>
-            <span class="text-xs px-2 py-0.5 rounded-full bg-white/10 nxr-text-muted shrink-0">{{ PRODUCT_TYPE_LABEL[p.product_type] || p.product_type }}</span>
+            <span v-if="p.product_type_name" class="text-xs px-2 py-0.5 rounded-full bg-white/10 nxr-text-muted shrink-0">{{ p.product_type_name }}</span>
             <span v-if="p.inventory_enabled" class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300">Inventario</span>
           </div>
           <p class="text-xs nxr-text-muted">{{ p.sku ? `SKU: ${p.sku} · ` : '' }}{{ p.unit }} · ${{ Number(p.reference_price || 0).toLocaleString() }}</p>
@@ -271,12 +278,13 @@ const tabs = [
         </div>
         <div>
           <label class="block text-xs nxr-text-muted mb-1">Tipo</label>
-          <select v-model="form.product_type" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none">
-            <option value="consumable">Consumible</option>
-            <option value="part">Repuesto</option>
-            <option value="tool">Herramienta</option>
-            <option value="other">Otro</option>
-          </select>
+          <widgets_garage_catalog_combobox
+            v-model="form.product_type_id"
+            type="product_types"
+            placeholder="Buscar o crear tipo..."
+            :allow-create="true"
+            :allow-delete="true"
+          />
         </div>
         <div>
           <label class="block text-xs nxr-text-muted mb-1">Unidad base</label>

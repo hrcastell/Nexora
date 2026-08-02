@@ -12,6 +12,7 @@ export const useGarageCatalogsStore = defineStore('garageCatalogs', () => {
     vehicle_colors:       [],
     vehicle_transmissions:[],
     vehicle_fuel_types:   [],
+    product_types:        [],
   });
 
   const loading = ref<Partial<Record<CatalogType, boolean>>>({});
@@ -50,5 +51,10 @@ export const useGarageCatalogsStore = defineStore('garageCatalogs', () => {
     return res.data;
   }
 
-  return { catalogs, loading, error, loadCatalog, create, update, toggleStatus };
+  async function remove(type: CatalogType, id: number) {
+    await garageCatalogsService.remove(type, id);
+    catalogs.value[type] = catalogs.value[type].filter(i => i.id !== id);
+  }
+
+  return { catalogs, loading, error, loadCatalog, create, update, toggleStatus, remove };
 });

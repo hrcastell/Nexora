@@ -54,28 +54,42 @@ function resolveInventoryValues(body, { invActive, current = null }) {
 }
 
 /**
+ * Resolves the product_type_id to persist: the given value when present,
+ * otherwise the schema's 'Consumible' catalog row — preserves the old
+ * DEFAULT 'consumable' behavior now that the column is a real FK instead
+ * of a free-text default.
+ */
+async function resolveProductTypeId(schema, value) {
+    if (value !== undefined && value !== null && value !== '') return Number(value);
+    const consumible = await db.query(
+        `SELECT id FROM ${schema}.product_types WHERE normalized_name = 'consumible' LIMIT 1`
+    );
+    return consumible.rows[0]?.id ?? null;
+}
+
+/**
  * GET /garage/products
- * Query: ?q=, ?status=active|inactive|all, ?product_type=, ?page=1, ?limit=50
+ * Query: ?q=, ?status=active|inactive|all, ?product_type_id=, ?page=1, ?limit=50
  */
 exports.list = async (req, res) => {
     try {
         const { schema } = await resolveSchema(req);
-        const { q, status = 'active', product_type, page = 1, limit = 50 } = req.query;
+        const { q, status = 'active', product_type_id, page = 1, limit = 50 } = req.query;
 
         const params = [];
         const conditions = [];
 
         if (status !== 'all') {
             params.push(status);
-            conditions.push(`status = $${params.length}`);
+            conditions.push(`p.status = $${params.length}`);
         }
-        if (product_type) {
-            params.push(product_type);
-            conditions.push(`product_type = $${params.length}`);
+        if (product_type_id) {
+            params.push(product_type_id);
+            conditions.push(`p.product_type_id = $${params.length}`);
         }
         if (q) {
             params.push(`%${normalizeCatalogText(q)}%`);
-            conditions.push(`normalized_name ILIKE $${params.length}`);
+            conditions.push(`p.normalized_name ILIKE $${params.length}`);
         }
 
         const where  = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
@@ -83,14 +97,17 @@ exports.list = async (req, res) => {
         params.push(parseInt(limit), offset);
 
         const result = await db.query(
-            `SELECT * FROM ${schema}.products ${where}
-             ORDER BY name ASC
+            `SELECT p.*, pt.name AS product_type_name
+             FROM ${schema}.products p
+             LEFT JOIN ${schema}.product_types pt ON pt.id = p.product_type_id
+             ${where}
+             ORDER BY p.name ASC
              LIMIT $${params.length - 1} OFFSET $${params.length}`,
             params
         );
 
         const countParams = params.slice(0, params.length - 2);
-        const countResult = await db.query(`SELECT COUNT(*) FROM ${schema}.products ${where}`, countParams);
+        const countResult = await db.query(`SELECT COUNT(*) FROM ${schema}.products p ${where}`, countParams);
 
         res.json({ data: result.rows, total: parseInt(countResult.rows[0].count) });
     } catch (err) {
@@ -105,7 +122,13 @@ exports.list = async (req, res) => {
 exports.getById = async (req, res) => {
     try {
         const { schema } = await resolveSchema(req);
-        const result = await db.query(`SELECT * FROM ${schema}.products WHERE id = $1`, [req.params.id]);
+        const result = await db.query(
+            `SELECT p.*, pt.name AS product_type_name
+             FROM ${schema}.products p
+             LEFT JOIN ${schema}.product_types pt ON pt.id = p.product_type_id
+             WHERE p.id = $1`,
+            [req.params.id]
+        );
         if (result.rows.length === 0) return res.status(404).json({ error: 'Producto no encontrado' });
         res.json(result.rows[0]);
     } catch (err) {
@@ -131,12 +154,13 @@ exports.create = async (req, res) => {
             });
         }
 
-        const { name, sku, description, product_type = 'consumable', unit = 'unidad', reference_price = 0, currency = 'CLP' } = req.body;
+        const { name, sku, description, product_type_id, unit = 'unidad', reference_price = 0, currency = 'CLP' } = req.body;
 
         if (!name?.trim()) return res.status(400).json({ error: 'name es requerido' });
 
         const normalized = normalizeCatalogText(name);
         const normalizedSku = sku ? normalizeSku(sku) : null;
+        const resolvedTypeId = await resolveProductTypeId(schema, product_type_id);
 
         const existing = await db.query(`SELECT id FROM ${schema}.products WHERE normalized_name = $1`, [normalized]);
         if (existing.rows.length > 0) {
@@ -145,12 +169,12 @@ exports.create = async (req, res) => {
 
         const result = await db.query(
             `INSERT INTO ${schema}.products (
-                name, normalized_name, sku, description, product_type, unit, reference_price, currency,
+                name, normalized_name, sku, description, product_type_id, unit, reference_price, currency,
                 inventory_enabled, track_serial, track_batch, allow_negative_stock, reorder_point, max_stock,
                 preferred_supplier_id, purchase_unit, sale_unit, conversion_factor, average_cost,
                 last_purchase_cost, requires_expiration, storage_notes
              ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22) RETURNING *`,
-            [name.trim(), normalized, normalizedSku, description || null, product_type, unit, Number(reference_price), currency,
+            [name.trim(), normalized, normalizedSku, description || null, resolvedTypeId, unit, Number(reference_price), currency,
              ...resolveInventoryValues(req.body, { invActive, current: null })]
         );
         res.status(201).json(result.rows[0]);
@@ -177,12 +201,13 @@ exports.update = async (req, res) => {
             });
         }
 
-        const { name, sku, description, product_type, unit, reference_price, currency } = req.body;
+        const { name, sku, description, product_type_id, unit, reference_price, currency } = req.body;
 
         if (!name?.trim()) return res.status(400).json({ error: 'name es requerido' });
 
         const normalized    = normalizeCatalogText(name);
         const normalizedSku = sku ? normalizeSku(sku) : null;
+        const resolvedTypeId = await resolveProductTypeId(schema, product_type_id);
 
         const dupCheck = await db.query(
             `SELECT id FROM ${schema}.products WHERE normalized_name = $1 AND id <> $2`,
@@ -202,14 +227,14 @@ exports.update = async (req, res) => {
 
         const result = await db.query(
             `UPDATE ${schema}.products SET name=$1, normalized_name=$2, sku=$3, description=$4,
-             product_type=$5, unit=$6, reference_price=$7, currency=$8,
+             product_type_id=$5, unit=$6, reference_price=$7, currency=$8,
              inventory_enabled=$9, track_serial=$10, track_batch=$11, allow_negative_stock=$12,
              reorder_point=$13, max_stock=$14, preferred_supplier_id=$15, purchase_unit=$16,
              sale_unit=$17, conversion_factor=$18, average_cost=$19, last_purchase_cost=$20,
              requires_expiration=$21, storage_notes=$22, updated_at=CURRENT_TIMESTAMP
              WHERE id=$23 RETURNING *`,
             [name.trim(), normalized, normalizedSku, description || null,
-             product_type || 'consumable', unit || 'unidad', Number(reference_price || 0), currency || 'CLP',
+             resolvedTypeId, unit || 'unidad', Number(reference_price || 0), currency || 'CLP',
              ...resolveInventoryValues(req.body, { invActive, current }), req.params.id]
         );
         if (result.rows.length === 0) return res.status(404).json({ error: 'Producto no encontrado' });

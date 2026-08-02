@@ -2,7 +2,7 @@ import api from '../utils/axios';
 import type { Product, ProductFormData, PaginatedResponse } from '../types/garage';
 
 export const garageProductsService = {
-  list(params?: { q?: string; status?: string; product_type?: string; page?: number; limit?: number }) {
+  list(params?: { q?: string; status?: string; product_type_id?: number; page?: number; limit?: number }) {
     return api.get<PaginatedResponse<Product>>('/garage/products', { params });
   },
 

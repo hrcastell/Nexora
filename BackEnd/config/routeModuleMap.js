@@ -120,6 +120,7 @@ const ROUTE_MODULE_MAP = {
     'POST   /garage/catalogs/:type':            { module: 'garage_operations', transaction: 'garage_dashboard' },
     'PUT    /garage/catalogs/:type/:id':        { module: 'garage_operations', transaction: 'garage_dashboard' },
     'PATCH  /garage/catalogs/:type/:id/status': { module: 'garage_operations', transaction: 'garage_dashboard' },
+    'DELETE /garage/catalogs/:type/:id':        { module: 'garage_operations', transaction: 'garage_dashboard' },
 
     // ── Garage Operations: Clientes ──
     'GET    /garage/customers':                  { module: 'garage_operations', transaction: 'garage_customers' },

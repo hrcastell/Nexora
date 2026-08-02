@@ -78,11 +78,18 @@ async function resolveLineProduct(client, schema, line) {
             return existing.rows[0];
         }
         const normalizedSku = np.sku ? normalizeSku(np.sku) : null;
+        let productTypeId = np.product_type_id || null;
+        if (!productTypeId) {
+            const consumible = await client.query(
+                `SELECT id FROM ${schema}.product_types WHERE normalized_name = 'consumible' LIMIT 1`
+            );
+            productTypeId = consumible.rows[0]?.id ?? null;
+        }
         const inserted = await client.query(
             `INSERT INTO ${schema}.products (
-                name, normalized_name, sku, description, product_type, unit, reference_price, currency, inventory_enabled
+                name, normalized_name, sku, description, product_type_id, unit, reference_price, currency, inventory_enabled
              ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,TRUE) RETURNING id, name, sku, unit, inventory_enabled`,
-            [np.name.trim(), normalized, normalizedSku, np.description || null, np.product_type || 'consumable',
+            [np.name.trim(), normalized, normalizedSku, np.description || null, productTypeId,
              np.unit || 'unidad', number(np.reference_price), np.currency || 'CLP']
         );
         return inserted.rows[0];

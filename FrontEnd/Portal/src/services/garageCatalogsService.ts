@@ -17,4 +17,8 @@ export const garageCatalogsService = {
   toggleStatus(type: CatalogType, id: number, status: 'active' | 'inactive') {
     return api.patch<CatalogItem>(`/garage/catalogs/${type}/${id}/status`, { status });
   },
+
+  remove(type: CatalogType, id: number) {
+    return api.delete<{ message: string }>(`/garage/catalogs/${type}/${id}`);
+  },
 };

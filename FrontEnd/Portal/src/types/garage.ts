@@ -20,7 +20,8 @@ export type CatalogType =
   | 'vehicle_models'
   | 'vehicle_colors'
   | 'vehicle_transmissions'
-  | 'vehicle_fuel_types';
+  | 'vehicle_fuel_types'
+  | 'product_types';
 
 // ─── CLIENTES ─────────────────────────────────────────────────
 
@@ -170,7 +171,8 @@ export interface Product {
   name: string;
   normalized_name: string;
   description: string | null;
-  product_type: string;
+  product_type_id: number | null;
+  product_type_name?: string | null;
   unit: string;
   reference_price: number;
   currency: string;
@@ -193,7 +195,7 @@ export interface Product {
   updated_at: string;
 }
 
-export type ProductFormData = Omit<Product, 'id' | 'normalized_name' | 'status' | 'created_at' | 'updated_at'>;
+export type ProductFormData = Omit<Product, 'id' | 'normalized_name' | 'status' | 'created_at' | 'updated_at' | 'product_type_name'>;
 
 // ─── SERVICIOS CONFIGURABLES ──────────────────────────────────
 

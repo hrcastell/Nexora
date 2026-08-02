@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
-import type { Component } from 'vue';
 import {
   Shield, Plus, Search, Loader2, Pencil, Trash2, Save,
   ShieldAlert, CheckSquare, Square, ChevronDown, ChevronRight,
-  LayoutDashboard, Building2, Users, BarChart2, Mail,
-  CreditCard, Settings, Palette, FileText, ClipboardList, Puzzle, Lock
+  Puzzle, Lock
 } from 'lucide-vue-next';
 import api from '../../utils/axios';
 import { useVisualConfigStore } from '../../stores/visualConfig';
@@ -14,6 +12,7 @@ import CompanySelector from '../../components/admin/CompanySelector.vue';
 import ConfirmActionModal from '../../components/admin/ConfirmActionModal.vue';
 import NxrSlidePanel from '../../components/NxrSlidePanel.vue';
 import AppToast, { type ToastItem, type ToastType } from '../../components/AppToast.vue';
+import { resolveMenuIcon } from '../../utils/iconRegistry';
 import type { Profile, ModuleGroup, TransactionPermission } from '../../types/auth';
 
 const cfg      = useVisualConfigStore();
@@ -50,13 +49,7 @@ const inputBg     = computed(() => isLight.value ? '#ffffff' : 'rgba(255,255,255
 const inputBorder = computed(() => isLight.value ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.12)');
 const panelBg     = computed(() => isLight.value ? 'rgba(248,250,252,0.98)' : 'rgba(8,16,31,0.6)');
 
-// Icon registry
-const ICON_REGISTRY: Record<string, Component> = {
-  LayoutDashboard, Building2, Users, Shield, Puzzle, Mail, BarChart2,
-  CreditCard, Settings, Palette, FileText, ClipboardList
-};
-const resolveIcon = (code?: string): Component =>
-  (code && ICON_REGISTRY[code]) ? ICON_REGISTRY[code] : Settings;
+const resolveIcon = resolveMenuIcon;
 
 // State
 const profiles        = ref<Profile[]>([]);

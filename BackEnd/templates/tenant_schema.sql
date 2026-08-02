@@ -371,13 +371,29 @@ CREATE INDEX IF NOT EXISTS idx_labor_rates_status   ON {schema_name}.employee_la
 
 -- ─── PRODUCTOS ────────────────────────────────────────────────
 
+CREATE TABLE IF NOT EXISTS {schema_name}.product_types (
+    id              SERIAL PRIMARY KEY,
+    name            VARCHAR(100) NOT NULL,
+    normalized_name VARCHAR(120) NOT NULL UNIQUE,
+    status          VARCHAR(30)  DEFAULT 'active',
+    created_at      TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMP    DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO {schema_name}.product_types (name, normalized_name) VALUES
+    ('Consumible', 'consumible'),
+    ('Repuesto', 'repuesto'),
+    ('Herramienta', 'herramienta'),
+    ('Otro', 'otro')
+ON CONFLICT (normalized_name) DO NOTHING;
+
 CREATE TABLE IF NOT EXISTS {schema_name}.products (
     id                    SERIAL PRIMARY KEY,
     sku                   VARCHAR(80),
     name                  VARCHAR(150)    NOT NULL,
     normalized_name       VARCHAR(180)    NOT NULL,
     description           TEXT,
-    product_type          VARCHAR(50)     DEFAULT 'consumable',
+    product_type_id       INTEGER         REFERENCES {schema_name}.product_types(id) ON DELETE RESTRICT,
     unit                  VARCHAR(30)     DEFAULT 'unidad',
     reference_price       NUMERIC(12,2)   DEFAULT 0,
     inventory_enabled     BOOLEAN         NOT NULL DEFAULT FALSE,

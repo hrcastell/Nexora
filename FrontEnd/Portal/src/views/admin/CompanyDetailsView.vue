@@ -3,7 +3,6 @@ import { ref, onMounted, computed } from 'vue';
 import api from '../../utils/axios';
 import { ArrowLeft, Loader2, FileText, DollarSign, Building2, Receipt, Users, Settings, UserPlus, Trash2, Shield, ShieldCheck, Palette, Check, RotateCcw, Upload, Puzzle, ToggleLeft, ToggleRight } from 'lucide-vue-next';
 import { useVisualConfigStore } from '../../stores/visualConfig';
-import { useAuthStore } from '../../stores/auth';
 import { useMenuStore } from '../../stores/menu';
 import ConfirmActionModal from '../../components/admin/ConfirmActionModal.vue';
 import AppToast, { type ToastItem, type ToastType } from '../../components/AppToast.vue';
@@ -13,7 +12,6 @@ const route = useRoute();
 const router = useRouter();
 const companyId = route.params.id;
 
-const authStore = useAuthStore();
 const menuStore = useMenuStore();
 
 interface Company {
