@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
-import type { Component } from 'vue';
 import api from '../../utils/axios';
 import { useVisualConfigStore } from '../../stores/visualConfig';
 import { useAuthStore } from '../../stores/auth';
@@ -8,11 +7,10 @@ import { useMenuStore } from '../../stores/menu';
 import { usePermissions } from '../../composables/usePermissions';
 import CompanySelector from '../../components/admin/CompanySelector.vue';
 import draggable from 'vuedraggable';
+import { resolveMenuIcon } from '../../utils/iconRegistry';
 import {
   Puzzle, Loader2, ChevronDown, ChevronRight, Save, Eye, EyeOff,
-  CheckCircle2, AlertCircle, Lock, GripVertical,
-  LayoutDashboard, Building2, Users, Shield, Mail, BarChart2,
-  CreditCard, Settings, Palette, FileText, ClipboardList
+  CheckCircle2, AlertCircle, Lock, GripVertical
 } from 'lucide-vue-next';
 
 const cfg       = useVisualConfigStore();
@@ -70,15 +68,7 @@ interface CompanyModuleAssignment {
   menu_order: number;
 }
 
-// ── Icon registry for transaction previews ──────────────────────
-const ICON_REGISTRY: Record<string, Component> = {
-  LayoutDashboard, Building2, Users, Shield, Puzzle, Mail, BarChart2,
-  CreditCard, Settings, Palette, FileText, ClipboardList
-};
-const resolveIcon = (code?: string): Component => {
-  if (code && ICON_REGISTRY[code]) return ICON_REGISTRY[code];
-  return Settings;
-};
+const resolveIcon = resolveMenuIcon;
 
 // ── Company selector (super_admin) ────────────────────────
 const selectedCompanyId = ref<number | null>(null);

@@ -9,7 +9,7 @@ export const useGarageProductsStore = defineStore('garageProducts', () => {
   const loading = ref(false);
   const error   = ref<string | null>(null);
 
-  async function load(params?: { q?: string; status?: string; product_type?: string; page?: number; limit?: number }) {
+  async function load(params?: { q?: string; status?: string; product_type_id?: number; page?: number; limit?: number }) {
     loading.value = true; error.value = null;
     try {
       const res = await garageProductsService.list(params);

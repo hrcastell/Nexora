@@ -6,7 +6,7 @@ import widgets_garage_customer_form_modal from './widgets_garage_customer_form_m
 import type { Customer, CustomerListItem } from '../types/garage';
 
 const props = defineProps<{
-  modelValue: number | null;
+  modelValue: number | null | undefined;
   placeholder?: string;
   disabled?: boolean;
 }>();

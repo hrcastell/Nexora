@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
-import type { Component } from 'vue';
 import { useAuthStore } from '../stores/auth';
 import { useVisualConfigStore, wallpaperBackground } from '../stores/visualConfig';
 import { useMenuStore } from '../stores/menu';
@@ -8,27 +7,14 @@ import { useNotificationsStore } from '../stores/notifications';
 import { useRoute, useRouter } from 'vue-router';
 import WidgetsNotificationBell from '../widgets/widgets_notification_bell.vue';
 import WidgetsNotificationToast from '../widgets/widgets_notification_toast.vue';
+import { resolveMenuIcon } from '../utils/iconRegistry';
 import {
-  Building2,
   LayoutDashboard,
   LogOut,
   Menu,
-  Settings,
-  Palette,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  Mail,
-  Users,
-  BarChart2,
-  Shield,
-  Puzzle,
-  CreditCard,
-  FileText,
-  ClipboardList,
-  Wrench,
-  Package,
-  Receipt,
   Loader2
 } from 'lucide-vue-next';
 
@@ -52,15 +38,7 @@ onBeforeUnmount(() => {
 // Track expanded state per module code
 const expandedModules = ref<Record<string, boolean>>({});
 
-// Icon registry: resolves string codes from API to Lucide components
-const ICON_REGISTRY: Record<string, Component> = {
-  LayoutDashboard, Building2, Users, Shield, Puzzle, Mail, BarChart2,
-  CreditCard, Settings, Palette, FileText, ClipboardList, Wrench, Package, Receipt
-};
-const resolveIcon = (code?: string): Component => {
-  if (code && ICON_REGISTRY[code]) return ICON_REGISTRY[code];
-  return Settings;
-};
+const resolveIcon = resolveMenuIcon;
 
 /**
  * Dynamic nav modules from menuStore.

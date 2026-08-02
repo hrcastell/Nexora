@@ -6,7 +6,7 @@ import { garageProductsService } from '../services/garageProductsService';
 import type { Product } from '../types/garage';
 
 const props = defineProps<{
-  modelValue: number | null;
+  modelValue: number | null | undefined;
   unitPriceHint?: number | null;
   placeholder?: string;
   disabled?: boolean;
@@ -72,7 +72,7 @@ async function createNew() {
       name,
       sku: '',
       description: '',
-      product_type: 'consumable',
+      product_type_id: null,
       unit: 'unidad',
       reference_price: Number(props.unitPriceHint || 0),
       currency: 'CLP',

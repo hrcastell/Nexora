@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue';
-import { ChevronDown, Plus, Check } from 'lucide-vue-next';
+import { ChevronDown, Plus, Check, X } from 'lucide-vue-next';
 import { useGarageCatalogsStore } from '../stores/garageCatalogs';
 import type { CatalogItem, CatalogType } from '../types/garage';
 
@@ -10,6 +10,7 @@ const props = defineProps<{
   placeholder?: string;
   disabled?: boolean;
   allowCreate?: boolean;
+  allowDelete?: boolean;
   brandId?: number;
 }>();
 
@@ -79,6 +80,16 @@ async function createNew() {
     creating.value = false;
   }
 }
+
+async function removeItem(item: CatalogItem) {
+  error.value = '';
+  try {
+    await catalogsStore.remove(props.type, item.id);
+    if (item.id === props.modelValue) emit('update:modelValue', null);
+  } catch (e: any) {
+    error.value = e?.response?.data?.error || 'Error al eliminar';
+  }
+}
 </script>
 
 <template>
@@ -122,11 +133,22 @@ async function createNew() {
         <li
           v-for="item in items"
           :key="item.id"
-          class="flex items-center justify-between px-3 py-2 cursor-pointer hover:bg-white/10 text-sm nxr-text transition-colors"
+          class="flex items-center justify-between gap-2 px-3 py-2 cursor-pointer hover:bg-white/10 text-sm nxr-text transition-colors"
           @click="select(item)"
         >
           <span>{{ item.name }}</span>
-          <Check v-if="item.id === modelValue" :size="14" class="text-[var(--nexora-primary)]" />
+          <div class="flex items-center gap-1.5 shrink-0">
+            <Check v-if="item.id === modelValue" :size="14" class="text-[var(--nexora-primary)]" />
+            <button
+              v-if="allowDelete"
+              type="button"
+              class="text-red-400 hover:text-red-300"
+              aria-label="Eliminar valor"
+              @click.stop="removeItem(item)"
+            >
+              <X :size="14" />
+            </button>
+          </div>
         </li>
 
         <li v-if="items.length === 0 && !allowCreate" class="px-3 py-2 text-sm nxr-text-muted">

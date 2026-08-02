@@ -9,8 +9,17 @@ const VALID_CATALOG_TYPES = [
     'vehicle_models',
     'vehicle_colors',
     'vehicle_transmissions',
-    'vehicle_fuel_types'
+    'vehicle_fuel_types',
+    'product_types'
 ];
+
+// Tables that hold a hard (ON DELETE RESTRICT) reference to a catalog row,
+// keyed by catalog type. Checked before a hard delete so the DB never
+// throws a raw FK-violation error — the caller gets a clear message
+// instead. Catalog types not listed here have no known blocking reference.
+const CATALOG_USAGE_CHECKS = {
+    product_types: [{ table: 'products', column: 'product_type_id' }]
+};
 
 function validateType(type, res) {
     if (!VALID_CATALOG_TYPES.includes(type)) {
@@ -193,5 +202,39 @@ exports.toggleStatus = async (req, res) => {
     } catch (err) {
         console.error('catalogsController.toggleStatus error:', err.message);
         res.status(err.statusCode || 500).json({ error: err.message || 'Error al cambiar estado' });
+    }
+};
+
+/**
+ * DELETE /garage/catalogs/:type/:id
+ * Hard-deletes a catalog value, after checking it isn't referenced by any
+ * row listed in CATALOG_USAGE_CHECKS for this type.
+ */
+exports.remove = async (req, res) => {
+    try {
+        const { type, id } = req.params;
+        if (!validateType(type, res)) return;
+        if (req.user?.read_only) return res.status(403).json({ error: 'Operación no permitida en modo solo lectura' });
+
+        const { schema } = await resolveSchema(req);
+
+        const checks = CATALOG_USAGE_CHECKS[type] || [];
+        for (const check of checks) {
+            const inUse = await db.query(
+                `SELECT 1 FROM ${schema}.${check.table} WHERE ${check.column} = $1 LIMIT 1`,
+                [id]
+            );
+            if (inUse.rows.length > 0) {
+                return res.status(409).json({ error: 'Este valor está en uso y no puede eliminarse' });
+            }
+        }
+
+        const result = await db.query(`DELETE FROM ${schema}.${type} WHERE id = $1 RETURNING id`, [id]);
+        if (result.rows.length === 0) return res.status(404).json({ error: 'Valor no encontrado' });
+
+        res.json({ message: 'Valor eliminado' });
+    } catch (err) {
+        console.error('catalogsController.remove error:', err.message);
+        res.status(err.statusCode || 500).json({ error: err.message || 'Error al eliminar valor de catálogo' });
     }
 };

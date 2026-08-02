@@ -82,6 +82,7 @@ router.get('/catalogs/:type',             catalogsCtrl.list);
 router.post('/catalogs/:type',            catalogsCtrl.create);
 router.put('/catalogs/:type/:id',         catalogsCtrl.update);
 router.patch('/catalogs/:type/:id/status', catalogsCtrl.toggleStatus);
+router.delete('/catalogs/:type/:id',      catalogsCtrl.remove);
 
 // ─── CLIENTES ─────────────────────────────────────────────────
 router.get('/customers',                customersCtrl.list);
