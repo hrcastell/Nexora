@@ -89,6 +89,18 @@ export const useCotizacionesStore = defineStore('cotizaciones', () => {
     return res.data;
   }
 
+  async function revertToDraft(id: number) {
+    const res = await cotizacionesService.revertToDraft(id);
+    if (current.value?.id === id) Object.assign(current.value, res.data);
+    return res.data;
+  }
+
+  async function expire(id: number) {
+    const res = await cotizacionesService.expire(id);
+    if (current.value?.id === id) Object.assign(current.value, res.data);
+    return res.data;
+  }
+
   function reset() {
     items.value = [];
     current.value = null;
@@ -110,6 +122,8 @@ export const useCotizacionesStore = defineStore('cotizaciones', () => {
     send,
     accept,
     reject,
+    revertToDraft,
+    expire,
     reset,
   };
 });

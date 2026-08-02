@@ -40,7 +40,13 @@ export const useGarageProductsStore = defineStore('garageProducts', () => {
     if (idx !== -1) items.value[idx].status = status;
   }
 
+  async function remove(id: number) {
+    await garageProductsService.remove(id);
+    items.value = items.value.filter(p => p.id !== id);
+    total.value = Math.max(0, total.value - 1);
+  }
+
   function reset() { items.value = []; total.value = 0; error.value = null; }
 
-  return { items, total, loading, error, load, create, update, toggleStatus, reset };
+  return { items, total, loading, error, load, create, update, toggleStatus, remove, reset };
 });

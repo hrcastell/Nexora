@@ -1,16 +1,27 @@
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue';
-import { Plus, Search, Edit2, ToggleLeft, ToggleRight } from 'lucide-vue-next';
+import { Plus, Search, Edit2, ToggleLeft, ToggleRight, Trash2 } from 'lucide-vue-next';
 import { useGarageProductsStore } from '../../stores/garageProducts';
 import { useInventorySuppliersStore } from '../../stores/inventorySuppliers';
 import NxrSlidePanel from '../../components/NxrSlidePanel.vue';
 import Field from '../../components/ui/Field.vue';
 import FormSection from '../../components/ui/FormSection.vue';
 import Checkbox from '../../components/ui/Checkbox.vue';
+import AppToast from '../../components/AppToast.vue';
+import ConfirmActionModal from '../../components/admin/ConfirmActionModal.vue';
+import { useToast } from '../../composables/useToast';
 import type { Product, ProductFormData } from '../../types/garage';
 
 const store = useGarageProductsStore();
 const suppliersStore = useInventorySuppliersStore();
+const { toasts, triggerToast, removeToast } = useToast();
+
+const confirmModal = ref<{ open: boolean; title: string; message: string; onConfirm: () => void }>({
+  open: false, title: '', message: '', onConfirm: () => {}
+});
+function askConfirm(title: string, message: string, onConfirm: () => void) {
+  confirmModal.value = { open: true, title, message, onConfirm };
+}
 const q = ref('');
 const status = ref('active');
 const page = ref(1);
@@ -133,6 +144,24 @@ async function save() {
 
 async function toggleStatus(p: Product) {
   await store.toggleStatus(p.id, p.status === 'active' ? 'inactive' : 'active');
+}
+
+function confirmRemove() {
+  if (!editing.value) return;
+  askConfirm(
+    'Eliminar producto',
+    `¿Eliminar el producto "${editing.value.name}"? Esta acción no se puede deshacer.`,
+    async () => {
+      if (!editing.value) return;
+      try {
+        await store.remove(editing.value.id);
+        triggerToast('Éxito', 'Producto eliminado', 'success');
+        showForm.value = false;
+      } catch (e: any) {
+        triggerToast('Error', e?.response?.data?.error || 'Error al eliminar. Puede estar en uso.', 'error');
+      }
+    }
+  );
 }
 
 const PRODUCT_TYPE_LABEL: Record<string, string> = { consumable: 'Consumible', part: 'Repuesto', tool: 'Herramienta', other: 'Otro' };
@@ -324,8 +353,33 @@ const tabs = [
 
       <template #footer>
 
+        <button
+          v-if="editing"
+          type="button"
+          class="nxr-btn border border-red-500/40 bg-red-500/15 hover:bg-red-500/25"
+          style="color: var(--nexora-danger-text)"
+          @click="confirmRemove"
+        >
+          <Trash2 :size="14" /> Eliminar
+        </button>
         <button type="button" class="nxr-btn nxr-btn-primary" :disabled="saving" @click="save">{{ saving ? 'Guardando...' : 'Guardar' }}</button>
       </template>
     </NxrSlidePanel>
+
+    <!-- Toast container -->
+    <div class="fixed top-4 right-4 z-[9999] flex flex-col gap-2 w-80 pointer-events-none">
+      <AppToast v-for="t in toasts" :key="t.id" :toast="t" @close="removeToast" />
+    </div>
+
+    <ConfirmActionModal
+      :isOpen="confirmModal.open"
+      :title="confirmModal.title"
+      :message="confirmModal.message"
+      variant="danger"
+      confirmText="Confirmar"
+      cancelText="Cancelar"
+      @confirmed="() => { confirmModal.open = false; confirmModal.onConfirm(); }"
+      @cancelled="confirmModal.open = false"
+    />
   </div>
 </template>

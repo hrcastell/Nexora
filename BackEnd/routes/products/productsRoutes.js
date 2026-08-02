@@ -27,5 +27,6 @@ router.post('/', productsCtrl.create);
 router.get('/:id', productsCtrl.getById);
 router.put('/:id', productsCtrl.update);
 router.patch('/:id/status', productsCtrl.toggleStatus);
+router.delete('/:id', productsCtrl.remove);
 
 module.exports = router;

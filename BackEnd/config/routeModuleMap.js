@@ -169,12 +169,14 @@ const ROUTE_MODULE_MAP = {
     'GET    /garage/products/:id':          { modules: ['garage_operations', 'inventory'], semantics: 'OR', transaction: 'products' },
     'PUT    /garage/products/:id':          { modules: ['garage_operations', 'inventory'], semantics: 'OR', transaction: 'products' },
     'PATCH  /garage/products/:id/status':   { modules: ['garage_operations', 'inventory'], semantics: 'OR', transaction: 'products' },
+    'DELETE /garage/products/:id':          { modules: ['garage_operations', 'inventory'], semantics: 'OR', transaction: 'products' },
 
     'GET    /products':              { modules: ['garage_operations', 'inventory'], semantics: 'OR', transaction: 'products' },
     'POST   /products':              { modules: ['garage_operations', 'inventory'], semantics: 'OR', transaction: 'products' },
     'GET    /products/:id':          { modules: ['garage_operations', 'inventory'], semantics: 'OR', transaction: 'products' },
     'PUT    /products/:id':          { modules: ['garage_operations', 'inventory'], semantics: 'OR', transaction: 'products' },
     'PATCH  /products/:id/status':   { modules: ['garage_operations', 'inventory'], semantics: 'OR', transaction: 'products' },
+    'DELETE /products/:id':          { modules: ['garage_operations', 'inventory'], semantics: 'OR', transaction: 'products' },
 
     // ── Cotizaciones: standalone module (its own quotes transaction) ──
     // Routes registered in Phase 3 (task 3.8, BackEnd/routes/cotizaciones/cotizacionesRoutes.js),
@@ -184,12 +186,15 @@ const ROUTE_MODULE_MAP = {
     'POST   /cotizaciones/quotes':                     { module: 'cotizaciones', transaction: 'quotes' },
     'GET    /cotizaciones/quotes/:id':                 { module: 'cotizaciones', transaction: 'quotes' },
     'PUT    /cotizaciones/quotes/:id':                 { module: 'cotizaciones', transaction: 'quotes' },
+    'GET    /cotizaciones/quotes/:id/print':           { module: 'cotizaciones', transaction: 'quotes' },
     'POST   /cotizaciones/quotes/:id/lines':           { module: 'cotizaciones', transaction: 'quotes' },
     'PUT    /cotizaciones/quotes/:id/lines/:lineId':   { module: 'cotizaciones', transaction: 'quotes' },
     'DELETE /cotizaciones/quotes/:id/lines/:lineId':   { module: 'cotizaciones', transaction: 'quotes' },
     'POST   /cotizaciones/quotes/:id/send':            { module: 'cotizaciones', transaction: 'quotes' },
     'POST   /cotizaciones/quotes/:id/accept':          { module: 'cotizaciones', transaction: 'quotes' },
     'POST   /cotizaciones/quotes/:id/reject':          { module: 'cotizaciones', transaction: 'quotes' },
+    'POST   /cotizaciones/quotes/:id/draft':           { module: 'cotizaciones', transaction: 'quotes' },
+    'POST   /cotizaciones/quotes/:id/expire':          { module: 'cotizaciones', transaction: 'quotes' },
 
     // ── Inventory: Proveedores ──
     'GET    /inventory/suppliers':            { module: 'inventory', transaction: 'inventory_suppliers' },

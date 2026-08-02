@@ -22,6 +22,10 @@ export const cotizacionesService = {
     return api.get<QuoteDetail>(`/cotizaciones/quotes/${id}`);
   },
 
+  getPrintData(id: number) {
+    return api.get<{ data: { quote: Quote; lines: QuoteLine[]; customer: Record<string, unknown>; config: Record<string, unknown> } }>(`/cotizaciones/quotes/${id}/print`);
+  },
+
   create(data: QuoteFormData) {
     return api.post<Quote>('/cotizaciones/quotes', data);
   },
@@ -52,5 +56,13 @@ export const cotizacionesService = {
 
   reject(id: number, data?: QuoteRejectPayload) {
     return api.post<Quote>(`/cotizaciones/quotes/${id}/reject`, data);
+  },
+
+  revertToDraft(id: number) {
+    return api.post<Quote>(`/cotizaciones/quotes/${id}/draft`);
+  },
+
+  expire(id: number) {
+    return api.post<Quote>(`/cotizaciones/quotes/${id}/expire`);
   },
 };

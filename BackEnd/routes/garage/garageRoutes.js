@@ -127,6 +127,7 @@ router.post('/products',             productsCtrl.create);
 router.get('/products/:id',          productsCtrl.getById);
 router.put('/products/:id',          productsCtrl.update);
 router.patch('/products/:id/status', productsCtrl.toggleStatus);
+router.delete('/products/:id', productsCtrl.remove);
 
 // ─── SERVICIOS CONFIGURABLES ──────────────────────────────────
 router.get('/service-templates',                           serviceTemplatesCtrl.list);

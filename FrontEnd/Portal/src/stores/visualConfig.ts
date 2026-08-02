@@ -184,6 +184,7 @@ export const useVisualConfigStore = defineStore('visualConfig', () => {
       '--nexora-text-color': isDark ? '#ffffff' : '#0f172a',
       '--nexora-muted-text': isDark ? '#94a3b8' : '#64748b',
       '--nexora-soft-text': isDark ? '#c0c7d1' : '#94a3b8',
+      '--nexora-danger-text': isDark ? '#fecaca' : '#0f172a',
       
       // Brand colors
       '--nexora-primary-color': primaryColor.value,
