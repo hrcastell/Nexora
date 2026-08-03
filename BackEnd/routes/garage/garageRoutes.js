@@ -9,6 +9,8 @@ const vehiclesCtrl         = require('../../controllers/garage/vehiclesControlle
 const employeesCtrl        = require('../../controllers/garage/employeesController');
 const laborRatesCtrl       = require('../../controllers/garage/laborRatesController');
 const productsCtrl         = require('../../controllers/garage/productsController');
+const productPriceLevelsCtrl = require('../../controllers/garage/productPriceLevelsController');
+const productPricesCtrl      = require('../../controllers/garage/productPricesController');
 const serviceTemplatesCtrl = require('../../controllers/garage/serviceTemplatesController');
 const appointmentsCtrl     = require('../../controllers/garage/appointmentsController');
 const workOrdersCtrl       = require('../../controllers/garage/workOrdersController');
@@ -129,6 +131,14 @@ router.get('/products/:id',          productsCtrl.getById);
 router.put('/products/:id',          productsCtrl.update);
 router.patch('/products/:id/status', productsCtrl.toggleStatus);
 router.delete('/products/:id', productsCtrl.remove);
+
+router.get('/products/:id/prices', productPricesCtrl.list);
+router.put('/products/:id/prices', productPricesCtrl.save);
+
+router.get('/product-price-levels',              productPriceLevelsCtrl.list);
+router.post('/product-price-levels',             productPriceLevelsCtrl.create);
+router.put('/product-price-levels/:id',          productPriceLevelsCtrl.update);
+router.patch('/product-price-levels/:id/status', productPriceLevelsCtrl.toggleStatus);
 
 // ─── SERVICIOS CONFIGURABLES ──────────────────────────────────
 router.get('/service-templates',                           serviceTemplatesCtrl.list);

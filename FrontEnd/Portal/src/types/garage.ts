@@ -197,6 +197,31 @@ export interface Product {
 
 export type ProductFormData = Omit<Product, 'id' | 'normalized_name' | 'status' | 'created_at' | 'updated_at' | 'product_type_name'>;
 
+// ─── NIVELES DE PRECIO ──────────────────────────────────────────
+
+export interface ProductPriceLevel {
+  id: number;
+  name: string;
+  normalized_name: string;
+  default_margin_pct: number;
+  display_order: number;
+  status: 'active' | 'inactive';
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProductPriceRow {
+  price_level_id: number;
+  name: string;
+  margin_pct: number;
+  price: number;
+}
+
+export interface ProductPricesResponse {
+  average_cost: number;
+  prices: ProductPriceRow[];
+}
+
 // ─── SERVICIOS CONFIGURABLES ──────────────────────────────────
 
 export interface ServiceTemplateProduct {

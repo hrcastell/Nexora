@@ -419,6 +419,32 @@ CREATE TABLE IF NOT EXISTS {schema_name}.products (
 
 CREATE INDEX IF NOT EXISTS idx_products_status ON {schema_name}.products(status);
 
+CREATE TABLE IF NOT EXISTS {schema_name}.product_price_levels (
+    id                  SERIAL PRIMARY KEY,
+    name                VARCHAR(100)  NOT NULL,
+    normalized_name     VARCHAR(120)  NOT NULL,
+    default_margin_pct  NUMERIC(6,2)  NOT NULL DEFAULT 0,
+    display_order       INTEGER       NOT NULL DEFAULT 0,
+    status              VARCHAR(30)   NOT NULL DEFAULT 'active',
+    created_at          TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
+    updated_at          TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_product_price_levels_name UNIQUE (normalized_name)
+);
+
+CREATE INDEX IF NOT EXISTS idx_product_price_levels_status ON {schema_name}.product_price_levels(status);
+
+CREATE TABLE IF NOT EXISTS {schema_name}.product_prices (
+    id              SERIAL PRIMARY KEY,
+    product_id      INTEGER       NOT NULL REFERENCES {schema_name}.products(id) ON DELETE CASCADE,
+    price_level_id  INTEGER       NOT NULL REFERENCES {schema_name}.product_price_levels(id) ON DELETE RESTRICT,
+    margin_pct      NUMERIC(6,2)  NOT NULL DEFAULT 0,
+    created_at      TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMP     DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_product_prices_product_level UNIQUE (product_id, price_level_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_product_prices_product_id ON {schema_name}.product_prices(product_id);
+
 -- ─── SERVICIOS CONFIGURABLES ──────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS {schema_name}.service_templates (

@@ -172,6 +172,14 @@ const ROUTE_MODULE_MAP = {
     'PATCH  /garage/products/:id/status':   { modules: ['garage_operations', 'inventory'], semantics: 'OR', transaction: 'products' },
     'DELETE /garage/products/:id':          { modules: ['garage_operations', 'inventory'], semantics: 'OR', transaction: 'products' },
 
+    'GET    /garage/products/:id/prices':   { modules: ['garage_operations', 'inventory'], semantics: 'OR', transaction: 'products' },
+    'PUT    /garage/products/:id/prices':   { modules: ['garage_operations', 'inventory'], semantics: 'OR', transaction: 'products' },
+
+    'GET    /garage/product-price-levels':              { modules: ['garage_operations', 'inventory'], semantics: 'OR', transaction: 'products' },
+    'POST   /garage/product-price-levels':              { modules: ['garage_operations', 'inventory'], semantics: 'OR', transaction: 'products' },
+    'PUT    /garage/product-price-levels/:id':          { modules: ['garage_operations', 'inventory'], semantics: 'OR', transaction: 'products' },
+    'PATCH  /garage/product-price-levels/:id/status':   { modules: ['garage_operations', 'inventory'], semantics: 'OR', transaction: 'products' },
+
     'GET    /products':              { modules: ['garage_operations', 'inventory'], semantics: 'OR', transaction: 'products' },
     'POST   /products':              { modules: ['garage_operations', 'inventory'], semantics: 'OR', transaction: 'products' },
     'GET    /products/:id':          { modules: ['garage_operations', 'inventory'], semantics: 'OR', transaction: 'products' },
