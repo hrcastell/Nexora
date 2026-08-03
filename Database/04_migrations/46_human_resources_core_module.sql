@@ -40,7 +40,7 @@ BEGIN
         (mod_id, 'hr_employee_profile', 'Perfil de Empleado', 'Perfil integral de empleado', '/hr/employees/:id', 'user', 2, FALSE, 'activo'),
         (mod_id, 'hr_org_settings', 'Organización', 'Configuración organizacional', '/hr/organization', 'sitemap', 3, TRUE, 'activo'),
         (mod_id, 'hr_requests', 'Solicitudes', 'Solicitudes de empleados', '/hr/requests', 'clipboard-list', 4, TRUE, 'activo'),
-        (mod_id, 'hr_request_approvals', 'Aprobaciones RRHH', 'Bandeja de aprobaciones', '/hr/request-approvals', 'check-square', 5, TRUE, 'activo')
+        (mod_id, 'hr_request_approvals', 'Aprobaciones RRHH', 'Bandeja de aprobaciones', '/hr/approvals', 'check-square', 5, TRUE, 'activo')
     ON CONFLICT (module_id, code) DO UPDATE SET
         name = EXCLUDED.name,
         description = EXCLUDED.description,

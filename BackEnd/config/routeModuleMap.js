@@ -444,6 +444,13 @@ const ROUTE_MODULE_MAP = {
     'GET    /hr/employees/:id':            { module: 'human_resources', transaction: 'hr_employee_profile' },
     'PUT    /hr/employees/:id':            { module: 'human_resources', transaction: 'hr_employees' },
 
+    // Human Resources: Balances
+    'GET    /hr/balances/me':              { module: 'human_resources', transaction: 'hr_my_profile' },
+    'GET    /hr/balances/:employeeId':     { module: 'human_resources', transaction: 'hr_employees' },
+    'PUT    /hr/balances/:employeeId/:balanceCode': { module: 'human_resources', transaction: 'hr_employees' },
+    'POST   /hr/balances/:employeeId/:balanceCode/adjustments': { module: 'human_resources', transaction: 'hr_employees' },
+    'GET    /hr/balances/:employeeId/:balanceCode/movements': { module: 'human_resources', transaction: 'hr_employees' },
+
     // Human Resources: Requests and approvals
     'GET    /hr/request-types':            { module: 'human_resources', transaction: 'hr_requests' },
     'GET    /hr/requests':                 { module: 'human_resources', transaction: 'hr_requests' },
