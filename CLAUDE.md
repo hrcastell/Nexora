@@ -27,7 +27,7 @@ There is no test suite configured anywhere in this project.
 
 Backend requires `BackEnd/.env` — the server refuses to start without `DATABASE_URL` and `JWT_SECRET`:
 ```
-PORT=3000
+PORT=8090
 NODE_ENV=development
 DATABASE_URL=postgres://user:password@localhost:5432/nexora_db
 DB_SSL=false
@@ -35,7 +35,7 @@ JWT_SECRET=your_super_secret_jwt_key_here
 # Optional: MODULE_GUARD=strict  (enables blocking mode; default is log-only)
 ```
 
-Frontend API base URL: if `VITE_API_URL` is not set, Axios defaults to `http://localhost:3000/api`. For production, set it in `FrontEnd/Portal/.env.production`.
+Frontend API base URL: if `VITE_API_URL` is not set, Axios defaults to `http://localhost:8090/api`. For production, set it in `FrontEnd/Portal/.env.production`.
 
 ## Architecture
 

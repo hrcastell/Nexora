@@ -62,7 +62,7 @@ services. First run only:
   scratch, remove the named volume: `docker compose down -v`.
 
 - `backend` runs `nodemon server.js` against the bind-mounted `BackEnd/`
-  source, reachable at `http://localhost:3000`.
+  source, reachable at `http://localhost:8090`.
 - `frontend` runs `vite --host 0.0.0.0` against the bind-mounted
   `FrontEnd/Portal/` source, reachable at `http://localhost:5173`.
 

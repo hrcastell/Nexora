@@ -49,10 +49,10 @@ services:
       db:
         condition: service_healthy
     ports:
-      - "3000:3000"
+      - "8090:8090"
     environment:
       NODE_ENV: development
-      PORT: 3000
+      PORT: 8090
       DB_SSL: "false"
       # `db` is the compose service hostname — resolved INSIDE the backend
       # container, on the compose network. Correct only in that context.
@@ -81,7 +81,7 @@ services:
       # Vite only ships this as static JS — it is resolved by the BROWSER on
       # the host, not inside the container. Must stay a host-exposed port,
       # never an internal compose service hostname like `backend`.
-      VITE_API_URL: http://localhost:3000/api
+      VITE_API_URL: http://localhost:8090/api
     volumes:
       - ./FrontEnd/Portal:/usr/src/app
       - /usr/src/app/node_modules
