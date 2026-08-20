@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const bcrypt = require('bcryptjs');
 const { registerCompanyCoreModules } = require('./companyModulesController');
+const { listMigrationFiles, classify } = require('../migrations/runner');
 
 // Helper to run SQL file
 const runSqlFile = async (filePath, schemaName, client) => {
@@ -381,6 +382,23 @@ exports.createCompany = async (req, res) => {
         creationStep = 'running tenant schema template';
         const templatePath = path.join(__dirname, '../templates/tenant_schema.sql');
         await runSqlFile(templatePath, schema_name, client);
+
+        // 3.1 Seed migration tracking: tenant_schema.sql already reflects every
+        // per-tenant migration that exists today (mandatory sync rule), so mark
+        // them as already-satisfied for this schema instead of letting the
+        // automated migration runner (BackEnd/migrations/runner.js) replay
+        // historical migration SQL against a schema that already has the
+        // end state baked in.
+        creationStep = 'seeding migration tracking for new tenant';
+        for (const file of listMigrationFiles()) {
+            const fileSql = fs.readFileSync(file.path, 'utf8');
+            if (classify(fileSql) === 'public-only') continue;
+            await client.query(
+                `INSERT INTO public.schema_migrations (schema_name, migration_number, filename)
+                 VALUES ($1, $2, $3) ON CONFLICT (schema_name, migration_number) DO NOTHING`,
+                [schema_name, file.number, file.filename]
+            );
+        }
 
         // 3.5 Seed base roles, permissions and RBAC matrix for the new tenant
         creationStep = 'seeding tenant roles';

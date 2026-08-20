@@ -8,10 +8,20 @@ if (missing.length > 0) {
 }
 
 const app = require('./app');
+const { runMigrations } = require('./migrations/runner');
 
 const PORT = process.env.PORT || 8090;
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV}`);
-});
+(async () => {
+  try {
+    await runMigrations();
+  } catch (err) {
+    console.error('FATAL: migration bootstrap failed:', err.message);
+    process.exit(1);
+  }
+
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+    console.log(`Environment: ${process.env.NODE_ENV}`);
+  });
+})();

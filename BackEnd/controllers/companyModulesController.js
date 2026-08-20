@@ -67,7 +67,7 @@ async function seedDefaultProfilePermissionsForModule(client, { companyId, modul
  * company_modules row for it — see BackEnd/utils/moduleState.js) when
  * `garage_operations` or `inventory` is enabled for a company.
  *
- * This mirrors Database/04_migrations/53_products_cotizaciones_profile_permissions.sql's
+ * This mirrors BackEnd/migrations/53_products_cotizaciones_profile_permissions.sql's
  * one-time backfill, but going forward for companies enabling either core
  * AFTER that migration ran — otherwise admin_empresa would never see the
  * neutral Products node for newly-onboarded/newly-enabled companies.
