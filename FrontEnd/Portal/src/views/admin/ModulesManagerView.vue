@@ -255,6 +255,47 @@ async function onDragEnd() {
   }
 }
 
+// ── Transaction drag-and-drop persistence (per module) ───────────
+// Unlike modules, transactions have no per-company order override — plain
+// catalog tab_order is the single source of truth (menuController.js
+// orders the real end-user sidebar submenu by it too), so we drag the
+// module's own `transactions` array directly instead of a derived copy.
+const isReorderingTx = ref<Record<number, boolean>>({});
+let txDragSnapshot: CatalogTransaction[] = [];
+
+function onTxDragStart(moduleId: number) {
+  const mod = modules.value.find(m => m.id === moduleId);
+  txDragSnapshot = mod ? [...mod.transactions] : [];
+}
+
+async function onTxDragEnd(mod: CatalogModule) {
+  const ids = mod.transactions.map(t => t.id);
+  const prevIds = txDragSnapshot.map(t => t.id);
+  if (ids.length === prevIds.length && ids.every((id, i) => id === prevIds[i])) {
+    return; // dropped back in the same position — nothing to persist
+  }
+
+  isReorderingTx.value[mod.id] = true;
+  try {
+    const { data } = await api.put<{ updated: number; order: { id: number; tab_order: number }[] }>(
+      '/catalog/transactions/reorder',
+      { module_id: mod.id, ids }
+    );
+    for (const { id, tab_order } of data.order) {
+      const tx = mod.transactions.find(t => t.id === id);
+      if (tx) tx.tab_order = tab_order;
+    }
+    showFeedback('success', 'Orden de transacciones actualizado.');
+    await menuStore.loadMenu();
+  } catch (err: unknown) {
+    mod.transactions = txDragSnapshot; // rollback to pre-drag order
+    const e = err as { response?: { data?: { error?: string } } };
+    showFeedback('error', e?.response?.data?.error ?? 'Error al reordenar transacciones');
+  } finally {
+    isReorderingTx.value[mod.id] = false;
+  }
+}
+
 // ── Save module metadata (super_admin only) ─────────────────────
 const savingModule = ref<Record<number, boolean>>({});
 async function saveModuleMetadata(mod: CatalogModule) {
@@ -529,20 +570,42 @@ onMounted(loadCatalog);
               Transacciones ({{ mod.transactions.length }})
             </p>
 
-            <!-- Tabs -->
-            <div class="flex flex-wrap gap-2 border-b pb-3 mb-4" :style="{ borderColor: cardBorder }">
-              <button v-for="tx in mod.transactions" :key="tx.id"
-                      type="button"
-                      @click="activeTab[mod.id] = tx.id"
-                      class="flex items-center gap-2 rounded-2xl border px-3 py-1.5 text-xs font-medium transition"
-                      :style="activeTab[mod.id] === tx.id
-                        ? { backgroundColor: 'rgba(212,175,55,0.15)', borderColor: 'rgba(212,175,55,0.40)', color: '#D4AF37' }
-                        : { backgroundColor: inputBg, borderColor: inputBorder, color: mutedColor }">
-                <component :is="resolveIcon(tx.icon)" class="h-3.5 w-3.5" />
-                {{ tx.name }}
-                <span v-if="tx.status !== 'activo'" class="text-[9px] uppercase opacity-70">{{ tx.status }}</span>
-              </button>
-            </div>
+            <!-- Tabs (draggable reorder for super_admin) -->
+            <draggable
+              v-model="mod.transactions"
+              item-key="id"
+              tag="div"
+              class="flex flex-wrap gap-2 border-b pb-3 mb-4"
+              :style="{ borderColor: cardBorder }"
+              handle=".tx-drag-handle"
+              :disabled="!perms.isSuperAdmin.value || isReorderingTx[mod.id]"
+              ghost-class="module-drag-ghost"
+              chosen-class="module-drag-chosen"
+              drag-class="module-drag-active"
+              :animation="200"
+              :delay="150"
+              :delay-on-touch-only="true"
+              @start="onTxDragStart(mod.id)"
+              @end="onTxDragEnd(mod)">
+              <template #item="{ element: tx }">
+                <button type="button"
+                        @click="activeTab[mod.id] = tx.id"
+                        class="flex items-center gap-1.5 rounded-2xl border px-3 py-1.5 text-xs font-medium transition"
+                        :style="activeTab[mod.id] === tx.id
+                          ? { backgroundColor: 'rgba(212,175,55,0.15)', borderColor: 'rgba(212,175,55,0.40)', color: '#D4AF37' }
+                          : { backgroundColor: inputBg, borderColor: inputBorder, color: mutedColor }">
+                  <span v-if="perms.isSuperAdmin.value"
+                        class="tx-drag-handle flex items-center cursor-grab active:cursor-grabbing"
+                        title="Arrastrar para reordenar"
+                        @click.stop>
+                    <GripVertical class="h-3 w-3" />
+                  </span>
+                  <component :is="resolveIcon(tx.icon)" class="h-3.5 w-3.5" />
+                  {{ tx.name }}
+                  <span v-if="tx.status !== 'activo'" class="text-[9px] uppercase opacity-70">{{ tx.status }}</span>
+                </button>
+              </template>
+            </draggable>
 
             <!-- Active tab content -->
             <template v-for="tx in mod.transactions" :key="tx.id">
