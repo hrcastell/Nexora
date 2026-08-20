@@ -54,6 +54,10 @@ services:
       NODE_ENV: development
       PORT: 8090
       DB_SSL: "false"
+      # Used to build password-reset links; not a secret. SMTP_* credentials
+      # for actually sending that email live in BackEnd/.env (gitignored),
+      # never here.
+      FRONTEND_URL: http://localhost:5173
       # `db` is the compose service hostname — resolved INSIDE the backend
       # container, on the compose network. Correct only in that context.
       DATABASE_URL: postgres://${POSTGRES_USER:-nexora}:${POSTGRES_PASSWORD:-nexora}@db:5432/${POSTGRES_DB:-nexora_db}

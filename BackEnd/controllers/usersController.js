@@ -308,8 +308,13 @@ exports.updateCompanyUser = async (req, res) => {
         const { id: companyId, userId } = req.params;
         const {
             first_name, last_name, phone, country, state_region, city, commune,
-            role, is_company_admin, role_id, status, job_title, access_level, profile_ids
+            role, is_company_admin, role_id, status, job_title, access_level, profile_ids,
+            password
         } = req.body;
+
+        if (password && !PASSWORD_REGEX.test(password)) {
+            return res.status(400).json({ error: 'La contraseña debe tener mínimo 8 caracteres, una mayúscula, un número y un carácter especial' });
+        }
 
         await client.query('BEGIN');
 
@@ -323,6 +328,8 @@ exports.updateCompanyUser = async (req, res) => {
             return res.status(404).json({ error: 'Empresa no encontrada' });
         }
         const schemaName = companyRes.rows[0].schema_name;
+
+        const newPasswordHash = password ? await bcrypt.hash(password, 10) : null;
 
         const fullName = (first_name || '') + ' ' + (last_name || '');
         await client.query(
@@ -338,11 +345,14 @@ exports.updateCompanyUser = async (req, res) => {
                 city         = COALESCE($6, city),
                 commune      = COALESCE($7, commune),
                 role         = COALESCE($8, role),
+                password_hash = COALESCE($11, password_hash),
+                failed_login_attempts = CASE WHEN $11 IS NOT NULL THEN 0 ELSE failed_login_attempts END,
+                locked_until = CASE WHEN $11 IS NOT NULL THEN NULL ELSE locked_until END,
                 updated_by   = $9,
                 updated_at   = CURRENT_TIMESTAMP
              WHERE id = $10`,
             [first_name, last_name, phone, country, state_region, city, commune,
-             role, req.user.id, userId]
+             role, req.user.id, userId, newPasswordHash]
         );
 
         if (is_company_admin !== undefined) {
