@@ -335,6 +335,45 @@ exports.forgotPassword = async (req, res) => {
   }
 };
 
+// POST /api/auth/change-password — self-service, requires an authenticated
+// session and the current password as proof of identity. Works for ANY
+// user including is_system_user, unlike the admin usersController path
+// (which explicitly refuses to touch the system/root account).
+exports.changePassword = async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  if (!currentPassword || !newPassword) {
+    return res.status(400).json({ error: 'currentPassword and newPassword are required' });
+  }
+  if (newPassword.length < 8) {
+    return res.status(400).json({ error: 'La contraseña debe tener al menos 8 caracteres' });
+  }
+
+  try {
+    const result = await db.query('SELECT password_hash FROM public.users WHERE id = $1', [req.user.id]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, result.rows[0].password_hash);
+    if (!isMatch) {
+      return res.status(401).json({ error: 'La contraseña actual es incorrecta' });
+    }
+
+    const newHash = await bcrypt.hash(newPassword, 10);
+    await db.query(
+      `UPDATE public.users
+       SET password_hash = $1, failed_login_attempts = 0, locked_until = NULL
+       WHERE id = $2`,
+      [newHash, req.user.id]
+    );
+
+    res.json({ message: 'Contraseña actualizada correctamente' });
+  } catch (error) {
+    console.error('changePassword error:', error.message, error.stack);
+    res.status(500).json({ error: 'Server error changing password' });
+  }
+};
+
 exports.resetPassword = async (req, res) => {
   const { email, token, newPassword } = req.body;
   if (!email || !token || !newPassword) {
