@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { useVisualConfigStore } from '../stores/visualConfig';
 
 const props = defineProps<{
   open: boolean;
@@ -21,6 +22,21 @@ const sizeClasses = computed(() => {
 });
 
 const close = () => emit('close');
+
+// Teleported to <body>, outside .nxr-app-shell — the app's usual
+// [data-nexora-mode="light"] class overrides can't reach it, so this
+// computes its own colors from the store directly (same pattern as
+// InfoModal.vue / ConfirmActionModal.vue).
+const configStore = useVisualConfigStore();
+const isLight = computed(() => configStore.mode === 'light');
+const modalBg = computed(() => isLight.value
+  ? 'linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,250,252,0.99))'
+  : 'linear-gradient(180deg, rgba(12,22,45,0.96), rgba(8,16,31,0.99))');
+const modalBorder = computed(() => isLight.value ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.10)');
+const headerColor = computed(() => isLight.value ? '#0f172a' : '#ffffff');
+const mutedColor = computed(() => isLight.value ? '#475569' : '#94a3b8');
+const closeBg = computed(() => isLight.value ? 'rgba(0, 0, 0, 0.04)' : 'rgba(255, 255, 255, 0.05)');
+const closeBorder = computed(() => isLight.value ? 'rgba(0, 0, 0, 0.10)' : 'rgba(255, 255, 255, 0.10)');
 
 // CloseIcon component
 const CloseIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="h-5 w-5"><path d="M18 6L6 18"/><path d="M6 6l12 12"/></svg>` };
@@ -46,20 +62,22 @@ const CloseIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="curr
         <!-- Modal Content -->
         <div
           :class="[
-            'relative z-10 w-full rounded-[30px] border border-white/10 bg-[linear-gradient(180deg,rgba(12,22,45,0.96),rgba(8,16,31,0.99))] p-6 shadow-2xl shadow-black/40 sm:p-8',
+            'relative z-10 w-full rounded-[30px] p-6 shadow-2xl shadow-black/40 sm:p-8',
             sizeClasses
           ]"
+          :style="{ background: modalBg, border: `1px solid ${modalBorder}` }"
         >
           <!-- Header -->
           <div class="flex items-start justify-between gap-4">
             <div>
               <p v-if="eyebrow" class="text-sm font-medium text-[#d4af37]">{{ eyebrow }}</p>
-              <h3 class="mt-2 text-2xl font-semibold text-white">{{ title }}</h3>
+              <h3 class="mt-2 text-2xl font-semibold" :style="{ color: headerColor }">{{ title }}</h3>
             </div>
             <button
               type="button"
               @click="close"
-              class="rounded-2xl border border-white/10 bg-white/5 p-2 text-slate-300 transition hover:bg-white/10"
+              class="app-modal-hover rounded-2xl p-2 transition"
+              :style="{ backgroundColor: closeBg, border: `1px solid ${closeBorder}`, color: mutedColor }"
             >
               <CloseIcon />
             </button>
@@ -79,3 +97,10 @@ const CloseIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="curr
     </Transition>
   </Teleport>
 </template>
+
+<style scoped>
+/* Teleported to <body>, outside .nxr-app-shell — plain [data-nexora-mode]
+   (set on <body> itself) still reaches it. */
+.app-modal-hover:hover { background-color: rgba(255, 255, 255, 0.10) !important; }
+[data-nexora-mode="light"] .app-modal-hover:hover { background-color: rgba(0, 0, 0, 0.06) !important; }
+</style>

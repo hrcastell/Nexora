@@ -132,14 +132,14 @@ function timeAgo(dateStr: string): string {
       <div
         v-if="isOpen"
         ref="dropdownPanelRef"
-        class="fixed z-[200] w-80 rounded-[24px] border border-white/10 bg-[#0b1326]/95 shadow-2xl shadow-black/40 backdrop-blur-xl"
+        class="notif-dropdown fixed z-[200] w-80 rounded-[24px] shadow-2xl shadow-black/40 backdrop-blur-xl nxr-card"
         :style="dropdownStyle"
       >
         <!-- Header -->
-        <div class="flex items-center justify-between border-b border-white/10 px-4 py-3">
+        <div class="flex items-center justify-between px-4 py-3" :style="{ borderBottom: '1px solid var(--nexora-border-color)' }">
           <div class="flex items-center gap-2">
             <Bell class="h-4 w-4 text-violet-400" />
-            <span class="text-sm font-semibold text-white">Notificaciones</span>
+            <span class="text-sm font-semibold nxr-text">Notificaciones</span>
             <span
               v-if="notifStore.unreadCount > 0"
               class="rounded-full bg-violet-500/20 px-2 py-0.5 text-xs font-medium text-violet-300"
@@ -150,7 +150,7 @@ function timeAgo(dateStr: string): string {
           <button
             v-if="notifStore.unreadCount > 0"
             @click="onMarkAllRead"
-            class="flex items-center gap-1 rounded-xl px-2 py-1 text-xs font-medium text-slate-400 transition hover:bg-white/5 hover:text-white"
+            class="notif-hover flex items-center gap-1 rounded-xl px-2 py-1 text-xs font-medium nxr-text-muted transition"
             title="Marcar todas como leídas"
           >
             <CheckCheck class="h-3.5 w-3.5" />
@@ -161,12 +161,12 @@ function timeAgo(dateStr: string): string {
         <!-- Notifications list -->
         <div class="max-h-72 overflow-y-auto custom-scrollbar">
           <div v-if="notifStore.loading" class="flex items-center justify-center py-8">
-            <span class="text-xs text-slate-500">Cargando...</span>
+            <span class="text-xs nxr-text-soft">Cargando...</span>
           </div>
 
           <div v-else-if="recentNotifications.length === 0" class="flex flex-col items-center py-8 gap-2">
-            <Bell class="h-8 w-8 text-slate-600" />
-            <span class="text-xs text-slate-500">Sin notificaciones</span>
+            <Bell class="h-8 w-8 nxr-text-soft opacity-70" />
+            <span class="text-xs nxr-text-soft">Sin notificaciones</span>
           </div>
 
           <div v-else>
@@ -174,10 +174,10 @@ function timeAgo(dateStr: string): string {
               v-for="n in recentNotifications"
               :key="n.id"
               :class="[
-                'group flex cursor-pointer items-start gap-3 border-b border-white/5 px-4 py-3 transition',
-                n.is_read ? 'opacity-60 hover:opacity-100' : 'bg-white/3',
-                'hover:bg-white/5'
+                'notif-row group flex cursor-pointer items-start gap-3 px-4 py-3 transition',
+                n.is_read ? 'opacity-60 hover:opacity-100' : 'notif-unread'
               ]"
+              :style="{ borderBottom: '1px solid var(--nexora-border-subtle)' }"
               @click="navigateTo(n)"
             >
               <!-- Type icon -->
@@ -187,11 +187,11 @@ function timeAgo(dateStr: string): string {
 
               <!-- Content -->
               <div class="min-w-0 flex-1">
-                <p :class="['text-xs font-medium leading-tight', n.is_read ? 'text-slate-300' : 'text-white']">
+                <p :class="['text-xs font-medium leading-tight', n.is_read ? 'nxr-text-muted' : 'nxr-text']">
                   {{ n.title }}
                 </p>
-                <p v-if="n.body" class="mt-0.5 truncate text-[11px] text-slate-500">{{ n.body }}</p>
-                <p class="mt-1 text-[10px] text-slate-600">{{ timeAgo(n.created_at) }}</p>
+                <p v-if="n.body" class="mt-0.5 truncate text-[11px] nxr-text-soft">{{ n.body }}</p>
+                <p class="mt-1 text-[10px] nxr-text-soft opacity-80">{{ timeAgo(n.created_at) }}</p>
               </div>
 
               <!-- Actions -->
@@ -199,14 +199,14 @@ function timeAgo(dateStr: string): string {
                 <button
                   v-if="!n.is_read"
                   @click.stop="onMarkRead(n.id)"
-                  class="rounded-lg p-1 text-slate-600 opacity-0 transition group-hover:opacity-100 hover:bg-white/10 hover:text-violet-400"
+                  class="notif-hover rounded-lg p-1 nxr-text-soft opacity-0 transition group-hover:opacity-100 hover:text-violet-400"
                   title="Marcar como leída"
                 >
                   <Check class="h-3 w-3" />
                 </button>
                 <button
                   @click.stop="onDismiss(n.id)"
-                  class="rounded-lg p-1 text-slate-600 opacity-0 transition group-hover:opacity-100 hover:bg-white/10 hover:text-rose-400"
+                  class="notif-hover rounded-lg p-1 nxr-text-soft opacity-0 transition group-hover:opacity-100 hover:text-rose-400"
                   title="Eliminar"
                 >
                   <X class="h-3 w-3" />
@@ -217,10 +217,11 @@ function timeAgo(dateStr: string): string {
         </div>
 
         <!-- Footer -->
-        <div class="border-t border-white/10 px-4 py-3">
+        <div class="px-4 py-3" :style="{ borderTop: '1px solid var(--nexora-border-color)' }">
           <button
             @click="goToCenter"
-            class="w-full rounded-2xl border border-white/10 bg-white/5 py-2 text-xs font-medium text-slate-300 transition hover:bg-white/10 hover:text-white"
+            class="notif-hover w-full rounded-2xl py-2 text-xs font-medium nxr-text-muted transition"
+            :style="{ border: '1px solid var(--nexora-border-color)' }"
           >
             Ver todas las notificaciones →
           </button>
@@ -246,5 +247,17 @@ function timeAgo(dateStr: string): string {
   transform: translateY(-6px) scale(0.98);
 }
 
-.bg-white\/3 { background-color: rgba(255,255,255,0.03); }
+/* Hover/unread tints — plain [data-nexora-mode] (set on <body>) rather than
+   the app's usual .nxr-app-shell[data-nexora-mode] scoping, because this
+   dropdown lives under <Teleport to="body"> and is therefore NOT a DOM
+   descendant of .nxr-app-shell even though it's logically part of the
+   authenticated app. <body> itself still carries the attribute and is a
+   real ancestor of teleported content, so this still resolves correctly. */
+.notif-hover:hover { background-color: rgba(255, 255, 255, 0.10); color: var(--nexora-text-color); }
+.notif-row:hover { background-color: rgba(255, 255, 255, 0.05); }
+.notif-unread { background-color: rgba(255, 255, 255, 0.03); }
+
+[data-nexora-mode="light"] .notif-hover:hover { background-color: rgba(0, 0, 0, 0.05); }
+[data-nexora-mode="light"] .notif-row:hover { background-color: rgba(0, 0, 0, 0.03); }
+[data-nexora-mode="light"] .notif-unread { background-color: rgba(0, 0, 0, 0.02); }
 </style>
