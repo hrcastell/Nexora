@@ -73,8 +73,8 @@
                 <div>{{ line.product_name_snapshot || line.sku_snapshot || 'Ítem sin producto' }}</div>
                 <div v-if="line.is_non_stocked" style="font-size:6.5pt; color:#888;">Tercerizado{{ line.supplier_name ? ` · ${line.supplier_name}` : '' }}</div>
               </td>
-              <td class="text-center">{{ line.quantity }}</td>
-              <td class="text-right">{{ fmt(line.unit_price) }}</td>
+              <td class="text-center">{{ fmtQty(line.quantity) }}</td>
+              <td class="text-right">{{ fmtUnitPrice(line.unit_price) }}</td>
               <td class="text-right">{{ fmt(line.subtotal) }}</td>
             </tr>
             <tr v-if="lines.length === 0">
@@ -93,8 +93,12 @@
               <td class="nxr-print-totals-value">{{ fmt(quote.subtotal) }}</td>
             </tr>
             <tr v-if="quote.discount_amount > 0">
-              <td class="nxr-print-totals-label">Descuento</td>
-              <td class="nxr-print-totals-value">- {{ fmt(quote.discount_amount) }}</td>
+              <td class="nxr-print-totals-label">Descuento{{ quote.discount_type === 'percentage' ? ` (${quote.discount_amount}%)` : '' }}</td>
+              <td class="nxr-print-totals-value">- {{ fmt(discountValue) }}</td>
+            </tr>
+            <tr v-if="quote.tax_enabled">
+              <td class="nxr-print-totals-label">IVA ({{ quote.tax_rate }}%)</td>
+              <td class="nxr-print-totals-value">{{ fmt(quote.tax_amount) }}</td>
             </tr>
             <tr>
               <td class="nxr-print-totals-label">TOTAL</td>
@@ -172,8 +176,22 @@ const customerInfo = computed(() => {
   };
 });
 
+const discountValue = computed(() => {
+  const subtotal = Number(props.quote.subtotal || 0);
+  const discount = Number(props.quote.discount_amount || 0);
+  return props.quote.discount_type === 'percentage' ? Math.round(subtotal * (discount / 100) * 100) / 100 : discount;
+});
+
 function fmt(n: number | undefined | null) {
   return `$${Math.round(n ?? 0).toLocaleString('es-CL')}`;
+}
+
+function fmtQty(n: number | string | undefined | null) {
+  return Number(n || 0);
+}
+
+function fmtUnitPrice(n: number | string | undefined | null) {
+  return `$${Number(n || 0).toLocaleString('es-CL', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}`;
 }
 
 function fmtDate(iso: string | undefined | null) {

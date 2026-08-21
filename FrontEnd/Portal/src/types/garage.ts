@@ -246,6 +246,8 @@ export interface ServiceTemplate {
   suggested_specialty: string | null;
   base_labor_rate: number | null;
   currency: string;
+  margin_pct: number;
+  tax_pct: number;
   status: 'active' | 'inactive';
   products?: ServiceTemplateProduct[];
   created_at: string;
