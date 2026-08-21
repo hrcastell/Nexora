@@ -101,7 +101,28 @@ async function resolveLineInput(client, schema, body) {
         };
     }
 
-    if (!product) throw createError('product_id es requerido para líneas de stock', 400);
+    if (!product) {
+        // Manual/free-text line: no catalog product, no supplier — e.g. a
+        // labor line ("Instalación de software") that isn't meant to be
+        // stocked or sourced from a supplier, so it must NOT go through the
+        // isNonStocked=true path (that triggers purchase-document generation
+        // on acceptance). Requires an explicit name + price since there's no
+        // product to snapshot/default from.
+        if (!body.product_name) throw createError('Selecciona un producto o indica una descripción para la línea', 400);
+        const unitPrice = number(body.unit_price, -1);
+        if (!(unitPrice >= 0)) throw createError('unit_price es requerido para líneas manuales', 400);
+        return {
+            productId: null,
+            productNameSnapshot: body.product_name,
+            skuSnapshot: body.sku || null,
+            supplierId: null,
+            supplierCost: 0,
+            marginPct: 0,
+            unitPrice, quantity,
+            subtotal: round2(unitPrice * quantity),
+            isNonStocked: false
+        };
+    }
     const unitPrice = body.unit_price !== undefined && body.unit_price !== ''
         ? number(body.unit_price, 0)
         : Number(product.reference_price || 0);
@@ -124,20 +145,67 @@ async function lockQuote(client, schema, quoteId) {
     return result.rows[0];
 }
 
-async function recalcTotals(client, schema, quoteId, discountAmount = null) {
+function sanitizeDiscountType(value, fallback = 'fixed') {
+    return value === 'percentage' ? 'percentage' : (value === 'fixed' ? 'fixed' : fallback);
+}
+
+/**
+ * Discount is either a flat currency amount or a percentage of the
+ * subtotal, per discount_type — never both, never applied blindly as a
+ * flat subtraction regardless of type (that was the pre-fix bug).
+ */
+function computeDiscountValue(subtotal, discountAmount, discountType) {
+    return discountType === 'percentage'
+        ? round2(subtotal * (round2(discountAmount) / 100))
+        : round2(discountAmount);
+}
+
+/**
+ * Recomputes subtotal from lines and re-derives discount/tax/final_amount.
+ * `overrides` lets a caller change discount/tax settings in the same pass
+ * (update()); omitted/undefined fields fall back to the currently stored
+ * value, matching the previous single-field discountAmount behavior.
+ */
+async function recalcTotals(client, schema, quoteId, overrides = {}) {
     const linesRes = await client.query(
         `SELECT COALESCE(SUM(subtotal), 0) AS subtotal FROM ${schema}.quote_lines WHERE quote_id = $1`,
         [quoteId]
     );
     const subtotal = round2(linesRes.rows[0].subtotal);
-    const quoteRes = await client.query(`SELECT discount_amount FROM ${schema}.quotes WHERE id = $1`, [quoteId]);
-    const discount = discountAmount !== null ? round2(discountAmount) : round2(quoteRes.rows[0].discount_amount);
-    const finalAmount = round2(subtotal - discount);
-    await client.query(
-        `UPDATE ${schema}.quotes SET subtotal = $1, discount_amount = $2, final_amount = $3, updated_at = CURRENT_TIMESTAMP WHERE id = $4`,
-        [subtotal, discount, finalAmount, quoteId]
+
+    const quoteRes = await client.query(
+        `SELECT discount_amount, discount_type, tax_enabled, tax_rate FROM ${schema}.quotes WHERE id = $1`,
+        [quoteId]
     );
-    return { subtotal, discount, finalAmount };
+    const current = quoteRes.rows[0];
+
+    const discountAmount = overrides.discountAmount !== undefined && overrides.discountAmount !== null
+        ? round2(overrides.discountAmount)
+        : round2(current.discount_amount);
+    const discountType = overrides.discountType !== undefined && overrides.discountType !== null
+        ? sanitizeDiscountType(overrides.discountType, current.discount_type)
+        : current.discount_type;
+    const taxEnabled = overrides.taxEnabled !== undefined && overrides.taxEnabled !== null
+        ? Boolean(overrides.taxEnabled)
+        : current.tax_enabled;
+    const taxRate = overrides.taxRate !== undefined && overrides.taxRate !== null
+        ? round2(overrides.taxRate)
+        : round2(current.tax_rate);
+
+    const discountValue = computeDiscountValue(subtotal, discountAmount, discountType);
+    const afterDiscount = Math.max(0, round2(subtotal - discountValue));
+    const taxAmount = taxEnabled ? round2(afterDiscount * (taxRate / 100)) : 0;
+    const finalAmount = round2(afterDiscount + taxAmount);
+
+    await client.query(
+        `UPDATE ${schema}.quotes
+         SET subtotal = $1, discount_amount = $2, discount_type = $3,
+             tax_enabled = $4, tax_rate = $5, tax_amount = $6, final_amount = $7,
+             updated_at = CURRENT_TIMESTAMP
+         WHERE id = $8`,
+        [subtotal, discountAmount, discountType, taxEnabled, taxRate, taxAmount, finalAmount, quoteId]
+    );
+    return { subtotal, discountAmount, discountType, taxEnabled, taxRate, taxAmount, finalAmount };
 }
 
 exports.list = async (req, res) => {
@@ -258,12 +326,20 @@ exports.create = async (req, res) => {
         await client.query('BEGIN');
         const quoteNumber = await allocateNumber(client, schema, 'quote');
         const result = await client.query(
-            `INSERT INTO ${schema}.quotes (quote_number, customer_id, valid_until, notes, created_by)
-             VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-            [quoteNumber, req.body.customer_id || null, req.body.valid_until || null, req.body.notes || null, req.user.id]
+            `INSERT INTO ${schema}.quotes
+             (quote_number, customer_id, valid_until, notes, discount_amount, discount_type, tax_enabled, tax_rate, created_by)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+            [quoteNumber, req.body.customer_id || null, req.body.valid_until || null, req.body.notes || null,
+             req.body.discount_amount !== undefined ? round2(req.body.discount_amount) : 0,
+             sanitizeDiscountType(req.body.discount_type),
+             Boolean(req.body.tax_enabled),
+             req.body.tax_rate !== undefined ? round2(req.body.tax_rate) : 19,
+             req.user.id]
         );
+        await recalcTotals(client, schema, result.rows[0].id);
+        const created = await client.query(`SELECT * FROM ${schema}.quotes WHERE id = $1`, [result.rows[0].id]);
         await client.query('COMMIT');
-        res.status(201).json(result.rows[0]);
+        res.status(201).json(created.rows[0]);
     } catch (err) {
         await client.query('ROLLBACK');
         console.error('quotesController.create error:', err.message);
@@ -285,8 +361,12 @@ exports.update = async (req, res) => {
             `UPDATE ${schema}.quotes SET customer_id = $1, valid_until = $2, notes = $3, updated_at = CURRENT_TIMESTAMP WHERE id = $4`,
             [req.body.customer_id ?? quote.customer_id, req.body.valid_until ?? quote.valid_until, req.body.notes ?? quote.notes, quote.id]
         );
-        const discountAmount = req.body.discount_amount !== undefined ? req.body.discount_amount : null;
-        await recalcTotals(client, schema, quote.id, discountAmount);
+        await recalcTotals(client, schema, quote.id, {
+            discountAmount: req.body.discount_amount,
+            discountType: req.body.discount_type,
+            taxEnabled: req.body.tax_enabled,
+            taxRate: req.body.tax_rate
+        });
         const updated = await client.query(`SELECT * FROM ${schema}.quotes WHERE id = $1`, [quote.id]);
         await client.query('COMMIT');
         res.json(updated.rows[0]);
@@ -472,14 +552,16 @@ exports.accept = async (req, res) => {
         );
         if (!counterparty.rows.length) throw createError('Contraparte activa no encontrada', 404);
 
+        const discountTotal = computeDiscountValue(Number(quote.subtotal), Number(quote.discount_amount), quote.discount_type);
         const internalNumber = await getNextNumber(client, schema, companyId, 'sale_invoice');
         const docResult = await client.query(
             `INSERT INTO ${schema}.treasury_documents
              (tenant_id, document_type, direction, internal_number, counterparty_id, origin_core, origin_table, origin_id,
               issue_date, currency, subtotal, tax_total, discount_total, total_amount, balance_amount, status, created_by)
-             VALUES ($1,'sale_invoice','receivable',$2,$3,'cotizaciones','quotes',$4,CURRENT_DATE,'CLP',$5,0,0,$5,$5,'open',$6)
+             VALUES ($1,'sale_invoice','receivable',$2,$3,'cotizaciones','quotes',$4,CURRENT_DATE,'CLP',$5,$6,$7,$8,$8,'open',$9)
              RETURNING id`,
-            [companyId, internalNumber, req.body.counterparty_id, quote.id, Number(quote.final_amount), req.user.id]
+            [companyId, internalNumber, req.body.counterparty_id, quote.id,
+             Number(quote.subtotal), Number(quote.tax_amount), discountTotal, Number(quote.final_amount), req.user.id]
         );
 
         const updated = await client.query(

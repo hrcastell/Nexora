@@ -1962,6 +1962,10 @@ CREATE TABLE IF NOT EXISTS {schema_name}.quotes (
     valid_until                    DATE,
     subtotal                       NUMERIC(14,2) NOT NULL DEFAULT 0,
     discount_amount                NUMERIC(14,2) NOT NULL DEFAULT 0,
+    discount_type                  VARCHAR(20)   NOT NULL DEFAULT 'fixed',
+    tax_enabled                    BOOLEAN       NOT NULL DEFAULT FALSE,
+    tax_rate                       NUMERIC(6,3)  NOT NULL DEFAULT 19,
+    tax_amount                     NUMERIC(14,2) NOT NULL DEFAULT 0,
     final_amount                   NUMERIC(14,2) NOT NULL DEFAULT 0,
     accepted_at                    TIMESTAMP,
     accepted_by_name               VARCHAR(150),
@@ -1979,7 +1983,8 @@ CREATE TABLE IF NOT EXISTS {schema_name}.quotes (
     CONSTRAINT uq_quotes_number UNIQUE (quote_number),
     CONSTRAINT chk_quotes_status CHECK (status IN (
         'draft', 'sent', 'accepted', 'rejected', 'expired', 'paid', 'converted'
-    ))
+    )),
+    CONSTRAINT chk_quotes_discount_type CHECK (discount_type IN ('fixed', 'percentage'))
 );
 
 CREATE INDEX IF NOT EXISTS idx_quotes_customer_id            ON {schema_name}.quotes(customer_id);
