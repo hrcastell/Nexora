@@ -45,4 +45,12 @@ export const garageAppointmentsService = {
   convertToWorkOrder(id: number, data?: { mileage_in?: number; reception_notes?: string; fuel_level?: string; vehicle_condition_notes?: string }) {
     return api.post<{ message: string; work_order: any }>(`/garage/appointments/${id}/convert-to-work-order`, data || {});
   },
+
+  getSettings() {
+    return api.get<{ module_code: string; max_appointments_per_day: number | null; business_hours_start: string; business_hours_end: string }>('/garage/appointment-settings');
+  },
+
+  updateSettings(data: { max_appointments_per_day: number | null; business_hours_start: string; business_hours_end: string }) {
+    return api.put('/garage/appointment-settings', data);
+  },
 };

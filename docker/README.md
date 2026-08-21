@@ -62,21 +62,27 @@ services. First run only:
   scratch, remove the named volume: `docker compose down -v`.
 
 - `backend` runs `nodemon server.js` against the bind-mounted `BackEnd/`
-  source, reachable at `http://localhost:3000`.
+  source, reachable at `http://localhost:8090`.
 - `frontend` runs `vite --host 0.0.0.0` against the bind-mounted
   `FrontEnd/Portal/` source, reachable at `http://localhost:5173`.
 
 Edits to either `BackEnd/` or `FrontEnd/Portal/` on the host are picked up
 live inside the containers.
 
-## Applying new files from `Database/04_migrations/`
+## Applying new files from `BackEnd/migrations/`
 
 `docker-entrypoint-initdb.d` (and therefore step 4 above) only ever runs
 once, against an empty volume — it will never pick up new migration files
-added later. That's expected: migrations are meant to be applied
-incrementally over time, exactly like they are by hand in production.
+added later. That's expected: it only bootstraps an empty database.
 
-With the stack running, apply migrations locally via:
+New migrations are applied automatically instead: `BackEnd/migrations/runner.js`
+runs on every backend boot (`server.js`, before `app.listen()`), tracked
+per-schema in `public.schema_migrations` so each one only actually executes
+once. Since `backend` runs via `nodemon`, this means every hot-reload
+restart also re-checks for pending migrations — just restart the stack (or
+save any backend file) after adding a new one and watch the logs.
+
+For running a specific migration on demand, or debugging outside that flow:
 
 ```bash
 ./Database/apply-migrations.sh              # apply every migration, in order
@@ -154,23 +160,23 @@ bootstraps their end state directly:
 Both remain valid, unedited history — they'd still be exactly what you need
 if you were ever upgrading a real tenant schema created before the rename.
 
-Two files under `Database/` are deliberately **not** part of this automated
-sequence:
+Two files are deliberately **not** part of this automated sequence:
 
-- **`Database/04_migrations/reset_admin_empresa_permissions.sql`** — a
+- **`BackEnd/migrations/reset_admin_empresa_permissions.sql`** — a
   one-off operational fix that `UPDATE`s permission rows for an
   already-existing tenant's `admin_empresa` profile. It doesn't create
   anything and isn't idempotent/repeatable in the way a schema migration is,
-  and it has no leading number, so `apply-migrations.sh` skips it
-  automatically. Run it by hand (with `{schema_name}` replaced) only if you
-  specifically need that permission reset locally.
+  and it has no leading number, so neither `apply-migrations.sh` nor
+  `runner.js` ever pick it up automatically. Run it by hand (with
+  `{schema_name}` replaced) only if you specifically need that permission
+  reset locally.
 - **`Database/migracion.sql`** — a legacy, pre-templating snapshot. It is
   byte-for-byte the same as
-  `Database/04_migrations/14_garage_operations_module.sql`, except with
+  `BackEnd/migrations/14_garage_operations_module.sql`, except with
   `hernancius` hardcoded instead of the `{schema_name}` placeholder —
   confirmed by diffing the two files. It predates the `04_migrations/`
   split and is superseded by migration 14; it is not part of the
-  `Database/04_migrations/*.sql` glob at all, so it's simply never touched.
+  `BackEnd/migrations/*.sql` glob at all, so it's simply never touched.
 
 ## Stopping / resetting
 

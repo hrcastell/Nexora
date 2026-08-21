@@ -34,10 +34,12 @@
 #                          is_master = TRUE) and hernancius.* governance rows
 #                          (roles, permissions, config_company)
 #
-# Database/04_migrations/*.sql is intentionally NOT applied here — new
+# BackEnd/migrations/*.sql is intentionally NOT applied here — new
 # migration files get added over time, and docker-entrypoint-initdb.d only
-# ever fires once against an empty volume. Use Database/apply-migrations.sh
-# against the running container instead (see docker/README.md).
+# ever fires once against an empty volume. Once bootstrapped, the backend's
+# own migration runner (BackEnd/migrations/runner.js) applies them
+# automatically on every boot; Database/apply-migrations.sh remains for
+# on-demand/debugging runs against the running container (see docker/README.md).
 
 set -e
 
@@ -57,8 +59,8 @@ run_sql_dir() {
 echo "[bootstrap] == 00_core =="
 run_sql_dir /docker-entrypoint-initdb.d/sql/00_core
 
-# Several files under Database/04_migrations/ (applied later, via
-# Database/apply-migrations.sh) end with GRANT statements to the real
+# Several files under BackEnd/migrations/ (applied later, automatically by
+# the backend's migration runner) end with GRANT statements to the real
 # Bluehost cPanel database user, hardcoded as 'hernanci_nexoragarage'
 # (and, in one file, 'hernanci' for another tenant's schema). Neither role
 # exists in a fresh local Postgres. Rather than patch/skip those migration
@@ -78,7 +80,7 @@ END
 $$;
 SQL
 
-# Database/04_migrations/03_fix_permissions.sql also has a later,
+# BackEnd/migrations/03_fix_permissions.sql also has a later,
 # hand-appended block granting default privileges on 'pch_motoservices' —
 # a real production client schema that has no reason to exist locally.
 # Create it empty (no tables) purely so that trailing GRANT doesn't abort

@@ -4,6 +4,7 @@
 // for the full API surface reference).
 
 export type QuoteStatus = 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired' | 'paid' | 'converted';
+export type QuoteDiscountType = 'fixed' | 'percentage';
 
 export interface QuoteLine {
   id: number;
@@ -32,6 +33,10 @@ export interface Quote {
   valid_until: string | null;
   subtotal: number;
   discount_amount: number;
+  discount_type: QuoteDiscountType;
+  tax_enabled: boolean;
+  tax_rate: number;
+  tax_amount: number;
   final_amount: number;
   accepted_at: string | null;
   accepted_by_name: string | null;
@@ -57,6 +62,9 @@ export interface QuoteFormData {
   valid_until?: string | null;
   notes?: string | null;
   discount_amount?: number;
+  discount_type?: QuoteDiscountType;
+  tax_enabled?: boolean;
+  tax_rate?: number;
 }
 
 // Two line shapes accepted by the API, discriminated by is_non_stocked:

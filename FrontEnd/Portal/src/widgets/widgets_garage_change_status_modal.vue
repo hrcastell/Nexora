@@ -63,8 +63,8 @@ async function confirm() {
 <template>
   <Teleport to="body">
     <div v-if="modelValue" class="fixed inset-0 z-40 bg-black/60 flex items-center justify-center p-4" @click.self="close">
-      <div class="w-full max-w-sm rounded-2xl border border-white/10 shadow-2xl overflow-hidden" :style="{ background: 'var(--nexora-glass-bg, #0b1326)' }">
-        <div class="flex items-center justify-between px-6 py-4 border-b border-white/10">
+      <div class="rounded-2xl shadow-2xl overflow-hidden w-full max-w-sm" :style="{ background: 'var(--nexora-glass-bg, #0b1326)', border: '1px solid var(--nexora-border-color)' }">
+        <div class="flex items-center justify-between px-6 py-4" :style="{ borderBottom: '1px solid var(--nexora-border-color)' }">
           <h2 class="text-base font-semibold nxr-text">Cambiar estado</h2>
           <button type="button" class="nxr-text-muted hover:text-[var(--nexora-text-color)]" @click="close"><X :size="18" /></button>
         </div>
@@ -80,11 +80,14 @@ async function confirm() {
               <label
                 v-for="t in availableTransitions"
                 :key="t.value"
-                class="flex items-center gap-3 px-3 py-2 rounded-xl border cursor-pointer transition-all"
-                :class="newStatus === t.value ? 'border-[var(--nexora-primary)] bg-[var(--nexora-primary)]/10' : 'border-white/10 hover:border-white/30'"
+                class="status-option flex items-center gap-3 px-3 py-2 rounded-xl border cursor-pointer transition-all"
+                :class="newStatus === t.value ? 'border-[var(--nexora-primary)] bg-[var(--nexora-primary)]/10' : ''"
+                :style="newStatus === t.value ? {} : { borderColor: 'var(--nexora-border-color)' }"
               >
                 <input v-model="newStatus" type="radio" :value="t.value" class="hidden" />
-                <div class="w-3 h-3 rounded-full border-2 flex items-center justify-center" :class="newStatus === t.value ? 'border-[var(--nexora-primary)]' : 'border-white/30'">
+                <div class="w-3 h-3 rounded-full border-2 flex items-center justify-center"
+                  :class="newStatus === t.value ? 'border-[var(--nexora-primary)]' : ''"
+                  :style="newStatus === t.value ? {} : { borderColor: 'var(--nexora-border-color)' }">
                   <div v-if="newStatus === t.value" class="w-1.5 h-1.5 rounded-full bg-[var(--nexora-primary)]"></div>
                 </div>
                 <span class="text-sm nxr-text">{{ t.label }}</span>
@@ -94,12 +97,13 @@ async function confirm() {
 
           <div>
             <label class="block text-xs nxr-text-muted mb-1">Notas (opcional)</label>
-            <textarea v-model="notes" rows="2" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40 resize-none"></textarea>
+            <textarea v-model="notes" rows="2" class="w-full px-3 py-2 rounded-xl nxr-text text-sm outline-none resize-none"
+              :style="{ backgroundColor: 'var(--nexora-glass-bg-subtle)', border: '1px solid var(--nexora-border-color)' }"></textarea>
           </div>
           <p v-if="error" class="text-xs text-red-400">{{ error }}</p>
         </div>
 
-        <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-white/10">
+        <div class="flex items-center justify-end gap-3 px-6 py-4" :style="{ borderTop: '1px solid var(--nexora-border-color)' }">
           <button type="button" class="px-4 py-2 rounded-xl text-sm nxr-text-muted hover:text-[var(--nexora-text-color)]" @click="close">Cancelar</button>
           <button
             v-if="availableTransitions.length > 0"
@@ -115,3 +119,10 @@ async function confirm() {
     </div>
   </Teleport>
 </template>
+
+<style scoped>
+/* Teleported to <body>, outside .nxr-app-shell — plain [data-nexora-mode]
+   (set on <body> itself) still reaches it. */
+.status-option:hover { border-color: rgba(255, 255, 255, 0.30); }
+[data-nexora-mode="light"] .status-option:hover { border-color: rgba(0, 0, 0, 0.22); }
+</style>

@@ -2,6 +2,7 @@ const db = require('../../config/db');
 const { resolveSchema } = require('../../utils/tenantResolver');
 const { createNotification } = require('../../utils/notifications');
 const { resolveEmployeeId } = require('../../services/hr/employeeResolver');
+const { hasTransaction } = require('../../services/hr/hrPermissions');
 
 const REQUEST_SELECT = `
     SELECT r.*, rt.code AS request_type_code, rt.name AS request_type_name,
@@ -24,15 +25,7 @@ function httpError(message, statusCode) {
 }
 
 async function hasApprovalPermission(schema, userId, isSuperAdmin) {
-    if (isSuperAdmin) return true;
-    const result = await db.query(
-        `SELECT COALESCE(bool_or(ptp.can_view OR ptp.can_approve), FALSE) AS allowed
-         FROM ${schema}.user_tenant_profiles utp
-         JOIN ${schema}.profile_transaction_permissions ptp ON ptp.profile_id = utp.profile_id
-         WHERE utp.user_id = $1 AND ptp.transaction_code = 'hr_request_approvals'`,
-        [userId]
-    );
-    return result.rows[0]?.allowed === true;
+    return hasTransaction(schema, userId, 'hr_request_approvals', ['can_view', 'can_approve'], isSuperAdmin);
 }
 
 async function getHrRecipientIds(schema) {

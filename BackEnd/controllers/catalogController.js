@@ -111,6 +111,59 @@ exports.updateCatalogModule = async (req, res) => {
     }
 };
 
+/**
+ * PUT /api/catalog/transactions/reorder
+ * Reordena en una sola operación transaccional las transacciones (ventanas)
+ * de un módulo del catálogo — mismo patrón que reorderCompanyModules en
+ * companyModulesController.js.
+ *
+ * Body: { module_id: number, ids: number[] } — ids de module_transactions
+ *       en el orden deseado (el índice determina el nuevo tab_order).
+ *
+ * A diferencia de company_modules.menu_order, tab_order no tiene semántica
+ * especial en 0 (menuController.js solo hace ORDER BY tab_order ASC, sin
+ * fallback), pero se mantienen huecos de 10 igual, por consistencia con el
+ * resto del catálogo y para dejar espacio a inserciones manuales futuras.
+ */
+exports.reorderCatalogTransactions = async (req, res) => {
+    try {
+        if (!isSuperAdmin(req)) return res.status(403).json({ error: 'Solo super_admin puede reordenar transacciones' });
+
+        const { module_id, ids } = req.body;
+
+        if (!module_id) return res.status(400).json({ error: 'Se requiere "module_id"' });
+        if (!Array.isArray(ids) || ids.length === 0) {
+            return res.status(400).json({ error: 'Se requiere un arreglo "ids" con el nuevo orden' });
+        }
+        if (new Set(ids).size !== ids.length) {
+            return res.status(400).json({ error: 'El arreglo "ids" contiene ids duplicados' });
+        }
+
+        const tabOrders = ids.map((_, i) => (i + 1) * 10);
+
+        const result = await db.query(
+            `WITH input(id, tab_order) AS (
+                SELECT * FROM UNNEST($1::int[], $2::int[])
+             )
+             UPDATE public.module_transactions t
+             SET tab_order = i.tab_order, updated_at = CURRENT_TIMESTAMP
+             FROM input i
+             WHERE t.id = i.id AND t.module_id = $3
+             RETURNING t.id, t.tab_order`,
+            [ids, tabOrders, module_id]
+        );
+
+        if (result.rowCount !== ids.length) {
+            return res.status(400).json({ error: 'Alguno de los ids no pertenece al módulo indicado' });
+        }
+
+        res.json({ updated: result.rowCount, order: result.rows });
+    } catch (error) {
+        console.error('Reorder catalog transactions error:', error);
+        res.status(500).json({ error: 'Error al reordenar transacciones' });
+    }
+};
+
 // PUT /api/catalog/transactions/:id — super_admin edita transacción
 exports.updateCatalogTransaction = async (req, res) => {
     try {

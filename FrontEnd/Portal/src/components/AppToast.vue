@@ -26,7 +26,7 @@ onMounted(() => {
 });
 
 const theme = computed(() => {
-  const isLight = document.documentElement.getAttribute('data-nexora-mode') === 'light';
+  const isLight = document.body.getAttribute('data-nexora-mode') === 'light';
   
   switch (props.toast.type) {
     case 'success':

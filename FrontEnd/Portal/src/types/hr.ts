@@ -64,3 +64,7 @@ export interface HrRequestApproval { id: number; step: string; decision: string;
 export interface HrRequestHistory { id: number; from_status: string | null; to_status: string; actor_user_id: number | null; actor_role: string | null; note: string | null; created_at: string; }
 export interface HrRequestDetail extends HrRequest { approvals: HrRequestApproval[]; history: HrRequestHistory[]; }
 export interface HrRequestPayload { request_type_id: number | null; title?: string; description?: string; start_date?: string; end_date?: string; }
+export type HrBalanceCode = 'vacation_days' | 'permission_hours';
+export interface HrBalance { balance_code: HrBalanceCode; unit: 'days' | 'hours'; period_start: string; period_end: string; entitlement: number; accrued: number; reserved: number; consumed: number; available: number; }
+export interface HrBalanceConfig { base_entitlement: number; accrual_enabled: boolean; accrual_per_month: number; accrual_cap: number | null; unit: 'days' | 'hours'; }
+export interface HrBalanceMovement { id: number; leave_balance_id: number; employee_id: number; balance_code: HrBalanceCode; request_id: number | null; movement_type: 'accrual' | 'hr_adjustment' | 'reservation' | 'reservation_release' | 'consumption' | 'consumption_reversal'; signed_quantity: number; period_start: string; period_end: string; notes: string | null; created_by: number | null; created_at: string; }

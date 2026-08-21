@@ -7,6 +7,7 @@ const costCentersCtrl = require('../../controllers/hr/costCentersController');
 const workShiftsCtrl = require('../../controllers/hr/workShiftsController');
 const employeesCtrl = require('../../controllers/hr/employeesController');
 const requestsCtrl = require('../../controllers/hr/requestsController');
+const balancesCtrl = require('../../controllers/hr/balancesController');
 
 router.use(authMiddleware);
 
@@ -26,6 +27,12 @@ mountCatalog('/work-shifts', workShiftsCtrl);
 router.get('/employees', employeesCtrl.list);
 router.get('/employees/:id', employeesCtrl.getById);
 router.put('/employees/:id', employeesCtrl.update);
+
+router.get('/balances/me', balancesCtrl.getMine);
+router.get('/balances/:employeeId', balancesCtrl.getByEmployee);
+router.put('/balances/:employeeId/:balanceCode', balancesCtrl.updateBalance);
+router.post('/balances/:employeeId/:balanceCode/adjustments', balancesCtrl.createAdjustment);
+router.get('/balances/:employeeId/:balanceCode/movements', balancesCtrl.listMovements);
 
 router.get('/request-types', requestsCtrl.listTypes);
 router.get('/requests', requestsCtrl.list);

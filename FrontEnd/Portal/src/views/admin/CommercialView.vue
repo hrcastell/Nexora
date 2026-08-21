@@ -21,8 +21,6 @@ const mutedColor  = computed(() => isLight.value ? '#475569' : '#94a3b8');
 const cardBg      = computed(() => cfg.cardBg);
 const cardBorder  = computed(() => isLight.value ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.10)');
 const rowHoverBg  = computed(() => isLight.value ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.04)');
-const inputBg     = computed(() => isLight.value ? '#ffffff' : 'rgba(255,255,255,0.05)');
-const inputBorder = computed(() => isLight.value ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.12)');
 
 const selectedCompanyId = ref<number | null>(null);
 const companyId  = computed(() => {
@@ -535,7 +533,7 @@ const freqLabel   = (f: string) => ({ monthly: 'Mensual', quarterly: 'Trimestral
                     @change="applyPlanToAgreementForm(agreementForm.subscription_plan_id)"
                     class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
                     :disabled="plansLoading"
-                    :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }">
+                    :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }">
                     <option :value="null">Convenio manual</option>
                     <option v-for="plan in subscriptionPlans" :key="plan.id" :value="plan.id">
                       {{ plan.name }} · {{ fmtCurrency(plan.amount, plan.currency) }}
@@ -552,19 +550,19 @@ const freqLabel   = (f: string) => ({ monthly: 'Mensual', quarterly: 'Trimestral
                 <div>
                   <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Monto *</label>
                   <input v-model="agreementForm.amount" type="number" placeholder="0" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
-                    :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                    :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
                 </div>
                 <div>
                   <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Moneda</label>
                   <select v-model="agreementForm.currency" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
-                    :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }">
+                    :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }">
                     <option>CLP</option><option>USD</option><option>EUR</option>
                   </select>
                 </div>
                 <div>
                   <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Frecuencia</label>
                   <select v-model="agreementForm.frequency" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
-                    :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }">
+                    :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }">
                     <option value="monthly">Mensual</option>
                     <option value="quarterly">Trimestral</option>
                     <option value="yearly">Anual</option>
@@ -573,22 +571,22 @@ const freqLabel   = (f: string) => ({ monthly: 'Mensual', quarterly: 'Trimestral
                 <div>
                   <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Día límite de pago</label>
                   <input v-model.number="agreementForm.due_day" type="number" min="1" max="28" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
-                    :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                    :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
                 </div>
                 <div class="col-span-2">
                   <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Fecha de inicio *</label>
                   <input v-model="agreementForm.start_date" type="date" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
-                    :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                    :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
                 </div>
                 <div class="col-span-2">
                   <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Descripción del servicio *</label>
                   <textarea v-model="agreementForm.service_description" rows="2" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none resize-none"
-                    :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                    :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
                 </div>
                 <div>
                   <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Días de gracia</label>
                   <input v-model.number="agreementForm.grace_period_days" type="number" min="0" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
-                    :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                    :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
                 </div>
               </div>
             </template>
@@ -599,34 +597,34 @@ const freqLabel   = (f: string) => ({ monthly: 'Mensual', quarterly: 'Trimestral
                 <div>
                   <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Período inicio *</label>
                   <input v-model="invoiceForm.period_start" type="date" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
-                    :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                    :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
                 </div>
                 <div>
                   <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Período fin *</label>
                   <input v-model="invoiceForm.period_end" type="date" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
-                    :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                    :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
                 </div>
                 <div>
                   <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Fecha límite de pago *</label>
                   <input v-model="invoiceForm.due_date" type="date" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
-                    :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                    :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
                 </div>
                 <div>
                   <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Monto *</label>
                   <input v-model="invoiceForm.amount" type="number" placeholder="0" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
-                    :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                    :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
                 </div>
                 <div>
                   <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Moneda</label>
                   <select v-model="invoiceForm.currency" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
-                    :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }">
+                    :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }">
                     <option>CLP</option><option>USD</option><option>EUR</option>
                   </select>
                 </div>
                 <div v-if="agreements.length" class="col-span-2">
                   <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Convenio asociado</label>
                   <select v-model="invoiceForm.agreement_id" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
-                    :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }">
+                    :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }">
                     <option value="">Sin convenio</option>
                     <option v-for="ag in agreements" :key="ag.id" :value="ag.id">
                       {{ fmtCurrency(ag.amount, ag.currency) }} · {{ freqLabel(ag.frequency) }}
@@ -636,7 +634,7 @@ const freqLabel   = (f: string) => ({ monthly: 'Mensual', quarterly: 'Trimestral
                 <div class="col-span-2">
                   <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Notas</label>
                   <textarea v-model="invoiceForm.notes" rows="2" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none resize-none"
-                    :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                    :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
                 </div>
               </div>
             </template>
@@ -647,7 +645,7 @@ const freqLabel   = (f: string) => ({ monthly: 'Mensual', quarterly: 'Trimestral
                 <div class="col-span-2">
                   <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Recibo *</label>
                   <select v-model="paymentForm.invoice_id" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
-                    :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }">
+                    :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }">
                     <option value="">Seleccionar recibo</option>
                     <option v-for="inv in invoices.filter(i => ['emitido','pendiente','vencido'].includes(i.status))" :key="inv.id" :value="inv.id">
                       {{ fmtDate(inv.period_start) }} – {{ fmtDate(inv.period_end) }} · {{ fmtCurrency(inv.amount, inv.currency) }}
@@ -657,17 +655,17 @@ const freqLabel   = (f: string) => ({ monthly: 'Mensual', quarterly: 'Trimestral
                 <div>
                   <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Monto *</label>
                   <input v-model="paymentForm.amount" type="number" placeholder="0" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
-                    :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                    :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
                 </div>
                 <div>
                   <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Fecha de pago</label>
                   <input v-model="paymentForm.payment_date" type="date" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
-                    :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                    :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
                 </div>
                 <div>
                   <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Método de pago</label>
                   <select v-model="paymentForm.payment_method" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
-                    :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }">
+                    :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }">
                     <option value="transferencia">Transferencia</option>
                     <option value="cheque">Cheque</option>
                     <option value="tarjeta">Tarjeta</option>
@@ -678,7 +676,7 @@ const freqLabel   = (f: string) => ({ monthly: 'Mensual', quarterly: 'Trimestral
                 <div>
                   <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Referencia / comprobante</label>
                   <input v-model="paymentForm.reference" placeholder="N° transferencia..." class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
-                    :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                    :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
                 </div>
               </div>
             </template>

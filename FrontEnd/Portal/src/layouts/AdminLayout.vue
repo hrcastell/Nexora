@@ -87,9 +87,9 @@ const logout = () => {
 </script>
 
 <template>
-  <div 
-    class="h-screen overflow-hidden transition-colors duration-300 flex"
-    :style="{ 
+  <div
+    class="nxr-app-shell h-screen overflow-hidden transition-colors duration-300 flex"
+    :style="{
       color: configStore.textColor,
       fontFamily: configStore.currentFont.family
     }"

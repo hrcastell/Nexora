@@ -172,6 +172,14 @@ const ROUTE_MODULE_MAP = {
     'PATCH  /garage/products/:id/status':   { modules: ['garage_operations', 'inventory'], semantics: 'OR', transaction: 'products' },
     'DELETE /garage/products/:id':          { modules: ['garage_operations', 'inventory'], semantics: 'OR', transaction: 'products' },
 
+    'GET    /garage/products/:id/prices':   { modules: ['garage_operations', 'inventory'], semantics: 'OR', transaction: 'products' },
+    'PUT    /garage/products/:id/prices':   { modules: ['garage_operations', 'inventory'], semantics: 'OR', transaction: 'products' },
+
+    'GET    /garage/product-price-levels':              { modules: ['garage_operations', 'inventory'], semantics: 'OR', transaction: 'products' },
+    'POST   /garage/product-price-levels':              { modules: ['garage_operations', 'inventory'], semantics: 'OR', transaction: 'products' },
+    'PUT    /garage/product-price-levels/:id':          { modules: ['garage_operations', 'inventory'], semantics: 'OR', transaction: 'products' },
+    'PATCH  /garage/product-price-levels/:id/status':   { modules: ['garage_operations', 'inventory'], semantics: 'OR', transaction: 'products' },
+
     'GET    /products':              { modules: ['garage_operations', 'inventory'], semantics: 'OR', transaction: 'products' },
     'POST   /products':              { modules: ['garage_operations', 'inventory'], semantics: 'OR', transaction: 'products' },
     'GET    /products/:id':          { modules: ['garage_operations', 'inventory'], semantics: 'OR', transaction: 'products' },
@@ -443,6 +451,13 @@ const ROUTE_MODULE_MAP = {
     'GET    /hr/employees':                { module: 'human_resources', transaction: 'hr_employees' },
     'GET    /hr/employees/:id':            { module: 'human_resources', transaction: 'hr_employee_profile' },
     'PUT    /hr/employees/:id':            { module: 'human_resources', transaction: 'hr_employees' },
+
+    // Human Resources: Balances
+    'GET    /hr/balances/me':              { module: 'human_resources', transaction: 'hr_my_profile' },
+    'GET    /hr/balances/:employeeId':     { module: 'human_resources', transaction: 'hr_employees' },
+    'PUT    /hr/balances/:employeeId/:balanceCode': { module: 'human_resources', transaction: 'hr_employees' },
+    'POST   /hr/balances/:employeeId/:balanceCode/adjustments': { module: 'human_resources', transaction: 'hr_employees' },
+    'GET    /hr/balances/:employeeId/:balanceCode/movements': { module: 'human_resources', transaction: 'hr_employees' },
 
     // Human Resources: Requests and approvals
     'GET    /hr/request-types':            { module: 'human_resources', transaction: 'hr_requests' },

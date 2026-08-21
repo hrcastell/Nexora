@@ -3,6 +3,42 @@ const { resolveSchema } = require('../../utils/tenantResolver');
 const { createNotification } = require('../../utils/notifications');
 
 const APPOINTMENT_STATUSES = ['scheduled', 'confirmed', 'checked_in', 'completed', 'cancelled', 'no_show', 'rescheduled'];
+const MODULE_CODE = 'dental_core';
+
+/**
+ * Verifica el límite diario configurado en appointment_settings antes de
+ * crear/reagendar una cita. No hace nada si max_appointments_per_day es NULL
+ * (sin límite). Lanza un error con statusCode 409 si ya se alcanzó el tope.
+ */
+async function assertDailyCapacity(schema, targetDateIso, excludeApptId = null) {
+    const settingsRes = await db.query(
+        `SELECT max_appointments_per_day FROM ${schema}.appointment_settings WHERE module_code = $1`,
+        [MODULE_CODE]
+    );
+    const maxPerDay = settingsRes.rows[0]?.max_appointments_per_day;
+    if (maxPerDay == null) return;
+
+    const params = [targetDateIso];
+    let excludeClause = '';
+    if (excludeApptId) {
+        params.push(excludeApptId);
+        excludeClause = `AND id != $${params.length}`;
+    }
+
+    const countRes = await db.query(
+        `SELECT COUNT(*) FROM ${schema}.dental_appointments
+         WHERE scheduled_start::date = $1::date
+           AND status NOT IN ('cancelled', 'no_show')
+           ${excludeClause}`,
+        params
+    );
+    if (parseInt(countRes.rows[0].count, 10) >= maxPerDay) {
+        throw Object.assign(
+            new Error(`Se alcanzó el máximo de ${maxPerDay} citas para ese día.`),
+            { statusCode: 409 }
+        );
+    }
+}
 
 function mapAppointment(row) {
     if (!row) return row;
@@ -175,6 +211,8 @@ exports.create = async (req, res) => {
         if (!APPOINTMENT_STATUSES.includes(status)) return res.status(400).json({ code: 'DENTAL_INVALID_APPOINTMENT_STATUS', error: 'Estado de cita inválido' });
         if (new Date(scheduled_end) <= new Date(scheduled_start)) return res.status(400).json({ code: 'DENTAL_INVALID_SCHEDULE', error: 'scheduled_end debe ser posterior a scheduled_start' });
 
+        await assertDailyCapacity(schema, scheduled_start);
+
         const result = await db.query(
             `INSERT INTO ${schema}.dental_appointments
              (tenant_id, customer_id, treatment_id, scheduled_start, scheduled_end, reason, notes, status)
@@ -215,6 +253,10 @@ exports.update = async (req, res) => {
         const nextEnd = scheduled_end || existing.scheduled_end;
         if (new Date(nextEnd) <= new Date(nextStart)) return res.status(400).json({ code: 'DENTAL_INVALID_SCHEDULE', error: 'scheduled_end debe ser posterior a scheduled_start' });
         if (status && !APPOINTMENT_STATUSES.includes(status)) return res.status(400).json({ code: 'DENTAL_INVALID_APPOINTMENT_STATUS', error: 'Estado de cita inválido' });
+
+        if (scheduled_start && scheduled_start !== existing.scheduled_start) {
+            await assertDailyCapacity(schema, nextStart, req.params.id);
+        }
 
         const result = await db.query(
             `UPDATE ${schema}.dental_appointments
@@ -319,5 +361,52 @@ exports.convertToConsultation = async (req, res) => {
         res.status(err.statusCode || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Internal server error' : (err.message || 'Error al convertir cita a consulta') });
     } finally {
         client.release();
+    }
+};
+
+/**
+ * GET /dental/appointment-settings
+ */
+exports.getAppointmentSettings = async (req, res) => {
+    try {
+        const { schema } = await resolveSchema(req);
+        const result = await db.query(
+            `SELECT * FROM ${schema}.appointment_settings WHERE module_code = $1`,
+            [MODULE_CODE]
+        );
+        if (result.rows.length === 0) {
+            return res.json({ module_code: MODULE_CODE, max_appointments_per_day: null, business_hours_start: '08:00', business_hours_end: '20:00' });
+        }
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error('appointmentsController.getAppointmentSettings error:', err.message);
+        res.status(500).json({ error: 'Error al obtener configuración de citas' });
+    }
+};
+
+/**
+ * PUT /dental/appointment-settings
+ */
+exports.updateAppointmentSettings = async (req, res) => {
+    try {
+        if (req.user?.read_only) return res.status(403).json({ error: 'Operación no permitida en modo solo lectura' });
+        const { schema } = await resolveSchema(req);
+        const { max_appointments_per_day, business_hours_start, business_hours_end } = req.body;
+
+        const result = await db.query(
+            `INSERT INTO ${schema}.appointment_settings (module_code, max_appointments_per_day, business_hours_start, business_hours_end)
+             VALUES ($1,$2,$3,$4)
+             ON CONFLICT (module_code) DO UPDATE SET
+                max_appointments_per_day = EXCLUDED.max_appointments_per_day,
+                business_hours_start     = EXCLUDED.business_hours_start,
+                business_hours_end       = EXCLUDED.business_hours_end,
+                updated_at                = CURRENT_TIMESTAMP
+             RETURNING *`,
+            [MODULE_CODE, max_appointments_per_day ?? null, business_hours_start || '08:00', business_hours_end || '20:00']
+        );
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error('appointmentsController.updateAppointmentSettings error:', err.message);
+        res.status(500).json({ error: 'Error al guardar configuración de citas' });
     }
 };

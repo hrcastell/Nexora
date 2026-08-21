@@ -33,8 +33,6 @@ const mutedColor  = computed(() => isLight.value ? '#475569' : '#94a3b8');
 const cardBg      = computed(() => cfg.cardBg);
 const cardBorder  = computed(() => isLight.value ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.10)');
 const rowHoverBg  = computed(() => isLight.value ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.04)');
-const inputBg     = computed(() => isLight.value ? '#ffffff' : 'rgba(255,255,255,0.05)');
-const inputBorder = computed(() => isLight.value ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.12)');
 
 const plans    = ref<SubscriptionPlan[]>([]);
 const isLoading = ref(true);
@@ -264,35 +262,35 @@ const fmtCurrency = (n: number, c = 'CLP') =>
               <div class="col-span-2" v-if="!editingId">
                 <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Código * <span class="font-normal">(único, ej: basico, pro)</span></label>
                 <input v-model="form.code" type="text" placeholder="ej: basico" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
-                  :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                  :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
               </div>
 
               <!-- Nombre -->
               <div class="col-span-2">
                 <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Nombre *</label>
                 <input v-model="form.name" type="text" placeholder="ej: Plan Básico" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
-                  :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                  :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
               </div>
 
               <!-- Descripción -->
               <div class="col-span-2">
                 <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Descripción</label>
                 <textarea v-model="form.description" rows="2" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none resize-none"
-                  :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                  :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
               </div>
 
               <!-- Monto -->
               <div>
                 <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Monto</label>
                 <input v-model.number="form.amount" type="number" min="0" step="0.01" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
-                  :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                  :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
               </div>
 
               <!-- Moneda -->
               <div>
                 <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Moneda</label>
                 <select v-model="form.currency" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
-                  :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }">
+                  :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }">
                   <option>CLP</option><option>USD</option><option>EUR</option>
                 </select>
               </div>
@@ -301,7 +299,7 @@ const fmtCurrency = (n: number, c = 'CLP') =>
               <div>
                 <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Frecuencia de pago</label>
                 <select v-model="form.payment_frequency" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
-                  :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }">
+                  :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }">
                   <option value="monthly">Mensual</option>
                   <option value="quarterly">Trimestral</option>
                   <option value="yearly">Anual</option>
@@ -312,21 +310,21 @@ const fmtCurrency = (n: number, c = 'CLP') =>
               <div>
                 <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Día límite de pago (1–28)</label>
                 <input v-model.number="form.due_day" type="number" min="1" max="28" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
-                  :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                  :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
               </div>
 
               <!-- Días de gracia -->
               <div>
                 <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Días de gracia</label>
                 <input v-model.number="form.grace_period_days" type="number" min="0" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
-                  :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                  :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
               </div>
 
               <!-- Descuento -->
               <div>
                 <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Descuento (%)</label>
                 <input v-model.number="form.discount" type="number" min="0" max="100" step="0.01" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
-                  :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                  :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
               </div>
 
               <!-- Activo -->

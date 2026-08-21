@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { onMounted, watchEffect } from 'vue';
 import { useVisualConfigStore } from './stores/visualConfig';
+import { useIdleLogout } from './composables/useIdleLogout';
 
 const configStore = useVisualConfigStore();
+const { showWarning: showIdleWarning, stayConnected } = useIdleLogout();
 
 const applyGlobalConfig = () => {
   const root = document.documentElement;
@@ -39,4 +41,16 @@ onMounted(() => {
 
 <template>
   <router-view />
+
+  <div v-if="showIdleWarning" class="fixed bottom-6 right-6 z-[9999] w-full max-w-sm rounded-[24px] border border-amber-500/30 bg-white p-4 shadow-xl">
+    <p class="text-sm font-semibold text-slate-800">Tu sesión está por cerrarse</p>
+    <p class="mt-1 text-sm leading-6 text-slate-600">Por inactividad, se va a cerrar en menos de un minuto.</p>
+    <button
+      type="button"
+      class="mt-3 w-full rounded-2xl bg-[#243b7a] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#1c2f61]"
+      @click="stayConnected"
+    >
+      Seguir conectado
+    </button>
+  </div>
 </template>

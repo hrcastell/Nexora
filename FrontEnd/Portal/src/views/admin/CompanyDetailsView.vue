@@ -159,8 +159,6 @@ const tableHeaderBg = computed(() => isLightMode.value ? 'rgba(0, 0, 0, 0.02)' :
 const tableHoverBg = computed(() => isLightMode.value ? 'rgba(0, 0, 0, 0.03)' : 'rgba(255, 255, 255, 0.03)');
 const modalBg = computed(() => isLightMode.value ? 'rgba(255, 255, 255, 0.98)' : 'rgba(11, 19, 38, 0.98)');
 const modalBorder = computed(() => isLightMode.value ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.10)');
-const inputBg = computed(() => isLightMode.value ? 'rgba(255, 255, 255, 0.90)' : 'rgba(255, 255, 255, 0.05)');
-const inputBorder = computed(() => isLightMode.value ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.10)');
 
 // Logo upload handler
 const MAX_LOGO_SIZE = 3 * 1024 * 1024; // 3MB
@@ -780,7 +778,7 @@ const getInvoiceStatusColor = (status: string) => {
                 min="1"
                 max="99"
                 class="w-14 rounded-lg border px-2 py-1 text-xs text-center outline-none focus:border-white/40"
-                :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerTextColor }"
+                :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerTextColor }"
                 @change="saveModuleOrder(mod)"
               />
             </div>
@@ -828,32 +826,32 @@ const getInvoiceStatusColor = (status: string) => {
             <div>
               <label class="block text-xs font-medium uppercase mb-1.5" :style="{ color: mutedTextColor }">Nombre Empresa (tenant)</label>
               <input v-model="configForm.company_name" type="text" class="w-full rounded-xl border px-3 py-2.5 text-sm transition-colors focus:outline-none"
-                     :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerTextColor }" />
+                     :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerTextColor }" />
             </div>
             <div>
               <label class="block text-xs font-medium uppercase mb-1.5" :style="{ color: mutedTextColor }">Email</label>
               <input v-model="configForm.email" type="email" class="w-full rounded-xl border px-3 py-2.5 text-sm transition-colors focus:outline-none"
-                     :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerTextColor }" />
+                     :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerTextColor }" />
             </div>
             <div>
               <label class="block text-xs font-medium uppercase mb-1.5" :style="{ color: mutedTextColor }">Teléfono</label>
               <input v-model="configForm.phone" type="text" class="w-full rounded-xl border px-3 py-2.5 text-sm transition-colors focus:outline-none"
-                     :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerTextColor }" />
+                     :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerTextColor }" />
             </div>
             <div>
               <label class="block text-xs font-medium uppercase mb-1.5" :style="{ color: mutedTextColor }">País</label>
               <input v-model="configForm.country" type="text" class="w-full rounded-xl border px-3 py-2.5 text-sm transition-colors focus:outline-none"
-                     :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerTextColor }" />
+                     :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerTextColor }" />
             </div>
             <div>
               <label class="block text-xs font-medium uppercase mb-1.5" :style="{ color: mutedTextColor }">RUT</label>
               <input v-model="configForm.rut" type="text" class="w-full rounded-xl border px-3 py-2.5 text-sm transition-colors focus:outline-none"
-                     :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerTextColor }" />
+                     :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerTextColor }" />
             </div>
             <div>
               <label class="block text-xs font-medium uppercase mb-1.5" :style="{ color: mutedTextColor }">Dirección</label>
               <input v-model="configForm.address" type="text" class="w-full rounded-xl border px-3 py-2.5 text-sm transition-colors focus:outline-none"
-                     :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerTextColor }" />
+                     :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerTextColor }" />
             </div>
           </div>
 
@@ -865,24 +863,24 @@ const getInvoiceStatusColor = (status: string) => {
                 <label class="block text-xs font-medium mb-1.5" :style="{ color: mutedTextColor }">Color Principal</label>
                 <div class="flex items-center gap-2">
                   <input v-model="configForm.primary_color" type="color" class="h-9 w-14 rounded-lg border cursor-pointer"
-                         :style="{ borderColor: inputBorder, backgroundColor: inputBg }" />
+                         :style="{ borderColor: 'var(--nexora-input-border)', backgroundColor: 'var(--nexora-input-bg)' }" />
                   <input v-model="configForm.primary_color" type="text" maxlength="7" class="flex-1 rounded-xl border px-3 py-2 text-sm focus:outline-none"
-                         :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerTextColor }" />
+                         :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerTextColor }" />
                 </div>
               </div>
               <div>
                 <label class="block text-xs font-medium mb-1.5" :style="{ color: mutedTextColor }">Color Secundario</label>
                 <div class="flex items-center gap-2">
                   <input v-model="configForm.secondary_color" type="color" class="h-9 w-14 rounded-lg border cursor-pointer"
-                         :style="{ borderColor: inputBorder, backgroundColor: inputBg }" />
+                         :style="{ borderColor: 'var(--nexora-input-border)', backgroundColor: 'var(--nexora-input-bg)' }" />
                   <input v-model="configForm.secondary_color" type="text" maxlength="7" class="flex-1 rounded-xl border px-3 py-2 text-sm focus:outline-none"
-                         :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerTextColor }" />
+                         :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerTextColor }" />
                 </div>
               </div>
               <div>
                 <label class="block text-xs font-medium mb-1.5" :style="{ color: mutedTextColor }">Tipografía</label>
                 <select v-model="configForm.font_family" class="w-full rounded-xl border px-3 py-2.5 text-sm focus:outline-none"
-                        :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerTextColor }">
+                        :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerTextColor }">
                   <option value="Inter">Inter</option>
                   <option value="Roboto">Roboto</option>
                   <option value="Poppins">Poppins</option>
@@ -894,15 +892,15 @@ const getInvoiceStatusColor = (status: string) => {
               <label class="block text-xs font-medium mb-1.5" :style="{ color: mutedTextColor }">Logo de la empresa</label>
               <div class="flex items-center gap-4">
                 <div v-if="configForm.logo_url" class="shrink-0">
-                  <img :src="configForm.logo_url" alt="Logo preview" class="h-16 w-16 object-contain rounded-xl border" :style="{ borderColor: inputBorder }" />
+                  <img :src="configForm.logo_url" alt="Logo preview" class="h-16 w-16 object-contain rounded-xl border" :style="{ borderColor: 'var(--nexora-input-border)' }" />
                 </div>
                 <div v-else class="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl border"
-                     :style="{ borderColor: inputBorder, backgroundColor: inputBg }">
+                     :style="{ borderColor: 'var(--nexora-input-border)', backgroundColor: 'var(--nexora-input-bg)' }">
                   <Upload class="h-5 w-5" :style="{ color: mutedTextColor }" />
                 </div>
                 <div class="flex-1">
                   <label class="flex items-center gap-2 cursor-pointer rounded-2xl border px-3 py-2 text-xs transition hover:bg-white/5"
-                         :style="{ borderColor: inputBorder, color: mutedTextColor }">
+                         :style="{ borderColor: 'var(--nexora-input-border)', color: mutedTextColor }">
                     <Upload class="h-3.5 w-3.5" />
                     Subir logo
                     <input ref="logoFileInput" type="file" accept="image/jpeg,image/png,image/webp" class="hidden" @change="handleLogoUpload" />
@@ -918,7 +916,7 @@ const getInvoiceStatusColor = (status: string) => {
 
           <div class="flex flex-col sm:flex-row justify-end gap-3 pt-1">
             <button type="button" @click="configForm = companyConfig ? { ...companyConfig } : {}" class="flex items-center gap-1.5 rounded-2xl border px-4 py-2.5 text-sm font-medium transition"
-                    :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: mutedTextColor }">
+                    :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: mutedTextColor }">
               <RotateCcw class="h-4 w-4" />
               Restablecer
             </button>
@@ -958,22 +956,22 @@ const getInvoiceStatusColor = (status: string) => {
             <div>
               <label class="block text-xs font-medium uppercase mb-1.5" :style="{ color: mutedTextColor }">Nombre Completo</label>
               <input v-model="inviteForm.full_name" required type="text" class="w-full rounded-xl border px-3 py-2.5 text-sm focus:outline-none"
-                     :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerTextColor }" />
+                     :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerTextColor }" />
             </div>
             <div>
               <label class="block text-xs font-medium uppercase mb-1.5" :style="{ color: mutedTextColor }">Email</label>
               <input v-model="inviteForm.email" required type="email" class="w-full rounded-xl border px-3 py-2.5 text-sm focus:outline-none"
-                     :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerTextColor }" />
+                     :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerTextColor }" />
             </div>
             <div>
               <label class="block text-xs font-medium uppercase mb-1.5" :style="{ color: mutedTextColor }">Contraseña Inicial</label>
               <input v-model="inviteForm.password" required type="password" class="w-full rounded-xl border px-3 py-2.5 text-sm focus:outline-none"
-                     :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerTextColor }" />
+                     :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerTextColor }" />
             </div>
             <div>
               <label class="block text-xs font-medium uppercase mb-1.5" :style="{ color: mutedTextColor }">Rol en el sistema</label>
               <select v-model="inviteForm.role_id" class="w-full rounded-xl border px-3 py-2.5 text-sm focus:outline-none"
-                      :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerTextColor }">
+                      :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerTextColor }">
                 <option :value="null">-- Sin rol (se asignará 'user' por defecto) --</option>
                 <option v-for="role in availableRoles" :key="role.id" :value="role.id">
                   {{ role.name }}{{ role.is_system_role ? ' (sistema)' : '' }}
@@ -987,7 +985,7 @@ const getInvoiceStatusColor = (status: string) => {
             <p v-if="inviteError" class="text-xs text-rose-400">{{ inviteError }}</p>
             <div class="flex gap-3 pt-2">
               <button type="button" @click="showInviteModal = false" class="flex-1 rounded-2xl border px-4 py-2.5 text-sm font-medium"
-                      :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: mutedTextColor }">
+                      :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: mutedTextColor }">
                 Cancelar
               </button>
               <button type="submit" :disabled="isInviting" class="flex-1 rounded-2xl border border-transparent nxr-btn-primary px-4 py-2.5 text-sm font-medium text-white disabled:opacity-60">

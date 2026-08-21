@@ -2,6 +2,42 @@ const db = require('../../config/db');
 const { resolveSchema } = require('../../utils/tenantResolver');
 
 const VALID_STATUSES = ['scheduled', 'confirmed', 'arrived', 'converted_to_work_order', 'cancelled', 'no_show', 'rescheduled'];
+const MODULE_CODE = 'garage_operations';
+
+/**
+ * Verifica el límite diario configurado en appointment_settings antes de
+ * crear/reagendar una cita. No hace nada si max_appointments_per_day es NULL
+ * (sin límite). Lanza un error con statusCode 409 si ya se alcanzó el tope.
+ */
+async function assertDailyCapacity(schema, targetDateIso, client, excludeApptId = null) {
+    const settingsRes = await client.query(
+        `SELECT max_appointments_per_day FROM ${schema}.appointment_settings WHERE module_code = $1`,
+        [MODULE_CODE]
+    );
+    const maxPerDay = settingsRes.rows[0]?.max_appointments_per_day;
+    if (maxPerDay == null) return;
+
+    const params = [targetDateIso];
+    let excludeClause = '';
+    if (excludeApptId) {
+        params.push(excludeApptId);
+        excludeClause = `AND id != $${params.length}`;
+    }
+
+    const countRes = await client.query(
+        `SELECT COUNT(*) FROM ${schema}.appointments
+         WHERE scheduled_start::date = $1::date
+           AND status NOT IN ('cancelled', 'no_show')
+           ${excludeClause}`,
+        params
+    );
+    if (parseInt(countRes.rows[0].count, 10) >= maxPerDay) {
+        throw Object.assign(
+            new Error(`Se alcanzó el máximo de ${maxPerDay} citas para ese día.`),
+            { statusCode: 409 }
+        );
+    }
+}
 
 /**
  * Genera número de cita: APT-{YYYY}-{NNNN}
@@ -130,6 +166,8 @@ exports.create = async (req, res) => {
         if (!scheduled_start) return res.status(400).json({ error: 'scheduled_start es requerido' });
 
         await client.query('BEGIN');
+
+        await assertDailyCapacity(schema, scheduled_start, client);
 
         const apptNumber = await generateAppointmentNumber(schema, client);
 
@@ -336,6 +374,8 @@ exports.reschedule = async (req, res) => {
 
         const { scheduled_start: prevStart, scheduled_end: prevEnd } = current.rows[0];
 
+        await assertDailyCapacity(schema, new_start, client, req.params.id);
+
         // Registrar historial de reagendamiento
         await client.query(
             `INSERT INTO ${schema}.appointment_reschedules (appointment_id, previous_start, previous_end, new_start, new_end, reason, changed_by)
@@ -506,5 +546,52 @@ exports.convertToWorkOrder = async (req, res) => {
         res.status(err.statusCode || 500).json({ error: err.message || 'Error al convertir cita en orden' });
     } finally {
         client.release();
+    }
+};
+
+/**
+ * GET /garage/appointment-settings
+ */
+exports.getAppointmentSettings = async (req, res) => {
+    try {
+        const { schema } = await resolveSchema(req);
+        const result = await db.query(
+            `SELECT * FROM ${schema}.appointment_settings WHERE module_code = $1`,
+            [MODULE_CODE]
+        );
+        if (result.rows.length === 0) {
+            return res.json({ module_code: MODULE_CODE, max_appointments_per_day: null, business_hours_start: '08:00', business_hours_end: '20:00' });
+        }
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error('appointmentsController.getAppointmentSettings error:', err.message);
+        res.status(500).json({ error: 'Error al obtener configuración de citas' });
+    }
+};
+
+/**
+ * PUT /garage/appointment-settings
+ */
+exports.updateAppointmentSettings = async (req, res) => {
+    try {
+        if (req.user?.read_only) return res.status(403).json({ error: 'Operación no permitida en modo solo lectura' });
+        const { schema } = await resolveSchema(req);
+        const { max_appointments_per_day, business_hours_start, business_hours_end } = req.body;
+
+        const result = await db.query(
+            `INSERT INTO ${schema}.appointment_settings (module_code, max_appointments_per_day, business_hours_start, business_hours_end)
+             VALUES ($1,$2,$3,$4)
+             ON CONFLICT (module_code) DO UPDATE SET
+                max_appointments_per_day = EXCLUDED.max_appointments_per_day,
+                business_hours_start     = EXCLUDED.business_hours_start,
+                business_hours_end       = EXCLUDED.business_hours_end,
+                updated_at                = CURRENT_TIMESTAMP
+             RETURNING *`,
+            [MODULE_CODE, max_appointments_per_day ?? null, business_hours_start || '08:00', business_hours_end || '20:00']
+        );
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error('appointmentsController.updateAppointmentSettings error:', err.message);
+        res.status(500).json({ error: 'Error al guardar configuración de citas' });
     }
 };

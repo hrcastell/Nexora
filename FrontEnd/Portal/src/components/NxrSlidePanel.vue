@@ -115,7 +115,7 @@ function discardAndClose() {
 onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
 
 const panelClasses = [
-  'h-full border-l border-white/10 shadow-2xl overflow-y-auto flex flex-col',
+  'h-full shadow-2xl overflow-y-auto flex flex-col',
   'w-[80vw] max-w-[80vw] lg:w-[40vw] lg:max-w-[40vw]'
 ].join(' ')
 </script>
@@ -125,25 +125,25 @@ const panelClasses = [
     <Transition name="slide-panel">
       <div
         v-if="open"
-        class="fixed inset-0 z-40 bg-black/70 flex items-stretch justify-end"
+        class="nxr-teleport-scope fixed inset-0 z-40 bg-black/70 flex items-stretch justify-end"
         @click.self="requestCancel"
       >
         <div
           :class="panelClasses"
-          :style="{ background: 'var(--nexora-glass-bg)' }"
+          :style="{ background: 'var(--nexora-glass-bg)', borderLeft: '1px solid var(--nexora-border-color)' }"
           role="dialog"
           aria-modal="true"
           :aria-label="title"
         >
           <!-- Header with title + close button -->
-          <header class="sticky top-0 z-10 flex items-center justify-between border-b border-white/10 px-6 py-4 backdrop-blur-xl" :style="{ background: 'var(--nexora-glass-bg-strong)' }">
+          <header class="nxr-slide-panel-header sticky top-0 z-10 flex items-center justify-between px-6 py-4 backdrop-blur-xl" :style="{ background: 'var(--nexora-glass-bg-strong)', borderBottom: '1px solid var(--nexora-border-color)' }">
             <div>
               <p v-if="eyebrow" class="text-xs nxr-text-soft mb-1">{{ eyebrow }}</p>
               <h2 class="text-lg font-semibold nxr-text">{{ title }}</h2>
             </div>
             <button
               type="button"
-              class="rounded-xl p-2 hover:bg-white/10 transition"
+              class="nxr-slide-panel-hover rounded-xl p-2 transition"
               aria-label="Cerrar"
               @click="requestCancel"
             >
@@ -158,8 +158,8 @@ const panelClasses = [
 
           <!-- Footer (optional, sticky at bottom) -->
           <footer
-            class="sticky bottom-0 flex gap-3 border-t border-white/10 px-6 py-4 backdrop-blur-xl"
-            :style="{ background: 'var(--nexora-glass-bg-strong)' }"
+            class="sticky bottom-0 flex gap-3 px-6 py-4 backdrop-blur-xl"
+            :style="{ background: 'var(--nexora-glass-bg-strong)', borderTop: '1px solid var(--nexora-border-color)' }"
           >
             <button type="button" class="nxr-btn nxr-btn-secondary" @click="requestCancel">
               Cancelar
@@ -177,8 +177,8 @@ const panelClasses = [
               aria-describedby="slide-panel-discard-description"
             >
               <div
-                class="discard-warning-card w-full max-w-md rounded-2xl border border-white/15 p-5 shadow-2xl"
-                :style="{ background: 'var(--nexora-glass-bg-strong)' }"
+                class="discard-warning-card w-full max-w-md rounded-2xl p-5 shadow-2xl"
+                :style="{ background: 'var(--nexora-glass-bg-strong)', border: '1px solid var(--nexora-border-color)' }"
               >
                 <h3
                   id="slide-panel-discard-title"
@@ -221,6 +221,20 @@ const panelClasses = [
 </template>
 
 <style scoped>
+/* Teleported to <body>, outside .nxr-app-shell — plain [data-nexora-mode]
+   (set on <body> itself) still reaches it, unlike the app-shell-scoped
+   override used for regular in-flow content. */
+.nxr-slide-panel-hover:hover { background-color: rgba(255, 255, 255, 0.10); }
+[data-nexora-mode="light"] .nxr-slide-panel-hover:hover { background-color: rgba(0, 0, 0, 0.06); }
+
+/* Light-mode overrides for every module's create/edit form rendered inside
+   this shell (via <slot />) — inputs, section/card containers, borders,
+   text — live centrally in style.css under the `.nxr-teleport-scope`
+   selector (the class on this panel's Teleported root above), not here.
+   Kept centralized instead of :deep()'d locally because the exact same
+   ruleset also needs to cover AppModal.vue and any future Teleported
+   component; see style.css "LIGHT MODE OVERRIDES" for why. */
+
 .nxr-slide-panel-body :deep(.grid:not(.nxr-garage-form-grid)) {
   grid-template-columns: minmax(0, 1fr) !important;
 }

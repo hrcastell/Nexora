@@ -41,4 +41,12 @@ export const dentalAppointmentsService = {
   convertToConsultation(id: number | string) {
     return api.post(`/dental/appointments/${id}/convert-to-consultation`, {});
   },
+
+  getSettings() {
+    return api.get<{ module_code: string; max_appointments_per_day: number | null; business_hours_start: string; business_hours_end: string }>('/dental/appointment-settings');
+  },
+
+  updateSettings(data: { max_appointments_per_day: number | null; business_hours_start: string; business_hours_end: string }) {
+    return api.put('/dental/appointment-settings', data);
+  },
 };

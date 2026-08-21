@@ -9,7 +9,27 @@ import type { Appointment } from '../types/garage';
 const props = defineProps<{
   modelValue: boolean;
   appointment?: Appointment | null;
+  prefill?: { date: Date; hour?: number; minute?: number } | null;
 }>();
+
+function pad2(n: number): string {
+  return n < 10 ? `0${n}` : String(n);
+}
+
+function toLocalInputValue(date: Date, hour?: number, minute?: number): string {
+  const y = date.getFullYear();
+  const m = pad2(date.getMonth() + 1);
+  const d = pad2(date.getDate());
+  const h = pad2(hour ?? date.getHours());
+  const min = pad2(minute ?? 0);
+  return `${y}-${m}-${d}T${h}:${min}`;
+}
+
+function addHourToInputValue(value: string, hours: number): string {
+  const d = new Date(value);
+  d.setHours(d.getHours() + hours);
+  return toLocalInputValue(d, d.getHours(), d.getMinutes());
+}
 
 const emit = defineEmits<{
   (e: 'update:modelValue', val: boolean): void;
@@ -53,7 +73,13 @@ watch(() => props.modelValue, (val) => {
         suggested_employee_id:     props.appointment.suggested_employee_id,
       });
     } else {
-      form.value = { customer_id: null, vehicle_id: null, scheduled_start: '', scheduled_end: '', estimated_duration_hours: 0, channel: '', requested_service_summary: '', reported_issue: '', preliminary_notes: '', internal_notes: '', priority: 'normal', suggested_employee_id: null };
+      const prefillStart = props.prefill ? toLocalInputValue(props.prefill.date, props.prefill.hour, props.prefill.minute) : '';
+      form.value = {
+        customer_id: null, vehicle_id: null,
+        scheduled_start: prefillStart,
+        scheduled_end: prefillStart ? addHourToInputValue(prefillStart, 1) : '',
+        estimated_duration_hours: 0, channel: '', requested_service_summary: '', reported_issue: '', preliminary_notes: '', internal_notes: '', priority: 'normal', suggested_employee_id: null,
+      };
     }
     error.value = '';
   }

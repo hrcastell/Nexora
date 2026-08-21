@@ -1,9 +1,12 @@
 #!/bin/bash
-# Nexora — apply Database/04_migrations/*.sql against the local Docker dev DB.
+# Nexora — apply BackEnd/migrations/*.sql against the local Docker dev DB.
 #
-# LOCAL DEV CONVENIENCE ONLY. This mirrors — but never replaces — what you
-# do by hand in production: paste each migration file, in the same order,
-# into phpPgAdmin on Bluehost. Nothing here touches production.
+# LOCAL DEV / ON-DEMAND CONVENIENCE ONLY. The backend now applies these
+# automatically and idempotently on every boot (BackEnd/migrations/runner.js,
+# tracked in public.schema_migrations) — this script is for running a
+# specific migration on demand or debugging outside that flow. Manual
+# phpPgAdmin pasting is no longer the primary path in production; it remains
+# available as a recovery tool if the automated runner can't apply something.
 #
 # Usage (run from the repo root, with `docker compose up -d db` running):
 #   ./Database/apply-migrations.sh                            # all, in order
@@ -22,25 +25,26 @@
 #
 # Intentionally excluded from this runner (see docker/README.md for the
 # full reasoning behind each):
-#   - Database/04_migrations/reset_admin_empresa_permissions.sql
+#   - BackEnd/migrations/reset_admin_empresa_permissions.sql
 #       One-off operational data-fix script for an already-existing tenant's
 #       permission rows (UPDATEs, no CREATE), not a repeatable schema
 #       migration. It also has no leading number, so it never matches the
 #       sequential-file pattern this script applies below.
 #   - Database/migracion.sql
 #       Legacy pre-{schema_name}-template snapshot: byte-for-byte the same
-#       content as Database/04_migrations/14_garage_operations_module.sql
+#       content as BackEnd/migrations/14_garage_operations_module.sql
 #       except with 'hernancius' hardcoded instead of the {schema_name}
-#       placeholder. Superseded by that file; not part of Database/04_migrations/
+#       placeholder. Superseded by that file; not part of BackEnd/migrations/
 #       at all, so the *.sql glob below never touches it.
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-MIGRATIONS_DIR="$SCRIPT_DIR/04_migrations"
+REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+MIGRATIONS_DIR="$REPO_ROOT/BackEnd/migrations"
 COMPOSE_SERVICE="db"
 
-cd "$SCRIPT_DIR/.."
+cd "$REPO_ROOT"
 
 # Pick up POSTGRES_USER / POSTGRES_DB from a local .env if present, so this
 # script always talks to the same database docker-compose.yml configured.

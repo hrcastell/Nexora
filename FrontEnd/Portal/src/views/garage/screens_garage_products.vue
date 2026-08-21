@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { Plus, Search, Edit2, ToggleLeft, ToggleRight, Trash2 } from 'lucide-vue-next';
 import { useGarageProductsStore } from '../../stores/garageProducts';
 import { useInventorySuppliersStore } from '../../stores/inventorySuppliers';
 import { useGarageCatalogsStore } from '../../stores/garageCatalogs';
+import { useGarageProductPriceLevelsStore } from '../../stores/garageProductPriceLevels';
+import { garageProductPricesService } from '../../services/garageProductPricesService';
+import { usePermissions } from '../../composables/usePermissions';
 import NxrSlidePanel from '../../components/NxrSlidePanel.vue';
 import Field from '../../components/ui/Field.vue';
 import FormSection from '../../components/ui/FormSection.vue';
@@ -17,6 +20,8 @@ import type { Product, ProductFormData } from '../../types/garage';
 const store = useGarageProductsStore();
 const suppliersStore = useInventorySuppliersStore();
 const catalogsStore = useGarageCatalogsStore();
+const priceLevelsStore = useGarageProductPriceLevelsStore();
+const { hasModule } = usePermissions();
 const { toasts, triggerToast, removeToast } = useToast();
 
 const confirmModal = ref<{ open: boolean; title: string; message: string; onConfirm: () => void }>({
@@ -33,7 +38,49 @@ const showForm = ref(false);
 const editing = ref<Product | null>(null);
 const saving = ref(false);
 const error = ref('');
-const activeTab = ref<'general' | 'inventory' | 'supply'>('general');
+const activeTab = ref<'general' | 'pricing' | 'inventory' | 'supply'>('general');
+const invLocked = computed(() => hasModule('inventory'));
+
+interface PriceRow { price_level_id: number; name: string; margin_pct: number }
+const priceRows = ref<PriceRow[]>([]);
+const pricesLoading = ref(false);
+const newLevelName = ref('');
+const newLevelMargin = ref(0);
+const creatingLevel = ref(false);
+const levelError = ref('');
+
+function priceFor(marginPct: number) {
+  return Number(form.value.average_cost || 0) * (1 + Number(marginPct || 0) / 100);
+}
+const fmtMoney = (n: number) => `$${Math.round(n).toLocaleString()}`;
+
+async function loadPriceRows(productId: number) {
+  pricesLoading.value = true;
+  try {
+    const res = await garageProductPricesService.getForProduct(productId);
+    priceRows.value = res.data.prices.map(r => ({ price_level_id: r.price_level_id, name: r.name, margin_pct: Number(r.margin_pct) }));
+  } catch {
+    priceRows.value = [];
+  } finally {
+    pricesLoading.value = false;
+  }
+}
+
+async function addPriceLevel() {
+  if (!newLevelName.value.trim()) return;
+  creatingLevel.value = true;
+  levelError.value = '';
+  try {
+    const level = await priceLevelsStore.create({ name: newLevelName.value.trim(), default_margin_pct: Number(newLevelMargin.value) || 0 });
+    priceRows.value.push({ price_level_id: level.id, name: level.name, margin_pct: Number(level.default_margin_pct) });
+    newLevelName.value = '';
+    newLevelMargin.value = 0;
+  } catch (e: any) {
+    levelError.value = e?.response?.data?.error || 'Error al crear nivel de precio';
+  } finally {
+    creatingLevel.value = false;
+  }
+}
 
 const emptyForm = (): ProductFormData => ({
   name: '',
@@ -66,7 +113,7 @@ async function load() {
 }
 
 onMounted(async () => {
-  await Promise.all([load(), suppliersStore.load({ status: 'active' }), catalogsStore.loadCatalog('product_types')]);
+  await Promise.all([load(), suppliersStore.load({ status: 'active' }), catalogsStore.loadCatalog('product_types'), priceLevelsStore.load({ status: 'active' })]);
 });
 watch([q, status, typeFilter], () => { page.value = 1; load(); });
 
@@ -75,6 +122,7 @@ function openCreate() {
   form.value = emptyForm();
   activeTab.value = 'general';
   error.value = '';
+  priceRows.value = priceLevelsStore.items.map(l => ({ price_level_id: l.id, name: l.name, margin_pct: Number(l.default_margin_pct) }));
   showForm.value = true;
 }
 
@@ -105,12 +153,13 @@ function openEdit(p: Product) {
   };
   activeTab.value = 'general';
   error.value = '';
+  loadPriceRows(p.id);
   showForm.value = true;
 }
 
 function normalizePayload(): ProductFormData {
   const maxStock = form.value.max_stock as number | null | '';
-  return {
+  const payload: any = {
     ...form.value,
     sku: form.value.sku?.trim() || '',
     description: form.value.description?.trim() || '',
@@ -125,6 +174,15 @@ function normalizePayload(): ProductFormData {
     last_purchase_cost: Number(form.value.last_purchase_cost || 0),
     storage_notes: form.value.storage_notes?.trim() || '',
   };
+  // Cost/inventory fields are backend-locked once Inventario is active for the
+  // company (productsController.js LOCKED_INVENTORY_FIELDS) — omit them here so
+  // the save doesn't get rejected with a 422 on every edit while the module is on.
+  if (invLocked.value) {
+    delete payload.inventory_enabled;
+    delete payload.average_cost;
+    delete payload.last_purchase_cost;
+  }
+  return payload;
 }
 
 async function save() {
@@ -132,10 +190,13 @@ async function save() {
   saving.value = true; error.value = '';
   try {
     const payload = normalizePayload();
-    if (editing.value) {
-      await store.update(editing.value.id, payload);
-    } else {
-      await store.create(payload);
+    const product = editing.value
+      ? await store.update(editing.value.id, payload)
+      : await store.create(payload);
+    try {
+      await garageProductPricesService.save(product.id, priceRows.value.map(r => ({ price_level_id: r.price_level_id, margin_pct: Number(r.margin_pct) || 0 })));
+    } catch (e: any) {
+      triggerToast('Aviso', 'El producto se guardó, pero hubo un error al guardar los valores de precio', 'error');
     }
     showForm.value = false;
     load();
@@ -170,6 +231,7 @@ function confirmRemove() {
 
 const tabs = [
   { id: 'general', label: 'General' },
+  { id: 'pricing', label: 'Valores' },
   { id: 'inventory', label: 'Inventario' },
   { id: 'supply', label: 'Abastecimiento' },
 ] as const;
@@ -301,6 +363,57 @@ const tabs = [
       </div>
       </FormSection>
 
+      <FormSection v-else-if="activeTab === 'pricing'" title="Valores" description="Costo del producto y precios de referencia calculados por margen de ganancia.">
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 mb-4">
+          <div>
+            <label class="block text-xs nxr-text-muted mb-1">Costo</label>
+            <input
+              v-model.number="form.average_cost"
+              type="number" min="0" step="0.01"
+              :disabled="invLocked"
+              class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none disabled:opacity-50"
+            />
+            <p v-if="invLocked" class="text-xs nxr-text-soft mt-1">Gestionado por Inventario (recepciones de stock).</p>
+          </div>
+        </div>
+
+        <div v-if="pricesLoading" class="flex flex-col gap-2">
+          <div v-for="i in 3" :key="i" class="h-12 rounded-xl bg-white/5 animate-pulse"></div>
+        </div>
+
+        <div v-else class="flex flex-col gap-2">
+          <div
+            v-for="row in priceRows" :key="row.price_level_id"
+            class="grid grid-cols-1 sm:grid-cols-3 gap-2 items-center px-3 py-2 rounded-xl border border-white/10"
+            :style="{ background: 'var(--nexora-glass-bg)' }"
+          >
+            <span class="text-sm nxr-text">{{ row.name }}</span>
+            <div class="flex items-center gap-1">
+              <input v-model.number="row.margin_pct" type="number" step="0.1" class="w-full px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 nxr-text text-sm outline-none" />
+              <span class="text-xs nxr-text-muted">%</span>
+            </div>
+            <span class="text-sm font-medium nxr-text sm:text-right">{{ fmtMoney(priceFor(row.margin_pct)) }}</span>
+          </div>
+
+          <p v-if="priceRows.length === 0" class="text-center nxr-text-soft py-6 text-sm">Todavía no hay niveles de precio. Creá el primero abajo.</p>
+        </div>
+
+        <div class="mt-4 pt-4 border-t border-white/10">
+          <p class="text-xs nxr-text-muted mb-2">Nuevo nivel de precio (se comparte entre todos los productos)</p>
+          <div class="grid grid-cols-1 sm:grid-cols-[1fr_8rem_auto] gap-2">
+            <input v-model="newLevelName" type="text" placeholder="Nombre (ej: Mayorista)" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none" />
+            <div class="flex items-center gap-1">
+              <input v-model.number="newLevelMargin" type="number" step="0.1" placeholder="Margen" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none" />
+              <span class="text-xs nxr-text-muted">%</span>
+            </div>
+            <button type="button" class="nxr-btn nxr-btn-secondary" :disabled="creatingLevel || !newLevelName.trim()" @click="addPriceLevel">
+              {{ creatingLevel ? 'Creando...' : 'Agregar' }}
+            </button>
+          </div>
+          <p v-if="levelError" class="text-xs text-red-400 mt-1">{{ levelError }}</p>
+        </div>
+      </FormSection>
+
       <FormSection v-else-if="activeTab === 'inventory'" title="Uso en inventario" description="Activá el control de stock sólo si este ítem se recibe y se mueve entre bodegas.">
       <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <div class="sm:col-span-2"><Checkbox id="inventory-enabled" v-model="form.inventory_enabled" label="Inventario habilitado" help="Permite incluir este producto en compras, recepciones y stock." /></div>
@@ -316,10 +429,6 @@ const tabs = [
         <div>
           <label class="block text-xs nxr-text-muted mb-1">Stock máximo</label>
           <input v-model.number="form.max_stock" type="number" min="0" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none" />
-        </div>
-        <div>
-          <label class="block text-xs nxr-text-muted mb-1">Costo promedio</label>
-          <input v-model.number="form.average_cost" type="number" min="0" step="0.01" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none" />
         </div>
         <div>
           <label class="block text-xs nxr-text-muted mb-1">Último costo compra</label>

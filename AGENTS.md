@@ -91,7 +91,7 @@ This project runs on **Bluehost shared hosting** — these constraints are hard:
 - Database admin only via phpPgAdmin — no external DB tools
 - No Docker, no PM2, no native compiled packages
 - PostgreSQL 10.23 — do not use SQL features unavailable in this version
-- Migrations are run **manually** by pasting SQL into phpPgAdmin in order
+- Migrations apply automatically on backend boot (`BackEnd/migrations/runner.js`); phpPgAdmin manual pasting remains available as a recovery tool, no longer the primary path
 
 **Production URLs:**
 - Frontend: `https://admin.nexoragarage.hrcastell.com` (static build from `npm run build`)
@@ -114,7 +114,7 @@ CORS allowed origins are hardcoded in [app.js](BackEnd/app.js).
 ## Key architectural rules
 
 - **Every technical decision must answer:** "Can this be deployed, maintained, and fixed on Bluehost shared hosting using cPanel, Setup Node.js App, and phpPgAdmin?" If no, reconsider.
-- SQL scripts go in `Database/04_migrations/` numbered in sequence; each script has a single responsibility and must be safe to run via phpPgAdmin.
+- SQL scripts go in `BackEnd/migrations/` numbered in sequence; each script has a single responsibility and must be idempotent (safe to run more than once).
 - Company data is never mixed between schemas — always use the schema from the JWT, never hardcode.
 - The `hernancius` company is the master/owner company (`is_master = TRUE`). Certain UI restrictions apply to it.
 - A screen/view is not considered done until it works correctly on desktop, tablet, and mobile. Mobile: cards instead of tables, single-column forms, no horizontal scroll.

@@ -10,10 +10,12 @@ const props = withDefaults(defineProps<{
   type?: 'success' | 'warning' | 'error' | 'info';
   autoClose?: boolean;
   autoCloseDelay?: number;
+  forceLight?: boolean;
 }>(), {
   type: 'info',
   autoClose: false,
   autoCloseDelay: 3000,
+  forceLight: false,
 });
 
 const emit = defineEmits<{
@@ -21,7 +23,7 @@ const emit = defineEmits<{
 }>();
 
 const configStore = useVisualConfigStore();
-const isLight = computed(() => configStore.mode === 'light');
+const isLight = computed(() => props.forceLight || configStore.mode === 'light');
 
 const modalBg = computed(() => isLight.value ? 'rgba(255, 255, 255, 0.98)' : 'rgba(11, 19, 38, 0.98)');
 const modalBorder = computed(() => isLight.value ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.10)');
