@@ -22,8 +22,6 @@ const mutedColor  = computed(() => isLight.value ? '#475569' : '#94a3b8');
 const cardBg      = computed(() => cfg.cardBg);
 const cardBorder  = computed(() => isLight.value ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.10)');
 const rowHoverBg  = computed(() => isLight.value ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.04)');
-const inputBg     = computed(() => isLight.value ? '#ffffff' : 'rgba(255,255,255,0.05)');
-const inputBorder = computed(() => isLight.value ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.12)');
 
 const companyId = computed<number | null>(() => auth.currentCompany?.id ?? null);
 const users     = ref<CompanyUser[]>([]);
@@ -423,17 +421,17 @@ const initials = (u: CompanyUser) => `${u.first_name?.[0] ?? ''}${u.last_name?.[
       <div class="relative flex-1 min-w-[180px]">
         <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" :style="{ color: mutedColor }" />
         <input v-model="search" placeholder="Buscar usuario..." class="w-full rounded-2xl border pl-9 pr-4 py-2 text-sm focus:outline-none"
-          :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+          :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
       </div>
       <select v-model="filterStatus" class="rounded-2xl border px-3 py-2 text-sm focus:outline-none"
-        :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }">
+        :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }">
         <option value="">Todos los estados</option>
         <option value="activo">Activo</option>
         <option value="suspendido">Suspendido</option>
         <option value="bloqueado">Bloqueado</option>
       </select>
       <select v-model="filterRole" class="rounded-2xl border px-3 py-2 text-sm focus:outline-none"
-        :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }">
+        :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }">
         <option value="">Todos los roles</option>
         <option value="super_admin">Super Admin</option>
         <option value="admin">Admin</option>
@@ -561,10 +559,10 @@ const initials = (u: CompanyUser) => `${u.first_name?.[0] ?? ''}${u.last_name?.[
 
             <!-- Company selector (super_admin only, create mode) -->
             <div v-if="perms.isSuperAdmin.value && !isEditing" class="rounded-2xl border p-4"
-              :style="{ borderColor: inputBorder, backgroundColor: isLight ? 'rgba(0,0,0,0.02)' : 'rgba(255,255,255,0.02)' }">
+              :style="{ borderColor: 'var(--nexora-input-border)', backgroundColor: isLight ? 'rgba(0,0,0,0.02)' : 'rgba(255,255,255,0.02)' }">
               <label class="mb-1.5 block text-xs font-semibold uppercase tracking-wide" :style="{ color: mutedColor }">Empresa destino *</label>
               <select v-model="selectedCompanyId" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
-                :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }">
+                :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }">
                 <option :value="null" disabled>-- Seleccionar empresa --</option>
                 <option v-for="c in allCompanies" :key="c.id" :value="c.id">{{ c.name }} ({{ c.schema_name }})</option>
               </select>
@@ -599,37 +597,37 @@ const initials = (u: CompanyUser) => `${u.first_name?.[0] ?? ''}${u.last_name?.[
                 <div>
                   <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Nombre *</label>
                   <input v-model="form.first_name" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
-                    :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                    :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
                 </div>
                 <div>
                   <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Apellido</label>
                   <input v-model="form.last_name" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
-                    :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                    :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
                 </div>
                 <div class="col-span-2">
                   <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Correo electronico *</label>
                   <input v-model="form.email" type="email" :disabled="isEditing" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none disabled:opacity-50"
-                    :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                    :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
                 </div>
                 <div>
                   <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Telefono</label>
                   <input v-model="form.phone" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
-                    :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                    :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
                 </div>
                 <div>
                   <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Pais</label>
                   <input v-model="form.country" placeholder="Chile" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
-                    :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                    :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
                 </div>
                 <div>
                   <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Region / Estado</label>
                   <input v-model="form.state_region" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
-                    :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                    :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
                 </div>
                 <div>
                   <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Ciudad</label>
                   <input v-model="form.city" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
-                    :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                    :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
                 </div>
               </div>
             </div>
@@ -641,7 +639,7 @@ const initials = (u: CompanyUser) => `${u.first_name?.[0] ?? ''}${u.last_name?.[
                 <div>
                   <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Rol del sistema</label>
                   <select v-model="form.role" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
-                    :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }">
+                    :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }">
                     <option value="inner_user">Usuario interno</option>
                     <option value="outer_user">Usuario externo</option>
                     <option value="admin">Administrador</option>
@@ -651,7 +649,7 @@ const initials = (u: CompanyUser) => `${u.first_name?.[0] ?? ''}${u.last_name?.[
                 <div>
                   <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Estado</label>
                   <select v-model="form.status" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
-                    :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }">
+                    :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }">
                     <option value="activo">Activo</option>
                     <option value="suspendido">Suspendido</option>
                     <option value="bloqueado">Bloqueado</option>
@@ -660,12 +658,12 @@ const initials = (u: CompanyUser) => `${u.first_name?.[0] ?? ''}${u.last_name?.[
                 <div>
                   <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Cargo laboral</label>
                   <input v-model="form.job_title" placeholder="CEO, Analista..." class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
-                    :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                    :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
                 </div>
                 <div>
                   <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Nivel de acceso</label>
                   <select v-model="form.access_level" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
-                    :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }">
+                    :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }">
                     <option value="por_modulo">Por modulo</option>
                     <option value="total">Acceso total</option>
                     <option value="supervision">Supervision</option>
@@ -701,7 +699,7 @@ const initials = (u: CompanyUser) => `${u.first_name?.[0] ?? ''}${u.last_name?.[
                   <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Contrasena</label>
                   <div class="relative">
                     <input v-model="form.password" :type="showPwd ? 'text' : 'password'" class="w-full rounded-2xl border px-3 py-2 pr-9 text-sm focus:outline-none"
-                      :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                      :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
                     <button type="button" @click="showPwd = !showPwd" class="absolute right-3 top-1/2 -translate-y-1/2">
                       <Eye v-if="!showPwd" class="h-4 w-4" :style="{ color: mutedColor }" />
                       <EyeOff v-else class="h-4 w-4" :style="{ color: mutedColor }" />
@@ -719,7 +717,7 @@ const initials = (u: CompanyUser) => `${u.first_name?.[0] ?? ''}${u.last_name?.[
                   <label class="mb-1 block text-xs font-medium" :style="{ color: mutedColor }">Confirmar contrasena</label>
                   <div class="relative">
                     <input v-model="form.confirm_password" :type="showConfirm ? 'text' : 'password'" class="w-full rounded-2xl border px-3 py-2 pr-9 text-sm focus:outline-none"
-                      :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                      :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
                     <button type="button" @click="showConfirm = !showConfirm" class="absolute right-3 top-1/2 -translate-y-1/2">
                       <Eye v-if="!showConfirm" class="h-4 w-4" :style="{ color: mutedColor }" />
                       <EyeOff v-else class="h-4 w-4" :style="{ color: mutedColor }" />

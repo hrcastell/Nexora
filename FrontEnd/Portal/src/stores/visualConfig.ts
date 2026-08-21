@@ -206,6 +206,14 @@ export const useVisualConfigStore = defineStore('visualConfig', () => {
       '--nexora-border-color': isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.08)',
       '--nexora-border-subtle': isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
       
+      // Input fields — deliberately independent of the transparency slider
+      // (that dependency, plus opaque white in light mode, is what made
+      // fields blend into glass-bg cards; see TECHNICAL_DEBT.md).
+      '--nexora-input-bg':          isDark ? 'rgba(255, 255, 255, 0.05)' : '#e7ecf3',
+      '--nexora-input-border':      isDark ? 'rgba(255, 255, 255, 0.10)' : 'rgba(15, 23, 42, 0.24)',
+      '--nexora-input-text':        isDark ? '#ffffff'                   : '#0f172a',
+      '--nexora-input-placeholder': isDark ? 'rgba(255, 255, 255, 0.40)' : 'rgba(15, 23, 42, 0.42)',
+
       // Glass effects - opacity driven by transparency slider (30–95 → 0.30–0.95)
       '--nexora-glass-bg':        isDark ? hexToRgba('#091224', transparency.value / 100)         : hexToRgba('#ffffff', Math.max(transparency.value / 100, 0.60)),
       '--nexora-glass-bg-strong': isDark ? hexToRgba('#091224', Math.min((transparency.value + 10) / 100, 1)) : hexToRgba('#ffffff', Math.min((transparency.value + 10) / 100, 0.98)),

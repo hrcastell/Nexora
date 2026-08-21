@@ -54,7 +54,7 @@ const CloseIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="curr
     >
       <div
         v-if="open"
-        class="fixed inset-0 z-40 flex items-center justify-center bg-black/70 px-4 backdrop-blur-sm"
+        class="nxr-teleport-scope fixed inset-0 z-40 flex items-center justify-center bg-black/70 px-4 backdrop-blur-sm"
       >
         <!-- Backdrop click to close -->
         <div class="absolute inset-0" @click="close" />
@@ -84,7 +84,7 @@ const CloseIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="curr
           </div>
 
           <!-- Body -->
-          <div class="mt-6">
+          <div class="app-modal-body mt-6">
             <slot />
           </div>
 
@@ -103,4 +103,10 @@ const CloseIcon = { template: `<svg viewBox="0 0 24 24" fill="none" stroke="curr
    (set on <body> itself) still reaches it. */
 .app-modal-hover:hover { background-color: rgba(255, 255, 255, 0.10) !important; }
 [data-nexora-mode="light"] .app-modal-hover:hover { background-color: rgba(0, 0, 0, 0.06) !important; }
+
+/* Light-mode overrides for slotted modal body content (inputs, section/card
+   containers, borders, text) live centrally in style.css under the
+   `.nxr-teleport-scope` selector (the class on this modal's Teleported
+   root above) — shared with NxrSlidePanel.vue and any future Teleported
+   component instead of duplicated per-component. */
 </style>

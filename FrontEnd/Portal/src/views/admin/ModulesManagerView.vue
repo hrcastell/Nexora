@@ -25,8 +25,6 @@ const mutedColor  = computed(() => isLight.value ? '#475569' : '#94a3b8');
 const cardBg      = computed(() => cfg.cardBg);
 const cardBorder  = computed(() => isLight.value ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.10)');
 const rowHoverBg  = computed(() => isLight.value ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.04)');
-const inputBg     = computed(() => isLight.value ? '#ffffff' : 'rgba(255,255,255,0.05)');
-const inputBorder = computed(() => isLight.value ? 'rgba(0,0,0,0.12)' : 'rgba(255,255,255,0.12)');
 const panelBg     = computed(() => isLight.value ? 'rgba(248,250,252,0.98)' : 'rgba(8,16,31,0.6)');
 
 // ── Data types ──────────────────────────────────────────────────
@@ -486,39 +484,39 @@ onMounted(loadCatalog);
               <div>
                 <label class="mb-1.5 block text-xs font-medium" :style="{ color: mutedColor }">Nombre</label>
                 <input v-model="mod.name" :disabled="!perms.isSuperAdmin.value" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none disabled:opacity-60"
-                       :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                       :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
               </div>
               <div>
                 <label class="mb-1.5 block text-xs font-medium" :style="{ color: mutedColor }">Código</label>
                 <input :value="mod.code" disabled class="w-full rounded-2xl border px-3 py-2 text-sm opacity-60 font-mono"
-                       :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                       :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
               </div>
               <div class="col-span-2">
                 <label class="mb-1.5 block text-xs font-medium" :style="{ color: mutedColor }">Descripción</label>
                 <textarea v-model="mod.description" :disabled="!perms.isSuperAdmin.value" rows="2"
                           class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none resize-none disabled:opacity-60"
-                          :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                          :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
               </div>
               <div>
                 <label class="mb-1.5 block text-xs font-medium" :style="{ color: mutedColor }">Icono (Lucide)</label>
                 <input v-model="mod.icon" :disabled="!perms.isSuperAdmin.value" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none disabled:opacity-60"
-                       :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                       :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
               </div>
               <div>
                 <label class="mb-1.5 block text-xs font-medium" :style="{ color: mutedColor }">Grupo</label>
                 <input v-model="mod.group_name" :disabled="!perms.isSuperAdmin.value" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none disabled:opacity-60"
-                       :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                       :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
               </div>
               <div>
                 <label class="mb-1.5 block text-xs font-medium" :style="{ color: mutedColor }">Orden menú</label>
                 <input v-model.number="mod.menu_order_default" :disabled="!perms.isSuperAdmin.value" type="number" min="0"
                        class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none disabled:opacity-60"
-                       :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                       :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
               </div>
               <div>
                 <label class="mb-1.5 block text-xs font-medium" :style="{ color: mutedColor }">Estado</label>
                 <select v-model="mod.status" :disabled="!perms.isSuperAdmin.value" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none disabled:opacity-60"
-                        :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }">
+                        :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }">
                   <option value="activo">Activo</option>
                   <option value="inactivo">Inactivo</option>
                   <option value="borrador">Borrador</option>
@@ -593,7 +591,7 @@ onMounted(loadCatalog);
                         class="flex items-center gap-1.5 rounded-2xl border px-3 py-1.5 text-xs font-medium transition"
                         :style="activeTab[mod.id] === tx.id
                           ? { backgroundColor: 'rgba(212,175,55,0.15)', borderColor: 'rgba(212,175,55,0.40)', color: '#D4AF37' }
-                          : { backgroundColor: inputBg, borderColor: inputBorder, color: mutedColor }">
+                          : { backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: mutedColor }">
                   <span v-if="perms.isSuperAdmin.value"
                         class="tx-drag-handle flex items-center cursor-grab active:cursor-grabbing"
                         title="Arrastrar para reordenar"
@@ -613,39 +611,39 @@ onMounted(loadCatalog);
                 <div>
                   <label class="mb-1.5 block text-xs font-medium" :style="{ color: mutedColor }">Nombre</label>
                   <input v-model="tx.name" :disabled="!perms.isSuperAdmin.value" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none disabled:opacity-60"
-                         :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                         :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
                 </div>
                 <div>
                   <label class="mb-1.5 block text-xs font-medium" :style="{ color: mutedColor }">Código</label>
                   <input :value="tx.code" disabled class="w-full rounded-2xl border px-3 py-2 text-sm opacity-60 font-mono"
-                         :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                         :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
                 </div>
                 <div class="col-span-2">
                   <label class="mb-1.5 block text-xs font-medium" :style="{ color: mutedColor }">Descripción</label>
                   <textarea v-model="tx.description" :disabled="!perms.isSuperAdmin.value" rows="2"
                             class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none resize-none disabled:opacity-60"
-                            :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                            :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
                 </div>
                 <div>
                   <label class="mb-1.5 block text-xs font-medium" :style="{ color: mutedColor }">Ruta</label>
                   <input v-model="tx.route" :disabled="!perms.isSuperAdmin.value" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none disabled:opacity-60 font-mono"
-                         :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                         :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
                 </div>
                 <div>
                   <label class="mb-1.5 block text-xs font-medium" :style="{ color: mutedColor }">Icono (Lucide)</label>
                   <input v-model="tx.icon" :disabled="!perms.isSuperAdmin.value" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none disabled:opacity-60"
-                         :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                         :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
                 </div>
                 <div>
                   <label class="mb-1.5 block text-xs font-medium" :style="{ color: mutedColor }">Orden tab</label>
                   <input v-model.number="tx.tab_order" :disabled="!perms.isSuperAdmin.value" type="number" min="0"
                          class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none disabled:opacity-60"
-                         :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                         :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
                 </div>
                 <div>
                   <label class="mb-1.5 block text-xs font-medium" :style="{ color: mutedColor }">Estado</label>
                   <select v-model="tx.status" :disabled="!perms.isSuperAdmin.value" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none disabled:opacity-60"
-                          :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }">
+                          :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }">
                     <option value="activo">Activo</option>
                     <option value="inactivo">Inactivo</option>
                     <option value="borrador">Borrador</option>

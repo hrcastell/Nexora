@@ -35,8 +35,6 @@ const cfg   = useVisualConfigStore();
 const perms = usePermissions();
 
 const isLight     = computed(() => cfg.mode === 'light');
-const inputBg     = computed(() => isLight.value ? '#ffffff' : 'rgba(255,255,255,0.05)');
-const inputBorder = computed(() => isLight.value ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.12)');
 const headerColor = computed(() => isLight.value ? '#0f172a' : '#ffffff');
 const mutedColor  = computed(() => isLight.value ? '#475569' : '#94a3b8');
 
@@ -87,7 +85,7 @@ const statusDot = (s?: string) => {
         :value="modelValue ?? ''"
         @change="onChange"
         class="w-full appearance-none rounded-2xl border pl-3 pr-8 py-1.5 text-sm focus:outline-none"
-        :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }">
+        :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }">
         <option v-if="showAll" value="">{{ placeholder }}</option>
         <option v-for="c in companies" :key="c.id" :value="c.id">
           {{ c.name }}{{ c.is_master ? ' ★' : '' }} ({{ c.schema_name }})

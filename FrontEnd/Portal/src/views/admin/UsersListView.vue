@@ -22,8 +22,6 @@ const cardBg          = computed(() => configStore.cardBg);
 const cardBorder      = computed(() => isLightMode.value ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.10)');
 const tableHeaderBg   = computed(() => isLightMode.value ? 'rgba(0,0,0,0.02)' : 'rgba(255,255,255,0.03)');
 const tableHoverBg    = computed(() => isLightMode.value ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.03)');
-const inputBg         = computed(() => isLightMode.value ? 'rgba(255,255,255,0.90)' : 'rgba(255,255,255,0.05)');
-const inputBorder     = computed(() => isLightMode.value ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.10)');
 
 const users     = ref<SystemUser[]>([]);
 const isLoading = ref(true);
@@ -72,7 +70,7 @@ const formatDate = (d: string) => d ? new Date(d).toLocaleDateString('es-CL') : 
           type="text"
           placeholder="Buscar usuario..."
           class="rounded-2xl border pl-9 pr-4 py-2 text-sm focus:outline-none w-60"
-          :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerTextColor }"
+          :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerTextColor }"
         />
       </div>
     </div>

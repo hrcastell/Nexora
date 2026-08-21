@@ -29,8 +29,6 @@ const configStore = useVisualConfigStore();
 const isLightMode = computed(() => configStore.mode === 'light');
 const headerTextColor = computed(() => isLightMode.value ? '#0f172a' : '#ffffff');
 const mutedTextColor = computed(() => isLightMode.value ? '#475569' : '#94a3b8');
-const inputBg = computed(() => isLightMode.value ? 'rgba(255, 255, 255, 0.90)' : 'rgba(255, 255, 255, 0.05)');
-const inputBorder = computed(() => isLightMode.value ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.10)');
 const labelColor = computed(() => isLightMode.value ? '#374151' : '#9ca3af');
 const optionBg = computed(() => isLightMode.value ? '#ffffff' : '#0b1326');
 
@@ -215,8 +213,8 @@ const handleSubmit = async () => {
                 <label for="name" class="block text-sm font-medium mb-2" :style="{ color: labelColor }">Nombre de la Empresa *</label>
                 <input type="text" id="name" v-model="form.name" required class="mt-1 block w-full rounded-xl shadow-sm border p-2.5 text-sm transition-colors"
                        :style="{
-                         backgroundColor: inputBg,
-                         borderColor: inputBorder,
+                         backgroundColor: 'var(--nexora-input-bg)',
+                         borderColor: 'var(--nexora-input-border)',
                          color: headerTextColor
                        }" />
               </div>
@@ -227,8 +225,8 @@ const handleSubmit = async () => {
                 <div class="mt-1 flex rounded-md shadow-sm">
                   <input type="text" id="schema" v-model="form.schema_name" required placeholder="ej: empresa_x" class="flex-1 min-w-0 block w-full px-3 py-2.5 rounded-xl text-sm border transition-colors"
                          :style="{
-                           backgroundColor: inputBg,
-                           borderColor: inputBorder,
+                           backgroundColor: 'var(--nexora-input-bg)',
+                           borderColor: 'var(--nexora-input-border)',
                            color: headerTextColor
                          }" />
                 </div>
@@ -240,8 +238,8 @@ const handleSubmit = async () => {
                 <label for="rut" class="block text-sm font-medium mb-2" :style="{ color: labelColor }">RUT / ID Tributario *</label>
                 <input type="text" id="rut" v-model="form.rut" required class="mt-1 block w-full rounded-xl shadow-sm border p-2.5 text-sm transition-colors"
                        :style="{
-                         backgroundColor: inputBg,
-                         borderColor: inputBorder,
+                         backgroundColor: 'var(--nexora-input-bg)',
+                         borderColor: 'var(--nexora-input-border)',
                          color: headerTextColor
                        }" />
               </div>
@@ -251,8 +249,8 @@ const handleSubmit = async () => {
                 <label for="country" class="block text-sm font-medium mb-2" :style="{ color: labelColor }">País *</label>
                 <select id="country" v-model="form.country" class="mt-1 block w-full pl-3 pr-10 py-2.5 text-base rounded-xl border text-sm transition-colors"
                         :style="{
-                          backgroundColor: inputBg,
-                          borderColor: inputBorder,
+                          backgroundColor: 'var(--nexora-input-bg)',
+                          borderColor: 'var(--nexora-input-border)',
                           color: headerTextColor
                         }">
                   <option value="Chile" :style="{ backgroundColor: optionBg }">Chile</option>
@@ -273,8 +271,8 @@ const handleSubmit = async () => {
                 <label for="email" class="block text-sm font-medium mb-2" :style="{ color: labelColor }">Email de Contacto *</label>
                 <input type="email" id="email" v-model="form.contact_email" required class="mt-1 block w-full rounded-xl shadow-sm border p-2.5 text-sm transition-colors"
                        :style="{
-                         backgroundColor: inputBg,
-                         borderColor: inputBorder,
+                         backgroundColor: 'var(--nexora-input-bg)',
+                         borderColor: 'var(--nexora-input-border)',
                          color: headerTextColor
                        }" />
               </div>
@@ -284,8 +282,8 @@ const handleSubmit = async () => {
                 <label for="phone" class="block text-sm font-medium mb-2" :style="{ color: labelColor }">Teléfono</label>
                 <input type="text" id="phone" v-model="form.contact_phone" class="mt-1 block w-full rounded-xl shadow-sm border p-2.5 text-sm transition-colors"
                        :style="{
-                         backgroundColor: inputBg,
-                         borderColor: inputBorder,
+                         backgroundColor: 'var(--nexora-input-bg)',
+                         borderColor: 'var(--nexora-input-border)',
                          color: headerTextColor
                        }" />
               </div>
@@ -295,8 +293,8 @@ const handleSubmit = async () => {
                 <label for="address" class="block text-sm font-medium mb-2" :style="{ color: labelColor }">Dirección</label>
                 <textarea id="address" v-model="form.address" rows="2" class="mt-1 block w-full rounded-xl shadow-sm border p-2.5 text-sm transition-colors"
                           :style="{
-                            backgroundColor: inputBg,
-                            borderColor: inputBorder,
+                            backgroundColor: 'var(--nexora-input-bg)',
+                            borderColor: 'var(--nexora-input-border)',
                             color: headerTextColor
                           }"></textarea>
               </div>
@@ -305,7 +303,7 @@ const handleSubmit = async () => {
               <div>
                 <label for="plan" class="block text-sm font-medium mb-2" :style="{ color: labelColor }">Plan de Suscripción</label>
                 <select id="plan" v-model="form.subscription_plan_id" class="mt-1 block w-full pl-3 pr-10 py-2.5 text-base rounded-xl border text-sm transition-colors"
-                        :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerTextColor }">
+                        :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerTextColor }">
                   <option :value="null" :style="{ backgroundColor: optionBg }">Sin plan</option>
                   <option v-for="p in plans" :key="p.id" :value="p.id" :style="{ backgroundColor: optionBg }">{{ p.name }}</option>
                 </select>
@@ -313,7 +311,7 @@ const handleSubmit = async () => {
 
               <!-- Admin User Section (collapsible) -->
               <div class="rounded-xl border p-4 transition-colors"
-                   :style="{ borderColor: inputBorder, backgroundColor: isLightMode ? 'rgba(0,0,0,0.02)' : 'rgba(255,255,255,0.02)' }">
+                   :style="{ borderColor: 'var(--nexora-input-border)', backgroundColor: isLightMode ? 'rgba(0,0,0,0.02)' : 'rgba(255,255,255,0.02)' }">
                 <button type="button" @click="showAdminSection = !showAdminSection"
                         class="flex items-center justify-between w-full text-left">
                   <div class="flex items-center gap-2">
@@ -331,18 +329,18 @@ const handleSubmit = async () => {
                     <div>
                       <label class="block text-xs font-medium mb-1" :style="{ color: labelColor }">Nombre</label>
                       <input type="text" v-model="adminForm.first_name" class="block w-full rounded-xl border p-2.5 text-sm transition-colors"
-                             :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerTextColor }" />
+                             :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerTextColor }" />
                     </div>
                     <div>
                       <label class="block text-xs font-medium mb-1" :style="{ color: labelColor }">Apellido</label>
                       <input type="text" v-model="adminForm.last_name" class="block w-full rounded-xl border p-2.5 text-sm transition-colors"
-                             :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerTextColor }" />
+                             :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerTextColor }" />
                     </div>
                   </div>
                   <div>
                     <label class="block text-xs font-medium mb-1" :style="{ color: labelColor }">Email del administrador *</label>
                     <input type="email" v-model="adminForm.email" class="block w-full rounded-xl border p-2.5 text-sm transition-colors"
-                           :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerTextColor }" />
+                           :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerTextColor }" />
                   </div>
                   <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
@@ -350,7 +348,7 @@ const handleSubmit = async () => {
                       <div class="relative">
                         <input :type="showPwd ? 'text' : 'password'" v-model="adminForm.password"
                                class="block w-full rounded-xl border p-2.5 pr-9 text-sm transition-colors"
-                               :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerTextColor }" />
+                               :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerTextColor }" />
                         <button type="button" @click="showPwd = !showPwd" class="absolute right-3 top-1/2 -translate-y-1/2">
                           <Eye v-if="!showPwd" class="h-4 w-4" :style="{ color: mutedTextColor }" />
                           <EyeOff v-else class="h-4 w-4" :style="{ color: mutedTextColor }" />
@@ -368,7 +366,7 @@ const handleSubmit = async () => {
                       <div class="relative">
                         <input :type="showConfirmPwd ? 'text' : 'password'" v-model="adminForm.confirm_password"
                                class="block w-full rounded-xl border p-2.5 pr-9 text-sm transition-colors"
-                               :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerTextColor }" />
+                               :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerTextColor }" />
                         <button type="button" @click="showConfirmPwd = !showConfirmPwd" class="absolute right-3 top-1/2 -translate-y-1/2">
                           <Eye v-if="!showConfirmPwd" class="h-4 w-4" :style="{ color: mutedTextColor }" />
                           <EyeOff v-else class="h-4 w-4" :style="{ color: mutedTextColor }" />

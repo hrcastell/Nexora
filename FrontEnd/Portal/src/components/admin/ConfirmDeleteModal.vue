@@ -22,8 +22,6 @@ const modalBg = computed(() => isLight.value ? 'rgba(255, 255, 255, 0.98)' : 'rg
 const modalBorder = computed(() => isLight.value ? 'rgba(0, 0, 0, 0.08)' : 'rgba(255, 255, 255, 0.10)');
 const headerColor = computed(() => isLight.value ? '#0f172a' : '#ffffff');
 const mutedColor = computed(() => isLight.value ? '#475569' : '#94a3b8');
-const inputBg = computed(() => isLight.value ? '#ffffff' : 'rgba(255, 255, 255, 0.05)');
-const inputBorder = computed(() => isLight.value ? 'rgba(0, 0, 0, 0.15)' : 'rgba(255, 255, 255, 0.12)');
 
 const confirmText = ref('');
 const isDeleting = ref(false);
@@ -88,7 +86,7 @@ const handleCancel = () => {
             v-model="confirmText"
             type="text"
             class="w-full rounded-2xl border px-3 py-2.5 text-sm focus:outline-none transition"
-            :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }"
+            :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }"
             :placeholder="entityName"
             @keyup.enter="handleConfirm"
           />

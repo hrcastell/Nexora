@@ -1,17 +1,6 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, watch } from 'vue';
 import { Save, Loader2 } from 'lucide-vue-next';
-import { useVisualConfigStore } from '../../stores/visualConfig';
-
-// .nxr-input isn't used anywhere else in the app and its light-mode override
-// doesn't take effect reliably — every other admin screen (ModulesManagerView,
-// UsersView, VisualConfigView) instead binds background/border/color inline
-// from configStore.mode, so inputs here follow that same proven pattern.
-const configStore = useVisualConfigStore();
-const isLight = computed(() => configStore.mode === 'light');
-const inputBg = computed(() => (isLight.value ? '#ffffff' : 'rgba(255,255,255,0.05)'));
-const inputBorder = computed(() => (isLight.value ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.12)'));
-const inputText = computed(() => (isLight.value ? '#0f172a' : '#ffffff'));
 
 export interface AgendaSettingsValue {
   max_appointments_per_day: number | null;
@@ -60,7 +49,7 @@ function submit() {
       <div v-if="!unlimited">
         <label class="mb-1.5 block text-xs font-medium nxr-text-muted">Máximo de citas por día</label>
         <input v-model.number="form.max_appointments_per_day" type="number" min="1" class="w-full rounded-2xl border px-3 py-2 text-sm outline-none"
-               :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: inputText }" />
+               :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: 'var(--nexora-input-text)' }" />
       </div>
     </div>
 
@@ -68,12 +57,12 @@ function submit() {
       <div>
         <label class="mb-1.5 block text-xs font-medium nxr-text-muted">Horario desde</label>
         <input v-model="form.business_hours_start" type="time" class="w-full rounded-2xl border px-3 py-2 text-sm outline-none"
-               :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: inputText }" />
+               :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: 'var(--nexora-input-text)' }" />
       </div>
       <div>
         <label class="mb-1.5 block text-xs font-medium nxr-text-muted">Horario hasta</label>
         <input v-model="form.business_hours_end" type="time" class="w-full rounded-2xl border px-3 py-2 text-sm outline-none"
-               :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: inputText }" />
+               :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: 'var(--nexora-input-text)' }" />
       </div>
     </div>
 

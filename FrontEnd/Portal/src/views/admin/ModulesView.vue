@@ -18,8 +18,6 @@ const mutedColor    = computed(() => isLight.value ? '#475569' : '#94a3b8');
 const cardBg        = computed(() => cfg.cardBg);
 const cardBorder    = computed(() => isLight.value ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.10)');
 const rowHoverBg    = computed(() => isLight.value ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.04)');
-const inputBg       = computed(() => isLight.value ? '#ffffff' : 'rgba(255,255,255,0.05)');
-const inputBorder   = computed(() => isLight.value ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.12)');
 
 const modules   = ref<NexoraModule[]>([]);
 const isLoading = ref(true);
@@ -182,10 +180,10 @@ const fmtDate = (d?: string) => d ? new Date(d).toLocaleDateString('es-CL') : '�
       <div class="relative flex-1">
         <Search class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4" :style="{ color: mutedColor }" />
         <input v-model="search" placeholder="Buscar módulo..." class="w-full rounded-2xl border pl-9 pr-4 py-2 text-sm focus:outline-none"
-          :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+          :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
       </div>
       <select v-model="filterStatus" class="rounded-2xl border px-3 py-2 text-sm focus:outline-none"
-        :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }">
+        :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }">
         <option value="">Todos los estados</option>
         <option value="activo">Activo</option>
         <option value="inactivo">Inactivo</option>
@@ -277,37 +275,37 @@ const fmtDate = (d?: string) => d ? new Date(d).toLocaleDateString('es-CL') : '�
               <div class="col-span-2 sm:col-span-1">
                 <label class="mb-1.5 block text-xs font-medium" :style="{ color: mutedColor }">Código *</label>
                 <input v-model="form.code" :disabled="isEditing" placeholder="ej: facturacion" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none disabled:opacity-50"
-                  :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                  :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
               </div>
               <div class="col-span-2 sm:col-span-1">
                 <label class="mb-1.5 block text-xs font-medium" :style="{ color: mutedColor }">Nombre *</label>
                 <input v-model="form.name" placeholder="Facturación" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
-                  :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                  :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
               </div>
               <div class="col-span-2">
                 <label class="mb-1.5 block text-xs font-medium" :style="{ color: mutedColor }">Descripción</label>
                 <textarea v-model="form.description" rows="2" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none resize-none"
-                  :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                  :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
               </div>
               <div>
                 <label class="mb-1.5 block text-xs font-medium" :style="{ color: mutedColor }">Ícono (Lucide)</label>
                 <input v-model="form.icon" placeholder="ej: CreditCard" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
-                  :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                  :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
               </div>
               <div>
                 <label class="mb-1.5 block text-xs font-medium" :style="{ color: mutedColor }">Grupo</label>
                 <input v-model="form.group_name" placeholder="ej: Comercial" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
-                  :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                  :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
               </div>
               <div>
                 <label class="mb-1.5 block text-xs font-medium" :style="{ color: mutedColor }">Orden menú</label>
                 <input v-model.number="form.menu_order" type="number" min="0" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
-                  :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }" />
+                  :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }" />
               </div>
               <div>
                 <label class="mb-1.5 block text-xs font-medium" :style="{ color: mutedColor }">Estado</label>
                 <select v-model="form.status" class="w-full rounded-2xl border px-3 py-2 text-sm focus:outline-none"
-                  :style="{ backgroundColor: inputBg, borderColor: inputBorder, color: headerColor }">
+                  :style="{ backgroundColor: 'var(--nexora-input-bg)', borderColor: 'var(--nexora-input-border)', color: headerColor }">
                   <option value="activo">Activo</option>
                   <option value="inactivo">Inactivo</option>
                   <option value="borrador">Borrador</option>

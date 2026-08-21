@@ -125,7 +125,7 @@ const panelClasses = [
     <Transition name="slide-panel">
       <div
         v-if="open"
-        class="fixed inset-0 z-40 bg-black/70 flex items-stretch justify-end"
+        class="nxr-teleport-scope fixed inset-0 z-40 bg-black/70 flex items-stretch justify-end"
         @click.self="requestCancel"
       >
         <div
@@ -226,6 +226,14 @@ const panelClasses = [
    override used for regular in-flow content. */
 .nxr-slide-panel-hover:hover { background-color: rgba(255, 255, 255, 0.10); }
 [data-nexora-mode="light"] .nxr-slide-panel-hover:hover { background-color: rgba(0, 0, 0, 0.06); }
+
+/* Light-mode overrides for every module's create/edit form rendered inside
+   this shell (via <slot />) — inputs, section/card containers, borders,
+   text — live centrally in style.css under the `.nxr-teleport-scope`
+   selector (the class on this panel's Teleported root above), not here.
+   Kept centralized instead of :deep()'d locally because the exact same
+   ruleset also needs to cover AppModal.vue and any future Teleported
+   component; see style.css "LIGHT MODE OVERRIDES" for why. */
 
 .nxr-slide-panel-body :deep(.grid:not(.nxr-garage-form-grid)) {
   grid-template-columns: minmax(0, 1fr) !important;
