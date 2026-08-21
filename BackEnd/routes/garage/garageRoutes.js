@@ -150,6 +150,8 @@ router.post('/service-templates/:id/products',             serviceTemplatesCtrl.
 router.delete('/service-templates/:id/products/:productId', serviceTemplatesCtrl.removeProduct);
 
 // ─── CITAS ────────────────────────────────────────────────────
+router.get('/appointment-settings',                      appointmentsCtrl.getAppointmentSettings);
+router.put('/appointment-settings',                      appointmentsCtrl.updateAppointmentSettings);
 router.get('/appointments',                              appointmentsCtrl.list);
 router.post('/appointments',                             appointmentsCtrl.create);
 router.get('/appointments/:id',                          appointmentsCtrl.getById);

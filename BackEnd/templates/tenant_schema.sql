@@ -508,6 +508,17 @@ CREATE INDEX IF NOT EXISTS idx_appointments_customer  ON {schema_name}.appointme
 CREATE INDEX IF NOT EXISTS idx_appointments_vehicle   ON {schema_name}.appointments(vehicle_id);
 CREATE INDEX IF NOT EXISTS idx_appointments_scheduled ON {schema_name}.appointments(scheduled_start);
 
+-- Shared across every module with an Agenda screen (garage_operations,
+-- dental_core, ...) — one row per module_code, not FK-scoped to garage.
+CREATE TABLE IF NOT EXISTS {schema_name}.appointment_settings (
+    id                         SERIAL PRIMARY KEY,
+    module_code                VARCHAR(50)   NOT NULL UNIQUE,
+    max_appointments_per_day   INTEGER,
+    business_hours_start       TIME          NOT NULL DEFAULT '08:00',
+    business_hours_end         TIME          NOT NULL DEFAULT '20:00',
+    updated_at                 TIMESTAMP     DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS {schema_name}.appointment_services (
     id                       SERIAL PRIMARY KEY,
     appointment_id           INTEGER       NOT NULL REFERENCES {schema_name}.appointments(id) ON DELETE CASCADE,

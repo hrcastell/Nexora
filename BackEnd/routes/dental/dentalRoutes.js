@@ -51,6 +51,8 @@ router.patch('/treatments/:id',  treatmentsCtrl.update);
 router.delete('/treatments/:id', treatmentsCtrl.remove);
 
 // ─── APPOINTMENTS ─────────────────────────────────────────────
+router.get('/appointment-settings',                    appointmentsCtrl.getAppointmentSettings);
+router.put('/appointment-settings',                    appointmentsCtrl.updateAppointmentSettings);
 router.get('/appointments',                            appointmentsCtrl.list);
 router.get('/appointments/day',                        appointmentsCtrl.getByDay);
 router.get('/appointments/month',                      appointmentsCtrl.getByMonth);

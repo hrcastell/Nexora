@@ -1,13 +1,18 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
-import { Plus, CalendarDays, List, Calendar, CheckCircle2, XCircle, UserX, ArrowRightCircle, Edit2, LogIn } from 'lucide-vue-next';
+import { Plus, CheckCircle2, XCircle, UserX, ArrowRightCircle, Edit2, LogIn } from 'lucide-vue-next';
 import { useDentalAppointmentsStore } from '../../stores/dentalAppointments';
 import { useDentalPatientsStore } from '../../stores/dentalPatients';
 import { useDentalTreatmentsStore } from '../../stores/dentalTreatments';
+import { dentalAppointmentsService } from '../../services/dentalAppointmentsService';
 import NxrSlidePanel from '../../components/NxrSlidePanel.vue';
 import AppToast from '../../components/AppToast.vue';
 import ConfirmActionModal from '../../components/admin/ConfirmActionModal.vue';
+import AgendaCalendar from '../../components/agenda/AgendaCalendar.vue';
+import AgendaSettingsPanel, { type AgendaSettingsValue } from '../../components/agenda/AgendaSettingsPanel.vue';
+import type { AgendaEvent, AgendaStatusColorMap, AgendaCapacityByDate, AgendaView } from '../../components/agenda/agendaTypes';
+import { dateKey as agendaDateKey } from '../../components/agenda/agendaLayout';
 import { useToast } from '../../composables/useToast';
 import type { DentalAppointment, DentalAppointmentFormData, DentalPatientFormData } from '../../types/dental';
 
@@ -170,19 +175,14 @@ async function saveInlinePatient() {
   }
 }
 
-type ViewTab = 'today' | 'month' | 'all';
-const activeTab = ref<ViewTab>('today');
+type ViewTab = 'day' | 'month' | 'all' | 'settings';
+const activeTab = ref<ViewTab>('month');
 const showPanel = ref(false);
 const saving    = ref(false);
 const saveError = ref<string | null>(null);
 const actionError = ref<string | null>(null);
 const isEditing = ref(false);
 const editingAppointmentId = ref<number | string | null>(null);
-const selectedCalendarDate = ref<string | null>(null);
-
-const now = new Date();
-const currentYear  = ref(now.getFullYear());
-const currentMonth = ref(now.getMonth() + 1);
 
 const defaultForm = (): DentalAppointmentFormData => ({
   customer_id: '',
@@ -194,8 +194,6 @@ const defaultForm = (): DentalAppointmentFormData => ({
 });
 
 const form = ref<DentalAppointmentFormData>(defaultForm());
-
-const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
 const STATUS_LABEL: Record<string, string> = {
   scheduled:   'Programada',
@@ -217,14 +215,24 @@ const STATUS_CLASS: Record<string, string> = {
   rescheduled: 'bg-purple-500/20 text-purple-400',
 };
 
+const STATUS_COLORS: AgendaStatusColorMap = {
+  scheduled:   { bg: 'bg-blue-500/20',   text: 'text-blue-300',   dot: 'bg-blue-400' },
+  confirmed:   { bg: 'bg-green-500/20',  text: 'text-green-300',  dot: 'bg-green-400' },
+  checked_in:  { bg: 'bg-cyan-500/20',   text: 'text-cyan-300',   dot: 'bg-cyan-400' },
+  completed:   { bg: 'bg-gray-500/20',   text: 'text-gray-300',   dot: 'bg-gray-400' },
+  cancelled:   { bg: 'bg-red-500/20',    text: 'text-red-300',    dot: 'bg-red-400' },
+  no_show:     { bg: 'bg-orange-500/20', text: 'text-orange-300', dot: 'bg-orange-400' },
+  rescheduled: { bg: 'bg-purple-500/20', text: 'text-purple-300', dot: 'bg-purple-400' },
+};
+
 function fmtTime(iso: string) {
   const d = new Date(iso);
-  return d.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+  return d.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
 }
 
 function fmtDate(iso: string) {
   const d = new Date(iso);
-  return d.toLocaleDateString('es-AR', { weekday: 'short', day: '2-digit', month: '2-digit' });
+  return d.toLocaleDateString('es-CL', { weekday: 'short', day: '2-digit', month: '2-digit' });
 }
 
 function patientDisplayName(apt: DentalAppointment) {
@@ -233,88 +241,118 @@ function patientDisplayName(apt: DentalAppointment) {
     ?? 'Paciente';
 }
 
-// Group month items by day
-const monthGrouped = computed(() => {
-  const map = new Map<string, DentalAppointment[]>();
-  const items = selectedCalendarDate.value
-    ? store.items.filter(apt => localDateKey(apt.scheduled_start) === selectedCalendarDate.value)
-    : store.items;
-  for (const apt of items) {
-    const key = fmtDate(apt.scheduled_start);
-    if (!map.has(key)) map.set(key, []);
-    map.get(key)!.push(apt);
+// ── Día / Mes tabs ────────────────────────────────────────────────
+const agendaView = ref<AgendaView>('month');
+const agendaDate = ref(new Date());
+const agendaEvents = ref<DentalAppointment[]>([]);
+const agendaLoading = ref(false);
+
+// getDay/getMonth actually respond { data: [...] } despite the service's
+// bare-array TS type (same inconsistency the store's own unwrapData works
+// around for loadToday/loadMonth) — unwrap defensively either way.
+function unwrapAppointments(payload: unknown): DentalAppointment[] {
+  if (Array.isArray(payload)) return payload as DentalAppointment[];
+  return ((payload as { data?: DentalAppointment[] })?.data) ?? [];
+}
+
+async function loadAgendaRange() {
+  agendaLoading.value = true;
+  try {
+    if (agendaView.value === 'month') {
+      const res = await dentalAppointmentsService.getMonth(agendaDate.value.getFullYear(), agendaDate.value.getMonth() + 1);
+      agendaEvents.value = unwrapAppointments(res.data);
+    } else {
+      const res = await dentalAppointmentsService.getDay(agendaDateKey(agendaDate.value));
+      agendaEvents.value = unwrapAppointments(res.data);
+    }
+  } catch {
+    agendaEvents.value = [];
+  } finally {
+    agendaLoading.value = false;
   }
-  return map;
-});
-
-function dateKey(date: Date) {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
 }
+watch([agendaView, agendaDate], loadAgendaRange);
 
-function localDateKey(iso: string) {
-  return dateKey(new Date(iso));
-}
+const agendaCalendarEvents = computed<AgendaEvent[]>(() =>
+  agendaEvents.value.map((a) => ({
+    id: a.id,
+    start: a.scheduled_start,
+    end: a.scheduled_end || a.scheduled_start,
+    title: patientDisplayName(a),
+    status: a.status,
+  }))
+);
 
-const appointmentsByDate = computed(() => {
-  const map = new Map<string, DentalAppointment[]>();
-  for (const apt of store.items) {
-    const key = localDateKey(apt.scheduled_start);
-    if (!map.has(key)) map.set(key, []);
-    map.get(key)!.push(apt);
+const settings = ref<AgendaSettingsValue>({ max_appointments_per_day: null, business_hours_start: '08:00', business_hours_end: '20:00' });
+const savingSettings = ref(false);
+
+const capacityByDate = computed<AgendaCapacityByDate>(() => {
+  const max = settings.value.max_appointments_per_day;
+  if (max == null) return {};
+  const counts: Record<string, number> = {};
+  for (const ev of agendaCalendarEvents.value) {
+    if (ev.status === 'cancelled' || ev.status === 'no_show') continue;
+    const key = agendaDateKey(new Date(ev.start));
+    counts[key] = (counts[key] || 0) + 1;
   }
-  return map;
+  const result: AgendaCapacityByDate = {};
+  for (const [key, count] of Object.entries(counts)) {
+    const status = count >= max ? 'full' : count >= max * 0.8 ? 'near' : 'ok';
+    result[key] = { count, status };
+  }
+  return result;
 });
 
-const calendarDays = computed(() => {
-  const first = new Date(currentYear.value, currentMonth.value - 1, 1);
-  const start = new Date(first);
-  start.setDate(first.getDate() - first.getDay());
-
-  return Array.from({ length: 42 }, (_, index) => {
-    const date = new Date(start);
-    date.setDate(start.getDate() + index);
-    const key = dateKey(date);
-    return {
-      key,
-      day: date.getDate(),
-      inMonth: date.getMonth() + 1 === currentMonth.value,
-      isToday: key === dateKey(new Date()),
-      appointments: appointmentsByDate.value.get(key) ?? [],
-    };
-  });
-});
-
-async function goPreviousMonth() {
-  selectedCalendarDate.value = null;
-  if (currentMonth.value > 1) currentMonth.value--;
-  else { currentMonth.value = 12; currentYear.value--; }
-  await store.loadMonth(currentYear.value, currentMonth.value);
+async function loadSettings() {
+  const res = await dentalAppointmentsService.getSettings();
+  settings.value = {
+    max_appointments_per_day: res.data.max_appointments_per_day,
+    business_hours_start: res.data.business_hours_start?.slice(0, 5) || '08:00',
+    business_hours_end: res.data.business_hours_end?.slice(0, 5) || '20:00',
+  };
 }
 
-async function goNextMonth() {
-  selectedCalendarDate.value = null;
-  if (currentMonth.value < 12) currentMonth.value++;
-  else { currentMonth.value = 1; currentYear.value++; }
-  await store.loadMonth(currentYear.value, currentMonth.value);
+async function saveSettings(value: AgendaSettingsValue) {
+  savingSettings.value = true;
+  try {
+    await dentalAppointmentsService.updateSettings(value);
+    settings.value = value;
+  } finally {
+    savingSettings.value = false;
+  }
 }
 
 async function switchTab(tab: ViewTab) {
   activeTab.value = tab;
-  if (tab === 'today') await store.loadToday();
-  else if (tab === 'month') await store.loadMonth(currentYear.value, currentMonth.value);
-  else await store.load();
+  if (tab === 'day' || tab === 'month') { agendaView.value = tab; await loadAgendaRange(); }
+  else if (tab === 'all') await store.load();
 }
 
-function selectCalendarDay(day: { key: string; appointments: DentalAppointment[] }) {
-  if (!day.appointments.length) return;
-  selectedCalendarDate.value = selectedCalendarDate.value === day.key ? null : day.key;
+function pad2(n: number): string {
+  return n < 10 ? `0${n}` : String(n);
 }
 
-function openCreate() {
+function prefillToLocalInputValue(date: Date, hour?: number, minute?: number): string {
+  const y = date.getFullYear();
+  const m = pad2(date.getMonth() + 1);
+  const d = pad2(date.getDate());
+  const h = pad2(hour ?? date.getHours());
+  const min = pad2(minute ?? 0);
+  return `${y}-${m}-${d}T${h}:${min}`;
+}
+
+function addHourToInputValue(value: string, hours: number): string {
+  const d = new Date(value);
+  d.setHours(d.getHours() + hours);
+  return prefillToLocalInputValue(d, d.getHours(), d.getMinutes());
+}
+
+function openCreate(prefill?: { date: Date; hour?: number; minute?: number }) {
   form.value = defaultForm();
+  if (prefill) {
+    form.value.scheduled_start = prefillToLocalInputValue(prefill.date, prefill.hour, prefill.minute);
+    form.value.scheduled_end = addHourToInputValue(form.value.scheduled_start, 1);
+  }
   saveError.value = null;
   isEditing.value = false;
   editingAppointmentId.value = null;
@@ -349,10 +387,14 @@ function openEditAppointment(apt: DentalAppointment) {
   showPanel.value = true;
 }
 
+async function onCalendarSelectEvent(payload: { event: AgendaEvent }) {
+  const found = agendaEvents.value.find((a) => a.id === payload.event.id);
+  if (found) openEditAppointment(found);
+}
+
 async function refreshActiveTab() {
-  if (activeTab.value === 'today') await store.loadToday();
-  else if (activeTab.value === 'month') await store.loadMonth(currentYear.value, currentMonth.value);
-  else await store.load();
+  if (activeTab.value === 'day' || activeTab.value === 'month') await loadAgendaRange();
+  else if (activeTab.value === 'all') await store.load();
 }
 
 async function save() {
@@ -425,7 +467,8 @@ async function doAction(action: 'confirm' | 'check_in' | 'cancel' | 'no_show' | 
 }
 
 onMounted(() => {
-  store.loadToday();
+  loadAgendaRange();
+  loadSettings();
   patientsStore.load();
   treatmentsStore.load();
 });
@@ -436,200 +479,55 @@ onMounted(() => {
     <div class="flex items-center justify-between flex-wrap gap-3">
       <h1 class="text-xl font-semibold nxr-text">Citas</h1>
       <button
+        v-if="activeTab !== 'settings'"
         class="flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-medium text-white transition nxr-btn-primary sm:w-auto"
-        @click="openCreate"
+        @click="openCreate()"
       >
         <Plus :size="15" /> Nueva cita
       </button>
     </div>
 
     <!-- Tab switcher -->
-    <div class="flex flex-wrap items-center gap-2">
-      <button
-        v-for="tab in [
-          { key: 'today', label: 'Hoy',   icon: CalendarDays },
-          { key: 'month', label: 'Calendario',   icon: Calendar },
-          { key: 'all',   label: 'Todas', icon: List },
-        ]"
-        :key="tab.key"
-        class="flex min-h-10 items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold transition-all"
-        :class="activeTab === tab.key
-          ? 'bg-[var(--nexora-primary)] text-white'
-          : 'nxr-text-muted border border-white/10 hover:border-white/30 hover:text-[var(--nexora-text-color)]'"
-        @click="switchTab(tab.key as ViewTab)"
-      >
-        <component :is="tab.icon" :size="12" /> {{ tab.label }}
+    <div class="flex flex-wrap items-center gap-1 rounded-2xl p-1 nxr-card-subtle w-fit">
+      <button v-for="tab in [['day','Día'],['month','Mes'],['all','Todas'],['settings','Configuración']] as const" :key="tab[0]"
+              type="button"
+              class="rounded-xl px-4 py-1.5 text-xs font-medium transition"
+              :class="activeTab === tab[0] ? 'nxr-btn-primary' : 'nxr-text-muted'"
+              @click="switchTab(tab[0])">
+        {{ tab[1] }}
       </button>
-
-      <!-- Month nav -->
-      <template v-if="activeTab === 'month'">
-        <button class="ml-0 min-h-10 min-w-10 rounded-lg border border-white/10 px-2 py-1 text-xs nxr-text-muted hover:text-[var(--nexora-text-color)] sm:ml-2" aria-label="Mes anterior" @click="goPreviousMonth">‹</button>
-        <span class="min-w-0 text-xs nxr-text-muted">{{ MONTHS[currentMonth - 1] }} {{ currentYear }}</span>
-        <button class="min-h-10 min-w-10 rounded-lg border border-white/10 px-2 py-1 text-xs nxr-text-muted hover:text-[var(--nexora-text-color)]" aria-label="Mes siguiente" @click="goNextMonth">›</button>
-      </template>
     </div>
 
     <p v-if="actionError" class="text-xs text-red-400">{{ actionError }}</p>
 
-    <!-- Loading -->
-    <div v-if="store.loading" class="flex flex-col gap-2">
-      <div v-for="i in 6" :key="i" class="h-16 rounded-xl bg-white/5 animate-pulse"></div>
-    </div>
+    <!-- Día / Mes -->
+    <AgendaCalendar
+      v-if="activeTab === 'day' || activeTab === 'month'"
+      v-model:view="agendaView"
+      v-model:date="agendaDate"
+      :events="agendaCalendarEvents"
+      :status-colors="STATUS_COLORS"
+      :capacity-by-date="capacityByDate"
+      :loading="agendaLoading"
+      :min-hour="Number(settings.business_hours_start.split(':')[0])"
+      :max-hour="Number(settings.business_hours_end.split(':')[0])"
+      @create="(payload) => openCreate(payload)"
+      @select-event="onCalendarSelectEvent" />
 
-    <!-- Error -->
-    <div v-else-if="store.error" class="text-center text-red-400 py-10 text-sm">{{ store.error }}</div>
-
-    <!-- Today tab -->
-    <template v-else-if="activeTab === 'today'">
-      <div v-if="store.today.length === 0" class="flex flex-col items-center gap-4 py-20 text-center">
-        <CalendarDays :size="48" class="nxr-text-soft" />
-        <p class="nxr-text-muted text-sm">No hay citas para hoy.</p>
-        <button class="flex items-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-medium text-white transition nxr-btn-primary" @click="openCreate">
-          <Plus :size="15" /> Agendar cita
-        </button>
-      </div>
-      <div v-else class="flex flex-col gap-2">
-        <div
-          v-for="apt in store.today"
-          :key="apt.id"
-          class="flex flex-col gap-3 rounded-xl border border-white/10 px-4 py-3 sm:flex-row sm:items-center"
-          :style="{ background: 'var(--nexora-glass-bg)' }"
-        >
-          <div class="flex min-w-0 flex-1 items-start gap-3">
-            <div class="flex w-14 shrink-0 flex-col items-center text-center">
-              <p class="text-sm font-bold nxr-text">{{ fmtTime(apt.scheduled_start) }}</p>
-              <p class="text-xs nxr-text-soft">{{ fmtTime(apt.scheduled_end) }}</p>
-            </div>
-            <div class="min-w-0 flex-1">
-              <p class="text-sm font-medium nxr-text sm:truncate">{{ patientDisplayName(apt) }}</p>
-              <p class="text-xs nxr-text-muted sm:truncate">{{ apt.treatment?.name ?? apt.reason ?? '—' }}</p>
-            </div>
-          </div>
-          <div class="flex flex-col gap-3 sm:items-end sm:shrink-0">
-            <span class="w-fit shrink-0 rounded-full px-2 py-0.5 text-xs" :class="STATUS_CLASS[apt.status]">{{ STATUS_LABEL[apt.status] }}</span>
-            <div class="flex w-full items-center gap-1.5 overflow-x-auto pb-1 sm:w-auto sm:justify-end sm:overflow-visible sm:pb-0">
-              <button v-if="apt.status === 'scheduled'" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-green-500/10 text-green-400 transition-opacity hover:opacity-70" title="Confirmar" aria-label="Confirmar cita" @click="doAction('confirm', apt)">
-                <CheckCircle2 :size="16" />
-              </button>
-              <button v-if="apt.status === 'confirmed'" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-cyan-500/10 text-cyan-300 transition-opacity hover:opacity-70" title="Marcar presente" aria-label="Marcar paciente presente" @click="doAction('check_in', apt)">
-                <LogIn :size="16" />
-              </button>
-              <button v-if="!['completed','cancelled','no_show'].includes(apt.status)" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/5 nxr-text-muted transition-opacity hover:text-[var(--nexora-text-color)]" title="Editar/reprogramar" aria-label="Editar o reprogramar cita" @click="openEditAppointment(apt)">
-                <Edit2 :size="16" />
-              </button>
-              <button v-if="['scheduled','confirmed'].includes(apt.status)" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-cyan-500/10 text-cyan-400 transition-opacity hover:opacity-70" title="Convertir en consulta" aria-label="Convertir cita en consulta" @click="doAction('convert', apt)">
-                <ArrowRightCircle :size="16" />
-              </button>
-              <button v-if="['scheduled','confirmed'].includes(apt.status)" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-orange-500/10 text-orange-400 transition-opacity hover:opacity-70" title="No asistió" aria-label="Marcar como no asistió" @click="doAction('no_show', apt)">
-                <UserX :size="16" />
-              </button>
-              <button v-if="['scheduled','confirmed'].includes(apt.status)" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-red-500/10 text-red-400 transition-opacity hover:opacity-70" title="Cancelar" aria-label="Cancelar cita" @click="doAction('cancel', apt)">
-                <XCircle :size="16" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </template>
-
-    <!-- Month tab -->
-    <template v-else-if="activeTab === 'month'">
-      <div v-if="store.items.length === 0" class="text-center nxr-text-soft py-16 text-sm">
-        No hay citas en {{ MONTHS[currentMonth - 1] }} {{ currentYear }}.
-      </div>
-      <div v-else class="flex flex-col gap-5">
-        <div class="hidden grid-cols-7 gap-2 rounded-2xl border border-white/10 p-3 md:grid" :style="{ background: 'var(--nexora-glass-bg)' }">
-          <div v-for="dayName in ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']" :key="dayName" class="px-2 py-1 text-center text-[11px] font-semibold uppercase tracking-wide nxr-text-soft">
-            {{ dayName }}
-          </div>
-          <div
-            v-for="day in calendarDays"
-            :key="day.key"
-            class="min-h-28 rounded-xl border p-2 transition-colors"
-            :class="[
-              day.inMonth ? 'border-white/10 bg-white/[0.03]' : 'border-white/5 bg-black/10 opacity-45',
-              day.isToday ? 'ring-1 ring-[var(--nexora-primary)]' : '',
-              day.appointments.length ? 'cursor-pointer hover:border-[var(--nexora-primary)]/60' : '',
-              selectedCalendarDate === day.key ? 'border-[var(--nexora-primary)] bg-[var(--nexora-primary)]/10' : ''
-            ]"
-            @click="selectCalendarDay(day)"
-          >
-            <div class="mb-2 flex items-center justify-between">
-              <span class="text-xs font-semibold" :class="day.isToday ? 'text-[var(--nexora-primary)]' : 'nxr-text-muted'">{{ day.day }}</span>
-              <span v-if="day.appointments.length" class="rounded-full bg-[var(--nexora-primary)]/20 px-1.5 py-0.5 text-[10px] nxr-text-muted">{{ day.appointments.length }}</span>
-            </div>
-            <div class="flex flex-col gap-1">
-              <div
-                v-for="apt in day.appointments.slice(0, 3)"
-                :key="apt.id"
-                class="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-[11px] nxr-text-muted"
-              >
-                <p class="font-semibold">{{ fmtTime(apt.scheduled_start) }}</p>
-                <p class="truncate nxr-text-muted">{{ patientDisplayName(apt) }}</p>
-              </div>
-              <p v-if="day.appointments.length > 3" class="text-[10px] nxr-text-soft">+{{ day.appointments.length - 3 }} más</p>
-            </div>
-          </div>
-        </div>
-
-        <div class="flex flex-col gap-3 md:hidden">
-          <div class="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-xs nxr-text-muted">
-            Vista optimizada para móvil: las citas se muestran por día para evitar desbordes del calendario mensual.
-          </div>
-
-          <div v-for="[day, apts] in monthGrouped" :key="day" class="flex flex-col gap-2">
-            <p class="text-xs font-semibold uppercase tracking-wide nxr-text-muted">{{ day }}</p>
-            <div
-              v-for="apt in apts"
-              :key="apt.id"
-              class="flex flex-col gap-3 rounded-xl border border-white/10 px-4 py-3"
-              :style="{ background: 'var(--nexora-glass-bg)' }"
-            >
-              <div class="flex items-start justify-between gap-3">
-                <div class="min-w-0 flex-1">
-                  <p class="text-sm font-semibold nxr-text">{{ fmtTime(apt.scheduled_start) }} · {{ patientDisplayName(apt) }}</p>
-                  <p class="mt-0.5 text-xs nxr-text-muted">{{ apt.treatment?.name ?? apt.reason ?? 'Sin tratamiento' }}</p>
-                </div>
-                <span class="w-fit shrink-0 rounded-full px-2 py-0.5 text-xs" :class="STATUS_CLASS[apt.status]">{{ STATUS_LABEL[apt.status] }}</span>
-              </div>
-              <div class="flex w-full items-center gap-1.5 overflow-x-auto pb-1">
-                <button v-if="apt.status === 'scheduled'" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-green-500/10 text-green-400" title="Confirmar" aria-label="Confirmar cita" @click="doAction('confirm', apt)"><CheckCircle2 :size="16" /></button>
-                <button v-if="apt.status === 'confirmed'" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-cyan-500/10 text-cyan-300" title="Marcar presente" aria-label="Marcar paciente presente" @click="doAction('check_in', apt)"><LogIn :size="16" /></button>
-                <button v-if="!['completed','cancelled','no_show'].includes(apt.status)" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/5 nxr-text-muted" title="Editar/reprogramar" aria-label="Editar o reprogramar cita" @click="openEditAppointment(apt)"><Edit2 :size="16" /></button>
-                <button v-if="['scheduled','confirmed'].includes(apt.status)" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-cyan-500/10 text-cyan-400" title="Convertir en consulta" aria-label="Convertir cita en consulta" @click="doAction('convert', apt)"><ArrowRightCircle :size="16" /></button>
-                <button v-if="['scheduled','confirmed'].includes(apt.status)" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-orange-500/10 text-orange-400" title="No asistió" aria-label="Marcar como no asistió" @click="doAction('no_show', apt)"><UserX :size="16" /></button>
-                <button v-if="['scheduled','confirmed'].includes(apt.status)" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-red-500/10 text-red-400" title="Cancelar" aria-label="Cancelar cita" @click="doAction('cancel', apt)"><XCircle :size="16" /></button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div v-if="selectedCalendarDate" class="hidden items-center justify-between rounded-xl border border-[var(--nexora-primary)]/30 bg-[var(--nexora-primary)]/10 px-4 py-2 text-xs nxr-text-muted md:flex">
-          <span>Mostrando citas del día seleccionado</span>
-          <button class="nxr-text-muted hover:text-[var(--nexora-text-color)]" @click="selectedCalendarDate = null">Ver todo el mes</button>
-        </div>
-
-        <div v-for="[day, apts] in monthGrouped" :key="day" class="hidden md:block">
-          <p class="mb-2 text-xs font-semibold uppercase tracking-wide nxr-text-muted">{{ day }}</p>
-          <div class="flex flex-col gap-1.5">
-            <div
-              v-for="apt in apts"
-              :key="apt.id"
-              class="flex items-center gap-3 rounded-xl border border-white/10 px-4 py-2.5"
-              :style="{ background: 'var(--nexora-glass-bg)' }"
-            >
-              <p class="w-12 shrink-0 text-xs nxr-text-muted">{{ fmtTime(apt.scheduled_start) }}</p>
-              <p class="flex-1 truncate text-sm nxr-text">{{ patientDisplayName(apt) }}</p>
-              <span class="shrink-0 rounded-full px-2 py-0.5 text-xs" :class="STATUS_CLASS[apt.status]">{{ STATUS_LABEL[apt.status] }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </template>
+    <!-- Configuración -->
+    <AgendaSettingsPanel
+      v-else-if="activeTab === 'settings'"
+      module-label="Dental"
+      :settings="settings"
+      :saving="savingSettings"
+      @save="saveSettings" />
 
     <!-- All tab -->
     <template v-else>
-      <div v-if="store.items.length === 0" class="text-center nxr-text-soft py-16 text-sm">
+      <div v-if="store.loading" class="flex flex-col gap-2">
+        <div v-for="i in 6" :key="i" class="h-16 rounded-xl bg-white/5 animate-pulse"></div>
+      </div>
+      <div v-else-if="store.items.length === 0" class="text-center nxr-text-soft py-16 text-sm">
         No hay citas registradas.
       </div>
       <div v-else class="flex flex-col gap-2">
