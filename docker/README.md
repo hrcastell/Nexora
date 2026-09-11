@@ -71,6 +71,32 @@ live inside the containers.
 
 ## Applying new files from `BackEnd/migrations/`
 
+### Required once for a fresh local database
+
+The current bootstrap creates the base public tables and current tenant
+template, but does not include all historical public-schema changes or
+module seeds. The backend runner assumes migrations before 66 already
+exist. After the first `docker compose up -d --build`, complete them with:
+
+```bash
+bash ./Database/apply-migrations.sh
+docker compose restart backend
+```
+
+On Windows PowerShell with Git for Windows:
+
+```powershell
+& 'C:\Program Files\Git\bin\bash.exe' ./Database/apply-migrations.sh
+docker compose restart backend
+```
+
+Run this only for the fresh local database. Subsequent starts use the
+backend's automatic migration runner. Default host ports are 5173 (portal),
+8090 (backend), and 5432 (database); check listening ports and the port
+bindings of stopped containers before starting another stack.
+
+### Subsequent migrations
+
 `docker-entrypoint-initdb.d` (and therefore step 4 above) only ever runs
 once, against an empty volume — it will never pick up new migration files
 added later. That's expected: it only bootstraps an empty database.

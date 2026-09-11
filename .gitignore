@@ -6,6 +6,10 @@ FrontEnd/Portal/dist
 .atl/
 .codex/
 
+# Local code index and runtime uploads
+/.codegraph/
+/BackEnd/uploads/
+
 # Local env files (root, BackEnd, FrontEnd) — includes the local Docker
 # dev stack's .env; never commit real secrets
 .env
