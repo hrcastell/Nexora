@@ -1,6 +1,7 @@
 const db = require('../../config/db');
 const { resolveSchema } = require('../../utils/tenantResolver');
 const { createNotification } = require('../../utils/notifications');
+const { normalizeMaxAppointmentsPerDay } = require('../../utils/appointmentSettings');
 
 const APPOINTMENT_STATUSES = ['scheduled', 'confirmed', 'checked_in', 'completed', 'cancelled', 'no_show', 'rescheduled'];
 const MODULE_CODE = 'dental_core';
@@ -47,12 +48,20 @@ function mapAppointment(row) {
         patient_last_name,
         patient_name,
         patient_phone,
+        patient_mobile,
         patient_email,
         treatment_name,
         treatment_price,
         treatment_duration,
         ...appointment
     } = row;
+
+    const treatment = row.treatment_id ? {
+        id: row.treatment_id,
+        name: treatment_name || null,
+        final_price: treatment_price ?? null,
+        estimated_duration_minutes: treatment_duration ?? null,
+    } : null;
 
     return {
         ...appointment,
@@ -62,14 +71,11 @@ function mapAppointment(row) {
             last_name: patient_last_name || (patient_name ? patient_name.split(' ').slice(1).join(' ') : ''),
             full_name: patient_name || [patient_first_name, patient_last_name].filter(Boolean).join(' '),
             phone: patient_phone || null,
+            mobile: patient_mobile || null,
             email: patient_email || null,
         } : null,
-        service: row.treatment_id ? {
-            id: row.treatment_id,
-            name: treatment_name || null,
-            final_price: treatment_price ?? null,
-            estimated_duration_minutes: treatment_duration ?? null,
-        } : null,
+        treatment,
+        service: treatment,
     };
 }
 
@@ -79,6 +85,7 @@ function appointmentSelect(schema) {
                    c.last_name AS patient_last_name,
                    c.first_name || ' ' || c.last_name AS patient_name,
                    c.phone AS patient_phone,
+                   c.mobile AS patient_mobile,
                    c.email AS patient_email,
                    dt.name AS treatment_name,
                    dt.final_price AS treatment_price,
@@ -276,10 +283,21 @@ exports.update = async (req, res) => {
     }
 };
 
-async function updateStatusAndNotify(req, res, status, notification) {
+async function updateStatusAndNotify(req, res, status, allowedStatuses, notification) {
     try {
         if (req.user?.read_only) return res.status(403).json({ error: 'Operación no permitida en modo solo lectura' });
         const { schema, companyId } = await resolveSchema(req);
+        const existing = await db.query(
+            `SELECT status FROM ${schema}.dental_appointments WHERE id = $1 AND tenant_id = $2`,
+            [req.params.id, companyId]
+        );
+        if (existing.rows.length === 0) return res.status(404).json({ code: 'DENTAL_APPOINTMENT_NOT_FOUND', error: 'Cita no encontrada' });
+        if (!allowedStatuses.includes(existing.rows[0].status)) {
+            return res.status(409).json({
+                code: 'DENTAL_APPOINTMENT_INVALID_TRANSITION',
+                error: `No se puede cambiar una cita en estado '${existing.rows[0].status}' a '${status}'`,
+            });
+        }
         const result = await db.query(
             `UPDATE ${schema}.dental_appointments SET status = $3, updated_at = CURRENT_TIMESTAMP WHERE id = $1 AND tenant_id = $2 RETURNING id`,
             [req.params.id, companyId, status]
@@ -294,7 +312,7 @@ async function updateStatusAndNotify(req, res, status, notification) {
     }
 }
 
-exports.confirm = (req, res) => updateStatusAndNotify(req, res, 'confirmed', appointment => ({ type: 'success', category: 'dental', title: 'Cita dental confirmada', body: `${appointmentLabel(appointment)} confirmó su cita dental.` }));
+exports.confirm = (req, res) => updateStatusAndNotify(req, res, 'confirmed', ['scheduled', 'rescheduled'], appointment => ({ type: 'success', category: 'dental', title: 'Cita dental confirmada', body: `${appointmentLabel(appointment)} confirmó su cita dental.` }));
 
 exports.cancel = async (req, res) => {
     try {
@@ -313,7 +331,7 @@ exports.cancel = async (req, res) => {
     }
 };
 
-exports.noShow = (req, res) => updateStatusAndNotify(req, res, 'no_show', appointment => ({ type: 'warning', category: 'dental', title: 'Paciente no asistió', body: `${appointmentLabel(appointment)} fue marcado como no asistió.` }));
+exports.noShow = (req, res) => updateStatusAndNotify(req, res, 'no_show', ['scheduled', 'confirmed', 'rescheduled'], appointment => ({ type: 'warning', category: 'dental', title: 'Paciente no asistió', body: `${appointmentLabel(appointment)} fue marcado como no asistió.` }));
 
 exports.convertToConsultation = async (req, res) => {
     const client = await db.getClient();
@@ -392,6 +410,7 @@ exports.updateAppointmentSettings = async (req, res) => {
         if (req.user?.read_only) return res.status(403).json({ error: 'Operación no permitida en modo solo lectura' });
         const { schema } = await resolveSchema(req);
         const { max_appointments_per_day, business_hours_start, business_hours_end } = req.body;
+        const normalizedMax = normalizeMaxAppointmentsPerDay(max_appointments_per_day);
 
         const result = await db.query(
             `INSERT INTO ${schema}.appointment_settings (module_code, max_appointments_per_day, business_hours_start, business_hours_end)
@@ -402,11 +421,11 @@ exports.updateAppointmentSettings = async (req, res) => {
                 business_hours_end       = EXCLUDED.business_hours_end,
                 updated_at                = CURRENT_TIMESTAMP
              RETURNING *`,
-            [MODULE_CODE, max_appointments_per_day ?? null, business_hours_start || '08:00', business_hours_end || '20:00']
+            [MODULE_CODE, normalizedMax, business_hours_start || '08:00', business_hours_end || '20:00']
         );
         res.json(result.rows[0]);
     } catch (err) {
         console.error('appointmentsController.updateAppointmentSettings error:', err.message);
-        res.status(500).json({ error: 'Error al guardar configuración de citas' });
+        res.status(err.statusCode || 500).json({ error: err.statusCode ? err.message : 'Error al guardar configuración de citas' });
     }
 };

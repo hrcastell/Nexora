@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { Eye, Pencil } from 'lucide-vue-next';
 import type { AgendaEvent, AgendaStatusColorMap } from './agendaTypes';
 import { resolveStatusColor } from './agendaTypes';
 import { packOverlaps, formatHourLabel, formatEventTime, toDate, minutesSinceMidnight, isSameDay } from './agendaLayout';
@@ -8,6 +9,7 @@ import AgendaOverflowPopover from './AgendaOverflowPopover.vue';
 const props = withDefaults(defineProps<{
   date: Date;
   events: AgendaEvent[];
+  canCreate?: boolean;
   statusColors: AgendaStatusColorMap;
   minHour?: number;
   maxHour?: number;
@@ -15,6 +17,7 @@ const props = withDefaults(defineProps<{
   maxColumnsMobile?: number;
 }>(), {
   minHour: 8,
+  canCreate: true,
   maxHour: 20,
   maxColumnsDesktop: 4,
   maxColumnsMobile: 2,
@@ -101,7 +104,7 @@ const visibleBlocks = computed(() => {
           event: item.event,
           style: {
             top: `calc(var(--row-h) * ${topMin / 60})`,
-            height: `max(24px, calc(var(--row-h) * ${durationMin / 60}))`,
+            height: `max(48px, calc(var(--row-h) * ${durationMin / 60}))`,
             left: `calc(${item.col} * (100% / ${visibleCount}))`,
             width: `calc(100% / ${visibleCount} - 2px)`,
           },
@@ -130,7 +133,7 @@ const visibleBlocks = computed(() => {
 const overflowPopover = ref<{ events: AgendaEvent[] } | null>(null);
 
 function onSlotClick(hour: number, minute: number) {
-  emit('create', { date: props.date, hour, minute });
+  if (props.canCreate) emit('create', { date: props.date, hour, minute });
 }
 
 function onEventClick(event: AgendaEvent) {
@@ -146,29 +149,41 @@ const nowTop = computed(() => `calc(var(--row-h) * ${minutesFromRangeStart(now) 
   <div class="agenda-day-grid relative overflow-hidden rounded-2xl nxr-card-subtle">
     <div class="relative" :style="{ height: `calc(var(--row-h) * ${hours.length})` }">
       <!-- Background: hour rows with click zones -->
-      <div class="absolute inset-0 grid" :style="{ gridTemplateColumns: '56px 1fr', gridTemplateRows: `repeat(${hours.length}, var(--row-h))` }">
+      <div class="absolute inset-0 grid" :style="{ gridTemplateColumns: '68px 1fr', gridTemplateRows: `repeat(${hours.length}, var(--row-h))` }">
         <template v-for="hour in hours" :key="hour">
-          <div class="flex items-start justify-end border-t border-white/5 pr-2 pt-0.5 text-[10px] nxr-text-soft">
-            {{ formatHourLabel(hour) }}
+          <div class="relative border-t pr-2 pt-1 text-right text-xs font-semibold nxr-text">
+            <span>{{ formatHourLabel(hour) }}</span>
+            <span class="absolute bottom-1 right-2 text-[10px] font-medium nxr-text-soft">{{ String(hour).padStart(2, '0') }}:30</span>
           </div>
-          <div class="relative border-t border-white/5">
-            <button type="button" class="absolute inset-x-0 top-0 h-1/2 transition hover:bg-white/[0.03]" @click="onSlotClick(hour, 0)" />
-            <button type="button" class="absolute inset-x-0 bottom-0 h-1/2 transition hover:bg-white/[0.03]" @click="onSlotClick(hour, 30)" />
+          <div class="relative border-t">
+            <div class="pointer-events-none absolute inset-x-0 top-1/2 border-t border-dashed opacity-50" :style="{ borderColor: 'var(--nexora-card-border)' }" />
+            <button :disabled="!canCreate" type="button" class="absolute inset-x-0 top-0 h-1/2 transition hover:bg-cyan-500/[0.06]" :aria-label="`Crear cita a las ${formatHourLabel(hour)}`" @click="onSlotClick(hour, 0)" />
+            <button :disabled="!canCreate" type="button" class="absolute inset-x-0 bottom-0 h-1/2 transition hover:bg-cyan-500/[0.06]" :aria-label="`Crear cita a las ${String(hour).padStart(2, '0')}:30`" @click="onSlotClick(hour, 30)" />
           </div>
         </template>
       </div>
 
       <!-- Overlay: event blocks -->
-      <div class="pointer-events-none absolute inset-y-0 left-[56px] right-0">
+      <div class="pointer-events-none absolute inset-y-0 left-[68px] right-0">
         <button
           v-for="b in visibleBlocks.blocks" :key="b.event.id"
           type="button"
-          class="pointer-events-auto absolute overflow-hidden rounded-lg px-1.5 py-0.5 text-left text-[10px] leading-tight shadow-sm transition hover:brightness-110 sm:text-[11px]"
-          :class="[resolveStatusColor(statusColors, b.event.status).bg, resolveStatusColor(statusColors, b.event.status).text]"
+          class="agenda-event-card pointer-events-auto absolute overflow-hidden rounded-xl px-2 py-1.5 text-left text-[11px] leading-tight shadow-sm transition hover:-translate-y-px hover:shadow-md sm:px-2.5 sm:text-xs"
           :style="b.style"
+          :aria-label="`${b.event.actionLabel || 'Abrir'} cita de ${b.event.title} a las ${formatEventTime(toDate(b.event.start))}`"
           @click.stop="onEventClick(b.event)">
-          <span class="block font-semibold">{{ formatEventTime(toDate(b.event.start)) }}</span>
-          <span class="block truncate">{{ b.event.title }}</span>
+          <span class="flex items-center justify-between gap-1">
+            <span class="flex min-w-0 items-center gap-1.5 font-bold">
+              <span class="h-2 w-2 shrink-0 rounded-full" :class="resolveStatusColor(statusColors, b.event.status).dot" />
+              {{ formatEventTime(toDate(b.event.start)) }}
+            </span>
+            <span class="flex shrink-0 items-center gap-1 rounded-md border px-1.5 py-1 text-[10px] font-semibold">
+              <Pencil v-if="b.event.actionKind === 'edit'" class="h-3 w-3" />
+              <Eye v-else class="h-3 w-3" />
+              <span class="hidden sm:inline">{{ b.event.actionLabel || 'Ver' }}</span>
+            </span>
+          </span>
+          <span class="mt-1 block truncate font-medium">{{ b.event.title }}</span>
         </button>
 
         <button
@@ -182,13 +197,13 @@ const nowTop = computed(() => `calc(var(--row-h) * ${minutesFromRangeStart(now) 
       </div>
 
       <!-- Current-time indicator -->
-      <div v-if="showNowLine" class="pointer-events-none absolute left-[56px] right-0 z-10 h-px bg-rose-500" :style="{ top: nowTop }">
+      <div v-if="showNowLine" class="pointer-events-none absolute left-[68px] right-0 z-10 h-px bg-rose-500" :style="{ top: nowTop }">
         <span class="absolute -left-1 -top-[3px] h-[7px] w-[7px] rounded-full bg-rose-500" />
       </div>
     </div>
 
     <div v-if="dayEvents.length === 0" class="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 text-center text-xs nxr-text-soft">
-      Sin citas — hacé clic en un horario para agendar.
+      {{ canCreate ? 'Sin citas — hacé clic en un horario para agendar.' : 'Sin citas.' }}
     </div>
 
     <AgendaOverflowPopover
@@ -201,8 +216,15 @@ const nowTop = computed(() => `calc(var(--row-h) * ${minutesFromRangeStart(now) 
 </template>
 
 <style scoped>
-.agenda-day-grid { --row-h: 56px; }
+.agenda-day-grid { --row-h: 76px; }
+.agenda-day-grid :is(.border-t, .agenda-event-card) { border-color: var(--nexora-card-border); }
+.agenda-event-card {
+  color: var(--nexora-text-color) !important;
+  background: var(--nexora-glass-bg) !important;
+  border: 1px solid var(--nexora-card-border);
+  border-left: 4px solid var(--nexora-primary);
+}
 @media (min-width: 640px) {
-  .agenda-day-grid { --row-h: 64px; }
+  .agenda-day-grid { --row-h: 84px; }
 }
 </style>

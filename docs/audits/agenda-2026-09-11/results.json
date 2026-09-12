@@ -1,0 +1,427 @@
+{
+  "commit": "36bb833",
+  "api": [
+    {
+      "name": "garage unauthenticated",
+      "status": 401,
+      "expected": [
+        401
+      ],
+      "pass": true
+    },
+    {
+      "name": "garage settings invalid range",
+      "status": 200,
+      "expected": [
+        400,
+        422
+      ],
+      "pass": false
+    },
+    {
+      "name": "garage missing start",
+      "status": 400,
+      "expected": [
+        400
+      ],
+      "pass": true
+    },
+    {
+      "name": "garage end before start",
+      "status": 201,
+      "expected": [
+        400,
+        422
+      ],
+      "pass": false
+    },
+    {
+      "name": "garage create valid",
+      "status": 201,
+      "expected": [
+        201
+      ],
+      "pass": true
+    },
+    {
+      "name": "garage detail",
+      "status": 200,
+      "expected": [
+        200
+      ],
+      "pass": true
+    },
+    {
+      "name": "garage confirm",
+      "status": 200,
+      "expected": [
+        200
+      ],
+      "pass": true
+    },
+    {
+      "name": "garage cancel",
+      "status": 200,
+      "expected": [
+        200
+      ],
+      "pass": true
+    },
+    {
+      "name": "garage confirm cancelled",
+      "status": 409,
+      "expected": [
+        400,
+        409
+      ],
+      "pass": true
+    },
+    {
+      "name": "garage invalid date filter",
+      "status": 500,
+      "expected": [
+        400,
+        422
+      ],
+      "pass": false
+    },
+    {
+      "name": "garage edit fixture",
+      "status": 201,
+      "expected": [
+        201
+      ],
+      "pass": true
+    },
+    {
+      "name": "garage capacity fixture",
+      "status": 201,
+      "expected": [
+        201
+      ],
+      "pass": true
+    },
+    {
+      "name": "garage capacity create blocked",
+      "status": 409,
+      "expected": [
+        409
+      ],
+      "pass": true
+    },
+    {
+      "name": "garage capacity edit blocked",
+      "status": 200,
+      "expected": [
+        409
+      ],
+      "pass": false
+    },
+    {
+      "name": "garage reschedule full",
+      "status": 409,
+      "expected": [
+        409
+      ],
+      "pass": true
+    },
+    {
+      "name": "garage conversion fixture",
+      "status": 201,
+      "expected": [
+        201
+      ],
+      "pass": true
+    },
+    {
+      "name": "garage convert",
+      "status": 201,
+      "expected": [
+        201
+      ],
+      "pass": true
+    },
+    {
+      "name": "garage double convert",
+      "status": 409,
+      "expected": [
+        400,
+        409
+      ],
+      "pass": true
+    },
+    {
+      "name": "dental unauthenticated",
+      "status": 401,
+      "expected": [
+        401
+      ],
+      "pass": true
+    },
+    {
+      "name": "dental settings invalid range",
+      "status": 200,
+      "expected": [
+        400,
+        422
+      ],
+      "pass": false
+    },
+    {
+      "name": "dental missing start",
+      "status": 400,
+      "expected": [
+        400
+      ],
+      "pass": true
+    },
+    {
+      "name": "dental end before start",
+      "status": 400,
+      "expected": [
+        400,
+        422
+      ],
+      "pass": true
+    },
+    {
+      "name": "dental create valid",
+      "status": 201,
+      "expected": [
+        201
+      ],
+      "pass": true
+    },
+    {
+      "name": "dental detail",
+      "status": 200,
+      "expected": [
+        200
+      ],
+      "pass": true
+    },
+    {
+      "name": "dental confirm",
+      "status": 200,
+      "expected": [
+        200
+      ],
+      "pass": true
+    },
+    {
+      "name": "dental cancel",
+      "status": 200,
+      "expected": [
+        200
+      ],
+      "pass": true
+    },
+    {
+      "name": "dental confirm cancelled",
+      "status": 200,
+      "expected": [
+        400,
+        409
+      ],
+      "pass": false
+    },
+    {
+      "name": "dental invalid date filter",
+      "status": 500,
+      "expected": [
+        400,
+        422
+      ],
+      "pass": false
+    },
+    {
+      "name": "dental edit fixture",
+      "status": 201,
+      "expected": [
+        201
+      ],
+      "pass": true
+    },
+    {
+      "name": "dental capacity fixture",
+      "status": 201,
+      "expected": [
+        201
+      ],
+      "pass": true
+    },
+    {
+      "name": "dental capacity create blocked",
+      "status": 409,
+      "expected": [
+        409
+      ],
+      "pass": true
+    },
+    {
+      "name": "dental capacity edit blocked",
+      "status": 409,
+      "expected": [
+        409
+      ],
+      "pass": true
+    },
+    {
+      "name": "dental conversion fixture",
+      "status": 201,
+      "expected": [
+        201
+      ],
+      "pass": true
+    },
+    {
+      "name": "dental convert",
+      "status": 201,
+      "expected": [
+        201
+      ],
+      "pass": true
+    },
+    {
+      "name": "dental double convert",
+      "status": 400,
+      "expected": [
+        400,
+        409
+      ],
+      "pass": true
+    },
+    {
+      "name": "dental reconfirm completed",
+      "status": 200,
+      "expected": [
+        400,
+        409
+      ],
+      "pass": false
+    },
+    {
+      "name": "dental convert after reconfirm",
+      "status": 201,
+      "expected": [
+        400,
+        409
+      ],
+      "pass": false
+    }
+  ],
+  "permissions": [
+    {
+      "name": "garage create without profile/permissions",
+      "status": 201,
+      "expected": 403
+    },
+    {
+      "name": "garage settings without profile/permissions",
+      "status": 200,
+      "expected": 403
+    },
+    {
+      "name": "dental create without profile/permissions",
+      "status": 403,
+      "expected": 403,
+      "note": "Blocked by disabled module; profile/suspended-read rule not isolated"
+    },
+    {
+      "name": "dental settings without profile/permissions",
+      "status": 200,
+      "expected": 403
+    },
+    {
+      "name": "garage suspended read",
+      "status": 200,
+      "expected": 200
+    },
+    {
+      "name": "garage suspended write",
+      "status": 403,
+      "expected": 403
+    },
+    {
+      "name": "dental suspended read",
+      "status": 403,
+      "expected": 200,
+      "note": "Blocked by disabled module; profile/suspended-read rule not isolated"
+    },
+    {
+      "name": "dental suspended write",
+      "status": 403,
+      "expected": 403
+    }
+  ],
+  "interactions": {
+    "results": [
+      {
+        "name": "month navigation Jan31 +1",
+        "value": "2026-03-03"
+      },
+      {
+        "name": "garage edit from list fields",
+        "inputs": [
+          {
+            "type": "date",
+            "value": "2026-09-11"
+          },
+          {
+            "type": "text",
+            "value": ""
+          },
+          {
+            "type": "datetime-local",
+            "value": "2026-09-17T10:00"
+          },
+          {
+            "type": "datetime-local",
+            "value": "2026-09-17T11:00"
+          },
+          {
+            "type": "number",
+            "value": "0"
+          },
+          {
+            "type": "text",
+            "value": ""
+          }
+        ],
+        "textareas": [
+          "AUDIT_AGENDA",
+          ""
+        ]
+      },
+      {
+        "name": "garage edit loses omitted list fields",
+        "id": 4,
+        "summary": null,
+        "notes": null,
+        "duration": "0.00"
+      },
+      {
+        "name": "garage UI 10 local stored/displayed",
+        "stored": "2026-09-19T10:00:00.000Z",
+        "displayed": "07:00 a. m.\n\n19-sept\n\nSin cliente\n\nProgramada\nnormal\n\nSin descripción\n\nCrear OT"
+      },
+      {
+        "name": "dental edit local inputs",
+        "inputs": [
+          "2026-09-17T07:00",
+          "2026-09-17T08:00"
+        ]
+      },
+      {
+        "name": "dental edit unchanged stored",
+        "id": 3,
+        "start": "2026-09-17T07:00:00.000Z"
+      },
+      {
+        "name": "garage failed load visible",
+        "text": "Nexora\n\nSAAS CORE\n\nMENÚ\n\nDashboard\nOperaciones de Taller\nProductos\nCotizaciones\nConfiguración\nCerrar sesión\nDASHBOARD\nSuper Admin View\nPanel de administración\n11\nOcultar menú\nAgenda / Citas\nNueva cita\nDía\nMes\nTodas\nConfiguración\n\nViernes, 11 de septiembre\n\nHoy\nMes\nDía\n08:00\n09:00\n10:00\n11:00\n12:00\n13:00\n14:00\n15:00\n16:00\n17:00\n18:00\n19:00\nSin citas — hacé clic en un horario para agendar.\n⚠\n\nCita dental reprogramada\n\nAUDIT_AGENDA Temporal tiene cambios en su cita dental.\n\n✓\n\nCita convertida a consulta\n\nAUDIT_AGENDA Temporal ya tiene una consulta dental iniciada.\n\n✓\n\nCita dental confirmada\n\nAUDIT_AGENDA Temporal confirmó su cita dental."
+      }
+    ],
+    "errors": []
+  }
+}

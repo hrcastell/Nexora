@@ -1,6 +1,8 @@
 const express       = require('express');
 const router        = express.Router({ mergeParams: true });
 const authMiddleware = require('../../middleware/authMiddleware');
+const requireAgendaPermission = require('../../middleware/requireAgendaPermission');
+const agendaPermission = (flag = 'can_view') => requireAgendaPermission('dental_core', 'dental_appointments', flag);
 
 const dashboardCtrl    = require('../../controllers/dental/dashboardController');
 const patientsCtrl     = require('../../controllers/dental/patientsController');
@@ -51,18 +53,18 @@ router.patch('/treatments/:id',  treatmentsCtrl.update);
 router.delete('/treatments/:id', treatmentsCtrl.remove);
 
 // ─── APPOINTMENTS ─────────────────────────────────────────────
-router.get('/appointment-settings',                    appointmentsCtrl.getAppointmentSettings);
-router.put('/appointment-settings',                    appointmentsCtrl.updateAppointmentSettings);
-router.get('/appointments',                            appointmentsCtrl.list);
-router.get('/appointments/day',                        appointmentsCtrl.getByDay);
-router.get('/appointments/month',                      appointmentsCtrl.getByMonth);
-router.post('/appointments',                           appointmentsCtrl.create);
-router.get('/appointments/:id',                        appointmentsCtrl.getById);
-router.patch('/appointments/:id',                      appointmentsCtrl.update);
-router.post('/appointments/:id/confirm',               appointmentsCtrl.confirm);
-router.post('/appointments/:id/cancel',                appointmentsCtrl.cancel);
-router.post('/appointments/:id/no-show',               appointmentsCtrl.noShow);
-router.post('/appointments/:id/convert-to-consultation', appointmentsCtrl.convertToConsultation);
+router.get('/appointment-settings',                    agendaPermission('can_view'), appointmentsCtrl.getAppointmentSettings);
+router.put('/appointment-settings',                    agendaPermission('can_admin'), appointmentsCtrl.updateAppointmentSettings);
+router.get('/appointments',                            agendaPermission('can_view'), appointmentsCtrl.list);
+router.get('/appointments/day',                        agendaPermission('can_view'), appointmentsCtrl.getByDay);
+router.get('/appointments/month',                      agendaPermission('can_view'), appointmentsCtrl.getByMonth);
+router.post('/appointments',                           agendaPermission('can_create'), appointmentsCtrl.create);
+router.get('/appointments/:id',                        agendaPermission('can_view'), appointmentsCtrl.getById);
+router.patch('/appointments/:id',                      agendaPermission('can_edit'), appointmentsCtrl.update);
+router.post('/appointments/:id/confirm',               agendaPermission('can_edit'), appointmentsCtrl.confirm);
+router.post('/appointments/:id/cancel',                agendaPermission('can_edit'), appointmentsCtrl.cancel);
+router.post('/appointments/:id/no-show',               agendaPermission('can_edit'), appointmentsCtrl.noShow);
+router.post('/appointments/:id/convert-to-consultation', agendaPermission('can_edit'), requireAgendaPermission('dental_core', 'dental_consultations', 'can_create'), appointmentsCtrl.convertToConsultation);
 
 // ─── CONSULTATIONS ────────────────────────────────────────────
 router.get('/consultations',                           consultationsCtrl.list);

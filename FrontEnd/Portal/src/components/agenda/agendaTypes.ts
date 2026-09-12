@@ -4,6 +4,8 @@ export interface AgendaEvent {
   end: string | Date;
   title: string;
   status: string;
+  actionLabel?: string;
+  actionKind?: 'edit' | 'view';
 }
 
 export interface AgendaStatusColor {

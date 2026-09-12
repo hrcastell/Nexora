@@ -25,7 +25,7 @@ export const useGarageAppointmentsStore = defineStore('garageAppointments', () =
   }
 
   async function loadOne(id: number) {
-    loading.value = true; error.value = null;
+    error.value = null;
     try {
       const res = await garageAppointmentsService.getById(id);
       current.value = res.data;
@@ -33,7 +33,7 @@ export const useGarageAppointmentsStore = defineStore('garageAppointments', () =
     } catch (e: any) {
       error.value = e?.response?.data?.error || 'Error al cargar cita';
       throw e;
-    } finally { loading.value = false; }
+    }
   }
 
   async function create(data: Parameters<typeof garageAppointmentsService.create>[0]) {
@@ -75,6 +75,12 @@ export const useGarageAppointmentsStore = defineStore('garageAppointments', () =
     return res.data;
   }
 
+  async function markNoShow(id: number, notes?: string) {
+    const res = await garageAppointmentsService.markNoShow(id, notes);
+    updateStatus(id, 'no_show');
+    return res.data;
+  }
+
   async function reschedule(id: number, data: { new_start: string; new_end?: string; reason?: string }) {
     const res = await garageAppointmentsService.reschedule(id, data);
     updateStatus(id, 'rescheduled');
@@ -91,5 +97,5 @@ export const useGarageAppointmentsStore = defineStore('garageAppointments', () =
     items.value = []; current.value = null; total.value = 0; error.value = null;
   }
 
-  return { items, current, total, loading, error, load, loadOne, create, update, confirm, markArrived, cancel, reschedule, convertToWorkOrder, reset };
+  return { items, current, total, loading, error, load, loadOne, create, update, confirm, markArrived, cancel, markNoShow, reschedule, convertToWorkOrder, reset };
 });

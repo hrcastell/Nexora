@@ -297,6 +297,8 @@ export interface Appointment {
   customer_id: number | null;
   customer_name?: string;
   customer_phone?: string;
+  customer_mobile?: string;
+  customer_email?: string;
   vehicle_id: number | null;
   plate?: string;
   brand?: string;

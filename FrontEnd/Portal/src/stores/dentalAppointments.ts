@@ -6,6 +6,7 @@ import type { DentalAppointment, DentalAppointmentFormData } from '../types/dent
 type RawDentalAppointment = DentalAppointment & {
   patient_name?: string;
   patient_phone?: string;
+  patient_mobile?: string;
   patient_email?: string;
   service_name?: string;
   service_price?: number | string;
@@ -37,6 +38,7 @@ export const useDentalAppointmentsStore = defineStore('dentalAppointments', () =
         last_name: fullName?.split(' ').slice(1).join(' ') ?? '',
         full_name: fullName,
         phone: raw.patient_phone ?? undefined,
+        mobile: raw.patient_mobile ?? undefined,
         email: raw.patient_email ?? undefined,
       } as any : undefined),
       treatment: (raw as any).treatment ?? ((raw as any).treatment_id ? {
@@ -99,6 +101,21 @@ export const useDentalAppointmentsStore = defineStore('dentalAppointments', () =
     }
   }
 
+  async function loadOne(id: number | string) {
+    loading.value = true;
+    error.value = null;
+    try {
+      const res = await dentalAppointmentsService.getById(id);
+      current.value = normalizeAppointment(unwrapData<RawDentalAppointment>(res.data));
+      return current.value;
+    } catch (e: any) {
+      error.value = e?.response?.data?.error || 'Error al cargar cita';
+      throw e;
+    } finally {
+      loading.value = false;
+    }
+  }
+
   async function create(data: DentalAppointmentFormData) {
     const res = await dentalAppointmentsService.create(data);
     const appointment = normalizeAppointment(unwrapData<RawDentalAppointment>(res.data));
@@ -150,5 +167,5 @@ export const useDentalAppointmentsStore = defineStore('dentalAppointments', () =
     error.value = null;
   }
 
-  return { items, today, current, loading, error, load, loadToday, loadMonth, create, update, confirm, cancel, noShow, convertToConsultation, reset };
+  return { items, today, current, loading, error, load, loadToday, loadMonth, loadOne, create, update, confirm, cancel, noShow, convertToConsultation, reset };
 });

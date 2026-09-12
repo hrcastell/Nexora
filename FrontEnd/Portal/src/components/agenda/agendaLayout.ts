@@ -7,7 +7,33 @@ function pad2(n: number): string {
 }
 
 export function toDate(value: string | Date): Date {
-  return value instanceof Date ? value : new Date(value);
+  if (value instanceof Date) return value;
+
+  // Appointment columns use PostgreSQL TIMESTAMP WITHOUT TIME ZONE. The pg
+  // driver serializes those values with a trailing Z in Docker, although they
+  // represent the tenant's wall-clock time. Parse the components explicitly so
+  // 10:00 remains 10:00 in the browser instead of shifting with its UTC offset.
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,3}))?)?/);
+  if (match) {
+    const [, year, month, day, hour, minute, second = '0', millisecond = '0'] = match;
+    return new Date(
+      Number(year),
+      Number(month) - 1,
+      Number(day),
+      Number(hour),
+      Number(minute),
+      Number(second),
+      Number(millisecond.padEnd(3, '0')),
+    );
+  }
+
+  return new Date(value);
+}
+
+export function toLocalDateTimeInput(value?: string | Date | null): string {
+  if (!value) return '';
+  const date = toDate(value);
+  return `${dateKey(date)}T${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
 }
 
 // Stable local (not UTC) YYYY-MM-DD key — toISOString() would roll to the

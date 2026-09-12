@@ -1,5 +1,6 @@
 const db = require('../../config/db');
 const { resolveSchema } = require('../../utils/tenantResolver');
+const { normalizeMaxAppointmentsPerDay } = require('../../utils/appointmentSettings');
 
 const VALID_STATUSES = ['scheduled', 'confirmed', 'arrived', 'converted_to_work_order', 'cancelled', 'no_show', 'rescheduled'];
 const MODULE_CODE = 'garage_operations';
@@ -113,7 +114,8 @@ exports.getById = async (req, res) => {
 
         const appt = await db.query(
             `SELECT a.*,
-                    c.first_name || ' ' || COALESCE(c.last_name, '') AS customer_name, c.phone AS customer_phone,
+                    c.first_name || ' ' || COALESCE(c.last_name, '') AS customer_name,
+                    c.phone AS customer_phone, c.mobile AS customer_mobile, c.email AS customer_email,
                     v.plate, vb.name AS brand, vm.name AS model,
                     e.first_name || ' ' || COALESCE(e.last_name, '') AS employee_name
              FROM ${schema}.appointments a
@@ -218,6 +220,7 @@ exports.create = async (req, res) => {
  * PUT /garage/appointments/:id
  */
 exports.update = async (req, res) => {
+    const client = await db.getClient();
     try {
         if (req.user?.read_only) return res.status(403).json({ error: 'Operación no permitida en modo solo lectura' });
         const { schema } = await resolveSchema(req);
@@ -228,7 +231,27 @@ exports.update = async (req, res) => {
             reported_issue, preliminary_notes, internal_notes, priority, suggested_employee_id
         } = req.body;
 
-        const result = await db.query(
+        await client.query('BEGIN');
+        const existingResult = await client.query(
+            `SELECT * FROM ${schema}.appointments
+             WHERE id = $1 AND status NOT IN ('converted_to_work_order', 'cancelled')
+             FOR UPDATE`,
+            [req.params.id]
+        );
+        if (existingResult.rows.length === 0) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ error: 'Cita no encontrada o no editable en su estado actual' });
+        }
+
+        const existing = existingResult.rows[0];
+        const value = (field, fallback = null) => Object.prototype.hasOwnProperty.call(req.body, field)
+            ? req.body[field]
+            : (existing[field] ?? fallback);
+        const nextScheduledStart = value('scheduled_start');
+
+        await assertDailyCapacity(schema, nextScheduledStart, client, req.params.id);
+
+        const result = await client.query(
             `UPDATE ${schema}.appointments SET
              customer_id=$1, vehicle_id=$2, scheduled_start=$3, scheduled_end=$4,
              estimated_duration_hours=$5, channel=$6, requested_service_summary=$7,
@@ -236,16 +259,19 @@ exports.update = async (req, res) => {
              suggested_employee_id=$12, updated_at=CURRENT_TIMESTAMP
              WHERE id=$13 AND status NOT IN ('converted_to_work_order', 'cancelled')
              RETURNING *`,
-            [customer_id || null, vehicle_id || null, scheduled_start, scheduled_end || null,
-             estimated_duration_hours || 0, channel || null, requested_service_summary || null,
-             reported_issue || null, preliminary_notes || null, internal_notes || null,
-             priority || 'normal', suggested_employee_id || null, req.params.id]
+            [value('customer_id'), value('vehicle_id'), nextScheduledStart, value('scheduled_end'),
+             value('estimated_duration_hours', 0), value('channel'), value('requested_service_summary'),
+             value('reported_issue'), value('preliminary_notes'), value('internal_notes'),
+             value('priority', 'normal'), value('suggested_employee_id'), req.params.id]
         );
-        if (result.rows.length === 0) return res.status(404).json({ error: 'Cita no encontrada o no editable en su estado actual' });
+        await client.query('COMMIT');
         res.json(result.rows[0]);
     } catch (err) {
+        await client.query('ROLLBACK').catch(() => {});
         console.error('appointmentsController.update error:', err.message);
         res.status(err.statusCode || 500).json({ error: err.message || 'Error al actualizar cita' });
+    } finally {
+        client.release();
     }
 };
 
@@ -346,6 +372,32 @@ exports.cancel = async (req, res) => {
     } catch (err) {
         await client.query('ROLLBACK');
         res.status(err.statusCode || 500).json({ error: err.message || 'Error al cancelar cita' });
+    } finally { client.release(); }
+};
+
+/**
+ * POST /garage/appointments/:id/no-show
+ */
+exports.markNoShow = async (req, res) => {
+    const client = await db.getClient();
+    try {
+        if (req.user?.read_only) return res.status(403).json({ error: 'Operación no permitida en modo solo lectura' });
+        const { schema } = await resolveSchema(req);
+        await client.query('BEGIN');
+
+        const current = await client.query(`SELECT status FROM ${schema}.appointments WHERE id = $1`, [req.params.id]);
+        if (current.rows.length === 0) { await client.query('ROLLBACK'); return res.status(404).json({ error: 'Cita no encontrada' }); }
+        if (!['scheduled', 'confirmed', 'rescheduled'].includes(current.rows[0].status)) {
+            await client.query('ROLLBACK');
+            return res.status(409).json({ error: 'No se puede registrar ausencia para una cita en estado ' + current.rows[0].status });
+        }
+
+        await changeStatus(schema, req.params.id, 'no_show', req.user?.id, req.body.notes, client);
+        await client.query('COMMIT');
+        res.json({ message: 'Cita marcada como no presentada', status: 'no_show' });
+    } catch (err) {
+        await client.query('ROLLBACK');
+        res.status(err.statusCode || 500).json({ error: err.message || 'Error al registrar ausencia' });
     } finally { client.release(); }
 };
 
@@ -577,6 +629,7 @@ exports.updateAppointmentSettings = async (req, res) => {
         if (req.user?.read_only) return res.status(403).json({ error: 'Operación no permitida en modo solo lectura' });
         const { schema } = await resolveSchema(req);
         const { max_appointments_per_day, business_hours_start, business_hours_end } = req.body;
+        const normalizedMax = normalizeMaxAppointmentsPerDay(max_appointments_per_day);
 
         const result = await db.query(
             `INSERT INTO ${schema}.appointment_settings (module_code, max_appointments_per_day, business_hours_start, business_hours_end)
@@ -587,11 +640,11 @@ exports.updateAppointmentSettings = async (req, res) => {
                 business_hours_end       = EXCLUDED.business_hours_end,
                 updated_at                = CURRENT_TIMESTAMP
              RETURNING *`,
-            [MODULE_CODE, max_appointments_per_day ?? null, business_hours_start || '08:00', business_hours_end || '20:00']
+            [MODULE_CODE, normalizedMax, business_hours_start || '08:00', business_hours_end || '20:00']
         );
         res.json(result.rows[0]);
     } catch (err) {
         console.error('appointmentsController.updateAppointmentSettings error:', err.message);
-        res.status(500).json({ error: 'Error al guardar configuración de citas' });
+        res.status(err.statusCode || 500).json({ error: err.statusCode ? err.message : 'Error al guardar configuración de citas' });
     }
 };

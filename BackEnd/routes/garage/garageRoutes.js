@@ -1,6 +1,8 @@
 const express      = require('express');
 const router       = express.Router({ mergeParams: true });
 const authMiddleware = require('../../middleware/authMiddleware');
+const requireAgendaPermission = require('../../middleware/requireAgendaPermission');
+const agendaPermission = (flag = 'can_view') => requireAgendaPermission('garage_operations', 'garage_appointments', flag);
 const { resolveSchema } = require('../../utils/tenantResolver');
 
 const catalogsCtrl         = require('../../controllers/garage/catalogsController');
@@ -150,17 +152,18 @@ router.post('/service-templates/:id/products',             serviceTemplatesCtrl.
 router.delete('/service-templates/:id/products/:productId', serviceTemplatesCtrl.removeProduct);
 
 // ─── CITAS ────────────────────────────────────────────────────
-router.get('/appointment-settings',                      appointmentsCtrl.getAppointmentSettings);
-router.put('/appointment-settings',                      appointmentsCtrl.updateAppointmentSettings);
-router.get('/appointments',                              appointmentsCtrl.list);
-router.post('/appointments',                             appointmentsCtrl.create);
-router.get('/appointments/:id',                          appointmentsCtrl.getById);
-router.put('/appointments/:id',                          appointmentsCtrl.update);
-router.post('/appointments/:id/confirm',                 appointmentsCtrl.confirm);
-router.post('/appointments/:id/mark-arrived',            appointmentsCtrl.markArrived);
-router.post('/appointments/:id/cancel',                  appointmentsCtrl.cancel);
-router.post('/appointments/:id/reschedule',              appointmentsCtrl.reschedule);
-router.post('/appointments/:id/convert-to-work-order',   appointmentsCtrl.convertToWorkOrder);
+router.get('/appointment-settings',                      agendaPermission('can_view'), appointmentsCtrl.getAppointmentSettings);
+router.put('/appointment-settings',                      agendaPermission('can_admin'), appointmentsCtrl.updateAppointmentSettings);
+router.get('/appointments',                              agendaPermission('can_view'), appointmentsCtrl.list);
+router.post('/appointments',                             agendaPermission('can_create'), appointmentsCtrl.create);
+router.get('/appointments/:id',                          agendaPermission('can_view'), appointmentsCtrl.getById);
+router.put('/appointments/:id',                          agendaPermission('can_edit'), appointmentsCtrl.update);
+router.post('/appointments/:id/confirm',                 agendaPermission('can_edit'), appointmentsCtrl.confirm);
+router.post('/appointments/:id/mark-arrived',            agendaPermission('can_edit'), appointmentsCtrl.markArrived);
+router.post('/appointments/:id/cancel',                  agendaPermission('can_edit'), appointmentsCtrl.cancel);
+router.post('/appointments/:id/no-show',                 agendaPermission('can_edit'), appointmentsCtrl.markNoShow);
+router.post('/appointments/:id/reschedule',              agendaPermission('can_edit'), appointmentsCtrl.reschedule);
+router.post('/appointments/:id/convert-to-work-order',   agendaPermission('can_edit'), requireAgendaPermission('garage_operations', 'garage_work_orders', 'can_create'), appointmentsCtrl.convertToWorkOrder);
 
 // ─── ÓRDENES DE TRABAJO ───────────────────────────────────────
 router.get('/work-orders',                  workOrdersCtrl.list);

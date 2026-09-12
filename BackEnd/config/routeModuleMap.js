@@ -242,6 +242,8 @@ const ROUTE_MODULE_MAP = {
     'DELETE /garage/service-templates/:id/products/:productId':    { module: 'garage_operations', transaction: 'garage_service_templates' },
 
     // ── Garage Operations: Citas ──
+    'GET    /garage/appointment-settings': { module: 'garage_operations', transaction: 'garage_appointments' },
+    'PUT    /garage/appointment-settings': { module: 'garage_operations', transaction: 'garage_appointments' },
     'GET    /garage/appointments':                               { module: 'garage_operations', transaction: 'garage_appointments' },
     'POST   /garage/appointments':                               { module: 'garage_operations', transaction: 'garage_appointments' },
     'GET    /garage/appointments/:id':                           { module: 'garage_operations', transaction: 'garage_appointments' },
@@ -365,6 +367,8 @@ const ROUTE_MODULE_MAP = {
     'POST   /dental/services/:id/treatments':                     { module: 'dental_core', transaction: 'dental_services' },
 
     // ── Dental Core: Citas ──
+    'GET    /dental/appointment-settings': { module: 'dental_core', transaction: 'dental_appointments' },
+    'PUT    /dental/appointment-settings': { module: 'dental_core', transaction: 'dental_appointments' },
     'GET    /dental/appointments':                                { module: 'dental_core', transaction: 'dental_appointments' },
     'GET    /dental/appointments/day':                            { module: 'dental_core', transaction: 'dental_appointments' },
     'GET    /dental/appointments/month':                          { module: 'dental_core', transaction: 'dental_appointments' },

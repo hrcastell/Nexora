@@ -7,11 +7,13 @@ import { buildMonthCells, groupEventsByDate, formatShortWeekday, formatEventTime
 const props = withDefaults(defineProps<{
   anchorDate: Date;
   events: AgendaEvent[];
+  canCreate?: boolean;
   statusColors: AgendaStatusColorMap;
   capacityByDate?: AgendaCapacityByDate;
   weekStartsOn?: 0 | 1;
 }>(), {
   capacityByDate: () => ({}),
+  canCreate: true,
   weekStartsOn: 1,
 });
 
@@ -47,7 +49,7 @@ function handleCellClick(cell: ReturnType<typeof buildMonthCells>[number]) {
   if (dayEvents.length > 0) {
     emit('go-day', cell.date);
   } else {
-    emit('create', { date: cell.date });
+    if (props.canCreate) emit('create', { date: cell.date });
   }
 }
 

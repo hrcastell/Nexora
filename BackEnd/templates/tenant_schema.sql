@@ -513,7 +513,7 @@ CREATE INDEX IF NOT EXISTS idx_appointments_scheduled ON {schema_name}.appointme
 CREATE TABLE IF NOT EXISTS {schema_name}.appointment_settings (
     id                         SERIAL PRIMARY KEY,
     module_code                VARCHAR(50)   NOT NULL UNIQUE,
-    max_appointments_per_day   INTEGER,
+    max_appointments_per_day   INTEGER CHECK (max_appointments_per_day IS NULL OR max_appointments_per_day >= 1),
     business_hours_start       TIME          NOT NULL DEFAULT '08:00',
     business_hours_end         TIME          NOT NULL DEFAULT '20:00',
     updated_at                 TIMESTAMP     DEFAULT CURRENT_TIMESTAMP

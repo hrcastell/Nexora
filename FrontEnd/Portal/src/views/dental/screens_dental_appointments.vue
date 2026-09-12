@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
+import { usePermissions } from '../../composables/usePermissions';
 import { Plus, CheckCircle2, XCircle, UserX, ArrowRightCircle, Edit2, LogIn } from 'lucide-vue-next';
 import { useDentalAppointmentsStore } from '../../stores/dentalAppointments';
 import { useDentalPatientsStore } from '../../stores/dentalPatients';
@@ -11,12 +12,19 @@ import AppToast from '../../components/AppToast.vue';
 import ConfirmActionModal from '../../components/admin/ConfirmActionModal.vue';
 import AgendaCalendar from '../../components/agenda/AgendaCalendar.vue';
 import AgendaSettingsPanel, { type AgendaSettingsValue } from '../../components/agenda/AgendaSettingsPanel.vue';
+import widgets_dental_appointment_summary_modal from '../../widgets/widgets_dental_appointment_summary_modal.vue';
 import type { AgendaEvent, AgendaStatusColorMap, AgendaCapacityByDate, AgendaView } from '../../components/agenda/agendaTypes';
-import { dateKey as agendaDateKey } from '../../components/agenda/agendaLayout';
+import { dateKey as agendaDateKey, toDate, toLocalDateTimeInput } from '../../components/agenda/agendaLayout';
 import { useToast } from '../../composables/useToast';
 import type { DentalAppointment, DentalAppointmentFormData, DentalPatientFormData } from '../../types/dental';
 
 const router = useRouter();
+const perms = usePermissions();
+const canCreate = computed(() => !perms.isReadOnly.value && perms.canDo('dental_appointments', 'can_create'));
+const canEdit = computed(() => !perms.isReadOnly.value && perms.canDo('dental_appointments', 'can_edit'));
+const canAdmin = computed(() => !perms.isReadOnly.value && perms.canDo('dental_appointments', 'can_admin'));
+const canConvert = computed(() => canEdit.value && perms.canDo('dental_consultations', 'can_view') && perms.canDo('dental_consultations', 'can_create'));
+const tabs = computed(() => ([['day', 'Día'], ['month', 'Mes'], ['all', 'Todas'], ...(canAdmin.value ? [['settings', 'Configuración']] : [])] as [ViewTab, string][]));
 const store = useDentalAppointmentsStore();
 const patientsStore = useDentalPatientsStore();
 const treatmentsStore = useDentalTreatmentsStore();
@@ -183,6 +191,9 @@ const saveError = ref<string | null>(null);
 const actionError = ref<string | null>(null);
 const isEditing = ref(false);
 const editingAppointmentId = ref<number | string | null>(null);
+type DentalSummaryAction = 'confirm' | 'check_in' | 'no_show' | 'cancel' | 'edit' | 'convert';
+const summaryAppointment = ref<DentalAppointment | null>(null);
+const summaryActionLoading = ref<DentalSummaryAction | null>(null);
 
 const defaultForm = (): DentalAppointmentFormData => ({
   customer_id: '',
@@ -226,12 +237,12 @@ const STATUS_COLORS: AgendaStatusColorMap = {
 };
 
 function fmtTime(iso: string) {
-  const d = new Date(iso);
+  const d = toDate(iso);
   return d.toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
 }
 
 function fmtDate(iso: string) {
-  const d = new Date(iso);
+  const d = toDate(iso);
   return d.toLocaleDateString('es-CL', { weekday: 'short', day: '2-digit', month: '2-digit' });
 }
 
@@ -280,11 +291,15 @@ const agendaCalendarEvents = computed<AgendaEvent[]>(() =>
     end: a.scheduled_end || a.scheduled_start,
     title: patientDisplayName(a),
     status: a.status,
+    actionLabel: agendaView.value === 'day' ? 'Ver' : (canEdit.value ? 'Editar' : 'Ver'),
+    actionKind: agendaView.value === 'day' ? 'view' : (canEdit.value ? 'edit' : 'view'),
   }))
 );
 
 const settings = ref<AgendaSettingsValue>({ max_appointments_per_day: null, business_hours_start: '08:00', business_hours_end: '20:00' });
 const savingSettings = ref(false);
+const settingsError = ref('');
+const settingsSaved = ref(false);
 
 const capacityByDate = computed<AgendaCapacityByDate>(() => {
   const max = settings.value.max_appointments_per_day;
@@ -292,7 +307,7 @@ const capacityByDate = computed<AgendaCapacityByDate>(() => {
   const counts: Record<string, number> = {};
   for (const ev of agendaCalendarEvents.value) {
     if (ev.status === 'cancelled' || ev.status === 'no_show') continue;
-    const key = agendaDateKey(new Date(ev.start));
+    const key = agendaDateKey(toDate(ev.start));
     counts[key] = (counts[key] || 0) + 1;
   }
   const result: AgendaCapacityByDate = {};
@@ -313,10 +328,16 @@ async function loadSettings() {
 }
 
 async function saveSettings(value: AgendaSettingsValue) {
+  if (!canAdmin.value) return;
   savingSettings.value = true;
+  settingsError.value = '';
+  settingsSaved.value = false;
   try {
     await dentalAppointmentsService.updateSettings(value);
     settings.value = value;
+    settingsSaved.value = true;
+  } catch (e: any) {
+    settingsError.value = e?.response?.data?.error || 'No se pudo guardar la configuración.';
   } finally {
     savingSettings.value = false;
   }
@@ -348,6 +369,7 @@ function addHourToInputValue(value: string, hours: number): string {
 }
 
 function openCreate(prefill?: { date: Date; hour?: number; minute?: number }) {
+  if (!canCreate.value) return;
   form.value = defaultForm();
   if (prefill) {
     form.value.scheduled_start = prefillToLocalInputValue(prefill.date, prefill.hour, prefill.minute);
@@ -363,10 +385,7 @@ function openCreate(prefill?: { date: Date; hour?: number; minute?: number }) {
 }
 
 function toLocalInputValue(iso?: string) {
-  if (!iso) return '';
-  const d = new Date(iso);
-  const offsetMs = d.getTimezoneOffset() * 60000;
-  return new Date(d.getTime() - offsetMs).toISOString().slice(0, 16);
+  return toLocalDateTimeInput(iso);
 }
 
 function openEditAppointment(apt: DentalAppointment) {
@@ -387,9 +406,25 @@ function openEditAppointment(apt: DentalAppointment) {
   showPanel.value = true;
 }
 
+async function openEditById(id: number | string) {
+  try {
+    openEditAppointment(await store.loadOne(id));
+  } catch (e: any) {
+    triggerToast('No se pudo abrir la cita', e?.response?.data?.error || 'No se pudo cargar el detalle de la cita.', 'error');
+  }
+}
+
+async function openSummary(id: number | string) {
+  try {
+    summaryAppointment.value = await store.loadOne(id);
+  } catch (e: any) {
+    triggerToast('No se pudo abrir la cita', e?.response?.data?.error || 'No se pudo cargar el resumen de la cita.', 'error');
+  }
+}
+
 async function onCalendarSelectEvent(payload: { event: AgendaEvent }) {
-  const found = agendaEvents.value.find((a) => a.id === payload.event.id);
-  if (found) openEditAppointment(found);
+  if (agendaView.value === 'day') await openSummary(payload.event.id);
+  else await openEditById(payload.event.id);
 }
 
 async function refreshActiveTab() {
@@ -398,6 +433,7 @@ async function refreshActiveTab() {
 }
 
 async function save() {
+  if (isEditing.value ? !canEdit.value : !canCreate.value) return;
   saving.value = true;
   saveError.value = null;
   try {
@@ -417,53 +453,68 @@ async function save() {
   }
 }
 
-async function doAction(action: 'confirm' | 'check_in' | 'cancel' | 'no_show' | 'convert', apt: DentalAppointment) {
+async function executeAppointmentAction(action: Exclude<DentalSummaryAction, 'edit'>, apt: DentalAppointment) {
+  if (action === 'convert' ? !canConvert.value : !canEdit.value) return;
   actionError.value = null;
-
-  if (action === 'cancel') {
-    askConfirm(
-      'Cancelar cita',
-      `¿Cancelar la cita de ${patientDisplayName(apt)}?`,
-      async () => {
-        try {
-          await store.cancel(apt.id);
-          triggerToast('Éxito', 'Cita cancelada', 'success');
-          await refreshActiveTab();
-        } catch (e: any) {
-          triggerToast('Error', e?.response?.data?.error || 'Error al cancelar cita', 'error');
-        }
-      },
-      { variant: 'danger', confirmText: 'Confirmar' }
-    );
-    return;
-  }
-
+  summaryActionLoading.value = action;
   try {
     if (action === 'confirm') {
       await store.confirm(apt.id);
-      triggerToast('Éxito', 'Cita confirmada', 'success');
-      await refreshActiveTab();
     } else if (action === 'check_in') {
       await store.update(apt.id, { status: 'checked_in' } as any);
-      triggerToast('Éxito', 'Paciente marcado como presente', 'success');
-      await refreshActiveTab();
     } else if (action === 'no_show') {
       await store.noShow(apt.id);
-      triggerToast('Éxito', 'Marcado como no presentado', 'success');
-      await refreshActiveTab();
+    } else if (action === 'cancel') {
+      await store.cancel(apt.id);
     } else if (action === 'convert') {
       const result = await store.convertToConsultation(apt.id);
-      triggerToast('Éxito', 'Convertida a consulta', 'success');
+      triggerToast('Consulta iniciada', 'La cita fue convertida correctamente.', 'success');
+      summaryAppointment.value = null;
       if (result?.id) {
         router.push({ name: 'dental-consultation-detail', params: { id: result.id } });
-      } else {
-        await refreshActiveTab();
       }
+      return;
     }
+
+    const messages: Record<Exclude<DentalSummaryAction, 'edit' | 'convert'>, string> = {
+      confirm: 'La cita fue confirmada.',
+      check_in: 'El paciente fue marcado como presente.',
+      no_show: 'La cita fue marcada como no asistida.',
+      cancel: 'La cita fue cancelada.',
+    };
+    await refreshActiveTab();
+    if (summaryAppointment.value?.id === apt.id) summaryAppointment.value = await store.loadOne(apt.id);
+    triggerToast('Estado actualizado', messages[action], 'success');
   } catch (e: any) {
     actionError.value = e?.response?.data?.error || 'Error al ejecutar acción';
-    triggerToast('Error', e?.response?.data?.error || 'Error al ejecutar acción', 'error');
+    triggerToast('No se pudo actualizar la cita', actionError.value || 'Error al ejecutar acción', 'error');
+  } finally {
+    summaryActionLoading.value = null;
   }
+}
+
+function requestAppointmentAction(action: Exclude<DentalSummaryAction, 'edit'>, apt: DentalAppointment) {
+  const name = patientDisplayName(apt);
+  const configs = {
+    confirm: { title: 'Confirmar cita', message: `¿Confirmar la cita de ${name}?`, confirmText: 'Confirmar cita', variant: 'info' as const },
+    check_in: { title: 'Registrar llegada', message: `¿Registrar que ${name} se presentó a su cita?`, confirmText: 'Registrar llegada', variant: 'info' as const },
+    no_show: { title: 'Marcar inasistencia', message: `¿Confirmas que ${name} no asistió? La cita dejará de ocupar cupo.`, confirmText: 'No asistió', variant: 'warning' as const },
+    cancel: { title: 'Cancelar cita', message: `¿Cancelar la cita de ${name}?`, confirmText: 'Cancelar cita', variant: 'danger' as const },
+    convert: { title: 'Iniciar consulta', message: `¿Crear una consulta dental para ${name} desde esta cita?`, confirmText: 'Iniciar consulta', variant: 'info' as const },
+  };
+  const config = configs[action];
+  askConfirm(config.title, config.message, () => executeAppointmentAction(action, apt), { variant: config.variant, confirmText: config.confirmText });
+}
+
+function onSummaryAction(action: DentalSummaryAction) {
+  const appointment = summaryAppointment.value;
+  if (!appointment) return;
+  if (action === 'edit') {
+    summaryAppointment.value = null;
+    openEditAppointment(appointment);
+    return;
+  }
+  requestAppointmentAction(action, appointment);
 }
 
 onMounted(() => {
@@ -479,7 +530,7 @@ onMounted(() => {
     <div class="flex items-center justify-between flex-wrap gap-3">
       <h1 class="text-xl font-semibold nxr-text">Citas</h1>
       <button
-        v-if="activeTab !== 'settings'"
+        v-if="canCreate && activeTab !== 'settings'"
         class="flex min-h-11 w-full items-center justify-center gap-2 rounded-2xl px-5 py-2.5 text-sm font-medium text-white transition nxr-btn-primary sm:w-auto"
         @click="openCreate()"
       >
@@ -489,7 +540,7 @@ onMounted(() => {
 
     <!-- Tab switcher -->
     <div class="flex flex-wrap items-center gap-1 rounded-2xl p-1 nxr-card-subtle w-fit">
-      <button v-for="tab in [['day','Día'],['month','Mes'],['all','Todas'],['settings','Configuración']] as const" :key="tab[0]"
+      <button v-for="tab in tabs" :key="tab[0]"
               type="button"
               class="rounded-xl px-4 py-1.5 text-xs font-medium transition"
               :class="activeTab === tab[0] ? 'nxr-btn-primary' : 'nxr-text-muted'"
@@ -506,6 +557,7 @@ onMounted(() => {
       v-model:view="agendaView"
       v-model:date="agendaDate"
       :events="agendaCalendarEvents"
+      :can-create="canCreate"
       :status-colors="STATUS_COLORS"
       :capacity-by-date="capacityByDate"
       :loading="agendaLoading"
@@ -516,10 +568,12 @@ onMounted(() => {
 
     <!-- Configuración -->
     <AgendaSettingsPanel
-      v-else-if="activeTab === 'settings'"
+      v-else-if="activeTab === 'settings' && canAdmin"
       module-label="Dental"
       :settings="settings"
       :saving="savingSettings"
+      :error="settingsError"
+      :saved="settingsSaved"
       @save="saveSettings" />
 
     <!-- All tab -->
@@ -556,12 +610,12 @@ onMounted(() => {
               <span class="w-fit shrink-0 rounded-full px-2 py-0.5 text-xs" :class="STATUS_CLASS[apt.status]">{{ STATUS_LABEL[apt.status] }}</span>
             </div>
             <div class="mt-3 flex w-full items-center gap-1.5 overflow-x-auto pb-1">
-              <button v-if="apt.status === 'scheduled'" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-green-500/10 text-green-400" title="Confirmar" aria-label="Confirmar cita" @click="doAction('confirm', apt)"><CheckCircle2 :size="16" /></button>
-              <button v-if="apt.status === 'confirmed'" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-cyan-500/10 text-cyan-300" title="Marcar presente" aria-label="Marcar paciente presente" @click="doAction('check_in', apt)"><LogIn :size="16" /></button>
-              <button v-if="!['completed','cancelled','no_show'].includes(apt.status)" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/5 nxr-text-muted" title="Editar/reprogramar" aria-label="Editar o reprogramar cita" @click="openEditAppointment(apt)"><Edit2 :size="16" /></button>
-              <button v-if="['scheduled','confirmed'].includes(apt.status)" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-cyan-500/10 text-cyan-400" title="Convertir en consulta" aria-label="Convertir cita en consulta" @click="doAction('convert', apt)"><ArrowRightCircle :size="16" /></button>
-              <button v-if="['scheduled','confirmed'].includes(apt.status)" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-orange-500/10 text-orange-400" title="No asistió" aria-label="Marcar como no asistió" @click="doAction('no_show', apt)"><UserX :size="16" /></button>
-              <button v-if="['scheduled','confirmed'].includes(apt.status)" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-red-500/10 text-red-400" title="Cancelar" aria-label="Cancelar cita" @click="doAction('cancel', apt)"><XCircle :size="16" /></button>
+              <button v-if="canEdit && apt.status === 'scheduled'" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-green-500/10 text-green-400" title="Confirmar" aria-label="Confirmar cita" @click="requestAppointmentAction('confirm', apt)"><CheckCircle2 :size="16" /></button>
+              <button v-if="canEdit && apt.status === 'confirmed'" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-cyan-500/10 text-cyan-300" title="Marcar presente" aria-label="Marcar paciente presente" @click="requestAppointmentAction('check_in', apt)"><LogIn :size="16" /></button>
+              <button v-if="!['completed','cancelled','no_show'].includes(apt.status)" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/5 nxr-text-muted" title="Editar/reprogramar" aria-label="Editar o reprogramar cita" @click="openEditById(apt.id)"><Edit2 :size="16" /></button>
+              <button v-if="canConvert && ['scheduled','confirmed','checked_in'].includes(apt.status)" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-cyan-500/10 text-cyan-400" title="Convertir en consulta" aria-label="Convertir cita en consulta" @click="requestAppointmentAction('convert', apt)"><ArrowRightCircle :size="16" /></button>
+              <button v-if="canEdit && ['scheduled','confirmed','rescheduled'].includes(apt.status)" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-orange-500/10 text-orange-400" title="No asistió" aria-label="Marcar como no asistió" @click="requestAppointmentAction('no_show', apt)"><UserX :size="16" /></button>
+              <button v-if="canEdit && ['scheduled','confirmed','rescheduled'].includes(apt.status)" type="button" class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-red-500/10 text-red-400" title="Cancelar" aria-label="Cancelar cita" @click="requestAppointmentAction('cancel', apt)"><XCircle :size="16" /></button>
             </div>
           </div>
           <!-- Desktop -->
@@ -571,12 +625,12 @@ onMounted(() => {
             <p class="truncate text-xs nxr-text-muted">{{ apt.treatment?.name ?? apt.reason ?? '—' }}</p>
             <span class="w-fit rounded-full px-2 py-0.5 text-xs" :class="STATUS_CLASS[apt.status]">{{ STATUS_LABEL[apt.status] }}</span>
             <div class="flex items-center justify-end gap-1">
-              <button v-if="apt.status === 'scheduled'" type="button" class="text-green-400 hover:opacity-70" title="Confirmar" aria-label="Confirmar cita" @click="doAction('confirm', apt)"><CheckCircle2 :size="14" /></button>
-              <button v-if="apt.status === 'confirmed'" type="button" class="text-cyan-300 hover:opacity-70" title="Marcar presente" aria-label="Marcar paciente presente" @click="doAction('check_in', apt)"><LogIn :size="14" /></button>
-              <button v-if="!['completed','cancelled','no_show'].includes(apt.status)" type="button" class="nxr-text-muted hover:text-[var(--nexora-text-color)]" title="Editar/reprogramar" aria-label="Editar o reprogramar cita" @click="openEditAppointment(apt)"><Edit2 :size="14" /></button>
-              <button v-if="['scheduled','confirmed'].includes(apt.status)" type="button" class="text-cyan-400 hover:opacity-70" title="Consulta" aria-label="Convertir cita en consulta" @click="doAction('convert', apt)"><ArrowRightCircle :size="14" /></button>
-              <button v-if="['scheduled','confirmed'].includes(apt.status)" type="button" class="text-orange-400 hover:opacity-70" title="No asistió" @click="doAction('no_show', apt)"><UserX :size="14" /></button>
-              <button v-if="['scheduled','confirmed'].includes(apt.status)" type="button" class="text-red-400 hover:opacity-70" title="Cancelar" aria-label="Cancelar cita" @click="doAction('cancel', apt)"><XCircle :size="14" /></button>
+              <button v-if="canEdit && apt.status === 'scheduled'" type="button" class="text-green-400 hover:opacity-70" title="Confirmar" aria-label="Confirmar cita" @click="requestAppointmentAction('confirm', apt)"><CheckCircle2 :size="14" /></button>
+              <button v-if="canEdit && apt.status === 'confirmed'" type="button" class="text-cyan-300 hover:opacity-70" title="Marcar presente" aria-label="Marcar paciente presente" @click="requestAppointmentAction('check_in', apt)"><LogIn :size="14" /></button>
+              <button v-if="!['completed','cancelled','no_show'].includes(apt.status)" type="button" class="nxr-text-muted hover:text-[var(--nexora-text-color)]" title="Editar/reprogramar" aria-label="Editar o reprogramar cita" @click="openEditById(apt.id)"><Edit2 :size="14" /></button>
+              <button v-if="canConvert && ['scheduled','confirmed','checked_in'].includes(apt.status)" type="button" class="text-cyan-400 hover:opacity-70" title="Consulta" aria-label="Convertir cita en consulta" @click="requestAppointmentAction('convert', apt)"><ArrowRightCircle :size="14" /></button>
+              <button v-if="canEdit && ['scheduled','confirmed','rescheduled'].includes(apt.status)" type="button" class="text-orange-400 hover:opacity-70" title="No asistió" @click="requestAppointmentAction('no_show', apt)"><UserX :size="14" /></button>
+              <button v-if="canEdit && ['scheduled','confirmed','rescheduled'].includes(apt.status)" type="button" class="text-red-400 hover:opacity-70" title="Cancelar" aria-label="Cancelar cita" @click="requestAppointmentAction('cancel', apt)"><XCircle :size="14" /></button>
             </div>
           </div>
         </div>
@@ -584,12 +638,13 @@ onMounted(() => {
     </template>
 
     <!-- Create panel -->
-    <NxrSlidePanel :open="showPanel" :title="isEditing ? 'Editar/reprogramar cita' : 'Nueva cita'" eyebrow="Dental" size="lg" @close="showPanel = false"
+    <NxrSlidePanel :open="showPanel" :title="isEditing ? (canEdit ? 'Editar/reprogramar cita' : 'Detalle de cita') : 'Nueva cita'" eyebrow="Dental" size="lg" @close="showPanel = false"
     draft-key="views/dental/screens_dental_appointments.vue#1"
     :draft-entity="isEditing ? editingAppointmentId : 'create'"
     :draft-state="{ patientSearch, selectedPatient, form }"
     :draft-setters="{ patientSearch: (value) => patientSearch = value, selectedPatient: (value) => selectedPatient = value }">
       <form class="flex flex-col gap-5" @submit.prevent="save">
+        <fieldset :disabled="isEditing ? !canEdit : !canCreate" class="contents">
         <div class="flex flex-col gap-1.5 relative">
           <label class="text-xs nxr-text-muted">Paciente *</label>
           <input
@@ -647,10 +702,11 @@ onMounted(() => {
           <textarea v-model="form.notes" rows="2" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30 resize-none"></textarea>
         </div>
         <p v-if="saveError" class="text-xs text-red-400">{{ saveError }}</p>
+        </fieldset>
       </form>
       <template #footer>
 
-        <button type="button" class="flex-1 rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary disabled:opacity-50" :disabled="saving" @click="save">
+        <button v-if="isEditing ? canEdit : canCreate" type="button" class="flex-1 rounded-2xl px-4 py-2.5 text-sm font-medium text-white transition nxr-btn-primary disabled:opacity-50" :disabled="saving" @click="save">
           {{ saving ? 'Guardando...' : (isEditing ? 'Guardar cambios' : 'Agendar cita') }}
         </button>
       </template>
@@ -688,10 +744,14 @@ onMounted(() => {
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div class="flex flex-col gap-1.5">
-            <label class="text-xs nxr-text-muted">Teléfono</label>
+            <label class="text-xs nxr-text-muted">Teléfono fijo</label>
             <input v-model="patientForm.phone" type="tel" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" />
           </div>
           <div class="flex flex-col gap-1.5">
+            <label class="text-xs nxr-text-muted">Teléfono móvil</label>
+            <input v-model="patientForm.mobile" type="tel" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" />
+          </div>
+          <div class="flex flex-col gap-1.5 sm:col-span-2">
             <label class="text-xs nxr-text-muted">Email</label>
             <input v-model="patientForm.email" type="email" class="px-3 py-2 rounded-xl bg-white/5 border border-white/10 text-sm nxr-text outline-none focus:border-white/30" />
           </div>
@@ -706,6 +766,15 @@ onMounted(() => {
         </button>
       </template>
     </NxrSlidePanel>
+
+    <widgets_dental_appointment_summary_modal
+      :model-value="!!summaryAppointment"
+      :appointment="summaryAppointment"
+      :can-edit="canEdit"
+      :can-convert="canConvert"
+      :action-loading="summaryActionLoading"
+      @update:model-value="(open) => { if (!open) summaryAppointment = null; }"
+      @action="onSummaryAction" />
 
     <!-- Toast container -->
     <div class="fixed top-4 right-4 z-[9999] flex flex-col gap-2 w-80 pointer-events-none">

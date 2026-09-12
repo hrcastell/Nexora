@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { Save } from 'lucide-vue-next';
+import { CalendarPlus, Loader2, Pencil, Save } from 'lucide-vue-next';
 import { useGarageAppointmentsStore } from '../stores/garageAppointments';
 import widgets_garage_customer_vehicle_selector from './widgets_garage_customer_vehicle_selector.vue';
 import NxrSlidePanel from '../components/NxrSlidePanel.vue';
+import { toLocalDateTimeInput } from '../components/agenda/agendaLayout';
 import type { Appointment } from '../types/garage';
 
 const props = defineProps<{
   modelValue: boolean;
+  readOnly?: boolean;
   appointment?: Appointment | null;
   prefill?: { date: Date; hour?: number; minute?: number } | null;
 }>();
@@ -34,6 +36,7 @@ function addHourToInputValue(value: string, hours: number): string {
 const emit = defineEmits<{
   (e: 'update:modelValue', val: boolean): void;
   (e: 'saved', appt: Appointment): void;
+  (e: 'failed', message: string): void;
 }>();
 
 const store  = useGarageAppointmentsStore();
@@ -61,8 +64,8 @@ watch(() => props.modelValue, (val) => {
       Object.assign(form.value, {
         customer_id:               props.appointment.customer_id,
         vehicle_id:                props.appointment.vehicle_id,
-        scheduled_start:           props.appointment.scheduled_start?.slice(0, 16) || '',
-        scheduled_end:             props.appointment.scheduled_end?.slice(0, 16) || '',
+        scheduled_start:           toLocalDateTimeInput(props.appointment.scheduled_start),
+        scheduled_end:             toLocalDateTimeInput(props.appointment.scheduled_end),
         estimated_duration_hours:  props.appointment.estimated_duration_hours || 0,
         channel:                   props.appointment.channel || '',
         requested_service_summary: props.appointment.requested_service_summary || '',
@@ -88,6 +91,7 @@ watch(() => props.modelValue, (val) => {
 function close() { emit('update:modelValue', false); }
 
 async function save() {
+  if (props.readOnly) return;
   if (!form.value.scheduled_start) { error.value = 'La fecha y hora de inicio es requerida'; return; }
   saving.value = true; error.value = '';
   try {
@@ -102,6 +106,7 @@ async function save() {
     close();
   } catch (e: any) {
     error.value = e?.response?.data?.error || 'Error al guardar cita';
+    emit('failed', error.value);
   } finally {
     saving.value = false;
   }
@@ -111,14 +116,24 @@ async function save() {
 <template>
   <NxrSlidePanel
     :open="modelValue"
-    :title="appointment ? 'Editar cita' : 'Nueva cita'"
+    :title="appointment ? (readOnly ? 'Detalle de cita' : 'Editar cita') : 'Nueva cita'"
     size="md"
     @close="close"
 
     draft-key="widgets/widgets_garage_appointment_form_modal.vue#1"
     :draft-entity="appointment?.id"
     :draft-state="{ form }">
-          <div class="flex flex-col gap-5">
+          <div class="mb-5 flex items-start gap-3 rounded-2xl border p-3 nxr-card-subtle" :style="{ borderColor: 'var(--nexora-card-border)' }">
+            <Pencil v-if="appointment" class="mt-0.5 h-5 w-5 shrink-0 nxr-text-accent" />
+            <CalendarPlus v-else class="mt-0.5 h-5 w-5 shrink-0 nxr-text-accent" />
+            <div>
+              <p class="text-sm font-semibold nxr-text">{{ appointment ? `Editando cita #${appointment.id}` : 'Creando una cita nueva' }}</p>
+              <p class="mt-0.5 text-xs nxr-text-muted">
+                {{ appointment ? 'Los cambios se aplicarán cuando presiones Guardar cambios.' : 'El registro se creará cuando presiones Crear cita.' }}
+              </p>
+            </div>
+          </div>
+          <fieldset :disabled="readOnly" class="flex flex-col gap-5">
             <widgets_garage_customer_vehicle_selector
               v-model:customer-id="form.customer_id"
               v-model:vehicle-id="form.vehicle_id"
@@ -126,12 +141,12 @@ async function save() {
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label class="block text-xs nxr-text-muted mb-1">Fecha y hora inicio *</label>
-                <input v-model="form.scheduled_start" type="datetime-local" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40" />
+                <label for="garage-appointment-start" class="block text-xs nxr-text-muted mb-1">Fecha y hora inicio *</label>
+                <input id="garage-appointment-start" v-model="form.scheduled_start" type="datetime-local" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40" />
               </div>
               <div>
-                <label class="block text-xs nxr-text-muted mb-1">Fecha y hora fin</label>
-                <input v-model="form.scheduled_end" type="datetime-local" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40" />
+                <label for="garage-appointment-end" class="block text-xs nxr-text-muted mb-1">Fecha y hora fin</label>
+                <input id="garage-appointment-end" v-model="form.scheduled_end" type="datetime-local" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40" />
               </div>
               <div>
                 <label class="block text-xs nxr-text-muted mb-1">Duración estimada (hrs)</label>
@@ -171,13 +186,15 @@ async function save() {
               <label class="block text-xs nxr-text-muted mb-1">Notas preliminares</label>
               <textarea v-model="form.preliminary_notes" rows="2" class="w-full px-3 py-2 rounded-xl bg-white/5 border border-white/10 nxr-text text-sm outline-none focus:border-white/40 resize-none"></textarea>
             </div>
-          </div>
+          </fieldset>
     <p v-if="error" class="mt-3 text-xs text-red-400">{{ error }}</p>
 
     <template #footer>
 
-      <button type="button" class="nxr-btn nxr-btn-primary" :disabled="saving" @click="save">
-        <Save :size="14" />{{ saving ? 'Guardando...' : 'Guardar cita' }}
+      <button v-if="!readOnly" type="button" class="nxr-btn nxr-btn-primary" :disabled="saving" @click="save">
+        <Loader2 v-if="saving" :size="14" class="animate-spin" />
+        <Save v-else :size="14" />
+        {{ saving ? (appointment ? 'Actualizando...' : 'Creando...') : (appointment ? 'Guardar cambios' : 'Crear cita') }}
       </button>
     </template>
   </NxrSlidePanel>

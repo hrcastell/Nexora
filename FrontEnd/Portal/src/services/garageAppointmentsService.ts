@@ -38,6 +38,10 @@ export const garageAppointmentsService = {
     return api.post<{ message: string; status: string }>(`/garage/appointments/${id}/cancel`, { notes });
   },
 
+  markNoShow(id: number, notes?: string) {
+    return api.post<{ message: string; status: string }>(`/garage/appointments/${id}/no-show`, { notes });
+  },
+
   reschedule(id: number, data: { new_start: string; new_end?: string; reason?: string }) {
     return api.post<{ message: string; new_start: string; status: string }>(`/garage/appointments/${id}/reschedule`, data);
   },

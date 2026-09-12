@@ -8,6 +8,7 @@ import AgendaDayGrid from './AgendaDayGrid.vue';
 
 const props = withDefaults(defineProps<{
   events: AgendaEvent[];
+  canCreate?: boolean;
   statusColors: AgendaStatusColorMap;
   capacityByDate?: AgendaCapacityByDate;
   loading?: boolean;
@@ -19,6 +20,7 @@ const props = withDefaults(defineProps<{
 }>(), {
   capacityByDate: () => ({}),
   loading: false,
+  canCreate: true,
   minHour: 8,
   maxHour: 20,
   weekStartsOn: 1,
@@ -52,7 +54,7 @@ function setView(view: AgendaView) {
 }
 
 function handleCreate(payload: { date: Date; hour?: number; minute?: number }) {
-  emit('create', payload);
+  if (props.canCreate) emit('create', payload);
 }
 
 function handleSelectEvent(payload: { event: AgendaEvent }) {
@@ -115,6 +117,7 @@ function handleGoDay(date: Date) {
         v-if="view === 'month'"
         :anchor-date="date"
         :events="events"
+        :can-create="canCreate"
         :status-colors="statusColors"
         :capacity-by-date="capacityByDate"
         :week-starts-on="weekStartsOn"
@@ -126,6 +129,7 @@ function handleGoDay(date: Date) {
         v-else
         :date="date"
         :events="events"
+        :can-create="canCreate"
         :status-colors="statusColors"
         :min-hour="minHour"
         :max-hour="maxHour"
